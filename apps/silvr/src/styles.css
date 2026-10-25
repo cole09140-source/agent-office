@@ -1492,9 +1492,12 @@ input[type='range']::-moz-range-thumb {
   line-height: 1.2;
 }
 .camera-era {
+  max-width: 100%;
   font-size: 10px;
   color: var(--fg-2);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .camera-body {
   display: block;

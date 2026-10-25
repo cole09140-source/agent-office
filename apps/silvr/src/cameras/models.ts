@@ -218,7 +218,7 @@ export const CAMERAS: CameraModel[] = [
   {
     id: 'toy120',
     name: 'Toy 120',
-    era: '1982 · Medium format toy',
+    era: '1982 · 120 toy',
     body: 'toy',
     colors: ['#151515', '#3b3b3b', '#9a9a9a'],
     films: ['sunny200', 'mono400', 'dream160', 'xpro200', 'expired98'],
@@ -265,7 +265,7 @@ export const CAMERAS: CameraModel[] = [
   {
     id: 'doublex',
     name: 'Double X',
-    era: '1975 · Multi-exposure',
+    era: '1975 · Multi-ex',
     body: 'double',
     colors: ['#3a2f2a', '#d9b26b', '#151515'],
     films: 'any',

@@ -11,7 +11,7 @@ const CASES: { id: string; presses: number; ratio: number; tol?: number; check?:
   { id: 'toy120', presses: 1, ratio: 1 },
   { id: 'quad4', presses: 1, ratio: 1.5, tol: 0.04, check: 'quad' },
   { id: 'doublex', presses: 2, ratio: 1.5 },
-  { id: 'panox', presses: 1, ratio: 65 / 24, tol: 0.06 },
+  { id: 'panox', presses: 1, ratio: 2.58, tol: 0.05 }, // 65:24 + Velvet 50's white print border
   { id: 'fish180', presses: 1, ratio: 1, check: 'fisheye' },
   { id: 'cine', presses: 1, ratio: 2.39, tol: 0.06 },
   { id: 'ccd03', presses: 1, ratio: 4 / 3 },
