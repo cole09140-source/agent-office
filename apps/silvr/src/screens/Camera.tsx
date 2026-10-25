@@ -669,7 +669,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
                 <Canister stock={stock} size={22} />
               </button>
             )}
-            <button class="icon-btn big" onClick={flip} aria-label={t('cam.flip')} data-testid="btn-flip" data-facing={facing}>
+            <button class="icon-btn big" onClick={flip} disabled={busy || state === 'starting'} aria-label={t('cam.flip')} data-testid="btn-flip" data-facing={facing}>
               <Icon name="flip" size={26} />
             </button>
           </div>

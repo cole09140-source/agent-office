@@ -186,6 +186,8 @@ test('R20 monkey test: 300 random actions keep every invariant', async ({ page }
     await actions[a]().catch(() => undefined);
     if (Date.now() - ts > 10_000) console.log(`R20 slow step ${i}: action ${a} took ${Date.now() - ts}ms`);
     if (i % 25 === 0) {
+      // A random Back can leave the app (to about:blank); come back before checking storage.
+      if (!page.url().startsWith('http://localhost:4173/')) await page.goto('./');
       // Invariant: no roll in storage ever exceeds its capacity or has negatives > shots.
       const bad = await page.evaluate(
         () =>
