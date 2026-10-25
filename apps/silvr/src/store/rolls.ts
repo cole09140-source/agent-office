@@ -219,6 +219,7 @@ export async function addShot(
 export async function savePending(rollId: string, blob: Blob, pending: PendingExposure): Promise<Roll> {
   const roll = await getRoll(rollId);
   if (!roll || roll.status !== 'loaded') throw new Error('Roll is not loaded');
+  if (roll.pending) throw new Error('An exposure is already pending');
   const cost = pending.kind === 'half' ? 1 : 0;
   if (roll.shots + Math.max(cost, 1) > roll.capacity) throw new Error('Roll is full');
   roll.shots += cost;
@@ -229,6 +230,19 @@ export async function savePending(rollId: string, blob: Blob, pending: PendingEx
   });
   notify();
   return roll;
+}
+
+/** Forgets a pending exposure whose blob is gone (refunds a half-frame step). */
+export async function dropPending(rollId: string): Promise<void> {
+  const roll = await getRoll(rollId);
+  if (!roll?.pending) return;
+  if (roll.pending.kind === 'half') roll.shots = Math.max(0, roll.shots - 1);
+  roll.pending = undefined;
+  await tx(['rolls', 'blobs'], (t) => {
+    t.objectStore('rolls').put(roll);
+    t.objectStore('blobs').delete(pendingKey(rollId));
+  });
+  notify();
 }
 
 export async function getPending(rollId: string): Promise<Blob | undefined> {
@@ -349,7 +363,7 @@ export async function deletePhoto(photoId: string): Promise<void> {
       } else {
         if (roll.coverPhotoId === photoId) roll.coverPhotoId = remaining[0]?.id;
         // Frames on a loaded roll stay consumed; finished rolls show what is left.
-        if (roll.status !== 'loaded') roll.shots = remaining.length;
+        if (roll.status !== 'loaded') roll.shots = roll.negatives = remaining.length;
         t.objectStore('rolls').put(roll);
       }
     }

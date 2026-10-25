@@ -238,3 +238,33 @@ describe('roll mechanics per camera', () => {
     expect(await listPhotos(r.id)).toHaveLength(1);
   });
 });
+
+describe('pending exposure safety', () => {
+  beforeEach(async () => {
+    await clearAll();
+  });
+  it('refuses to overwrite a pending exposure', async () => {
+    const r = await loadRoll('mint400', 4, '3:2', Date.now(), 'half72');
+    await savePending(r.id, neg(), { kind: 'half', takenAt: 1, width: 3, height: 4 });
+    await expect(savePending(r.id, neg(), { kind: 'half', takenAt: 2, width: 3, height: 4 })).rejects.toThrow(/pending/);
+    expect((await listRolls()).find((x) => x.id === r.id)?.shots).toBe(1);
+  });
+  it('dropping a lost pending half refunds its counter step', async () => {
+    const { dropPending } = await import('../src/store/rolls');
+    const r = await loadRoll('mint400', 4, '3:2', Date.now(), 'half72');
+    await savePending(r.id, neg(), { kind: 'half', takenAt: 1, width: 3, height: 4 });
+    await dropPending(r.id);
+    const roll = (await listRolls()).find((x) => x.id === r.id)!;
+    expect([roll.shots, roll.pending]).toEqual([0, undefined]);
+  });
+  it('deleting a photo updates the negative count shown in the album', async () => {
+    const { deletePhoto } = await import('../src/store/rolls');
+    const r = await loadRoll('sunny200', 12, '3:2', Date.now(), 'pro35');
+    const a = await addShot(r.id, neg(), dev(), { width: 3, height: 2 });
+    await addShot(r.id, neg(), dev(), { width: 3, height: 2 });
+    await finishRoll(r.id, 'instant');
+    await deletePhoto(a.photo.id);
+    const roll = (await listRolls()).find((x) => x.id === r.id)!;
+    expect([roll.shots, roll.negatives]).toEqual([1, 1]);
+  });
+});

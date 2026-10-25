@@ -143,9 +143,14 @@ void main() {
   // Lateral chromatic aberration grows towards the edges.
   vec2 ca = (uv - 0.5) * (uChromaPx / max(uOutSize.x, uOutSize.y)) * 2.0 * dist;
   vec3 c;
-  c.r = texture(uSrc, srcUv(uv + ca)).r;
-  c.g = texture(uSrc, srcUv(uv)).g;
-  c.b = texture(uSrc, srcUv(uv - ca)).b;
+  if (uPixel) {
+    // Quantized uv has zero derivatives inside a cell: sample LOD 0 explicitly or cell edges pick blurry mips.
+    c = textureLod(uSrc, srcUv(uv), 0.0).rgb;
+  } else {
+    c.r = texture(uSrc, srcUv(uv + ca)).r;
+    c.g = texture(uSrc, srcUv(uv)).g;
+    c.b = texture(uSrc, srcUv(uv - ca)).b;
+  }
 
   vec2 su = srcUv(uv);
   vec2 bo = 1.5 * exp2(uBlurLod) / vec2(textureSize(uSrc, 0));

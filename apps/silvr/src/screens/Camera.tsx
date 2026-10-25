@@ -21,7 +21,7 @@ import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, refreshRolls, settings, toast, updateSettings } from '../state/app';
 import { go } from '../state/router';
 import { get, put } from '../store/db';
-import { addShot, finishRoll, framesLeft, getPending, listPhotos, loadRoll, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
+import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
 
 let controller: CameraController | null = null;
 const cam = () => (controller ??= new CameraController());
@@ -284,7 +284,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const flushPending = async (r: Roll) => {
     if (!r.pending) return;
     const blob = await getPending(r.id);
-    if (!blob) return;
+    if (!blob) {
+      await dropPending(r.id);
+      return;
+    }
     const first = await blobToCanvas(blob);
     const half = r.pending.kind === 'half';
     const neg = await toNegative(half ? composeHalf(first, blankLike(first)) : first);
@@ -296,20 +299,29 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (camera.instant) {
       const done = await finishRoll(r.id, 'instant');
       toast(t('cam.packDone'));
-      if (done) go({ name: 'roll', id: done.id });
+      if (done) {
+        await markSeen(done.id);
+        go({ name: 'roll', id: done.id });
+      }
     } else {
       setSpeedOpen(true);
     }
   };
 
   const doCapture = async () => {
-    const r = activeRoll.value;
-    if (!r || shootingRef.current) return;
+    if (!activeRoll.value || shootingRef.current) return;
+    shootingRef.current = true;
+    // Fresh read: the signal lags IndexedDB, and a stale copy could miss a pending exposure.
+    const r = await getRoll(activeRoll.value.id);
+    if (!r || r.status !== 'loaded') {
+      shootingRef.current = false;
+      return;
+    }
     if (framesLeft(r) <= 0 && !r.pending) {
+      shootingRef.current = false;
       await afterRollFull(r);
       return;
     }
-    shootingRef.current = true;
     setBusy(true);
     let torchOn = false;
     const aborted = () => !mountedRef.current || document.hidden;
@@ -354,6 +366,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           setQuadIndex(i);
           exposures.push(expose());
           if (i < 3) await sleep(QUAD_GAP_MS);
+          if (aborted()) return;
         }
         setQuadIndex(undefined);
       } else {
@@ -411,7 +424,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key === ' ' || e.key === 'Enter') && (e.target as HTMLElement)?.tagName !== 'BUTTON' && (e.target as HTMLElement)?.tagName !== 'INPUT' && !speedOpen) {
+      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && (e.target as HTMLElement)?.tagName !== 'BUTTON' && (e.target as HTMLElement)?.tagName !== 'INPUT' && !speedOpen) {
         e.preventDefault();
         void doCapture();
       }
@@ -448,27 +461,33 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       return;
     }
     if (r.shots < r.capacity && !(await confirm(t('cam.rewindConfirm', { n: r.shots }), t('cam.rewind')))) return;
+    if (camera.instant) {
+      await finishWithPending(r, 'instant');
+      return;
+    }
+    // The pending half/exposure is only committed once a lab speed is picked (cancel keeps shooting).
+    setSpeedOpen(true);
+  };
+
+  /** Commits any pending exposure, then sends the roll off. */
+  const finishWithPending = async (r: Roll, speed: DevelopSpeed) => {
     try {
       await flushPending(r);
     } catch (err) {
       console.error('[silvr] could not keep the pending exposure', err);
     }
-    if (camera.instant) {
-      const done = await finishRoll(r.id, 'instant');
-      if (done) go({ name: 'roll', id: done.id });
-      return;
-    }
-    setSpeedOpen(true);
+    const done = await finishRoll(r.id, speed);
+    if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
+    if (!done) return;
+    if (done.status === 'developed') go({ name: 'roll', id: done.id });
+    else go({ name: 'lab' });
   };
 
   const onSpeed = async (speed: DevelopSpeed) => {
     const r = activeRoll.value;
     setSpeedOpen(false);
     if (!r) return;
-    const done = await finishRoll(r.id, speed);
-    if (!done) return;
-    if (done.status === 'developed') go({ name: 'roll', id: done.id });
-    else go({ name: 'lab' });
+    await finishWithPending(r, speed);
   };
 
   const flip = async () => {

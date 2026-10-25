@@ -33,7 +33,7 @@ export function LabScreen() {
                 </div>
                 <div class="lab-body">
                   <strong>{stock.name}</strong>
-                  <span class="muted">{t('gal.frames', { n: r.shots })}</span>
+                  <span class="muted">{t('gal.frames', { n: r.negatives ?? r.shots })}</span>
                   <div class="progress" role="progressbar" aria-label={stock.name} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
                     <span style={{ width: `${pct}%` }} />
                   </div>

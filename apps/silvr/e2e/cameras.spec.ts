@@ -113,9 +113,16 @@ test('half-frame: a pending half survives a reload and pairs up', async ({ page 
   await expect(page.getByTestId('counter')).toContainText('1½');
   await page.getByTestId('shutter').click();
   await expect(page.getByTestId('counter')).toContainText('2/72');
-  // A lone first half is kept (with a blank B side) when rewinding mid-pair.
+  // Starting a rewind and cancelling the lab sheet must not commit the pending half.
   await page.getByTestId('shutter').click();
   await expect(page.getByTestId('counter')).toContainText('3½');
+  await page.getByTestId('roll-btn').click();
+  await page.getByTestId('btn-rewind').click();
+  await page.getByTestId('confirm-ok').click();
+  await expect(page.getByTestId('speed-sheet')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('counter')).toContainText('3½');
+  // A lone first half is kept (with a blank B side) when the roll really goes to the lab.
   await rewindAndDevelop(page);
   await expect(page.getByTestId('thumb')).toHaveCount(2);
 });
