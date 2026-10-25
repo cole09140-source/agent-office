@@ -268,3 +268,25 @@ describe('pending exposure safety', () => {
     expect([roll.shots, roll.negatives]).toEqual([1, 1]);
   });
 });
+
+describe('engine hardening (QA R41)', () => {
+  it('tiny slivers get no border (no zero-pitch sprocket loop)', async () => {
+    const { borderLayout } = await import('../src/film/overlays');
+    expect(borderLayout('film35', 2, 900)).toEqual({ width: 2, height: 900, img: { x: 0, y: 0, w: 2, h: 900 } });
+    expect(borderLayout('instant', 15, 15).width).toBe(15);
+    expect(borderLayout('film35', 16, 900).width).toBeGreaterThan(16);
+  });
+  it('contact sheets for the longest rolls stay under the iOS canvas cap', async () => {
+    const { sheetHeight } = await import('../src/film/contactSheet');
+    const { MAX_CANVAS_PIXELS } = await import('../src/film/develop');
+    for (const [n, portrait] of [
+      [99, false],
+      [72, false],
+      [72, true],
+    ] as const) {
+      const area = 2400 * sheetHeight(n, portrait, 2400);
+      const w = area > MAX_CANVAS_PIXELS ? Math.floor(2400 * Math.sqrt(MAX_CANVAS_PIXELS / area) * 0.98) : 2400;
+      expect(w * sheetHeight(n, portrait, w)).toBeLessThanOrEqual(MAX_CANVAS_PIXELS);
+    }
+  });
+});

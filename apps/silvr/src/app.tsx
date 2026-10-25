@@ -17,8 +17,8 @@ import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
 import { SettingsScreen } from './screens/Settings';
-import { developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, toast, updateSettings } from './state/app';
-import { go, route, type Route } from './state/router';
+import { confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, toast, updateSettings } from './state/app';
+import { go, goTab, route, type Route } from './state/router';
 import { importRoll, type ImportItem } from './store/rolls';
 
 const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
@@ -51,7 +51,7 @@ function TabBar() {
           key={tab.name}
           class={current === tab.name ? 'on' : ''}
           aria-current={current === tab.name ? 'page' : undefined}
-          onClick={() => go({ name: tab.name } as Route, true)}
+          onClick={() => goTab({ name: tab.name } as Route)}
           data-testid={`tab-${tab.name}`}
         >
           <Icon name={tab.icon} size={22} />
@@ -99,9 +99,14 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
     if (failed) toast(t('err.import'));
     if (!items.length) return;
     items.sort((a, b) => a.takenAt - b.takenAt);
-    const roll = await importRoll(stock.id, items);
-    onClose();
-    go({ name: 'roll', id: roll.id });
+    try {
+      const roll = await importRoll(stock.id, items);
+      onClose();
+      go({ name: 'roll', id: roll.id });
+    } catch (err) {
+      console.error('[silvr] import save failed', err);
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
+    }
   };
 
   return (
@@ -165,6 +170,15 @@ export function App() {
       })
       .catch(() => undefined);
   }, [ready.value, onboarded]);
+
+  // A confirm left open by a route change (system back) must not act on the next screen.
+  useEffect(() => {
+    const req = confirmReq.value;
+    if (req) {
+      confirmReq.value = null;
+      req.resolve(false);
+    }
+  }, [r.name, 'id' in r ? r.id : '']);
 
   useEffect(() => {
     window.scrollTo(0, 0);

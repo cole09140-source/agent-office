@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
 import { t } from '../i18n';
-import { confirm, settings, updateSettings } from '../state/app';
+import { broadcastReset, confirm, settings, updateSettings } from '../state/app';
 import { clearAll } from '../store/db';
 import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
@@ -24,6 +24,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
   const reset = async () => {
     if (!(await confirm(t('set.resetConfirm'), t('set.reset'), true))) return;
     await clearAll();
+    broadcastReset();
     location.hash = '#/camera';
     location.reload();
   };

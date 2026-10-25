@@ -16,9 +16,9 @@ import { randomSeed } from '../film/random';
 import { defaultDevelop, resolveLook } from '../film/resolve';
 import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
-import { cameraDescription, t } from '../i18n';
+import { cameraDescription, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
-import { activeRoll, confirm, refreshRolls, settings, toast, updateSettings } from '../state/app';
+import { activeRoll, confirm, confirmReq, refreshRolls, settings, toast, updateSettings } from '../state/app';
 import { go } from '../state/router';
 import { get, put } from '../store/db';
 import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
@@ -48,7 +48,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [pickStock, setPickStock] = useState(getCamera(DEFAULT_CAMERA_ID).defaultStock);
   const camera = getCamera(roll ? roll.cameraId : pickCamera);
   const stock = getStock(roll?.stockId ?? (canLoad(camera, pickStock) ? pickStock : camera.defaultStock));
-  const [rollSize, setRollSize] = useState(camera.capacities[0]);
+  // The "default roll size" setting is a 35mm film habit; packs, cards and half-frame rolls keep their own default.
+  const sizeFor = (c: CameraModel) =>
+    !c.instant && c.capture !== 'half' && c.capacities.includes(settings.value.defaultRollSize) ? settings.value.defaultRollSize : c.capacities[0];
+  const [rollSize, setRollSize] = useState(sizeFor(camera));
 
   const [state, setState] = useState<'starting' | 'live' | 'error'>('starting');
   const [error, setError] = useState<CameraError>('unknown');
@@ -76,6 +79,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [glKey, setGlKey] = useState(0);
   const [lastPhoto, setLastPhoto] = useState<Photo>();
   const [ghostBlob, setGhostBlob] = useState<Blob>();
+  /** Screen-reader announcements (countdown, lens progress, flash state, saved frames). */
+  const [announce, setAnnounce] = useState('');
   const ghostUrl = useObjectUrl(ghostBlob);
 
   const stageRef = useRef<HTMLDivElement>(null);
@@ -87,6 +92,14 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   const aspect: Aspect = formatPick && camera.formats.includes(formatPick) ? formatPick : defaultAspect(camera, stock, roll?.aspect);
   const spec = exposureSpec(camera, aspect);
+
+  // Keep the digicam LCD clock current.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (camera.stamp !== 'digital') return;
+    const id = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [camera.stamp]);
 
   // Restore the last camera/film the user loaded.
   useEffect(() => {
@@ -107,7 +120,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     setFormatPick(null);
     setEv(0);
     setEvOpen(false);
-    if (!camera.capacities.includes(rollSize)) setRollSize(camera.capacities[0]);
+    setRollSize(sizeFor(camera));
   }, [camera.id]);
 
   // Last shot (instant/digital review) and the pending first exposure (double exposure ghost).
@@ -257,10 +270,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (charge !== 'empty') return;
     setFlashOn(true);
     setCharge('charging');
+    setAnnounce(t('cam.flashCharging'));
     if (s.sound) playFlashCharge(FLASH_CHARGE_MS / 1000);
     await sleep(FLASH_CHARGE_MS);
     if (!mountedRef.current) return;
     setCharge('ready');
+    setAnnounce(t('cam.flashReady'));
     if (s.haptics) haptic(10);
   };
 
@@ -310,6 +325,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   const doCapture = async () => {
     if (!activeRoll.value || shootingRef.current) return;
+    void requestOrientationPermission(); // inside the tap gesture; no-op once answered
     shootingRef.current = true;
     // Fresh read: the signal lags IndexedDB, and a stale copy could miss a pending exposure.
     const r = await getRoll(activeRoll.value.id);
@@ -329,6 +345,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (timer > 0) {
         for (let i = timer; i > 0; i--) {
           setCountdown(i);
+          setAnnounce(String(i));
           haptic(8);
           await sleep(1000);
           if (aborted()) return;
@@ -364,6 +381,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (camera.capture === 'quad') {
         for (let i = 0; i < 4; i++) {
           setQuadIndex(i);
+          setAnnounce(t('cam.quadProgress', { n: i + 1 }));
           exposures.push(expose());
           if (i < 3) await sleep(QUAD_GAP_MS);
           if (aborted()) return;
@@ -398,6 +416,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       }
 
       if (s.sound) playAdvance(camera.sound);
+      if (result) setAnnounce(t('cam.saved', { n: result.photo.frame }));
+      else if (camera.capture === 'half') setAnnounce(t('cam.halfNext'));
       if (result && camera.instant) {
         setLastPhoto(result.photo);
         if (camera.id === 'instasq') {
@@ -424,7 +444,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && (e.target as HTMLElement)?.tagName !== 'BUTTON' && (e.target as HTMLElement)?.tagName !== 'INPUT' && !speedOpen) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'INPUT' && state === 'live' && !speedOpen && !rollInfoOpen && !confirmReq.value) {
         e.preventDefault();
         void doCapture();
       }
@@ -433,7 +454,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  const [loadingRoll, setLoadingRoll] = useState(false);
   const onLoad = async () => {
+    if (loadingRoll) return;
+    setLoadingRoll(true);
     // Runs inside the tap gesture: iOS motion permission (for sideways shots) and durable storage.
     void requestOrientationPermission();
     void navigator.storage?.persist?.().catch(() => undefined);
@@ -448,10 +472,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       // Most likely a roll was loaded in another tab meanwhile; show it.
       await refreshRolls();
       if (!activeRoll.value) toast(t('common.error'));
+    } finally {
+      if (mountedRef.current) setLoadingRoll(false);
     }
   };
 
   const onRewind = async () => {
+    if (shootingRef.current) return;
     const r = activeRoll.value;
     if (!r) return;
     setRollInfoOpen(false);
@@ -470,11 +497,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   };
 
   /** Commits any pending exposure, then sends the roll off. */
-  const finishWithPending = async (r: Roll, speed: DevelopSpeed) => {
+  const finishWithPending = async (stale: Roll, speed: DevelopSpeed) => {
+    const r = (await getRoll(stale.id)) ?? stale; // the signal can lag a just-saved pending exposure
     try {
       await flushPending(r);
     } catch (err) {
       console.error('[silvr] could not keep the pending exposure', err);
+      toast(t('common.error'));
     }
     const done = await finishRoll(r.id, speed);
     if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
@@ -491,7 +520,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   };
 
   const flip = async () => {
-    if (busy) return;
+    if (busy || state === 'starting') return;
     if (s.haptics) haptic(8);
     await startCamera(cam().facing === 'environment' ? 'user' : 'environment');
   };
@@ -499,12 +528,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const left = roll ? framesLeft(roll) : 0;
   const flashLabel =
     camera.flash === 'charge' ? (charge === 'ready' ? t('cam.flashReady') : charge === 'charging' ? t('cam.flashCharging') : t('cam.flashCharge')) : t('cam.flash');
-  const counterText = roll ? (camera.capture === 'half' ? `${roll.shots}${roll.pending ? '½' : ''}` : String(roll.shots).padStart(2, '0')) : '';
+  const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
 
   return (
     <div class={`camera cam-${camera.id}`} data-testid="camera-screen" data-camera={camera.id}>
-      <div class="cam-top">
-        <button class="chip cam-name" onClick={() => (roll ? setRollInfoOpen(true) : undefined)} aria-label={camera.name} data-testid="camera-chip">
+      <div class={`cam-top ${busy ? 'locked' : ''}`} inert={busy || undefined}>
+        <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
           <span class="chip-txt">{camera.name}</span>
         </button>
         {camera.flash === 'standard' && (
@@ -514,9 +543,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         )}
         {camera.flash === 'charge' && (
           <button
-            class={`chip flash-charge charge-${charge}`}
+            class={`chip flash-charge charge-${charge} ${flashOn ? '' : 'off'}`}
             onClick={() => (charge === 'empty' ? chargeFlash() : charge === 'ready' ? (setFlashOn(!flashOn), undefined) : undefined)}
             aria-label={flashLabel}
+            aria-pressed={charge === 'ready' && flashOn}
             data-testid="btn-flash"
             data-charge={charge}
           >
@@ -524,22 +554,22 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             <i class="charge-led" />
           </button>
         )}
-        <button class={`chip ${timer ? 'on' : ''}`} onClick={() => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])} aria-label={t('cam.timer')} data-testid="btn-timer">
+        <button class={`chip ${timer ? 'on' : ''}`} onClick={() => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])} aria-label={`${t('cam.timer')} ${timer ? t('cam.sec', { n: timer }) : t('common.off')}`} data-testid="btn-timer">
           <Icon name="timer" size={20} />
-          {timer > 0 && <span class="chip-txt">{timer}s</span>}
+          {timer > 0 && <span class="chip-txt">{t('cam.sec', { n: timer })}</span>}
         </button>
         {camera.formats.length > 1 && (
-          <button class="chip" onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])} aria-label={t('cam.aspect')} data-testid="btn-aspect">
+          <button class="chip" onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
             <span class="chip-txt mono">{aspect}</span>
           </button>
         )}
         {camera.zoom.length > 1 && (
-          <button class={`chip ${zoom > 1 ? 'on' : ''}`} onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])} aria-label={t('cam.zoom')} data-testid="btn-zoom">
+          <button class={`chip ${zoom > 1 ? 'on' : ''}`} onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
             <span class="chip-txt mono">{zoom}×</span>
           </button>
         )}
         {camera.ev && (
-          <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={t('cam.ev')} data-testid="btn-ev">
+          <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${ev > 0 ? '+' : ''}${ev.toFixed(1)}`} data-testid="btn-ev">
             <span class="chip-txt mono">
               {ev > 0 ? '+' : ev < 0 ? '−' : '±'}
               {Math.abs(ev).toFixed(1)}
@@ -547,8 +577,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           </button>
         )}
         {getStock(stock.id).kind === 'pixel' && (
-          <button class="chip" onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])} aria-label={t('cam.palette')} data-testid="btn-palette">
-            <span class="chip-txt mono">{palette}</span>
+          <button class="chip" onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])} aria-label={`${t('cam.palette')} ${t(`palette.${palette}` as MsgKey)}`} data-testid="btn-palette" data-palette={palette}>
+            <span class="chip-txt">{t(`palette.${palette}` as MsgKey)}</span>
           </button>
         )}
         {camera.stamp !== 'none' && (
@@ -581,7 +611,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           />
           {s.grid && <div class="grid-overlay" aria-hidden="true" />}
           {state === 'starting' && <div class="vf-msg">{t('cam.starting')}</div>}
-          {countdown > 0 && <div class="countdown" aria-live="assertive">{countdown}</div>}
+          {countdown > 0 && (
+            <div class="countdown" aria-hidden="true">
+              {countdown}
+            </div>
+          )}
           {blink && <div class="blink" />}
           {ejecting && <div class="eject" aria-hidden="true" />}
           {roll && camera.viewfinder !== 'lcd' && camera.viewfinder !== 'pixel' && (
@@ -600,7 +634,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {state === 'error' && (
           <div class="cam-error" data-testid="camera-error">
             <h2>{t('cam.noCamera.title')}</h2>
-            <p>{t('cam.noCamera.body')}</p>
+            <p>{error === 'insecure' ? t('cam.err.insecure') : error === 'unsupported' ? t('cam.err.unsupported') : t('cam.noCamera.body')}</p>
             <div class="btn-row">
               <button class="btn ghost" onClick={() => startCamera()}>
                 {t('common.retry')}
@@ -621,7 +655,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               <Thumb photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
             </div>
           ) : (
-            <button class="roll-btn" onClick={() => setRollInfoOpen(true)} aria-label={`${stock.name} · ${t('cam.left', { n: left })}`} data-testid="roll-btn">
+            <button class="roll-btn" onClick={() => setRollInfoOpen(true)} disabled={busy} aria-label={`${stock.name} · ${t('cam.left', { n: left })}`} data-testid="roll-btn">
               <Canister stock={stock} size={30} />
               <span class="mono">{t('cam.left', { n: left })}</span>
             </button>
@@ -653,12 +687,16 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           onStock={setPickStock}
           onSize={setRollSize}
           onLoad={onLoad}
+          loading={loadingRoll}
         />
       )}
 
       {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
       {roll?.pending?.kind === 'half' && <p class="cam-hint">{t('cam.halfNext')}</p>}
       {screenFlash && <div class="screen-flash" />}
+      <div class="sr-only" aria-live="polite" data-testid="announcer">
+        {announce}
+      </div>
 
       <Sheet open={rollInfoOpen} onClose={() => setRollInfoOpen(false)} title={`${camera.name} · ${stock.name}`} testId="roll-sheet">
         <p class="muted">{cameraDescription(camera.id)}</p>
@@ -686,7 +724,10 @@ export function SpeedSheet({ open, onClose, onPick, full }: { open: boolean; onC
       <div class="speed-list">
         {SPEEDS.map((sp) => (
           <button key={sp} class={`speed ${sp === def ? 'def' : ''}`} onClick={() => onPick(sp)} data-testid={`speed-${sp}`}>
-            <strong>{t(`speed.${sp}` as const)}</strong>
+            <strong>
+              {t(`speed.${sp}` as const)}
+              {sp === def && <small class="speed-def"> · {t('speed.default')}</small>}
+            </strong>
             <span>{t(`speed.${sp}.d` as const)}</span>
           </button>
         ))}

@@ -159,8 +159,9 @@ interface Job {
 }
 const urgent: Job[] = [];
 const background: Job[] = [];
-/** Ids promoted before their job reached the queue (still awaiting its negative). */
-const promoted = new Set<string>();
+/** Ids promoted before their job reached the queue (still awaiting its negative), with when. */
+const promoted = new Map<string, number>();
+const PROMOTION_TTL_MS = 15_000;
 let pumping = false;
 
 async function pump(): Promise<void> {
@@ -188,7 +189,9 @@ export function develop(original: Blob, dev: DevelopSettings, meta: DevelopMeta,
       id: opts.id,
       run: () => developNow(original, dev, meta, opts.maxLong ?? EXPORT_MAX_LONG).then(resolve, reject),
     };
-    const isUrgent = opts.urgent || (!!opts.id && promoted.delete(opts.id));
+    const at = opts.id ? promoted.get(opts.id) : undefined;
+    if (opts.id) promoted.delete(opts.id);
+    const isUrgent = opts.urgent || (at !== undefined && Date.now() - at < PROMOTION_TTL_MS);
     (isUrgent ? urgent : background).push(job);
     void pump();
   });
@@ -198,5 +201,5 @@ export function develop(original: Blob, dev: DevelopSettings, meta: DevelopMeta,
 export function promote(id: string): void {
   const i = background.findIndex((j) => j.id === id);
   if (i >= 0) urgent.push(...background.splice(i, 1));
-  else if (!urgent.some((j) => j.id === id)) promoted.add(id);
+  else if (!urgent.some((j) => j.id === id)) promoted.set(id, Date.now());
 }

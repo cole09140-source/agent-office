@@ -107,21 +107,23 @@ test('half-frame: a pending half survives a reload and pairs up', async ({ page 
   await start(page);
   await loadCamera(page, 'half72');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('1½');
-  await expect(page.getByText('Next shot fills the B half')).toBeVisible();
+  await expect(page.getByTestId('counter')).toContainText('01/72');
+  await expect(page.locator('.cam-hint')).toHaveText('Next shot fills the right half');
   await page.reload();
-  await expect(page.getByTestId('counter')).toContainText('1½');
+  await expect(page.getByTestId('counter')).toContainText('01/72');
+  await expect(page.locator('.vf-half-tag')).toHaveText('B');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('2/72');
+  await expect(page.getByTestId('counter')).toContainText('02/72');
   // Starting a rewind and cancelling the lab sheet must not commit the pending half.
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('3½');
+  await expect(page.getByTestId('counter')).toContainText('03/72');
   await page.getByTestId('roll-btn').click();
   await page.getByTestId('btn-rewind').click();
   await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('speed-sheet')).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByTestId('counter')).toContainText('3½');
+  await expect(page.getByTestId('counter')).toContainText('03/72');
+  await expect(page.locator('.vf-half-tag')).toHaveText('B');
   // A lone first half is kept (with a blank B side) when the roll really goes to the lab.
   await rewindAndDevelop(page);
   await expect(page.getByTestId('thumb')).toHaveCount(2);
@@ -147,7 +149,7 @@ test('pack finishes on its own: CCD card full → album, no lab', async ({ page 
   await start(page);
   await loadCamera(page, 'pixel');
   await page.getByTestId('btn-palette').click();
-  await expect(page.getByTestId('btn-palette')).toContainText('mono');
+  await expect(page.getByTestId('btn-palette')).toHaveAttribute('data-palette', 'mono');
   await shoot(page, 1);
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('roll-btn').click();
@@ -176,7 +178,7 @@ test('exposure dial and pixel darkroom palette', async ({ page }) => {
   const before = await page.getByTestId('print').getAttribute('src');
   await page.getByTestId('btn-darkroom').click();
   await expect(page.locator('.dr-controls .stock-strip')).toHaveCount(0); // pixel sensor is fixed
-  await page.getByRole('radio', { name: 'sepia' }).click();
+  await page.getByRole('radio', { name: 'Sepia' }).click();
   await page.getByTestId('btn-dr-save').click();
   await expect.poll(async () => page.getByTestId('print').getAttribute('src'), { timeout: 30_000 }).not.toBe(before);
 });

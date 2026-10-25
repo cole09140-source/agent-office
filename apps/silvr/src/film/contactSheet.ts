@@ -1,4 +1,4 @@
-import { canvasToBlob, makeCanvas } from './develop';
+import { canvasToBlob, makeCanvas, MAX_CANVAS_PIXELS } from './develop';
 
 export interface ContactFrame {
   image: CanvasImageSource;
@@ -12,10 +12,25 @@ export interface ContactMeta {
   subtitle: string;
 }
 
+/** Sheet height for a given width (same maths as the layout below). */
+export function sheetHeight(count: number, portrait: boolean, sheetW: number): number {
+  const cols = portrait ? 6 : 4;
+  const pad = Math.round(sheetW * 0.035);
+  const gap = Math.round(sheetW * 0.006);
+  const cellW = (sheetW - pad * 2 - gap * (cols - 1)) / cols;
+  const cellH = portrait ? cellW * 1.5 : cellW / 1.5;
+  const stripH = cellH + Math.round(cellH * 0.16) * 2;
+  const rows = Math.max(1, Math.ceil(count / cols));
+  return Math.round(pad * 2 + Math.round(sheetW * 0.07) + rows * stripH + (rows - 1) * gap * 3);
+}
+
 /** Lays the whole roll out as 35mm strips on a light-box sheet — one shareable image per roll. */
-export async function contactSheet(frames: ContactFrame[], meta: ContactMeta, sheetW = 2400): Promise<Blob> {
+export async function contactSheet(frames: ContactFrame[], meta: ContactMeta, preferredW = 2400): Promise<Blob> {
   const portraitCount = frames.filter((f) => f.height > f.width).length;
   const portrait = portraitCount > frames.length / 2;
+  // Long rolls (99-shot card, 72 halves) would exceed iOS's 16.7 MP canvas cap: narrow the sheet.
+  const area = preferredW * sheetHeight(frames.length, portrait, preferredW);
+  const sheetW = area > MAX_CANVAS_PIXELS ? Math.floor(preferredW * Math.sqrt(MAX_CANVAS_PIXELS / area) * 0.98) : preferredW;
   const cols = portrait ? 6 : 4;
   const pad = Math.round(sheetW * 0.035);
   const gap = Math.round(sheetW * 0.006);

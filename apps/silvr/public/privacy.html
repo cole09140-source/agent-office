@@ -6,12 +6,13 @@
 <h2>1. 수집하는 개인정보</h2>
 <p>SILVR(이하 "앱")는 <strong>어떠한 개인정보도 수집·전송·저장하지 않습니다.</strong> 회원가입, 로그인, 광고 SDK, 분석(애널리틱스) 도구, 서버가 없습니다.</p>
 <h2>2. 기기 내 저장 데이터</h2>
-<p>촬영한 사진(원본 네거티브, 현상본, 썸네일), 롤 정보, 필름 촬영 노트, 설정은 사용자의 기기 내 저장소(IndexedDB)에만 저장되며 개발자를 포함한 누구에게도 전송되지 않습니다. 앱 삭제 또는 [설정 → 모든 데이터 삭제] 시 영구적으로 삭제됩니다.</p>
+<p>촬영한 사진(원본 네거티브, 현상본, 썸네일), 롤 정보, 필름 촬영 노트, 설정은 사용자의 기기 내 저장소(IndexedDB)에만 저장되며 개발자를 포함한 누구에게도 전송되지 않습니다. 앱 삭제 또는 [설정 → 모든 데이터 삭제] 시 영구적으로 삭제됩니다. 사용자가 직접 만든 백업 파일은 사용자가 선택한 위치에만 저장됩니다.</p>
 <h2>3. 권한 사용</h2>
 <ul>
 <li><strong>카메라</strong>: 사진 촬영 미리보기 및 촬영. 영상은 기기 밖으로 전송되지 않습니다.</li>
 <li><strong>사진/파일 접근</strong>: 사용자가 직접 선택한 사진을 불러와 현상할 때만 사용합니다.</li>
-<li><strong>위치(선택)</strong>: 필름 촬영 노트에서 "위치 함께 저장"을 켠 경우에만 해당 컷에 좌표를 기록합니다.</li>
+<li><strong>위치(선택)</strong>: 필름 촬영 노트에서 "위치 함께 저장"을 켠 경우에만 해당 컷에 좌표를 기록합니다. 노트를 CSV로 내보내면 좌표도 함께 포함됩니다.</li>
+<li><strong>동작·방향 센서(선택)</strong>: 폰을 옆으로 들고 찍은 사진의 회전을 보정하는 데만 쓰며, 저장하거나 전송하지 않습니다.</li>
 </ul>
 <h2>4. 제3자 제공 및 국외 이전</h2><p>없습니다.</p>
 <h2>5. 공유</h2><p>사용자가 공유 버튼을 누르면 운영체제의 공유 기능을 통해 사용자가 선택한 앱으로만 이미지가 전달됩니다.</p>
@@ -21,7 +22,7 @@
 <h1>Privacy Policy</h1><small>Effective 2026-10-24 · v1.0</small>
 <h2>Data we collect</h2><p>None. SILVR has no accounts, no servers, no ads and no analytics.</p>
 <h2>Data on your device</h2><p>Photos (negatives, prints, thumbnails), rolls, shooting logs and settings are stored only in your device's local storage (IndexedDB) and are never transmitted. Uninstalling the app or using Settings → Delete all data removes them permanently.</p>
-<h2>Permissions</h2><ul><li><strong>Camera</strong> — live preview and capture, processed on device.</li><li><strong>Photos / files</strong> — only the images you pick for import.</li><li><strong>Location (optional)</strong> — only when you enable "Save location" for a shooting-log frame.</li></ul>
+<h2>Permissions</h2><ul><li><strong>Camera</strong> — live preview and capture, processed on device.</li><li><strong>Photos / files</strong> — only the images you pick for import.</li><li><strong>Location (optional)</strong> — only when you enable "Save location" for a shooting-log frame; CSV exports include those coordinates.</li><li><strong>Motion / orientation (optional)</strong> — only to straighten photos taken with the phone held sideways; never stored or sent.</li></ul>
 <h2>Sharing</h2><p>Images leave the app only when you tap Share, via your operating system's share sheet.</p>
 <h2>Contact</h2><p><a href="mailto:privacy@silvr.app">privacy@silvr.app</a></p>
 </main></body></html>

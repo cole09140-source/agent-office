@@ -5,6 +5,7 @@ import { t } from '../i18n';
 import { confirmReq, settings, toasts } from '../state/app';
 import { ensurePrint, type Photo } from '../store/rolls';
 import type { FilmStock } from '../film/types';
+import { pushBackHandler } from '../platform/back';
 import { Icon } from './Icon';
 
 export function useObjectUrl(blob: Blob | null | undefined): string | undefined {
@@ -43,11 +44,11 @@ export function usePrint(photo: Photo | undefined, kind: 'thumb' | 'print'): { b
   return state;
 }
 
-export function Thumb({ photo, onClick, label }: { photo: Photo; onClick?: () => void; label?: string }) {
+export function Thumb({ photo, onClick, label, tabIndex }: { photo: Photo; onClick?: () => void; label?: string; tabIndex?: number }) {
   const { blob, error } = usePrint(photo, 'thumb');
   const url = useObjectUrl(blob);
   return (
-    <button class="thumb" onClick={onClick} aria-label={label ?? `#${photo.frame}`} data-testid="thumb">
+    <button class="thumb" onClick={onClick} aria-label={label ?? t('view.photoN', { n: photo.frame })} tabIndex={tabIndex} data-testid="thumb">
       {url ? <img src={url} alt="" loading="lazy" decoding="async" /> : <span class={`thumb-wait ${error ? 'err' : ''}`} />}
     </button>
   );
@@ -72,19 +73,42 @@ export function Header({ title, onBack, right, sub }: { title: string; onBack?: 
   );
 }
 
-export function Sheet({ open, onClose, title, children, testId }: { open: boolean; onClose: () => void; title?: string; children: ComponentChildren; testId?: string }) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+  testId,
+  describedBy,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ComponentChildren;
+  testId?: string;
+  describedBy?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const opener = document.activeElement as HTMLElement | null;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
     window.addEventListener('keydown', onKey);
+    const offBack = pushBackHandler(() => closeRef.current());
     ref.current?.querySelector<HTMLElement>('button, input, select')?.focus({ preventScroll: true });
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      offBack();
+      // Give focus back to whatever opened the sheet.
+      if (opener && document.contains(opener)) opener.focus({ preventScroll: true });
+    };
   }, [open]);
   if (!open) return null;
   return (
     <div class="sheet-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div class="sheet" role="dialog" aria-modal="true" aria-label={title} ref={ref} data-testid={testId}>
+      <div class="sheet" role="dialog" aria-modal="true" aria-label={title} aria-describedby={describedBy} ref={ref} data-testid={testId}>
         <div class="sheet-grip" />
         {title && <h2 class="sheet-title">{title}</h2>}
         {children}
@@ -213,8 +237,10 @@ export function ConfirmDialog() {
     req.resolve(v);
   };
   return (
-    <Sheet open onClose={() => done(false)} testId="confirm">
-      <p class="confirm-text">{req.text}</p>
+    <Sheet open onClose={() => done(false)} testId="confirm" title={req.ok} describedBy="confirm-text">
+      <p class="confirm-text" id="confirm-text">
+        {req.text}
+      </p>
       <div class="btn-row">
         <button class="btn ghost" onClick={() => done(false)}>
           {t('common.cancel')}

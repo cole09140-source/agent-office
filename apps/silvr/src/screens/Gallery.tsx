@@ -18,7 +18,7 @@ function RollCard({ roll }: { roll: Roll }) {
   const open = () => go({ name: 'roll', id: roll.id });
   return (
     <li class="roll-card" data-testid="roll-card">
-      {cover ? <Thumb photo={cover} onClick={open} label={stock.name} /> : <button class="thumb" onClick={open} aria-label={stock.name} />}
+      {cover ? <Thumb photo={cover} onClick={open} label={stock.name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={stock.name} tabIndex={-1} />}
       <button class="roll-meta" onClick={open}>
         <strong>
           {roll.kind === 'import' ? t('gal.imported') : `${getCamera(roll.cameraId).name} · ${stock.name}`}

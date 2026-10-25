@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { Segmented, StockCard } from '../components/ui';
 import { PAYMENTS_ENABLED } from '../entitlements';
 import { getStock } from '../film/stocks';
-import { cameraDescription, stockDescription, t } from '../i18n';
+import { cameraDescription, cameraEra, stockDescription, t } from '../i18n';
 import { CameraBody } from './Body';
 import { CAMERAS, filmsFor, getCamera, type CameraModel } from './models';
 
@@ -25,7 +25,7 @@ function CameraCard({ camera, selected, onClick }: { camera: CameraModel; select
     <button ref={ref} class={`camera-card ${selected ? 'on' : ''}`} onClick={onClick} aria-pressed={selected} data-testid={`camera-${camera.id}`}>
       <CameraBody camera={camera} width={72} />
       <span class="camera-name">{camera.name}</span>
-      <span class="camera-era">{camera.era}</span>
+      <span class="camera-era">{cameraEra(camera.era)}</span>
       {PAYMENTS_ENABLED && camera.pro && <span class="badge">{t('common.pro')}</span>}
     </button>
   );
@@ -39,6 +39,7 @@ export function LoadPanel(props: {
   onStock: (id: string) => void;
   onSize: (n: number) => void;
   onLoad: () => void;
+  loading?: boolean;
 }) {
   const camera = getCamera(props.cameraId);
   const films = filmsFor(camera);
@@ -76,11 +77,11 @@ export function LoadPanel(props: {
       )}
       <div class="load-row">
         {camera.capacities.length > 1 ? (
-          <Segmented label={t('set.rollSize')} value={props.size} onChange={props.onSize} options={camera.capacities.map((n) => ({ value: n, label: capacityLabel(camera, n) }))} />
+          <Segmented label={t('cam.rollSize')} value={props.size} onChange={props.onSize} options={camera.capacities.map((n) => ({ value: n, label: capacityLabel(camera, n) }))} />
         ) : (
           <span class="fixed-cap mono">{capacityLabel(camera, camera.capacities[0])}</span>
         )}
-        <button class="btn primary" onClick={props.onLoad} data-testid="btn-load">
+        <button class="btn primary" onClick={props.onLoad} disabled={props.loading} data-testid="btn-load">
           {t('cam.load')}
         </button>
       </div>

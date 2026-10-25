@@ -89,10 +89,13 @@ function drawDigit(ctx: Ctx, ch: string, x: number, y: number, h: number): numbe
 /** Orange LED date imprint, bottom-right of the image area. */
 export function drawDateStamp(ctx: Ctx, text: string, imgX: number, imgY: number, imgW: number, imgH: number): void {
   const short = Math.min(imgW, imgH);
-  const h = Math.max(8, short * 0.034);
   const margin = short * 0.045;
-  let width = 0;
-  for (const ch of text) width += digitAdvance(ch, h);
+  let perH = 0;
+  for (const ch of text) perH += digitAdvance(ch, 1);
+  // Shrink to fit narrow frames; skip when it would be illegible.
+  const h = Math.min(Math.max(8, short * 0.034), (imgW - 2 * margin) / perH);
+  if (h < 4) return;
+  const width = perH * h;
   let x = imgX + imgW - margin - width;
   const y = imgY + imgH - margin - h;
   ctx.save();
@@ -151,6 +154,8 @@ export interface BorderLayout {
 
 export function borderLayout(style: BorderStyle, w: number, h: number): BorderLayout {
   const s = Math.min(w, h);
+  // Slivers (a 1–15 px side) can't carry a meaningful border; print them bare.
+  if (s < 16) return { width: w, height: h, img: { x: 0, y: 0, w, h } };
   if (style === 'instant') {
     const side = Math.round(s * 0.065);
     const bottom = Math.round(s * 0.26);
@@ -183,6 +188,7 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
 
 /** Draws a horizontal 35mm strip band (sprockets + edge print) in landscape coordinates. */
 function drawFilmBand(ctx: Ctx, x: number, y: number, len: number, band: number, top: boolean, label: string, frame: number) {
+  if (band < 1 || len < 1) return; // a zero pitch would never advance the sprocket loop
   const holeW = band * 0.36;
   const holeH = band * 0.42;
   const pitch = band * 0.78;
@@ -217,6 +223,10 @@ export interface BorderMeta {
  */
 export function drawWithBorder(ctx: Ctx, image: CanvasImageSource, style: BorderStyle, layout: BorderLayout, meta: BorderMeta): void {
   const { width, height, img } = layout;
+  if (width === img.w && height === img.h) {
+    ctx.drawImage(image, 0, 0, width, height);
+    return;
+  }
   if (style === 'instant') {
     ctx.fillStyle = '#f3f0e8';
     ctx.fillRect(0, 0, width, height);

@@ -29,8 +29,10 @@ self.addEventListener('fetch', (event) => {
 
   if (req.mode === 'navigate') {
     // Network first so new releases are picked up; fall back to the cached shell offline.
+    // Network first (new releases), but never hang an offline-ish launch: fall back after 3 s.
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
     event.respondWith(
-      fetch(req)
+      Promise.race([fetch(req), timeout])
         .then((res) => {
           // Only the app shell refreshes the shell entry; other pages cache under their own URL.
           if (res.ok) {

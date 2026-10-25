@@ -1,4 +1,5 @@
 import { signal } from '@preact/signals';
+import { isNative } from './share';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -24,6 +25,11 @@ export function initPwa(): void {
   window.addEventListener('appinstalled', () => (installPrompt.value = null));
 
   if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
+  if (isNative()) {
+    // The app bundle ships inside the native package; a SW would only serve stale files after store updates.
+    void navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => void r.unregister()));
+    return;
+  }
   window.addEventListener('load', async () => {
     // On first install clients.claim() also fires controllerchange; only reload for real updates.
     const hadController = !!navigator.serviceWorker.controller;

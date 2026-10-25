@@ -1,7 +1,7 @@
 import { computed, signal } from '@preact/signals';
 import { detectLang } from '../i18n';
 import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
-import { DEFAULT_SETTINGS, saveSettings, type Settings } from '../store/settings';
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from '../store/settings';
 import { signalLang } from './lang';
 
 export const settings = signal<Settings>({ ...DEFAULT_SETTINGS });
@@ -20,11 +20,30 @@ export function applyLang(s: Settings): void {
   if (typeof document !== 'undefined') document.documentElement.lang = signalLang.value;
 }
 
+const settingsChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('silvr-settings') : null;
+if (settingsChannel) {
+  settingsChannel.onmessage = async (e: MessageEvent) => {
+    if (e.data === 'reset') {
+      location.reload(); // another tab wiped everything
+      return;
+    }
+    const s = await loadSettings();
+    settings.value = s;
+    applyLang(s);
+  };
+}
+
+/** Tells other open tabs that everything was deleted. */
+export function broadcastReset(): void {
+  settingsChannel?.postMessage('reset');
+}
+
 export async function updateSettings(patch: Partial<Settings>): Promise<void> {
   const next = { ...settings.value, ...patch };
   settings.value = next;
   applyLang(next);
   await saveSettings(next);
+  settingsChannel?.postMessage('settings');
 }
 
 let refreshing: Promise<void> | null = null;

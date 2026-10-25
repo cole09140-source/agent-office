@@ -118,6 +118,44 @@ export async function tx(stores: StoreName[], fn: (t: IDBTransaction) => void): 
   );
 }
 
+/** Promise for one request — only use inside atomic(). */
+export function rq<T>(r: IDBRequest<T>): Promise<T> {
+  return req(r);
+}
+
+/**
+ * Runs `fn` inside ONE readwrite transaction so reads and the writes that
+ * depend on them can't interleave with another tab or a rapid second action.
+ * Only await rq() requests inside `fn` (anything else would let the
+ * transaction auto-commit). Throwing aborts every write.
+ */
+export async function atomic<T>(stores: StoreName[], fn: (t: IDBTransaction) => Promise<T>): Promise<T> {
+  return withDb(
+    (db) =>
+      new Promise<T>((resolve, reject) => {
+        const t = db.transaction(stores, 'readwrite');
+        let result: T;
+        let failure: unknown = null;
+        t.oncomplete = () => (failure ? reject(failure) : resolve(result));
+        t.onerror = () => reject(failure ?? t.error);
+        t.onabort = () => reject(failure ?? t.error ?? new Error('transaction aborted'));
+        fn(t).then(
+          (r) => {
+            result = r;
+          },
+          (err) => {
+            failure = err;
+            try {
+              t.abort();
+            } catch {
+              reject(err);
+            }
+          },
+        );
+      }),
+  );
+}
+
 export async function clearAll(): Promise<void> {
   const stores: StoreName[] = ['rolls', 'photos', 'blobs', 'logRolls', 'logFrames', 'kv'];
   await tx(stores, (t) => stores.forEach((s) => t.objectStore(s).clear()));

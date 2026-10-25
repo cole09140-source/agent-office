@@ -6,10 +6,10 @@ import { defaultDevelop } from '../film/resolve';
 import { filmsFor, getCamera, hasCamera, PALETTE_IDS } from '../cameras/models';
 import { getStock, STOCKS } from '../film/stocks';
 import type { BorderStyle, DevelopSettings } from '../film/types';
-import { stockDescription, t } from '../i18n';
+import { stockDescription, t, type MsgKey } from '../i18n';
 import { confirm, settings, toast } from '../state/app';
 import { back } from '../state/router';
-import { blobKey, getBlob, getPhoto, listPhotos, updateDevelop, type Photo } from '../store/rolls';
+import { blobKey, getBlob, getPhoto, listPhotos, updateDevelop, updateDevelopMany, type Photo } from '../store/rolls';
 
 const PREVIEW_LONG = 1400;
 const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
@@ -76,6 +76,8 @@ export function DarkroomScreen({ id }: { id: string }) {
         cameraId: photo.develop.cameraId,
         border: cam?.border ?? st.defaultBorder,
         palette: photo.develop.palette,
+        flash: photo.develop.flash, // whether the flash fired is a fact of the frame
+        ev: photo.develop.ev,
       }),
     );
   };
@@ -94,15 +96,17 @@ export function DarkroomScreen({ id }: { id: string }) {
 
   const applyRoll = async () => {
     if (!photo || !dev) return;
-    if (!(await confirm(t('dr.applyRoll'), t('dr.applyRoll')))) return;
+    if (!(await confirm(t('dr.applyRollConfirm'), t('dr.applyRoll')))) return;
     const all = await listPhotos(photo.rollId);
-    for (const p of all) {
-      const recipe: DevelopSettings =
+    // Look settings carry over; per-frame facts (flash fired, seed, leak, date, rotation) stay with each frame.
+    await updateDevelopMany(
+      all.map((p) => [
+        p.id,
         p.id === photo.id
           ? dev
-          : { ...p.develop, stockId: dev.stockId, push: dev.push, expired: dev.expired, grain: dev.grain, halation: dev.halation, border: dev.border, flash: dev.flash, ev: dev.ev, palette: dev.palette };
-      await updateDevelop(p.id, recipe);
-    }
+          : { ...p.develop, stockId: dev.stockId, push: dev.push, expired: dev.expired, grain: dev.grain, halation: dev.halation, border: dev.border, ev: dev.ev, palette: dev.palette },
+      ]),
+    );
     toast(t('dr.applyRollDone'));
     back({ name: 'photo', id: photo.id });
   };
@@ -141,9 +145,14 @@ export function DarkroomScreen({ id }: { id: string }) {
         title={t('dr.compare')}
       >
         <canvas ref={canvasRef} data-testid="dr-canvas" />
-        {compare && <span class="dr-badge mono">NEGATIVE</span>}
+        {compare && <span class="dr-badge mono">{t('dr.original')}</span>}
       </div>
-      <p class="dr-hint muted small">{t('dr.compare')}</p>
+      <p class="dr-hint muted small">
+        {t('dr.compare')} ·{' '}
+        <button class="link-btn" aria-pressed={compare} onClick={() => setCompare(!compare)} data-testid="btn-compare">
+          {t('dr.showOriginal')}
+        </button>
+      </p>
       <div class="dr-controls">
         {camera && (
           <p class="dr-camera muted small">
@@ -170,7 +179,7 @@ export function DarkroomScreen({ id }: { id: string }) {
         {isPixel && (
           <section>
             <h3>{t('dr.palette')}</h3>
-            <Segmented label={t('dr.palette')} value={dev.palette ?? PALETTE_IDS[0]} onChange={(v) => set({ palette: v })} options={PALETTE_IDS.map((p) => ({ value: p, label: p }))} />
+            <Segmented label={t('dr.palette')} value={dev.palette ?? PALETTE_IDS[0]} onChange={(v) => set({ palette: v })} options={PALETTE_IDS.map((p) => ({ value: p, label: t(`palette.${p}` as MsgKey) }))} />
           </section>
         )}
         <Slider
@@ -196,7 +205,7 @@ export function DarkroomScreen({ id }: { id: string }) {
               format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} EV`}
               testId="sl-push"
             />
-            <Slider label={t('dr.expired')} value={dev.expired} min={0} max={1} step={0.05} onInput={(v) => set({ expired: v })} format={(v) => `${Math.round(v * 30)}y`} testId="sl-expired" />
+            <Slider label={t('dr.expired')} value={dev.expired} min={0} max={1} step={0.05} onInput={(v) => set({ expired: v })} format={(v) => t('dr.years', { n: Math.round(v * 30) })} testId="sl-expired" />
             <Slider label={t('dr.grain')} value={dev.grain} min={0} max={2} step={0.1} onInput={(v) => set({ grain: v })} format={(v) => `${Math.round(v * 100)}%`} testId="sl-grain" />
             <Slider label={t('dr.halation')} value={dev.halation} min={0} max={2} step={0.1} onInput={(v) => set({ halation: v })} format={(v) => `${Math.round(v * 100)}%`} />
           </>
@@ -208,7 +217,7 @@ export function DarkroomScreen({ id }: { id: string }) {
               {t('dr.leak.reroll')}
             </button>
           )}
-          {!isPixel && <Toggle label={t('dr.flash')} checked={dev.flash} onChange={(v) => set({ flash: v })} />}
+          {!isPixel && camera?.flash !== 'none' && <Toggle label={t('dr.flash')} checked={dev.flash} onChange={(v) => set({ flash: v })} />}
           {camera?.stamp !== 'none' && <Toggle label={t('dr.date')} checked={dev.dateStamp} onChange={(v) => set({ dateStamp: v })} testId="tg-date" />}
         </div>
         {!isPixel && (

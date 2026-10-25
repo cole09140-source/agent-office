@@ -58,7 +58,9 @@ export async function deleteLogFrame(id: string): Promise<void> {
 }
 
 const csvCell = (v: string | number | undefined) => {
-  const s = v === undefined ? '' : String(v);
+  let s = v === undefined ? '' : String(v);
+  // Spreadsheet formula injection: text starting with = + - @ (or tab/CR) is neutralised with a leading quote.
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
@@ -68,6 +70,6 @@ export function logToCsv(roll: LogRoll, frames: LogFrame[]): string {
   const rows = frames.map((f) =>
     [f.frame, new Date(f.takenAt).toISOString(), f.aperture, f.shutter, f.lens, f.note, f.lat, f.lon].map(csvCell).join(','),
   );
-  const meta = `# ${[roll.camera, roll.film, `ISO ${roll.iso}`, `${roll.exposures} exp`].map((s) => s.replace(/[\n,]/g, ' ')).join(' / ')}`;
+  const meta = `# ${[roll.camera, roll.film, `ISO ${roll.iso}`, `${roll.exposures} exp`].map((s) => s.replace(/[\n,]/g, ' ').replace(/^[=+\-@]/, "'$&")).join(' / ')}`;
   return [meta, head.join(','), ...rows].join('\n') + '\n';
 }

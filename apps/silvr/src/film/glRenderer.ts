@@ -178,6 +178,8 @@ export class GlFilmRenderer {
     const canvas = gl.canvas as Canvas;
     if (canvas.width !== outW) canvas.width = outW;
     if (canvas.height !== outH) canvas.height = outH;
+    // Browsers may silently give a smaller drawing buffer; callers fall back to the CPU path.
+    if (gl.drawingBufferWidth !== outW || gl.drawingBufferHeight !== outH) throw new Error('drawing buffer clamped');
     gl.viewport(0, 0, outW, outH);
 
     const shortOut = Math.min(outW, outH);

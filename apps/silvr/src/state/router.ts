@@ -11,8 +11,16 @@ export type Route =
   | { name: 'log'; id: string }
   | { name: 'settings' };
 
+const safeDecode = (s: string) => {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s; // malformed %-escapes in a hand-typed link must not crash the app
+  }
+};
+
 export function parseHash(hash: string): Route {
-  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(safeDecode);
   const [head, id] = parts;
   switch (head) {
     case 'lab':
@@ -36,13 +44,20 @@ export function routeToHash(r: Route): string {
 
 export const route = signal<Route>(typeof location !== 'undefined' ? parseHash(location.hash) : { name: 'camera' });
 
-const depth = (): number => (history.state as { silvr?: number } | null)?.silvr ?? 0;
+export const depth = (): number => (history.state as { silvr?: number } | null)?.silvr ?? 0;
+let pendingTab: Route | null = null;
 
 if (typeof window !== 'undefined') {
   if (typeof (history.state as { silvr?: number } | null)?.silvr !== 'number') {
     history.replaceState({ silvr: 0 }, '', location.hash || '#/camera');
   }
   const sync = () => {
+    if (pendingTab && depth() === 0) {
+      const r = pendingTab;
+      pendingTab = null;
+      go(r, true);
+      return;
+    }
     route.value = parseHash(location.hash);
   };
   window.addEventListener('popstate', sync);
@@ -55,6 +70,20 @@ export function go(r: Route, replace = false): void {
   if (replace) history.replaceState({ silvr: depth() }, '', h);
   else history.pushState({ silvr: depth() + 1 }, '', h);
   route.value = r;
+}
+
+/**
+ * Tab switch: unwind the in-app stack first so system back from a tab never
+ * walks through screens of another tab (or a dead duplicate entry).
+ */
+export function goTab(r: Route): void {
+  const d = depth();
+  if (d > 0) {
+    pendingTab = r;
+    history.go(-d);
+  } else {
+    go(r, true);
+  }
 }
 
 /** In-app back; falls back to `fallback` when the page was opened via a deep link. */

@@ -132,7 +132,31 @@ export function ditherIndex(luma: number, cellX: number, cellY: number): number 
 export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArray {
   const { width: W, height: H } = src;
   const out = new Uint8ClampedArray(W * H * 4);
-  const blur = blurField(src);
+  // Same reach as the shader's mip blur: ~2.5% blocks sampled with a 5-tap cross at ±1.5 blocks.
+  const blur = blurField(src, 40);
+  const tmpB = [0, 0, 0];
+  const blur5 = (u: number, v: number, out: number[]) => {
+    const du = 1.5 / blur.width;
+    const dv = 1.5 / blur.height;
+    sampleBilinear(blur, u, v, out);
+    out[0] *= 2;
+    out[1] *= 2;
+    out[2] *= 2;
+    for (const [a, b] of [
+      [du, 0],
+      [-du, 0],
+      [0, dv],
+      [0, -dv],
+    ]) {
+      sampleBilinear(blur, u + a, v + b, tmpB);
+      out[0] += tmpB[0];
+      out[1] += tmpB[1];
+      out[2] += tmpB[2];
+    }
+    out[0] /= 6;
+    out[1] /= 6;
+    out[2] /= 6;
+  };
   const softField = look.soft !== 0 ? blurField(src, 250) : null;
   const cells = pixelCells(W, H);
   const tmpS = [0, 0, 0];
@@ -154,7 +178,14 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
     const yi = Math.min(H - 1, Math.max(0, Math.round(y)));
     return src.data[(yi * W + xi) * 4 + c] / 255;
   };
-  const lutC = (v: number, ch: number) => lut[Math.round(clamp01(v) * 255) * 4 + ch] / 255;
+  // Linear interpolation between LUT entries, like the GPU's LINEAR texture filter.
+  const lutC = (v: number, ch: number) => {
+    const x = clamp01(v) * 255;
+    const i0 = Math.floor(x);
+    const i1 = Math.min(255, i0 + 1);
+    const f = x - i0;
+    return (lut[i0 * 4 + ch] * (1 - f) + lut[i1 * 4 + ch] * f) / 255;
+  };
 
   for (let py = 0; py < H; py++) {
     for (let px = 0; px < W; px++) {
@@ -178,7 +209,7 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
       let g = sampleUv(u, v, 1);
       let b = sampleUv(u - cau, v - cav, 2);
 
-      sampleBilinear(blur, u, v, tmp);
+      blur5(u, v, tmp);
       const br = tmp[0];
       const bg = tmp[1];
       const bb = tmp[2];

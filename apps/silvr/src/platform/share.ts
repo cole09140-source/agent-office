@@ -28,16 +28,23 @@ async function nativeShare(files: { blob: Blob; name: string }[]): Promise<Share
   // Loaded lazily so the web build never pays for the native plugins.
   const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
   const uris: string[] = [];
-  for (const f of files) {
-    const res = await Filesystem.writeFile({ path: f.name, data: await blobToBase64(f.blob), directory: Directory.Cache });
-    uris.push(res.uri);
-  }
   try {
+    for (const f of files) {
+      const res = await Filesystem.writeFile({ path: f.name, data: await blobToBase64(f.blob), directory: Directory.Cache });
+      uris.push(res.uri);
+    }
     await Share.share({ title: t('share.title'), files: uris });
     return 'shared';
-  } catch {
-    return 'cancelled';
+  } catch (err) {
+    if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
+    throw err;
+  } finally {
+    for (const f of files) void Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => undefined);
   }
+}
+
+function isIos(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
 export function download(blob: Blob, name: string): void {
@@ -59,7 +66,9 @@ export function download(blob: Blob, name: string): void {
 export async function shareImages(files: { blob: Blob; name: string }[], preferDownload = false): Promise<ShareResult> {
   if (isNative()) return nativeShare(files);
   const fileObjs = files.map((f) => new File([f.blob], f.name, { type: f.blob.type || 'image/jpeg' }));
-  if (!preferDownload && typeof navigator.canShare === 'function' && navigator.canShare({ files: fileObjs })) {
+  // On iOS a download lands in Files (or does nothing in an installed PWA); the share sheet's "Save Image" reaches Photos.
+  const viaShare = !preferDownload || isIos();
+  if (viaShare && typeof navigator.canShare === 'function' && navigator.canShare({ files: fileObjs })) {
     try {
       await navigator.share({ files: fileObjs, title: t('share.title') });
       return 'shared';

@@ -257,7 +257,7 @@ export function LogScreen({ id }: { id: string }) {
             </span>
             <button
               class="icon-btn"
-              aria-label={t('common.delete')}
+              aria-label={t('an.log.deleteFrame', { n: f.frame })}
               onClick={async () => {
                 await deleteLogFrame(f.id);
                 await reload();

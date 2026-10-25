@@ -42,6 +42,7 @@ export function LabScreen() {
                 {canUse('rushDevelop') && (
                   <button
                     class="btn ghost small"
+                    aria-label={t('lab.rushFor', { stock: stock.name })}
                     data-testid="btn-rush"
                     onClick={async () => {
                       if (await confirm(t('lab.rushConfirm'), t('lab.rush'))) await rushRoll(r.id);

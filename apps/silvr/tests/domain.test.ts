@@ -221,3 +221,15 @@ describe('transactions', () => {
     expect(await listPhotos(roll.id)).toHaveLength(0);
   });
 });
+
+describe('CSV export safety (QA R40)', () => {
+  it('neutralises spreadsheet formulas in user text', () => {
+    const csv = logToCsv(
+      { id: 'r', camera: '=cmd', film: '@SUM(A1)', iso: 400, exposures: 36, startedAt: 0, note: '' },
+      [{ id: 'f', rollId: 'r', frame: 1, aperture: 'f/8', shutter: '1/250', lens: '+x', note: '-2+3', takenAt: 0, lat: -33.9, lon: 151.2 }],
+    );
+    expect(csv).not.toMatch(/(^|,|# |\/ )[=+@-][^/0-9]/m);
+    expect(csv).toContain("'=cmd");
+    expect(csv).toContain(',-33.9,'); // numbers untouched
+  });
+});

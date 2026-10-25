@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { t, type MsgKey } from '../i18n';
 
 const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
@@ -9,6 +9,11 @@ const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  // Move focus to each new step so screen readers read it.
+  useEffect(() => {
+    if (i > 0) titleRef.current?.focus();
+  }, [i]);
   const last = i === SLIDES.length - 1;
   const s = SLIDES[i];
   return (
@@ -23,7 +28,12 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         <span />
         <span />
       </div>
-      <h1>{t(s.title)}</h1>
+      <h1 tabIndex={-1} ref={titleRef}>
+        <span class="sr-only">
+          {i + 1}/{SLIDES.length}.{' '}
+        </span>
+        {t(s.title)}
+      </h1>
       <p>{t(s.body)}</p>
       {last && <p class="onb-privacy small">{t('onb.privacy')}</p>}
       <div class="dots" aria-hidden="true">
@@ -34,7 +44,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div class="btn-row">
         {!last && (
           <button class="btn ghost" onClick={onDone} data-testid="onb-skip">
-            {t('common.close')}
+            {t('common.skip')}
           </button>
         )}
         <button class="btn primary" onClick={() => (last ? onDone() : setI(i + 1))} data-testid="onb-next">

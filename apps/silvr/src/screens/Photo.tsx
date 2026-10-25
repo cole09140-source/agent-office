@@ -72,8 +72,13 @@ export function PhotoScreen({ id }: { id: string }) {
 
   const share = async (download: boolean) => {
     if (!blob || !photo) return;
-    const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg') }], download);
-    if (res === 'downloaded' && !download) toast(t('view.saveImage'));
+    try {
+      const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg') }], download);
+      if (res === 'downloaded') toast(t('view.savedToast'));
+    } catch (err) {
+      console.error('[silvr] share failed', err);
+      toast(t('common.error'));
+    }
   };
 
   const remove = async () => {
@@ -112,7 +117,7 @@ export function PhotoScreen({ id }: { id: string }) {
         {url ? (
           <img
             src={url}
-            alt={stock?.name ?? ''}
+            alt={photo && stock ? `${stock.name} · ${t('view.photoN', { n: photo.frame })} · ${formatDate(photo.takenAt, signalLang.value)}` : ''}
             class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
             style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
             data-testid="print"
@@ -123,12 +128,12 @@ export function PhotoScreen({ id }: { id: string }) {
           </div>
         )}
         {idx > 0 && (
-          <button class="nav prev" onClick={() => goSibling(-1)} aria-label="previous">
+          <button class="nav prev" onClick={() => goSibling(-1)} aria-label={t('view.prev')}>
             <Icon name="back" />
           </button>
         )}
         {idx >= 0 && idx < siblings.length - 1 && (
-          <button class="nav next" onClick={() => goSibling(1)} aria-label="next" data-testid="btn-next">
+          <button class="nav next" onClick={() => goSibling(1)} aria-label={t('view.next')} data-testid="btn-next">
             <Icon name="chevron" />
           </button>
         )}
