@@ -1,0 +1,165 @@
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
+import { formatDate, Header, Sheet, useObjectUrl, usePrint } from '../components/ui';
+import { getStock } from '../film/stocks';
+import { t } from '../i18n';
+import { fileName, shareImages } from '../platform/share';
+import { confirm, rolls, toast } from '../state/app';
+import { signalLang } from '../state/lang';
+import { back, go } from '../state/router';
+import { deletePhoto, getPhoto, listPhotos, subscribe, type Photo } from '../store/rolls';
+
+export function PhotoScreen({ id }: { id: string }) {
+  const [photo, setPhoto] = useState<Photo | null | undefined>(undefined);
+  const [siblings, setSiblings] = useState<Photo[]>([]);
+  const [info, setInfo] = useState(false);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      const p = await getPhoto(id);
+      if (!alive) return;
+      setPhoto(p ?? null);
+      if (p) setSiblings(await listPhotos(p.rollId));
+    };
+    void load();
+    const off = subscribe(load);
+    return () => {
+      alive = false;
+      off();
+    };
+  }, [id]);
+
+  const { blob, error } = usePrint(photo ?? undefined, 'print');
+  const url = useObjectUrl(blob);
+  const roll = photo ? rolls.value.find((r) => r.id === photo.rollId) : undefined;
+  const idx = photo ? siblings.findIndex((p) => p.id === photo.id) : -1;
+  const goSibling = (d: number) => {
+    const next = siblings[idx + d];
+    if (next) go({ name: 'photo', id: next.id }, true);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') goSibling(1);
+      if (e.key === 'ArrowLeft') goSibling(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const undeveloped = !!roll && roll.status !== 'developed';
+  useEffect(() => {
+    if (undeveloped) go({ name: 'lab' }, true);
+  }, [undeveloped]);
+
+  if (photo === null) {
+    return (
+      <div class="page">
+        <Header title="" onBack={() => back({ name: 'gallery' })} />
+      </div>
+    );
+  }
+  if (roll && roll.status !== 'developed') return null;
+  const stock = photo ? getStock(photo.develop.stockId) : undefined;
+
+  const share = async (download: boolean) => {
+    if (!blob || !photo) return;
+    const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt) }], download);
+    if (res === 'downloaded' && !download) toast(t('view.saveImage'));
+  };
+
+  const remove = async () => {
+    if (!photo) return;
+    if (!(await confirm(t('view.deleteConfirm'), t('common.delete'), true))) return;
+    const next = siblings[idx + 1] ?? siblings[idx - 1];
+    await deletePhoto(photo.id);
+    if (next) go({ name: 'photo', id: next.id }, true);
+    else go({ name: 'gallery' }, true);
+  };
+
+  return (
+    <div class="viewer" data-testid="photo-screen">
+      <Header
+        title={stock?.name ?? ''}
+        sub={photo ? `${photo.frame} / ${siblings.length}` : undefined}
+        onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
+        right={
+          <button class="icon-btn" onClick={() => setInfo(true)} aria-label={t('view.info')}>
+            <Icon name="info" />
+          </button>
+        }
+      />
+      <div
+        class="viewer-stage"
+        onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+        onTouchEnd={(e) => {
+          const s = touch.current;
+          touch.current = null;
+          if (!s) return;
+          const dx = e.changedTouches[0].clientX - s.x;
+          const dy = e.changedTouches[0].clientY - s.y;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goSibling(dx < 0 ? 1 : -1);
+        }}
+      >
+        {url ? (
+          <img src={url} alt={stock?.name ?? ''} class="print" data-testid="print" />
+        ) : (
+          <div class="developing-tray mono" aria-live="polite">
+            {error ? t('common.error') : t('view.developing')}
+          </div>
+        )}
+        {idx > 0 && (
+          <button class="nav prev" onClick={() => goSibling(-1)} aria-label="previous">
+            <Icon name="back" />
+          </button>
+        )}
+        {idx >= 0 && idx < siblings.length - 1 && (
+          <button class="nav next" onClick={() => goSibling(1)} aria-label="next" data-testid="btn-next">
+            <Icon name="chevron" />
+          </button>
+        )}
+      </div>
+      <div class="viewer-actions">
+        <button onClick={() => share(false)} disabled={!blob} data-testid="btn-share">
+          <Icon name="share" />
+          <span>{t('view.share')}</span>
+        </button>
+        <button onClick={() => share(true)} disabled={!blob} data-testid="btn-save">
+          <Icon name="download" />
+          <span>{t('view.saveImage')}</span>
+        </button>
+        <button onClick={() => photo && go({ name: 'darkroom', id: photo.id })} disabled={!photo} data-testid="btn-darkroom">
+          <Icon name="sliders" />
+          <span>{t('view.darkroom')}</span>
+        </button>
+        <button onClick={remove} disabled={!photo} data-testid="btn-delete">
+          <Icon name="trash" />
+          <span>{t('common.delete')}</span>
+        </button>
+      </div>
+      <Sheet open={info} onClose={() => setInfo(false)} title={t('view.info')}>
+        {photo && stock && (
+          <dl class="info">
+            <dt>{t('view.film')}</dt>
+            <dd>
+              {stock.name} · ISO {stock.iso}
+            </dd>
+            <dt>{t('view.taken')}</dt>
+            <dd>{formatDate(photo.takenAt, signalLang.value, true)}</dd>
+            <dt>{t('view.frame')}</dt>
+            <dd>#{photo.frame}</dd>
+            <dt>{t('view.size')}</dt>
+            <dd class="mono">{photo.printW ? `${photo.printW}×${photo.printH}` : `${photo.width}×${photo.height}`}</dd>
+            <dt>{t('dr.push')}</dt>
+            <dd class="mono">
+              {photo.develop.push > 0 ? '+' : ''}
+              {photo.develop.push}
+            </dd>
+          </dl>
+        )}
+      </Sheet>
+    </div>
+  );
+}

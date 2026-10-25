@@ -1,0 +1,25 @@
+{
+  "name": "SILVR — Film Camera",
+  "short_name": "SILVR",
+  "description": "네거티브가 남는 필름 카메라 · The film camera that keeps your negatives",
+  "id": "./",
+  "start_url": "./#/camera",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0d0c",
+  "theme_color": "#0e0d0c",
+  "lang": "ko",
+  "categories": ["photo", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Camera", "url": "./#/camera" },
+    { "name": "Album", "url": "./#/gallery" },
+    { "name": "Analog", "url": "./#/analog" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "appId": "app.silvr.camera",
+  "appName": "SILVR",
+  "webDir": "dist",
+  "backgroundColor": "#0e0d0c",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0e0d0c"
+  },
+  "android": {
+    "backgroundColor": "#0e0d0c"
+  }
+}
