@@ -81,6 +81,45 @@ export async function shareImages(files: { blob: Blob; name: string }[], preferD
   return 'downloaded';
 }
 
+/**
+ * Hands a (possibly large) non-image file to the user: native share sheet,
+ * the Web Share sheet on iOS (where downloads are unreliable), else a download.
+ */
+export async function saveFile(blob: Blob, name: string): Promise<ShareResult> {
+  if (isNative()) {
+    const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
+    // Written in chunks so a few-hundred-MB backup never becomes one giant base64 string.
+    const CHUNK = 3 * 1024 * 1024;
+    try {
+      let uri = '';
+      for (let at = 0; at < blob.size || at === 0; at += CHUNK) {
+        const data = await blobToBase64(blob.slice(at, at + CHUNK));
+        if (at === 0) uri = (await Filesystem.writeFile({ path: name, data, directory: Directory.Cache })).uri;
+        else await Filesystem.appendFile({ path: name, data, directory: Directory.Cache });
+        if (blob.size === 0) break;
+      }
+      await Share.share({ title: name, files: [uri] });
+      return 'shared';
+    } catch (err) {
+      if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
+      throw err;
+    } finally {
+      void Filesystem.deleteFile({ path: name, directory: Directory.Cache }).catch(() => undefined);
+    }
+  }
+  const file = new File([blob], name, { type: blob.type || 'application/octet-stream' });
+  if (isIos() && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name });
+      return 'shared';
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return 'cancelled';
+    }
+  }
+  download(blob, name);
+  return 'downloaded';
+}
+
 export function fileName(prefix: string, ts: number, ext = 'jpg'): string {
   const d = new Date(ts);
   const p = (n: number) => String(n).padStart(2, '0');

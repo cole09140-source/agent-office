@@ -290,3 +290,36 @@ describe('engine hardening (QA R41)', () => {
     }
   });
 });
+
+describe('QA R13: every camera × every allowed film develops a sane image (CPU)', () => {
+  const grad = (w: number, h: number) => {
+    const data = new Uint8ClampedArray(w * h * 4);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        data[i] = 40 + (x / w) * 180;
+        data[i + 1] = 60 + (y / h) * 150;
+        data[i + 2] = 90 + ((x + y) / (w + h)) * 120;
+        data[i + 3] = 255;
+      }
+    return { data, width: w, height: h };
+  };
+  for (const c of CAMERAS)
+    for (const st of filmsFor(c))
+      it(`${c.id} × ${st.id}`, () => {
+        const out = renderCpu(grad(48, 36), resolveLook(defaultDevelop(st, 11, { cameraId: c.id })));
+        let sum = 0;
+        let min = 255;
+        let max = 0;
+        for (let i = 0; i < out.length; i += 4) {
+          const y = (out[i] + out[i + 1] + out[i + 2]) / 3;
+          sum += y;
+          min = Math.min(min, y);
+          max = Math.max(max, y);
+        }
+        const mean = sum / (out.length / 4);
+        expect(mean, 'not crushed/blown').toBeGreaterThan(25);
+        expect(mean).toBeLessThan(235);
+        expect(max - min, 'has tonal range').toBeGreaterThan(30);
+      });
+});

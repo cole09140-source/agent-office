@@ -28,13 +28,23 @@ export default defineConfig({
     permissions: ['camera'],
   },
   projects: [
-    { name: 'mobile', testIgnore: /portrait/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
+    { name: 'engine', testMatch: /engine\.spec/, use: { browserName: 'chromium', baseURL: 'http://localhost:5174/', launchOptions: { args: ['--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] } } },
+    { name: 'mobile', testIgnore: /portrait|engine\.spec/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
     { name: 'portrait-phone', testMatch: /portrait/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(portraitScene) } } },
   ],
-  webServer: {
-    command: 'npx vite preview --port 4173 --strictPort',
-    url: 'http://localhost:4173/',
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: [
+    {
+      command: 'npx vite preview --port 4173 --strictPort',
+      url: 'http://localhost:4173/',
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+    {
+      // Dev server for the engine harness (imports TS modules directly).
+      command: 'npx vite --port 5174 --strictPort',
+      url: 'http://localhost:5174/e2e/harness.html',
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+  ],
 });

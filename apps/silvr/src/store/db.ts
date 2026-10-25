@@ -53,12 +53,6 @@ export function openDb(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
-/** Test hook: forget the cached connection (used with fake-indexeddb resets). */
-export function resetDbConnection(): void {
-  dbPromise?.then((db) => db.close()).catch(() => undefined);
-  dbPromise = null;
-}
-
 /** Runs `fn` with a live connection, reopening once if the cached one has died. */
 async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
   try {

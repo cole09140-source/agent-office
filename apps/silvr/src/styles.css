@@ -1850,3 +1850,14 @@ input[type='range']::-moz-range-thumb {
   font-size: 12px;
   font-weight: 800;
 }
+
+.backup-hint {
+  margin: 0;
+  line-height: 1.45;
+}
+.backup-status {
+  margin: 8px 0 4px;
+}
+.backup-status:empty {
+  display: none;
+}

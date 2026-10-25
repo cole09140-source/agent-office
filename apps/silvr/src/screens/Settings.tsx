@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
 import { t } from '../i18n';
-import { broadcastReset, confirm, settings, updateSettings } from '../state/app';
+import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
+import { BackupError, createBackup, restoreBackup } from '../store/backup';
 import { clearAll } from '../store/db';
 import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
 import { installPrompt, promptInstall } from '../platform/pwa';
+import { fileName, saveFile } from '../platform/share';
 
 declare const __APP_VERSION__: string;
 
@@ -20,6 +22,49 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     navigator.storage?.estimate?.().then((e) => setUsage(e.usage ?? 0)).catch(() => undefined);
     navigator.storage?.persisted?.().then(setPersisted).catch(() => undefined);
   }, []);
+
+  const [backupStatus, setBackupStatus] = useState('');
+  const [backupBusy, setBackupBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const exportBackup = async () => {
+    setBackupBusy(true);
+    try {
+      const now = Date.now();
+      const { blob, summary } = await createBackup(now, (done, total) => setBackupStatus(t('set.backup.working', { done, total })));
+      if (!summary.photos && !summary.logRolls) {
+        setBackupStatus(t('set.backup.empty'));
+        return;
+      }
+      const res = await saveFile(blob, fileName('SILVR_backup', now, 'zip'));
+      setBackupStatus(res === 'cancelled' ? '' : t('set.backup.done', { rolls: summary.rolls, photos: summary.photos }));
+    } catch (err) {
+      console.error('[silvr] backup failed', err);
+      setBackupStatus(t('set.backup.failed'));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const importBackup = async (file: File | undefined) => {
+    if (!file) return;
+    setBackupBusy(true);
+    setBackupStatus(t('set.backup.restoring'));
+    try {
+      const r = await restoreBackup(file);
+      const lines = [t('set.backup.restored', { rolls: r.rolls, photos: r.photos })];
+      if (r.skipped) lines.push(t('set.backup.skipped', { n: r.skipped }));
+      if (r.damaged) lines.push(t('set.backup.damaged', { n: r.damaged }));
+      setBackupStatus(lines.join(' · '));
+      toast(lines[0]);
+    } catch (err) {
+      console.error('[silvr] restore failed', err);
+      setBackupStatus(err instanceof BackupError ? t('set.backup.invalid') : t('set.backup.failed'));
+    } finally {
+      setBackupBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   const reset = async () => {
     if (!(await confirm(t('set.resetConfirm'), t('set.reset'), true))) return;
@@ -107,6 +152,31 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
             <Icon name="chevron" size={18} />
           </button>
         )}
+      </section>
+      <section class="card" aria-labelledby="backup-h">
+        <div class="field">
+          <span id="backup-h">{t('set.backup')}</span>
+          <p class="muted small backup-hint">{t('set.backup.hint')}</p>
+        </div>
+        <button class="row link" onClick={exportBackup} disabled={backupBusy} data-testid="btn-backup">
+          <span>{t('set.backup.export')}</span>
+          <Icon name="chevron" size={18} />
+        </button>
+        <button class="row link" onClick={() => fileRef.current?.click()} disabled={backupBusy} data-testid="btn-restore">
+          <span>{t('set.backup.import')}</span>
+          <Icon name="chevron" size={18} />
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".zip,application/zip"
+          hidden
+          data-testid="restore-input"
+          onChange={(e) => void importBackup((e.currentTarget as HTMLInputElement).files?.[0])}
+        />
+        <p class="muted small backup-status" role="status" aria-live="polite" data-testid="backup-status">
+          {backupStatus}
+        </p>
       </section>
       <section class="card">
         <a class="row link" href="./privacy.html" target="_blank" rel="noopener">

@@ -65,7 +65,8 @@ npm run cap:android      # build → cap sync android → Android Studio 열기
 
 ### 지금 이 저장소에서 완료된 항목 ✅
 - [x] 기능 전체 구현(결제 제외). `docs/02_PRODUCT_SPEC.md` 참조
-- [x] QA 10라운드, 단위 테스트 52개, E2E 29개 통과. `docs/05_QA_REPORT.md`
+- [x] QA 1차 10라운드 + 카메라 QA 15라운드 + 심화 QA 50라운드 통과. `docs/05_QA_REPORT.md`
+- [x] 백업/복원(.zip): 기기 변경·브라우저 데이터 삭제 대비
 - [x] WCAG 2.1 AA 자동 감사(axe) 전 화면 통과
 - [x] PWA: 오프라인, 설치, 업데이트 배너, 아이콘, maskable, OG 이미지, CSP
 - [x] iOS / Android 네이티브 프로젝트, 권한 문구, 아이콘, 스플래시

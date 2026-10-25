@@ -107,10 +107,6 @@ export function viewable(roll: Roll, now = Date.now()): boolean {
   return effectiveStatus(roll, now) === 'developed' || inCamera(roll);
 }
 
-export function isNew(roll: Roll, now: number): boolean {
-  return effectiveStatus(roll, now) === 'developed' && !roll.seenAt;
-}
-
 // ---------- change notifications ----------
 
 type Listener = () => void;

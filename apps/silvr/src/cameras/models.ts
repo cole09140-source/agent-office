@@ -448,6 +448,3 @@ export function canLoad(camera: CameraModel, stockId: string): boolean {
 }
 
 /** Exposure counter unit: half-frame counts halves, others count frames. */
-export function framesPerNegative(camera: CameraModel): number {
-  return camera.capture === 'half' ? 2 : 1;
-}
