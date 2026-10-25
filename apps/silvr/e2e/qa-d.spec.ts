@@ -31,8 +31,8 @@ async function wipe(page: Page) {
       }),
   );
   await page.reload();
-  const skip = page.getByTestId('onb-skip');
-  if (await skip.isVisible({ timeout: 3000 }).catch(() => false)) await skip.click();
+  await expect(page.getByTestId('onboarding')).toBeVisible();
+  await page.getByTestId('onb-skip').click();
 }
 
 test('R31 six viewports: no sideways scroll, shutter and tab bar on screen', async ({ page }) => {
@@ -192,10 +192,11 @@ test('R37 no IndexedDB (locked-down private mode): app explains instead of crash
   const uncaught: string[] = [];
   page.on('pageerror', (e) => uncaught.push(e.message));
   await page.goto('./');
-  await expect(page.getByTestId('onboarding').or(page.getByTestId('camera-screen'))).toBeVisible();
+  await expect(page.getByTestId('onboarding').or(page.getByTestId('camera-screen')).first()).toBeVisible();
   if (await page.getByTestId('onb-skip').isVisible().catch(() => false)) await page.getByTestId('onb-skip').click();
+  await expect(page.getByTestId('storage-banner')).toBeVisible();
   await page.getByTestId('btn-load').click();
-  await expect(page.locator('.toast').first()).toBeVisible();
+  await expect(page.locator('.toast').first()).toContainText(/private|사생활/);
   await expect(page.getByTestId('btn-load')).toBeEnabled();
   expect(uncaught).toEqual([]);
 });
@@ -225,7 +226,9 @@ test('R39 update with a roll in the camera keeps the roll and counter', async ({
   await start(page);
   await loadCamera(page, 'half72');
   await page.getByTestId('shutter').click(); // first half: pending
-  await shoot(page, 1);
+  await expect(page.getByTestId('counter')).toContainText('01');
+  await page.getByTestId('shutter').click();
+  await expect(page.getByTestId('counter')).toContainText('02');
   await page.evaluate(async () => navigator.serviceWorker.ready);
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
   const counter = await page.getByTestId('counter').textContent();
@@ -319,9 +322,9 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   const bytes = readFileSync(file!);
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();
-  await page.waitForLoadState('load');
-  const skip = page.getByTestId('onb-skip');
-  if (await skip.isVisible({ timeout: 5000 }).catch(() => false)) await skip.click();
+  // Reset wipes settings too, so onboarding comes back.
+  await expect(page.getByTestId('onboarding')).toBeVisible();
+  await page.getByTestId('onb-skip').click();
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(0);
   await page.getByTestId('tab-settings').click();

@@ -3,7 +3,7 @@ import { App } from './app';
 import { initNativeBack } from './platform/back';
 import { initPwa } from './platform/pwa';
 import { depth, go, route } from './state/router';
-import { applyLang, ready, refreshRolls, settings } from './state/app';
+import { applyLang, ready, refreshRolls, settings, storageError } from './state/app';
 import { loadSettings } from './store/settings';
 import './styles.css';
 
@@ -17,6 +17,7 @@ async function boot() {
     await refreshRolls();
   } catch (err) {
     console.error('[silvr] storage unavailable', err);
+    storageError.value = true;
   }
   ready.value = true;
 }

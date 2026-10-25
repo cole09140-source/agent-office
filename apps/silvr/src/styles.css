@@ -1864,3 +1864,13 @@ input[type='range']::-moz-range-thumb {
 .backup-save {
   margin: 8px 0;
 }
+.storage-banner {
+  word-break: keep-all;
+  margin: calc(8px + var(--safe-t)) 16px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #5a1d14;
+  color: #ffe2d8;
+  font-size: 13px;
+  line-height: 1.4;
+}

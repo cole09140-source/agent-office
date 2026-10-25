@@ -9,6 +9,8 @@ export const rolls = signal<Roll[]>([]);
 export const activeRoll = signal<Roll | undefined>(undefined);
 export const now = signal(Date.now());
 export const ready = signal(false);
+/** IndexedDB is unusable (locked-down private mode, blocked site data): nothing can be saved. */
+export const storageError = signal(false);
 
 export const developingRolls = computed(() => rolls.value.filter((r) => r.status === 'developing'));
 /** Rolls shown in the album: developed, plus instant/digital cameras' rolls still in the camera. */
@@ -42,7 +44,14 @@ export async function updateSettings(patch: Partial<Settings>): Promise<void> {
   const next = { ...settings.value, ...patch };
   settings.value = next;
   applyLang(next);
-  await saveSettings(next);
+  try {
+    await saveSettings(next);
+  } catch (err) {
+    // Keep the change for this session; the banner already explains storage is unavailable.
+    console.warn('[silvr] settings not saved', err);
+    storageError.value = true;
+    return;
+  }
   settingsChannel?.postMessage('settings');
 }
 

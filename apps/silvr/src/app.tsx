@@ -17,7 +17,7 @@ import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
 import { SettingsScreen } from './screens/Settings';
-import { confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, toast, updateSettings } from './state/app';
+import { confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
 import { go, goTab, route, type Route } from './state/router';
 import { importRoll, type ImportItem } from './store/rolls';
 
@@ -220,7 +220,14 @@ export function App() {
 
   return (
     <div class={`app route-${r.name}`}>
-      <main class="screen">{screen}</main>
+      <main class="screen">
+        {storageError.value && (
+          <p class="storage-banner" role="alert" data-testid="storage-banner">
+            {t('err.noStorage')}
+          </p>
+        )}
+        {screen}
+      </main>
       <TabBar />
       <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
       <ConfirmDialog />

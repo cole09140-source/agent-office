@@ -18,7 +18,7 @@ import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
 import { cameraDescription, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
-import { activeRoll, confirm, confirmReq, refreshRolls, settings, toast, updateSettings } from '../state/app';
+import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
 import { go } from '../state/router';
 import { get, put } from '../store/db';
 import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
@@ -470,8 +470,15 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     } catch (err) {
       console.error(err);
       // Most likely a roll was loaded in another tab meanwhile; show it.
-      await refreshRolls();
-      if (!activeRoll.value) toast(t('common.error'));
+      try {
+        await refreshRolls();
+      } catch {
+        storageError.value = true;
+      }
+      if (!activeRoll.value) {
+        const quota = (err as Error)?.name === 'QuotaExceededError';
+        toast(quota ? t('err.storage') : storageError.value ? t('err.noStorage') : t('common.error'), undefined, 6000);
+      }
     } finally {
       if (mountedRef.current) setLoadingRoll(false);
     }

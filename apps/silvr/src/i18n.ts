@@ -248,6 +248,7 @@ const ko = {
 
   'share.title': 'SILVR로 찍은 필름',
   'err.storage': '저장 공간이 부족해요. 사진 몇 장을 지우고 다시 시도해 주세요.',
+  'err.noStorage': '이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요.',
   'err.import': '이 파일은 불러올 수 없어요.',
   'update.ready': '새 버전이 준비됐어요',
   'update.reload': '새로고침',
@@ -504,6 +505,7 @@ const en: Record<MsgKey, string> = {
 
   'share.title': 'Shot on SILVR',
   'err.storage': 'Storage is full. Delete a few photos and try again.',
+  'err.noStorage': "This browser won't let SILVR save photos. Turn off private browsing or allow site data, then reopen the app.",
   'err.import': 'This file could not be imported.',
   'update.ready': 'A new version is ready',
   'update.reload': 'Reload',
