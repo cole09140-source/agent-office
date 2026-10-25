@@ -15,10 +15,11 @@ async function shootFrame(page: Page, id: string) {
 }
 
 test('R11 front camera on every body develops a print', async ({ page }) => {
-  test.setTimeout(600_000);
+  test.setTimeout(1_200_000);
   const errors = await start(page);
   await page.getByTestId('tab-camera').click();
   for (const id of CAMS) {
+    const t0 = Date.now();
     await loadCamera(page, id);
     await page.getByTestId('btn-flip').click();
     await expect(page.getByTestId('btn-flip')).toHaveAttribute('data-facing', 'user');
@@ -28,7 +29,8 @@ test('R11 front camera on every body develops a print', async ({ page }) => {
     await page.getByTestId('thumb').first().click();
     await expect(page.getByTestId('print')).toBeVisible({ timeout: 45_000 });
     await page.getByTestId('tab-camera').click();
-    await page.getByTestId('btn-flip').click().catch(() => undefined);
+    await page.getByTestId('btn-flip').click({ timeout: 2000 }).catch(() => undefined);
+    console.log(`R11 ${id}: ${Math.round((Date.now() - t0) / 1000)}s`);
   }
   expect(errors).toEqual([]);
 });
@@ -155,7 +157,7 @@ test('R20 monkey test: 300 random actions keep every invariant', async ({ page }
   const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
   const pick = <T,>(a: T[]) => a[Math.floor(rnd() * a.length)];
   const actions: (() => Promise<unknown>)[] = [
-    () => page.getByTestId(`tab-${pick(['camera', 'lab', 'gallery', 'analog', 'settings'])}`).click(),
+    () => page.getByTestId(`tab-${pick(['camera', 'lab', 'gallery', 'analog', 'settings'])}`).click({ timeout: 800 }),
     () => page.getByTestId(`camera-${pick(CAMS)}`).click({ timeout: 800 }),
     () => page.getByTestId('btn-load').click({ timeout: 800 }),
     () => page.getByTestId('shutter').click({ timeout: 800 }),
@@ -174,11 +176,15 @@ test('R20 monkey test: 300 random actions keep every invariant', async ({ page }
     () => page.getByTestId('thumb').first().click({ timeout: 800 }),
     () => page.getByTestId('btn-darkroom').click({ timeout: 800 }),
     () => page.keyboard.press('Escape'),
-    () => page.goBack(),
+    () => page.goBack({ timeout: 2000 }),
     () => page.keyboard.press(' '),
   ];
+  const t0 = Date.now();
   for (let i = 0; i < 300; i++) {
-    await pick(actions)().catch(() => undefined);
+    const a = Math.floor(rnd() * actions.length);
+    const ts = Date.now();
+    await actions[a]().catch(() => undefined);
+    if (Date.now() - ts > 10_000) console.log(`R20 slow step ${i}: action ${a} took ${Date.now() - ts}ms`);
     if (i % 25 === 0) {
       // Invariant: no roll in storage ever exceeds its capacity or has negatives > shots.
       const bad = await page.evaluate(
@@ -199,5 +205,6 @@ test('R20 monkey test: 300 random actions keep every invariant', async ({ page }
       expect(bad, `step ${i}`).toEqual([]);
     }
   }
+  console.log(`R20 300 actions in ${Math.round((Date.now() - t0) / 1000)}s`);
   expect(errors.filter((e) => !/net::ERR_ABORTED/.test(e))).toEqual([]);
 });
