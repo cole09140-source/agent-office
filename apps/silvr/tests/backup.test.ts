@@ -2,10 +2,10 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultDevelop } from '../src/film/resolve';
 import { getStock } from '../src/film/stocks';
-import { BackupError, createBackup, restoreBackup } from '../src/store/backup';
+import { BackupError, createBackup, restoreBackup, sanitizeDevelop } from '../src/store/backup';
 import { clearAll } from '../src/store/db';
 import { listLogFrames, listLogRolls, saveLogFrame, saveLogRoll } from '../src/store/filmLog';
-import { addShot, blobKey, finishRoll, getActiveRoll, getBlob, getPending, listPhotos, listRolls, loadRoll, savePending } from '../src/store/rolls';
+import { addShot, blobKey, deletePhoto, finishRoll, getActiveRoll, getBlob, getPending, listPhotos, listRolls, loadRoll, savePending } from '../src/store/rolls';
 import { crc32, readZip, writeZip } from '../src/store/zip';
 
 const bytes = (...b: number[]) => new Blob([new Uint8Array(b)], { type: 'image/jpeg' });
@@ -76,7 +76,7 @@ describe('backup / restore', () => {
     const { r2 } = await library();
     const { blob } = await createBackup();
     // Restoring onto the same device changes nothing.
-    expect(await restoreBackup(blob)).toMatchObject({ rolls: 0, photos: 0, logRolls: 0, skipped: 2 });
+    expect(await restoreBackup(blob)).toMatchObject({ rolls: 0, photos: 0, logRolls: 0, damaged: 0 });
     // A device with its own roll in the camera keeps it; the backup's loaded roll comes out developed.
     await clearAll();
     const mine = await loadRoll('sunny200', 12, '3:2');
@@ -86,6 +86,38 @@ describe('backup / restore', () => {
     expect(restored.status).toBe('developed');
     expect(restored.pending).toBeUndefined();
     expect(await getPending(r2.id)).toBeUndefined();
+    // …and its waiting half became a frame of its own instead of being dropped.
+    const frames = await listPhotos(r2.id);
+    expect(frames.map((p) => p.frame)).toEqual([1, 2]);
+    expect(restored.negatives).toBe(2);
+  });
+
+  it('puts back photos deleted from a roll that still exists', async () => {
+    const { r1 } = await library();
+    const { blob } = await createBackup();
+    const [first] = await listPhotos(r1.id);
+    await deletePhoto(first.id);
+    expect(await listPhotos(r1.id)).toHaveLength(1);
+    const res = await restoreBackup(blob);
+    expect(res.photos).toBe(1);
+    expect(await listPhotos(r1.id)).toHaveLength(2);
+    expect((await listRolls()).find((r) => r.id === r1.id)?.negatives).toBe(2);
+  });
+
+  it('sanitises garbage develop settings and odd manifest shapes', async () => {
+    const d = sanitizeDevelop({ stockId: 'nope', push: 'x' as unknown as number, grain: 99, border: 'evil' as never, rotate: -1, palette: 'zzz', cameraId: 'nope' }, 'mono400');
+    expect(d.stockId).toBe('sunny200'); // unknown stock falls back like getStock()
+    expect(d.push).toBe(0);
+    expect(d.grain).toBe(2);
+    expect(d.rotate).toBe(3);
+    expect(d.palette).toBeUndefined();
+    expect(d.cameraId).toBeUndefined();
+    expect(['none', 'film35', 'instant', 'print']).toContain(d.border);
+    const manifest = { format: 'silvr-backup', version: 1, createdAt: 1, rolls: [null, { id: 'x' }, 5], photos: [], logRolls: 'nope', logFrames: [null], blobs: {} };
+    const zip = await writeZip([{ name: 'manifest.json', data: new Blob([JSON.stringify(manifest)]) }]);
+    expect(await restoreBackup(zip)).toMatchObject({ rolls: 0, photos: 0, logRolls: 0 });
+    const newer = await writeZip([{ name: 'manifest.json', data: new Blob([JSON.stringify({ ...manifest, version: 99 })]) }]);
+    await expect(restoreBackup(newer)).rejects.toMatchObject({ code: 'newer' });
   });
 
   it('skips damaged negatives and rejects foreign files', async () => {

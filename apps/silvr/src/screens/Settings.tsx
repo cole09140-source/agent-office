@@ -9,7 +9,7 @@ import { clearAll } from '../store/db';
 import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
 import { installPrompt, promptInstall } from '../platform/pwa';
-import { fileName, saveFile } from '../platform/share';
+import { fileName, isIos, isNative, saveFile } from '../platform/share';
 
 declare const __APP_VERSION__: string;
 
@@ -25,10 +25,12 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
 
   const [backupStatus, setBackupStatus] = useState('');
   const [backupBusy, setBackupBusy] = useState(false);
+  const [backupFile, setBackupFile] = useState<{ blob: Blob; name: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportBackup = async () => {
     setBackupBusy(true);
+    setBackupFile(null);
     try {
       const now = Date.now();
       const { blob, summary } = await createBackup(now, (done, total) => setBackupStatus(t('set.backup.working', { done, total })));
@@ -36,13 +38,33 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         setBackupStatus(t('set.backup.empty'));
         return;
       }
-      const res = await saveFile(blob, fileName('SILVR_backup', now, 'zip'));
-      setBackupStatus(res === 'cancelled' ? '' : t('set.backup.done', { rolls: summary.rolls, photos: summary.photos }));
+      // Building takes a while, so the tap no longer counts as a user gesture for the
+      // share sheet (iOS refuses it): saving happens from a fresh tap.
+      setBackupFile({ blob, name: fileName('SILVR_backup', now, 'zip') });
+      setBackupStatus(t('set.backup.done', { rolls: summary.rolls, photos: summary.photos }));
     } catch (err) {
       console.error('[silvr] backup failed', err);
-      setBackupStatus(t('set.backup.failed'));
+      setBackupStatus(err instanceof BackupError && err.code === 'too-large' ? t('set.backup.tooLarge') : t('set.backup.failed'));
     } finally {
       setBackupBusy(false);
+    }
+  };
+
+  const saveBackup = async () => {
+    if (!backupFile) return;
+    try {
+      const res = await saveFile(backupFile.blob, backupFile.name);
+      if (res === 'cancelled') return;
+      // On iOS web a plain download goes nowhere: only the share sheet counts as saved.
+      if (res === 'downloaded' && isIos() && !isNative()) {
+        setBackupStatus(t('set.backup.saveFailed'));
+        return;
+      }
+      setBackupStatus(t('set.backup.saved'));
+      setBackupFile(null);
+    } catch (err) {
+      console.error('[silvr] backup save failed', err);
+      setBackupStatus(t('set.backup.saveFailed'));
     }
   };
 
@@ -59,7 +81,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       toast(lines[0]);
     } catch (err) {
       console.error('[silvr] restore failed', err);
-      setBackupStatus(err instanceof BackupError ? t('set.backup.invalid') : t('set.backup.failed'));
+      const partial = (err as { partial?: { rolls: number } }).partial;
+      if (err instanceof BackupError) setBackupStatus(err.code === 'newer' ? t('set.backup.newer') : t('set.backup.invalid'));
+      else if (partial?.rolls) setBackupStatus(t('set.backup.partial', { rolls: partial.rolls }));
+      else setBackupStatus(t('set.backup.failed'));
     } finally {
       setBackupBusy(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -162,6 +187,11 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.backup.export')}</span>
           <Icon name="chevron" size={18} />
         </button>
+        {backupFile && (
+          <button class="btn primary wide backup-save" onClick={saveBackup} data-testid="btn-backup-save">
+            <Icon name="download" size={18} /> {t('set.backup.save')}
+          </button>
+        )}
         <button class="row link" onClick={() => fileRef.current?.click()} disabled={backupBusy} data-testid="btn-restore">
           <span>{t('set.backup.import')}</span>
           <Icon name="chevron" size={18} />
@@ -169,7 +199,6 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         <input
           ref={fileRef}
           type="file"
-          accept=".zip,application/zip"
           hidden
           data-testid="restore-input"
           onChange={(e) => void importBackup((e.currentTarget as HTMLInputElement).files?.[0])}

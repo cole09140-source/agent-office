@@ -4,9 +4,13 @@
  * to move phones or survive a browser clearing its storage. Prints and thumbs
  * are left out: they re-develop from the negatives on demand.
  */
-import { get, getAll, tx } from './db';
+import { PALETTE_IDS, hasCamera } from '../cameras/models';
+import { defaultDevelop } from '../film/resolve';
+import { getStock } from '../film/stocks';
+import type { Aspect, BorderStyle, DevelopSettings } from '../film/types';
+import { atomic, get, getAll, rq, tx } from './db';
 import { type LogFrame, type LogRoll } from './filmLog';
-import { blobKey, notify, type Photo, type Roll } from './rolls';
+import { blobKey, notify, uid, type Photo, type Roll } from './rolls';
 import { crc32, readZip, writeZip, type ZipInput } from './zip';
 
 export const BACKUP_FORMAT = 'silvr-backup';
@@ -42,7 +46,17 @@ export interface RestoreResult extends BackupSummary {
   damaged: number;
 }
 
-export class BackupError extends Error {}
+export class BackupError extends Error {
+  constructor(
+    message: string,
+    readonly code: 'invalid' | 'newer' | 'too-large' = 'invalid',
+  ) {
+    super(message);
+  }
+}
+
+/** Plain zip tops out at 4 GB; stop before reading gigabytes for nothing. */
+const MAX_BACKUP_BYTES = 0xffffffff - 64 * 1024 * 1024;
 
 const ext = (type: string) => (type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg');
 
@@ -67,6 +81,7 @@ export async function createBackup(now = Date.now(), onProgress?: (done: number,
     kept.push(rest);
   }
   for (const r of rolls) if (r.pending) await add(`pending:${r.id}`);
+  if (files.reduce((n, f) => n + f.data.size, 0) > MAX_BACKUP_BYTES) throw new BackupError('Library larger than 4 GB', 'too-large');
   const manifest: BackupManifest = { format: BACKUP_FORMAT, version: BACKUP_VERSION, createdAt: now, rolls, photos: kept, logRolls, logFrames, blobs };
   files.unshift({ name: 'manifest.json', data: new Blob([JSON.stringify(manifest)], { type: 'application/json' }) });
   const blob = await writeZip(files, new Date(now), onProgress);
@@ -75,13 +90,58 @@ export async function createBackup(now = Date.now(), onProgress?: (done: number,
 
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length < 200;
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const clamp = (v: unknown, lo: number, hi: number, fallback: number) => (isNum(v) ? Math.min(hi, Math.max(lo, v)) : fallback);
+const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7'];
+const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
 
 function validRoll(r: Roll): boolean {
-  return !!r && isStr(r.id) && isStr(r.stockId) && isNum(r.capacity) && isNum(r.shots) && isNum(r.createdAt) && ['loaded', 'developing', 'developed'].includes(r.status) && ['camera', 'import'].includes(r.kind);
+  return (
+    !!r &&
+    isStr(r.id) &&
+    isStr(r.stockId) &&
+    isNum(r.capacity) &&
+    isNum(r.shots) &&
+    r.shots >= 0 &&
+    r.capacity >= 1 &&
+    r.capacity <= 1000 &&
+    isNum(r.createdAt) &&
+    ['loaded', 'developing', 'developed'].includes(r.status) &&
+    ['camera', 'import'].includes(r.kind)
+  );
 }
 
 function validPhoto(p: Photo): boolean {
-  return !!p && isStr(p.id) && isStr(p.rollId) && isNum(p.frame) && isNum(p.width) && isNum(p.height) && isNum(p.takenAt) && !!p.develop && isStr(p.develop.stockId);
+  return !!p && isStr(p.id) && isStr(p.rollId) && isNum(p.frame) && p.width >= 1 && p.height >= 1 && isNum(p.takenAt) && !!p.develop && typeof p.develop === 'object';
+}
+
+/** Rebuilds develop settings from known fields only, so a damaged recipe can't break rendering. */
+export function sanitizeDevelop(d: Partial<DevelopSettings>, fallbackStock: string): DevelopSettings {
+  const stock = getStock(typeof d.stockId === 'string' ? d.stockId : fallbackStock);
+  const base = defaultDevelop(stock, isNum(d.seed) ? d.seed : 1);
+  const out: DevelopSettings = {
+    ...base,
+    push: clamp(d.push, -2, 2, 0),
+    expired: clamp(d.expired, 0, 1, 0),
+    grain: clamp(d.grain, 0, 2, 1),
+    halation: clamp(d.halation, 0, 2, 1),
+    leak: isNum(d.leak) ? d.leak : null,
+    flash: typeof d.flash === 'boolean' ? d.flash : base.flash,
+    dateStamp: typeof d.dateStamp === 'boolean' ? d.dateStamp : false,
+    border: BORDERS.includes(d.border as BorderStyle) ? (d.border as BorderStyle) : base.border,
+  };
+  if (isNum(d.rotate)) out.rotate = ((Math.round(d.rotate) % 4) + 4) % 4;
+  if (typeof d.cameraId === 'string' && hasCamera(d.cameraId)) out.cameraId = d.cameraId;
+  if (isNum(d.ev)) out.ev = clamp(d.ev, -2, 2, 0);
+  if (typeof d.palette === 'string' && PALETTE_IDS.includes(d.palette)) out.palette = d.palette;
+  return out;
+}
+
+function sanitizeRoll(r: Roll): Roll {
+  const roll: Roll = { ...r, aspect: ASPECTS.includes(r.aspect) ? r.aspect : '3:2', capacity: Math.round(r.capacity), shots: Math.min(Math.round(r.shots), Math.round(r.capacity)) };
+  if (roll.cameraId !== undefined && !(typeof roll.cameraId === 'string' && hasCamera(roll.cameraId))) delete roll.cameraId;
+  const pd = roll.pending;
+  if (pd && !(['half', 'double'].includes(pd.kind) && isNum(pd.takenAt) && pd.width >= 1 && pd.height >= 1)) delete roll.pending;
+  return roll;
 }
 
 /** Verifies an entry's checksum, then returns it as a lazy slice (a big roll is never held in memory at once). */
@@ -90,10 +150,13 @@ async function readEntry(data: Blob, crc: number, type: string): Promise<Blob | 
   return data.slice(0, data.size, type);
 }
 
+const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v.filter((x) => x && typeof x === 'object') as T[]) : []);
+
 /**
- * Merges a backup into this device. Rolls, photos and log entries that already
- * exist (same id) are kept as they are; the rest are added roll by roll so a
- * failure part-way leaves whole rolls, never half of one.
+ * Merges a backup into this device. Nothing already here is changed: rolls
+ * and log entries with the same id are kept, but photos missing from an
+ * existing (finished) roll — e.g. deleted by mistake — are put back. Each roll
+ * is written in one transaction, so a failure part-way leaves whole rolls.
  */
 export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (done: number, total: number) => void): Promise<RestoreResult> {
   let entries;
@@ -107,96 +170,136 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
   if (!me) throw new BackupError('manifest.json missing');
   let manifest: BackupManifest;
   try {
-    manifest = JSON.parse(await me.data.text()) as BackupManifest;
+    const raw = await readEntry(me.data, me.crc, 'application/json');
+    if (!raw) throw new Error('checksum');
+    manifest = JSON.parse(await raw.text()) as BackupManifest;
   } catch {
     throw new BackupError('manifest.json unreadable');
   }
-  if (manifest?.format !== BACKUP_FORMAT || !Array.isArray(manifest.rolls) || !Array.isArray(manifest.photos)) throw new BackupError('Not a SILVR backup');
-  if (manifest.version > BACKUP_VERSION) throw new BackupError('Backup made by a newer version');
+  if (!manifest || manifest.format !== BACKUP_FORMAT || !Array.isArray(manifest.rolls) || !Array.isArray(manifest.photos)) throw new BackupError('Not a SILVR backup');
+  if (!isNum(manifest.version) || manifest.version > BACKUP_VERSION) throw new BackupError('Backup made by a newer version', 'newer');
 
-  const blobRefs = new Map((manifest.blobs ?? []).map((b) => [b.key, b]));
+  const blobRefs = new Map(arr<BlobRef>(manifest.blobs).filter((b) => isStr(b.key) && isStr(b.file)).map((b) => [b.key, b]));
   const loadBlob = async (key: string): Promise<Blob | null> => {
     const ref = blobRefs.get(key);
     const entry = ref && byName.get(ref.file);
     if (!ref || !entry) return null;
-    return readEntry(entry.data, entry.crc, ref.type);
+    return readEntry(entry.data, entry.crc, typeof ref.type === 'string' ? ref.type : 'image/jpeg');
   };
 
-  const [localRolls, localPhotos, localLogRolls, localLogFrames] = await Promise.all([getAll<Roll>('rolls'), getAll<Photo>('photos'), getAll<LogRoll>('logRolls'), getAll<LogFrame>('logFrames')]);
-  const haveRoll = new Set(localRolls.map((r) => r.id));
-  const havePhoto = new Set(localPhotos.map((p) => p.id));
-  let cameraLoaded = localRolls.some((r) => r.kind === 'camera' && r.status === 'loaded');
-
   const result: RestoreResult = { rolls: 0, photos: 0, logRolls: 0, skipped: 0, damaged: 0 };
-  const rolls = manifest.rolls.filter(validRoll);
+  const rolls = arr<Roll>(manifest.rolls).filter(validRoll).map(sanitizeRoll);
   const photosByRoll = new Map<string, Photo[]>();
-  for (const p of manifest.photos.filter(validPhoto)) photosByRoll.set(p.rollId, [...(photosByRoll.get(p.rollId) ?? []), p]);
+  for (const p of arr<Photo>(manifest.photos).filter(validPhoto)) {
+    const list = photosByRoll.get(p.rollId);
+    if (list) list.push(p);
+    else photosByRoll.set(p.rollId, [p]);
+  }
+  const logRolls = arr<LogRoll>(manifest.logRolls).filter((r) => isStr(r.id));
+  const logFrames = arr<LogFrame>(manifest.logFrames).filter((f) => isStr(f.id) && isStr(f.rollId));
 
-  for (let i = 0; i < rolls.length; i++) {
-    const src = rolls[i];
-    onProgress?.(i, rolls.length);
-    if (haveRoll.has(src.id)) {
-      result.skipped++;
-      continue;
-    }
-    let roll: Roll = { ...src };
-    let pending: Blob | null = null;
-    if (roll.kind === 'camera' && roll.status === 'loaded') {
-      if (cameraLoaded) {
-        // Only one roll can sit in the camera: the restored one comes out developed.
-        const { pending: _p, ...rest } = roll;
-        roll = { ...rest, status: 'developed', finishedAt: now, readyAt: now };
-      } else {
-        cameraLoaded = true;
-        if (roll.pending) {
-          pending = await loadBlob(`pending:${roll.id}`);
-          if (!pending) {
-            const { pending: _p, ...rest } = roll;
-            roll = rest;
-          }
+  try {
+    const localPhotoIds = new Set((await getAll<Photo>('photos')).map((p) => p.id));
+    for (let i = 0; i < rolls.length; i++) {
+      onProgress?.(i, rolls.length);
+      const src = rolls[i];
+      const items: { photo: Photo; neg: Blob }[] = [];
+      for (const p of photosByRoll.get(src.id) ?? []) {
+        if (localPhotoIds.has(p.id)) {
+          result.skipped++;
+          continue;
         }
+        const neg = await loadBlob(blobKey.neg(p.id));
+        if (!neg) {
+          result.damaged++;
+          continue;
+        }
+        const { printKey: _k, printW: _w, printH: _h, ...rest } = p;
+        items.push({ photo: { ...rest, frame: Math.max(1, Math.round(p.frame)), develop: sanitizeDevelop(p.develop, src.stockId) }, neg });
       }
-    }
-    const items: { photo: Photo; neg: Blob }[] = [];
-    for (const p of photosByRoll.get(src.id) ?? []) {
-      if (havePhoto.has(p.id)) {
-        result.skipped++;
-        continue;
-      }
-      const neg = await loadBlob(blobKey.neg(p.id));
-      if (!neg) {
-        result.damaged++;
-        continue;
-      }
-      items.push({ photo: p, neg });
-    }
-    if (roll.coverPhotoId && !items.some((it) => it.photo.id === roll.coverPhotoId)) roll.coverPhotoId = items[0]?.photo.id;
-    roll.negatives = items.length;
-    await tx(['rolls', 'photos', 'blobs'], (t) => {
-      t.objectStore('rolls').put(roll);
-      for (const it of items) {
-        t.objectStore('photos').put(it.photo);
-        t.objectStore('blobs').put(it.neg, blobKey.neg(it.photo.id));
-      }
-      if (pending) t.objectStore('blobs').put(pending, `pending:${roll.id}`);
-    });
-    result.rolls++;
-    result.photos += items.length;
-  }
+      const pending = src.pending ? await loadBlob(`pending:${src.id}`) : null;
+      if (src.pending && !pending) result.damaged++;
 
-  const haveLogRoll = new Set(localLogRolls.map((r) => r.id));
-  const haveLogFrame = new Set(localLogFrames.map((f) => f.id));
-  const logRolls = (manifest.logRolls ?? []).filter((r) => r && isStr(r.id) && !haveLogRoll.has(r.id));
-  const logIds = new Set([...haveLogRoll, ...logRolls.map((r) => r.id)]);
-  const logFrames = (manifest.logFrames ?? []).filter((f) => f && isStr(f.id) && logIds.has(f.rollId) && !haveLogFrame.has(f.id));
-  if (logRolls.length || logFrames.length) {
-    await tx(['logRolls', 'logFrames'], (t) => {
-      logRolls.forEach((r) => t.objectStore('logRolls').put(r));
-      logFrames.forEach((f) => t.objectStore('logFrames').put(f));
-    });
+      // Decide and write inside one transaction: another tab (or the user, while a
+      // long restore runs) may load a roll or restore the same one meanwhile.
+      const outcome = await atomic(['rolls', 'photos', 'blobs'], async (t) => {
+        const rollStore = t.objectStore('rolls');
+        const existing = (await rq(rollStore.get(src.id))) as Roll | undefined;
+        const fresh: { photo: Photo; neg: Blob }[] = [];
+        for (const it of items) if (!(await rq(t.objectStore('photos').get(it.photo.id)))) fresh.push(it);
+        if (existing) {
+          // Put back photos deleted from a finished roll; never touch a roll still in the camera.
+          if (existing.status === 'loaded' || !fresh.length) return { kind: 'skip' as const, added: 0 };
+          for (const it of fresh) {
+            await rq(t.objectStore('photos').put(it.photo));
+            await rq(t.objectStore('blobs').put(it.neg, blobKey.neg(it.photo.id)));
+          }
+          const count = (await rq(t.objectStore('photos').index('rollId').count(src.id))) as number;
+          await rq(rollStore.put({ ...existing, negatives: count, coverPhotoId: existing.coverPhotoId ?? fresh[0].photo.id }));
+          return { kind: 'merged' as const, added: fresh.length };
+        }
+        let roll: Roll = { ...src };
+        let keepPending = !!(roll.pending && pending);
+        if (roll.kind === 'camera' && roll.status === 'loaded') {
+          const all = (await rq(rollStore.getAll())) as Roll[];
+          if (all.some((r) => r.kind === 'camera' && r.status === 'loaded')) {
+            // Only one roll fits in the camera: this one comes out finished. Its waiting
+            // exposure becomes a frame of its own (as rewinding would), never lost.
+            const { pending: pd, ...rest } = roll;
+            roll = { ...rest, status: 'developed', finishedAt: now, readyAt: now, seenAt: now };
+            if (pd && pending) {
+              const maxFrame = fresh.reduce((m, it) => Math.max(m, it.photo.frame), 0);
+              const cover = fresh[0]?.photo.develop ?? sanitizeDevelop({ stockId: roll.stockId, cameraId: roll.cameraId }, roll.stockId);
+              const id = uid();
+              fresh.push({ photo: { id, rollId: roll.id, frame: maxFrame + 1, takenAt: pd.takenAt, width: pd.width, height: pd.height, develop: { ...cover, seed: Math.floor(pd.takenAt % 1e9) } }, neg: pending });
+            }
+            keepPending = false;
+          }
+        } else if (roll.pending) {
+          delete roll.pending;
+          keepPending = false;
+        }
+        if (!keepPending && roll.pending) delete roll.pending;
+        // A finished roll with nothing left in it isn't kept (rewinding an empty roll deletes it too).
+        if (roll.status !== 'loaded' && !fresh.length) return { kind: 'empty' as const, added: 0 };
+        const maxFrame = fresh.reduce((m, it) => Math.max(m, it.photo.frame), 0);
+        // In-camera rolls number the next shot from `negatives`: never reuse a restored frame number.
+        roll.negatives = roll.status === 'loaded' ? Math.max(maxFrame, fresh.length) : fresh.length;
+        if (!roll.coverPhotoId || !fresh.some((it) => it.photo.id === roll.coverPhotoId)) roll.coverPhotoId = fresh[0]?.photo.id;
+        await rq(rollStore.put(roll));
+        for (const it of fresh) {
+          await rq(t.objectStore('photos').put(it.photo));
+          await rq(t.objectStore('blobs').put(it.neg, blobKey.neg(it.photo.id)));
+        }
+        if (keepPending && pending) await rq(t.objectStore('blobs').put(pending, `pending:${roll.id}`));
+        return { kind: 'added' as const, added: fresh.length };
+      });
+      if (outcome.kind === 'skip') result.skipped++;
+      else if (outcome.kind === 'added') {
+        result.rolls++;
+        result.photos += outcome.added;
+      } else if (outcome.kind === 'merged') result.photos += outcome.added;
+    }
+
+    const [localLogRolls, localLogFrames] = await Promise.all([getAll<LogRoll>('logRolls'), getAll<LogFrame>('logFrames')]);
+    const haveLogRoll = new Set(localLogRolls.map((r) => r.id));
+    const haveLogFrame = new Set(localLogFrames.map((f) => f.id));
+    const newLogRolls = logRolls.filter((r) => !haveLogRoll.has(r.id));
+    const logIds = new Set([...haveLogRoll, ...newLogRolls.map((r) => r.id)]);
+    const newLogFrames = logFrames.filter((f) => logIds.has(f.rollId) && !haveLogFrame.has(f.id));
+    if (newLogRolls.length || newLogFrames.length) {
+      await tx(['logRolls', 'logFrames'], (t) => {
+        newLogRolls.forEach((r) => t.objectStore('logRolls').put(r));
+        newLogFrames.forEach((f) => t.objectStore('logFrames').put(f));
+      });
+    }
+    result.logRolls = newLogRolls.length;
+    onProgress?.(rolls.length, rolls.length);
+  } catch (err) {
+    // Rolls written before the failure stay; say how far it got.
+    throw Object.assign(err instanceof Error ? err : new Error(String(err)), { partial: { ...result } });
+  } finally {
+    notify();
   }
-  result.logRolls = logRolls.length;
-  onProgress?.(rolls.length, rolls.length);
-  notify();
   return result;
 }

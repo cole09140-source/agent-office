@@ -43,7 +43,7 @@ async function nativeShare(files: { blob: Blob; name: string }[]): Promise<Share
   }
 }
 
-function isIos(): boolean {
+export function isIos(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
@@ -81,6 +81,8 @@ export async function shareImages(files: { blob: Blob; name: string }[], preferD
   return 'downloaded';
 }
 
+let lastSavedFile: string | null = null;
+
 /**
  * Hands a (possibly large) non-image file to the user: native share sheet,
  * the Web Share sheet on iOS (where downloads are unreliable), else a download.
@@ -88,26 +90,31 @@ export async function shareImages(files: { blob: Blob; name: string }[], preferD
 export async function saveFile(blob: Blob, name: string): Promise<ShareResult> {
   if (isNative()) {
     const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
+    // The share target (Drive, mail…) may still be reading the previous file when the
+    // chooser returns, so it is only cleaned up on the next save.
+    if (lastSavedFile && lastSavedFile !== name) void Filesystem.deleteFile({ path: lastSavedFile, directory: Directory.Cache }).catch(() => undefined);
+    lastSavedFile = name;
     // Written in chunks so a few-hundred-MB backup never becomes one giant base64 string.
-    const CHUNK = 3 * 1024 * 1024;
+    const CHUNK = 3 * 1024 * 1024; // multiple of 3: chunks encode without padding
     try {
       let uri = '';
-      for (let at = 0; at < blob.size || at === 0; at += CHUNK) {
+      for (let at = 0; at === 0 || at < blob.size; at += CHUNK) {
         const data = await blobToBase64(blob.slice(at, at + CHUNK));
         if (at === 0) uri = (await Filesystem.writeFile({ path: name, data, directory: Directory.Cache })).uri;
         else await Filesystem.appendFile({ path: name, data, directory: Directory.Cache });
-        if (blob.size === 0) break;
       }
       await Share.share({ title: name, files: [uri] });
       return 'shared';
     } catch (err) {
       if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
-      throw err;
-    } finally {
       void Filesystem.deleteFile({ path: name, directory: Directory.Cache }).catch(() => undefined);
+      lastSavedFile = null;
+      throw err;
     }
   }
   const file = new File([blob], name, { type: blob.type || 'application/octet-stream' });
+  // iOS: a download does nothing in an installed PWA; the share sheet ("Save to Files") works.
+  // Call this straight from a tap — after a long await the gesture has expired.
   if (isIos() && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: name });

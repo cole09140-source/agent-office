@@ -1861,3 +1861,6 @@ input[type='range']::-moz-range-thumb {
 .backup-status:empty {
   display: none;
 }
+.backup-save {
+  margin: 8px 0;
+}
