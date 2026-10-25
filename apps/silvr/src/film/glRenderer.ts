@@ -1,5 +1,5 @@
 import { seedHash } from './random';
-import { FRAG, MAX_LEAKS, VERT } from './shader';
+import { FRAG, MAX_LEAKS, pixelCells, VERT } from './shader';
 import type { ResolvedLook } from './types';
 
 export interface CropRect {
@@ -137,6 +137,13 @@ export class GlFilmRenderer {
     gl.uniform1f(this.u('uBloom'), look.bloom);
     gl.uniform1f(this.u('uVignette'), look.vignette);
     gl.uniform1f(this.u('uFlash'), look.flash);
+    gl.uniform1f(this.u('uDistort'), look.distort);
+    gl.uniform1f(this.u('uFisheye'), look.fisheye);
+    gl.uniform1f(this.u('uSoft'), look.soft);
+    gl.uniform1f(this.u('uStreak'), look.streak);
+    gl.uniform3fv(this.u('uStreakColor'), look.streakColor);
+    gl.uniform1i(this.u('uPixel'), look.pixel ? 1 : 0);
+    if (look.pixel) gl.uniform3fv(this.u('uPal'), look.pixel.flat());
     const n = Math.min(MAX_LEAKS, look.leaks.length);
     gl.uniform1i(this.u('uLeakCount'), n);
     if (n > 0) {
@@ -183,6 +190,10 @@ export class GlFilmRenderer {
     gl.uniform1i(this.u('uFlipY'), 0);
     gl.uniform2f(this.u('uOutSize'), outW, outH);
     gl.uniform1f(this.u('uBlurLod'), blurLod);
+    // Lens softness/sharpening radius ≈ 0.4% of the short side.
+    gl.uniform1f(this.u('uSoftLod'), Math.max(0, Math.log2(Math.max(1, srcShortInCrop * 0.004))));
+    const cells = pixelCells(outW, outH);
+    gl.uniform2f(this.u('uPixelCells'), cells[0], cells[1]);
     gl.uniform1f(this.u('uGrainPx'), Math.max(0.5, look.grainSize * (shortOut / 1200)));
     gl.uniform1f(this.u('uChromaPx'), look.chroma * (shortOut / 1200));
     gl.uniform1ui(this.u('uSeedHash'), seedHash(opts.seed ?? look.seed));

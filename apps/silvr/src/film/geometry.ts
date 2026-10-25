@@ -2,16 +2,32 @@ import type { CropRect } from './glRenderer';
 import type { Aspect } from './types';
 
 export function aspectRatio(aspect: Aspect): number {
-  return aspect === '3:2' ? 1.5 : aspect === '4:3' ? 4 / 3 : 1;
+  switch (aspect) {
+    case '3:2':
+      return 1.5;
+    case '4:3':
+      return 4 / 3;
+    case '65:24':
+      return 65 / 24;
+    case '2.39:1':
+      return 2.39;
+    case '8:7':
+      return 8 / 7;
+    default:
+      return 1;
+  }
 }
+
+export type Orientation = 'auto' | 'portrait' | 'landscape';
 
 /**
  * Centered crop (normalized to the source) that matches `aspect`, keeping the
- * source orientation (portrait source → portrait frame). `zoom` ≥ 1 crops in.
+ * source orientation (portrait source → portrait frame) unless `orient` forces
+ * one (half-frame halves are always portrait). `zoom` ≥ 1 crops in.
  */
-export function cropForAspect(srcW: number, srcH: number, aspect: Aspect, zoom = 1): CropRect {
+export function cropForAspect(srcW: number, srcH: number, aspect: Aspect, zoom = 1, orient: Orientation = 'auto'): CropRect {
   const r = aspectRatio(aspect);
-  const portrait = srcH > srcW;
+  const portrait = orient === 'auto' ? srcH > srcW : orient === 'portrait';
   const target = portrait ? 1 / r : r; // width / height
   const srcRatio = srcW / srcH;
   let w = 1;

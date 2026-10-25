@@ -6,7 +6,8 @@ import { t } from '../i18n';
 import { developedRolls, developingRolls } from '../state/app';
 import { signalLang } from '../state/lang';
 import { go } from '../state/router';
-import { getPhoto, type Photo, type Roll } from '../store/rolls';
+import { getCamera } from '../cameras/models';
+import { getPhoto, inCamera, type Photo, type Roll } from '../store/rolls';
 
 function RollCard({ roll }: { roll: Roll }) {
   const [cover, setCover] = useState<Photo>();
@@ -20,11 +21,11 @@ function RollCard({ roll }: { roll: Roll }) {
       {cover ? <Thumb photo={cover} onClick={open} label={stock.name} /> : <button class="thumb" onClick={open} aria-label={stock.name} />}
       <button class="roll-meta" onClick={open}>
         <strong>
-          {roll.kind === 'import' ? t('gal.imported') : stock.name}
-          {!roll.seenAt && <span class="badge new">{t('gal.new')}</span>}
+          {roll.kind === 'import' ? t('gal.imported') : `${getCamera(roll.cameraId).name} · ${stock.name}`}
+          {inCamera(roll) ? <span class="badge">{t('cam.inCamera')}</span> : !roll.seenAt && <span class="badge new">{t('gal.new')}</span>}
         </strong>
         <span class="muted small">
-          {formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · {t('gal.frames', { n: roll.shots })}
+          {formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · {t('gal.frames', { n: roll.negatives ?? roll.shots })}
           {roll.kind === 'import' && ` · ${stock.name}`}
         </span>
       </button>

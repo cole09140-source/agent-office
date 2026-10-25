@@ -302,10 +302,17 @@ a {
 }
 .cam-top {
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  justify-content: safe center;
+  gap: 6px;
   padding: calc(8px + var(--safe-t)) 12px 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cam-top::-webkit-scrollbar {
+  display: none;
+}
+.cam-top .chip {
+  flex: 0 0 auto;
 }
 .chip {
   min-width: 40px;
@@ -1432,4 +1439,376 @@ input[type='range']::-moz-range-thumb {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ---------- camera bodies ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.camera-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 16px 6px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.camera-strip::-webkit-scrollbar {
+  display: none;
+}
+.camera-card {
+  position: relative;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: var(--bg-2);
+  border: 1px solid transparent;
+}
+.camera-card.on {
+  border-color: var(--accent);
+  background: rgba(255, 138, 43, 0.08);
+}
+.camera-card .badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  margin: 0;
+}
+.camera-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.camera-era {
+  font-size: 10px;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+.camera-body {
+  display: block;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+.load-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 16px 2px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.load-sub .muted {
+  font-weight: 400;
+  font-size: 12px;
+}
+.fixed-cap {
+  flex: 1;
+  font-size: 13px;
+  color: var(--fg-2);
+  padding-left: 4px;
+}
+.ev-row {
+  padding: 0 20px;
+}
+.cam-name {
+  color: var(--fg);
+  font-weight: 700;
+}
+.flash-charge {
+  position: relative;
+}
+.charge-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3a3a3a;
+}
+.flash-charge.charge-charging .charge-led {
+  background: #ff3b30;
+  animation: led 0.35s steps(2) infinite;
+}
+.flash-charge.charge-ready {
+  color: var(--accent);
+  background: rgba(255, 138, 43, 0.16);
+}
+.flash-charge.charge-ready .charge-led {
+  background: #ff3b30;
+  box-shadow: 0 0 6px #ff3b30;
+}
+@keyframes led {
+  50% {
+    opacity: 0.2;
+  }
+}
+.cam-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.last-shot {
+  justify-self: start;
+  width: 56px;
+}
+.last-shot .thumb {
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+.last-shot.instant .thumb {
+  background: #f3f0e8;
+  padding: 4px 4px 12px;
+  border-radius: 2px;
+}
+.last-shot.instant img {
+  animation: instant-dev 45s ease-out both;
+}
+.cam-hint {
+  margin: -8px 0 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--fg-2);
+}
+.eject {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: -10%;
+  aspect-ratio: 0.82;
+  background: linear-gradient(#f3f0e8 0 80%, #ece8de 80%);
+  border-radius: 2px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: eject 1.3s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+.eject::before {
+  content: '';
+  position: absolute;
+  inset: 7% 7% 27%;
+  background: #6d7a6a;
+}
+@keyframes eject {
+  from {
+    transform: translateY(-110%);
+  }
+  60% {
+    transform: translateY(20%);
+  }
+  to {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+}
+.instant-dev {
+  animation: instant-dev 45s ease-out both;
+}
+@keyframes instant-dev {
+  from {
+    filter: brightness(1.7) saturate(0) contrast(0.25) sepia(0.4) hue-rotate(60deg);
+  }
+  35% {
+    filter: brightness(1.25) saturate(0.4) contrast(0.6) sepia(0.2);
+  }
+  to {
+    filter: none;
+  }
+}
+.dr-camera {
+  margin: 10px 0 0;
+}
+
+/* ---------- viewfinder overlays ---------- */
+
+.vf {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.vf-slr .vf-split {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(transparent 49.5%, rgba(255, 255, 255, 0.35) 49.5% 50.5%, transparent 50.5%);
+}
+.vf-slr .vf-prism {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+.vf-range .vf-lines,
+.vf-compact .vf-lines,
+.vf-pano .vf-lines,
+.vf-cine .vf-lines {
+  position: absolute;
+  inset: 8%;
+  --c: rgba(255, 255, 255, 0.75);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 18px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 2px 18px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 18px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 2px 18px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 18px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 2px 18px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 18px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 2px 18px no-repeat;
+}
+.vf-range .vf-patch {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16%;
+  height: 11%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 210, 120, 0.22);
+  border: 1px solid rgba(255, 220, 150, 0.4);
+}
+.vf-compact .vf-lines {
+  inset: 12%;
+  --c: rgba(255, 255, 255, 0.5);
+}
+.vf-tunnel {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.55) 78%, rgba(0, 0, 0, 0.9) 100%);
+  box-shadow: inset 0 0 0 6px rgba(20, 20, 20, 0.9);
+}
+.vf-toy {
+  background: radial-gradient(circle at center, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+}
+.vf-instant {
+  box-shadow: inset 0 0 0 5px rgba(243, 240, 232, 0.85);
+}
+.vf-half-tag,
+.vf-double-tag,
+.vf-cine-tag {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+.vf-cine-tag {
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.vf-cine .vf-lines {
+  inset: 6% 4%;
+  --c: rgba(255, 255, 255, 0.55);
+}
+.vf-quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.vf-cell {
+  display: grid;
+  place-items: start;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.7);
+  font: 700 12px var(--mono);
+  transition: background 0.1s;
+}
+.vf-cell.on {
+  background: rgba(255, 255, 255, 0.35);
+  color: #000;
+}
+.vf-cell.done {
+  background: rgba(0, 0, 0, 0.35);
+}
+.vf-ghost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+.vf-lcd {
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+.vf-lcd span {
+  position: absolute;
+}
+.lcd-tl {
+  left: 10px;
+  top: 8px;
+}
+.lcd-tr {
+  right: 10px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lcd-br {
+  right: 10px;
+  bottom: 8px;
+  color: #ffb347;
+}
+.lcd-batt {
+  width: 18px;
+  height: 9px;
+  border: 1.5px solid #fff;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #7cfc00 70%, transparent 70%);
+}
+.lcd-focus {
+  left: 50%;
+  top: 50%;
+  width: 22%;
+  height: 22%;
+  transform: translate(-50%, -50%);
+  --c: #7cfc00;
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 12px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 2px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 12px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 2px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 12px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 2px 12px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 12px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 2px 12px no-repeat;
+}
+.vf-pixel {
+  box-shadow: inset 0 0 0 8px #2b2b2b, inset 0 0 0 10px #555;
+  image-rendering: pixelated;
+}
+.vfs-pixel .preview {
+  image-rendering: pixelated;
+}
+.px-tag {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  padding: 1px 6px;
+  background: #0f380f;
+  color: #9bbc0f;
+  font-size: 12px;
+  font-weight: 800;
 }

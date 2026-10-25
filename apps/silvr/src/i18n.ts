@@ -55,6 +55,23 @@ const ko = {
   'cam.rewindConfirm': '{n}장만 찍었어요. 되감아서 현상소에 맡길까요?',
   'cam.emptyRewind': '아직 찍은 컷이 없어요. 필름을 빼면 이 롤은 사라져요.',
   'cam.unload': '필름 빼기',
+  'cam.chooseCamera': '카메라를 고르세요',
+  'cam.film': '필름',
+  'cam.fixedFilm': '전용 필름',
+  'cam.pack': '{n}장 팩',
+  'cam.card': '{n}장 메모리',
+  'cam.halves': '{n}컷 (하프)',
+  'cam.flashCharge': '탭해서 플래시 충전',
+  'cam.flashCharging': '충전 중…',
+  'cam.flashReady': '플래시 준비됨',
+  'cam.ev': '노출',
+  'cam.palette': '팔레트',
+  'cam.halfNext': '다음 컷이 B면에 찍혀요',
+  'cam.double1': '첫 번째 노출 완료 · 겹쳐 찍을 장면을 찾으세요',
+  'cam.quadHint': '한 번 누르면 렌즈 4개가 차례로 찍어요',
+  'cam.inCamera': '카메라 안',
+  'cam.lastShot': '마지막 사진',
+  'cam.packDone': '다 찍었어요! 앨범에서 확인하세요',
 
   'speed.title': '언제 받아볼까요?',
   'speed.instant': '즉시',
@@ -121,6 +138,9 @@ const ko = {
   'dr.saved': '다시 현상했어요',
   'dr.applyRoll': '롤 전체에 적용',
   'dr.rotate': '회전',
+  'dr.ev': '노출 보정',
+  'dr.palette': '팔레트',
+  'dr.camera': '카메라',
   'hint.ios': '홈 화면에 추가하면 사진이 더 안전하게 보관돼요 (공유 → 홈 화면에 추가)',
   'dr.applyRollDone': '롤 전체에 적용했어요',
 
@@ -249,6 +269,23 @@ const en: Record<MsgKey, string> = {
   'cam.rewindConfirm': 'You shot {n} frames. Rewind and send to the lab?',
   'cam.emptyRewind': 'No frames yet. Unloading discards this roll.',
   'cam.unload': 'Unload film',
+  'cam.chooseCamera': 'Choose your camera',
+  'cam.film': 'Film',
+  'cam.fixedFilm': 'Built-in film',
+  'cam.pack': '{n}-shot pack',
+  'cam.card': '{n}-shot card',
+  'cam.halves': '{n} halves',
+  'cam.flashCharge': 'Tap to charge the flash',
+  'cam.flashCharging': 'Charging…',
+  'cam.flashReady': 'Flash ready',
+  'cam.ev': 'Exposure',
+  'cam.palette': 'Palette',
+  'cam.halfNext': 'Next shot fills the B half',
+  'cam.double1': 'First exposure done · frame the second one',
+  'cam.quadHint': 'One press, four lenses in sequence',
+  'cam.inCamera': 'In camera',
+  'cam.lastShot': 'Last shot',
+  'cam.packDone': 'All shot! See them in the album',
 
   'speed.title': 'When do you want your prints?',
   'speed.instant': 'Instant',
@@ -315,6 +352,9 @@ const en: Record<MsgKey, string> = {
   'dr.saved': 'Re-developed',
   'dr.applyRoll': 'Apply to roll',
   'dr.rotate': 'Rotate',
+  'dr.ev': 'Exposure',
+  'dr.palette': 'Palette',
+  'dr.camera': 'Camera',
   'hint.ios': 'Add SILVR to your Home Screen to keep photos safe (Share → Add to Home Screen)',
   'dr.applyRollDone': 'Applied to the whole roll',
 
@@ -399,6 +439,10 @@ const stockKo: Record<string, string> = {
   silver100: '고운 입자와 넓은 계조의 흑백.',
   dream160: '낮은 대비, 공기처럼 가벼운 파스텔.',
   expired98: '1998년에 만료된 필름. 마젠타 포그와 먼지, 예측불가.',
+  xpro200: '슬라이드 필름을 네거로 교차현상. 강한 대비, 연두빛 하이라이트, 청록 그림자.',
+  instamini: '밝고 산뜻한 미니 인스턴트. 깨끗한 화이트와 살짝 차가운 톤.',
+  ccd: '2000년대 초 디카 CCD. 날아가는 하이라이트, 푸른 기, 보라색 번짐.',
+  pixel: '128픽셀 2비트 센서. 4가지 색과 디더링.',
 };
 
 const stockEn: Record<string, string> = {
@@ -414,7 +458,49 @@ const stockEn: Record<string, string> = {
   silver100: 'Fine grain and long tonal range black & white.',
   dream160: 'Low contrast, airy pastels.',
   expired98: "Expired in 1998. Magenta fog, dust and surprises.",
+  xpro200: 'Slide film cross-processed as negative: hard contrast, lime highlights, teal shadows.',
+  instamini: 'Bright, crisp mini instant film with clean whites and a cool touch.',
+  ccd: 'Early-2000s digicam CCD: clipped highlights, blue cast, purple fringing.',
+  pixel: 'A 128-pixel, 2-bit sensor. Four colours and dithering.',
 };
+
+const cameraKo: Record<string, string> = {
+  pro35: '기본기 탄탄한 35mm SLR. 모든 필름, 3가지 비율, 줌, 노출 보정.',
+  snap27: '27장 일회용 카메라. 플래시는 매번 충전해야 하고, 렌즈는 살짝 뭉개져요.',
+  instasq: '10장 팩 정사각 인스턴트. 찍자마자 사진이 나와 서서히 떠올라요.',
+  half72: '한 컷에 두 장. 하프프레임으로 72장, 두 장이 나란히 한 장이 돼요.',
+  zonelc: '터널 같은 비네팅과 진한 색. 거리 스냅용 컴팩트.',
+  toy120: '플라스틱 렌즈의 중판 토이 카메라. 흐린 가장자리, 짙은 비네팅, 잦은 빛샘.',
+  quad4: '렌즈 4개가 0.2초 간격으로 연속 촬영. 한 장에 움직임 4컷.',
+  doublex: '같은 컷에 두 번 노출. 첫 장 위에 두 번째 장면을 겹쳐요.',
+  panox: '65:24 와이드 파노라마. 한 롤 21컷.',
+  fish180: '180° 원형 어안. 동그란 세상.',
+  cine: '2.39:1 시네마스코프. 강한 빛에 푸른 수평 플레어.',
+  ccd03: '2003년 감성 디카. 99장 메모리, 디지털 날짜, 바로 확인.',
+  pixel: '128×112 픽셀 포켓 카메라. 4색 팔레트, 30장.',
+  range: '조용한 레인지파인더. 선명한 렌즈, 브라이트 프레임, 흑백이 기본.',
+};
+
+const cameraEn: Record<string, string> = {
+  pro35: 'A dependable 35mm SLR. Any film, three formats, zoom and exposure dial.',
+  snap27: 'A 27-shot disposable. Charge the flash before every flash shot; soft plastic lens.',
+  instasq: 'Square instant camera, 10-shot packs. Prints eject and slowly appear.',
+  half72: 'Two shots per frame: 72 half-frames that pair up side by side.',
+  zonelc: 'Tunnel vignetting and saturated colour. A street-shooting compact.',
+  toy120: 'Plastic-lens medium-format toy: soft edges, heavy vignette, frequent leaks.',
+  quad4: 'Four lenses fire 0.2 s apart: four moments in one frame.',
+  doublex: 'Two exposures on one frame: layer a second scene over the first.',
+  panox: 'Wide 65:24 panoramas. 21 frames per roll.',
+  fish180: 'A 180° circular fisheye. The world in a circle.',
+  cine: '2.39:1 anamorphic scope with blue streak flares on bright lights.',
+  ccd03: 'A 2003 digicam: 99-shot card, digital date imprint, instant review.',
+  pixel: 'A 128×112 pocket pixel camera. Four-colour palettes, 30 shots.',
+  range: 'A quiet rangefinder: crisp lens, bright frame lines, black & white by default.',
+};
+
+export function cameraDescription(id: string): string {
+  return (signalLang.value === 'ko' ? cameraKo : cameraEn)[id] ?? '';
+}
 
 export type ResolvedLang = 'ko' | 'en';
 

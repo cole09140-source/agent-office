@@ -1,5 +1,13 @@
 export const MAX_LEAKS = 3;
 
+/** Pixel-camera grid: 128 cells on the long side (shared by GPU and CPU paths). */
+export function pixelCells(w: number, h: number): [number, number] {
+  return w >= h ? [128, Math.max(1, Math.round((128 * h) / w))] : [Math.max(1, Math.round((128 * w) / h)), 128];
+}
+
+/** Fisheye: maps normalized output radius (0..1) to source radius (0..1). */
+export const FISHEYE_A = 1.2;
+
 export const VERT = `#version 300 es
 in vec2 aPos;
 out vec2 vUv;
@@ -41,6 +49,15 @@ uniform float uVignette;
 uniform float uChromaPx;
 uniform float uFlash;
 uniform uint uSeedHash; // seedHash(seed) from random.ts, computed on the CPU so both paths agree
+uniform float uDistort;
+uniform float uFisheye;
+uniform float uSoft;
+uniform float uSoftLod;
+uniform float uStreak;
+uniform vec3 uStreakColor;
+uniform bool uPixel;
+uniform vec2 uPixelCells;
+uniform vec3 uPal[4];
 uniform int uLeakCount;
 uniform vec4 uLeakPos[${MAX_LEAKS}];   // x, y, radius, intensity
 uniform vec3 uLeakColor[${MAX_LEAKS}];
@@ -93,11 +110,35 @@ vec2 srcUv(vec2 uv) {
 
 vec3 screen(vec3 a, vec3 b) { return 1.0 - (1.0 - a) * (1.0 - b); }
 
+const float BAYER[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+
+// Lens projection: barrel/pincushion distortion or circular fisheye. Mirrors cpuRender.ts lensUv().
+vec2 lensUv(vec2 uv, vec2 aspect, out float inside) {
+  vec2 p = (uv - 0.5) * aspect;
+  inside = 1.0;
+  if (uFisheye > 0.5) {
+    float R = 0.5 * min(aspect.x, aspect.y);
+    float r = length(p);
+    float rn = r / R;
+    inside = 1.0 - smoothstep(0.985, 1.0, rn);
+    float rs = tan(min(rn, 1.0) * ${FISHEYE_A.toFixed(3)}) / tan(${FISHEYE_A.toFixed(3)});
+    p = r > 0.0 ? p / r * rs * R : p;
+  } else if (uDistort != 0.0) {
+    float r2 = dot(p, p) / dot(0.5 * aspect, 0.5 * aspect);
+    p *= (1.0 + uDistort * r2) / (1.0 + max(uDistort, 0.0));
+  }
+  return p / aspect + 0.5;
+}
+
 void main() {
-  vec2 uv = vec2(vUv.x, 1.0 - vUv.y); // top-left origin, like the CPU path
+  vec2 uv0 = vec2(vUv.x, 1.0 - vUv.y); // top-left origin, like the CPU path
   vec2 aspect = uOutSize / max(uOutSize.x, uOutSize.y);
-  vec2 centered = (uv - 0.5) * aspect;
+  vec2 centered = (uv0 - 0.5) * aspect;
   float dist = length(centered) / length(0.5 * aspect); // 0 centre, 1 corner
+  vec2 uv = uv0;
+  if (uPixel) uv = (floor(uv0 * uPixelCells) + 0.5) / uPixelCells;
+  float inside;
+  uv = lensUv(uv, aspect, inside);
 
   // Lateral chromatic aberration grows towards the edges.
   vec2 ca = (uv - 0.5) * (uChromaPx / max(uOutSize.x, uOutSize.y)) * 2.0 * dist;
@@ -114,6 +155,11 @@ void main() {
     + textureLod(uSrc, su + vec2(0.0, bo.y), uBlurLod).rgb
     + textureLod(uSrc, su - vec2(0.0, bo.y), uBlurLod).rgb) / 6.0;
 
+  // Lens rendering: soft corners on cheap plastic lenses, crisp micro-contrast on others.
+  vec3 sl = textureLod(uSrc, su, uSoftLod).rgb;
+  if (uSoft > 0.0) c = mix(c, sl, uSoft * smoothstep(0.2, 1.0, dist));
+  else if (uSoft < 0.0) c = clamp(c + (-uSoft) * 1.5 * (c - sl), 0.0, 1.0);
+
   c = clamp(uMatrix * c, 0.0, 1.0);
   if (uMono) {
     c = vec3(dot(c, uMonoW));
@@ -123,11 +169,32 @@ void main() {
   }
   c = lut(c);
 
+  if (uPixel) {
+    // 2-bit pixel art: ordered dither into a 4-tone palette.
+    vec2 cell = floor(uv0 * uPixelCells);
+    int idx = (int(cell.y) & 3) * 4 + (int(cell.x) & 3);
+    float t = (BAYER[idx] + 0.5) / 16.0 - 0.5;
+    float q = clamp(floor(dot(c, LUMA) * 3.0 + 0.5 + t), 0.0, 3.0);
+    outColor = vec4(uPal[int(q)], 1.0);
+    return;
+  }
+
   float y2 = dot(c, LUMA);
   c += uShadowTint * (1.0 - smoothstep(0.0, 0.5, y2)) + uHighlightTint * smoothstep(0.5, 1.0, y2);
 
   float hm = smoothstep(0.55, 1.0, dot(blur, LUMA));
   c = screen(clamp(c, 0.0, 1.0), uHalationColor * hm * uHalation);
+  if (uStreak > 0.0) {
+    // Anamorphic flare: highlights smeared into a horizontal blue line.
+    float acc = 0.0;
+    for (int i = 1; i <= 6; i++) {
+      float o = float(i) * 0.035 * uCrop.z;
+      float w = 1.0 - float(i) / 7.0;
+      acc += w * smoothstep(0.75, 1.0, dot(textureLod(uSrc, su + vec2(o, 0.0), uBlurLod).rgb, LUMA));
+      acc += w * smoothstep(0.75, 1.0, dot(textureLod(uSrc, su - vec2(o, 0.0), uBlurLod).rgb, LUMA));
+    }
+    c = screen(clamp(c, 0.0, 1.0), uStreakColor * uStreak * 1.5 * acc / 6.0);
+  }
   vec3 bl = uMono ? vec3(dot(blur, uMonoW)) : blur;
   c += uBloom * 0.35 * max(bl - c, 0.0);
 
@@ -148,5 +215,5 @@ void main() {
   vec4 n = vnoise4(px, uSeedHash);
   c += amp * 1.8 * ((1.0 - uGrainChroma) * vec3(n.x) + uGrainChroma * n.yzw);
 
-  outColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+  outColor = vec4(clamp(c, 0.0, 1.0) * inside, 1.0);
 }`;

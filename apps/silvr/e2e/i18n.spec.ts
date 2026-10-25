@@ -29,7 +29,7 @@ test('Korean locale: auto-detected, no clipped labels on any screen', async ({ p
   await expect(page.getByText('필름처럼 찍고')).toBeVisible();
   await snap('onboarding');
   await page.getByTestId('onb-skip').click();
-  await expect(page.getByText('필름을 고르세요')).toBeVisible();
+  await expect(page.getByText('카메라를 고르세요')).toBeVisible();
   await snap('camera');
   await loadRoll(page, 'neon800t', '24');
   await shoot(page, 2);

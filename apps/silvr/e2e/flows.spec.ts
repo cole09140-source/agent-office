@@ -209,7 +209,7 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
   await page.screenshot({ path: 'e2e/.shots/12-settings-ko.png', fullPage: true });
   await page.getByTestId('tab-camera').click();
-  await expect(page.getByText('필름을 고르세요')).toBeVisible();
+  await expect(page.getByText('카메라를 고르세요')).toBeVisible();
   await page.reload();
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
   await page.getByTestId('tab-settings').click();

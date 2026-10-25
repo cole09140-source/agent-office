@@ -1,8 +1,9 @@
 export type RGB = [number, number, number];
 
-export type FilmKind = 'color' | 'slide' | 'bw' | 'instant' | 'cine';
+export type FilmKind = 'color' | 'slide' | 'bw' | 'instant' | 'cine' | 'digital' | 'pixel';
 export type BorderStyle = 'none' | 'film35' | 'instant' | 'print';
-export type Aspect = '3:2' | '4:3' | '1:1';
+/** Frame format as long:short; orientation follows the camera frame unless forced. */
+export type Aspect = '3:2' | '4:3' | '1:1' | '65:24' | '2.39:1' | '8:7';
 
 /** The intrinsic look of a film stock. Values are tuned by eye against reference scans. */
 export interface FilmLook {
@@ -56,6 +57,8 @@ export interface FilmStock {
   defaultFlash: boolean;
   /** Preset expiry baked into the stock (0..1). */
   baseExpired: number;
+  /** Only loadable in cameras that list it explicitly (e.g. the CCD sensor). */
+  exclusive?: boolean;
   look: FilmLook;
 }
 
@@ -78,6 +81,28 @@ export interface DevelopSettings {
   seed: number;
   /** Clockwise quarter turns applied to the negative (0-3). Missing on older frames. */
   rotate?: number;
+  /** Camera body whose lens character is applied (see cameras/models.ts). */
+  cameraId?: string;
+  /** Exposure compensation in stops (-2..2). */
+  ev?: number;
+  /** Pixel camera palette id. */
+  palette?: string;
+}
+
+/** Optical character of a camera's lens, applied on top of the film look. */
+export interface Lens {
+  /** Barrel (+) / pincushion (−) distortion. */
+  distort: number;
+  /** Circular fisheye projection with black surround. */
+  fisheye: boolean;
+  /** Edge softness (+) or overall sharpening (−), −1..1. */
+  soft: number;
+  /** Anamorphic horizontal streak flare strength. */
+  streak: number;
+  streakColor: RGB;
+  /** Added to the stock's vignette / chromatic aberration. */
+  vignette: number;
+  chroma: number;
 }
 
 export interface LightLeak {
@@ -108,4 +133,11 @@ export interface ResolvedLook {
   leaks: LightLeak[];
   dust: number;
   seed: number;
+  distort: number;
+  fisheye: number;
+  soft: number;
+  streak: number;
+  streakColor: RGB;
+  /** 4-tone palette (dark → light) when the camera renders as pixel art. */
+  pixel: [RGB, RGB, RGB, RGB] | null;
 }

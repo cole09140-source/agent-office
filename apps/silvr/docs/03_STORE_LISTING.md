@@ -30,7 +30,10 @@ SILVR는 진짜 필름처럼 찍고, 진짜 암실처럼 현상하는 카메라�
 ■ 다크룸 재현상
 SILVR는 원본 네거티브를 지우지 않아요. 찍은 뒤에도 필름을 바꾸고, 증감현상(±2스톱), 유효기간 경과, 입자, 할레이션, 빛샘, 테두리를 다시 조절해 새로 현상할 수 있어요.
 
-■ 12가지 오리지널 필름
+■ 14대의 카메라, 각자 다른 촬영 방식
+2번 눌러 1장이 되는 하프프레임, 렌즈 4개가 연속으로 찍는 액션 카메라, 첫 장 위에 겹쳐 찍는 이중 노출, 찍자마자 배출되는 인스턴트, 매번 플래시를 충전해야 하는 일회용, 180° 어안, 시네마스코프, 파노라마, 2003년 디카, 4색 픽셀 카메라까지.
+
+■ 16가지 오리지널 필름
 따뜻한 Sunny 200, 인물용 Muse 400, 일회용 카메라 Snap 800, 흑백 Mono 400, 네온 아래 붉게 번지는 Neon 800T, 고채도 슬라이드 Velvet 50, 1998년에 만료된 Expired '98까지.
 
 ■ 밀착 인화
@@ -57,7 +60,8 @@ SILVR shoots like real film and develops like a real darkroom.
 • Roll-based shooting: load 12, 24 or 36 exposures and count every frame.
 • Choose your wait: instant, 1 hour, tomorrow 9 AM or 3 days.
 • Darkroom re-develop: negatives are never baked. Change the stock, push or pull ±2 stops, add expiry, grain, halation, light leaks and borders at any time.
-• 12 original film stocks, from warm Sunny 200 to tungsten Neon 800T and the unpredictable Expired '98.
+• 14 cameras that each shoot differently: half-frame pairs, a 4-lens action camera, double exposures, ejecting instant prints, a disposable whose flash you charge, a 180° fisheye, anamorphic scope, panoramas, a 2003 digicam and a 4-colour pixel camera.
+• 16 original film stocks, from warm Sunny 200 to tungsten Neon 800T and the unpredictable Expired '98.
 • Contact sheets: share a whole roll as a single 35mm strip.
 • Analog companion: a Sunny 16 exposure calculator and a per-frame shooting log with CSV export for your real film camera.
 • Private by design: no account, no servers, no ads, no tracking, no watermark.
@@ -65,7 +69,7 @@ SILVR shoots like real film and develops like a real darkroom.
 **Keywords**: film camera,analog,disposable,vintage,retro,grain,35mm,polaroid,darkroom,light meter,sunny 16
 
 ## 스크린샷 구성 (6.7"·6.5"·5.5", Android 폰)
-1. 카메라: 필름 고르기(스톡 스트립) — "12가지 오리지널 필름"
+1. 카메라 고르기(카메라 선반) — "14대의 카메라, 각자 다른 촬영 방식"
 2. 촬영 중 카운터 07/24 — "한 장 한 장, 필름처럼"
 3. 현상소 카운트다운 — "기다림의 길이는 직접"
 4. 다크룸 슬라이더 — "찍고 나서 다시 현상"

@@ -1,8 +1,9 @@
+import { getCamera } from '../cameras/models';
 import { develop, promote, type DevelopOutput } from '../film/develop';
 import type { DateFormat } from '../film/overlays';
 import { developKey } from '../film/resolve';
 import type { Aspect, DevelopSettings } from '../film/types';
-import { del, get, getAll, getAllByIndex, put, tx } from './db';
+import { get, getAll, getAllByIndex, put, tx } from './db';
 
 export type DevelopSpeed = 'instant' | '1h' | 'morning' | '3d';
 export type RollStatus = 'loaded' | 'developing' | 'developed';
@@ -24,6 +25,19 @@ export interface Roll {
   /** Set when the user first opens a developed roll (drives the "new" badge). */
   seenAt?: number;
   coverPhotoId?: string;
+  /** Camera body the roll is loaded in (older rolls: none → Pro 35). */
+  cameraId?: string;
+  /** Finished negatives (≠ shots for half-frame, where two exposures share one). */
+  negatives?: number;
+  /** First half / first exposure waiting for its partner (half-frame, double exposure). */
+  pending?: PendingExposure;
+}
+
+export interface PendingExposure {
+  kind: 'half' | 'double';
+  takenAt: number;
+  width: number;
+  height: number;
 }
 
 export interface Photo {
@@ -45,6 +59,7 @@ export const blobKey = {
   print: (id: string) => `${id}:print`,
   thumb: (id: string) => `${id}:thumb`,
 };
+const pendingKey = (rollId: string) => `pending:${rollId}`;
 
 export function uid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
@@ -80,6 +95,16 @@ export function effectiveStatus(roll: Roll, now: number): RollStatus {
 
 export function framesLeft(roll: Roll): number {
   return Math.max(0, roll.capacity - roll.shots);
+}
+
+/** Instant film and memory-card cameras show shots while the roll is still in the camera. */
+export function inCamera(roll: Roll): boolean {
+  return roll.status === 'loaded' && roll.kind === 'camera' && getCamera(roll.cameraId).instant;
+}
+
+/** Whether the roll's photos can be looked at (developed, or an instant camera). */
+export function viewable(roll: Roll, now = Date.now()): boolean {
+  return effectiveStatus(roll, now) === 'developed' || inCamera(roll);
 }
 
 export function isNew(roll: Roll, now: number): boolean {
@@ -127,10 +152,10 @@ export async function getActiveRoll(): Promise<Roll | undefined> {
   return rolls.find((r) => r.kind === 'camera' && r.status === 'loaded');
 }
 
-export async function loadRoll(stockId: string, capacity: number, aspect: Aspect, now = Date.now()): Promise<Roll> {
+export async function loadRoll(stockId: string, capacity: number, aspect: Aspect, now = Date.now(), cameraId?: string): Promise<Roll> {
   const active = await getActiveRoll();
   if (active) throw new Error('A roll is already loaded');
-  const roll: Roll = { id: uid(), kind: 'camera', stockId, capacity, shots: 0, aspect, createdAt: now, status: 'loaded' };
+  const roll: Roll = { id: uid(), kind: 'camera', stockId, capacity, shots: 0, negatives: 0, aspect, createdAt: now, status: 'loaded', cameraId };
   await put('rolls', roll);
   notify();
   return roll;
@@ -155,21 +180,59 @@ export interface ShotResult {
   finished: boolean;
 }
 
-/** Stores a negative on the loaded roll. Throws if the roll is full or not loaded. */
-export async function addShot(rollId: string, negative: Blob, dev: DevelopSettings, size: { width: number; height: number }, takenAt = Date.now()): Promise<ShotResult> {
+/**
+ * Stores a negative on the loaded roll. `exposures` is how many counter steps
+ * this negative consumes now (half-frame partners were counted when pending).
+ * Clears any pending exposure. Throws if the roll is full or not loaded.
+ */
+export async function addShot(
+  rollId: string,
+  negative: Blob,
+  dev: DevelopSettings,
+  size: { width: number; height: number },
+  takenAt = Date.now(),
+  exposures = 1,
+): Promise<ShotResult> {
   const roll = await getRoll(rollId);
   if (!roll || roll.status !== 'loaded') throw new Error('Roll is not loaded');
-  if (roll.shots >= roll.capacity) throw new Error('Roll is full');
-  roll.shots += 1;
-  const photo: Photo = { id: uid(), rollId, frame: roll.shots, takenAt, width: size.width, height: size.height, develop: dev };
+  if (roll.shots + exposures > roll.capacity) throw new Error('Roll is full');
+  roll.shots += exposures;
+  roll.negatives = (roll.negatives ?? roll.shots - exposures) + 1;
+  const hadPending = !!roll.pending;
+  roll.pending = undefined;
+  const photo: Photo = { id: uid(), rollId, frame: roll.negatives, takenAt, width: size.width, height: size.height, develop: dev };
   if (!roll.coverPhotoId) roll.coverPhotoId = photo.id;
   await tx(['rolls', 'photos', 'blobs'], (t) => {
     t.objectStore('rolls').put(roll);
     t.objectStore('photos').put(photo);
     t.objectStore('blobs').put(negative, blobKey.neg(photo.id));
+    if (hadPending) t.objectStore('blobs').delete(pendingKey(rollId));
   });
   notify();
   return { photo, roll, finished: roll.shots >= roll.capacity };
+}
+
+/**
+ * Keeps the first half (half-frame) or first exposure (double exposure) until
+ * its partner arrives. A half consumes one counter step right away.
+ */
+export async function savePending(rollId: string, blob: Blob, pending: PendingExposure): Promise<Roll> {
+  const roll = await getRoll(rollId);
+  if (!roll || roll.status !== 'loaded') throw new Error('Roll is not loaded');
+  const cost = pending.kind === 'half' ? 1 : 0;
+  if (roll.shots + Math.max(cost, 1) > roll.capacity) throw new Error('Roll is full');
+  roll.shots += cost;
+  roll.pending = pending;
+  await tx(['rolls', 'blobs'], (t) => {
+    t.objectStore('rolls').put(roll);
+    t.objectStore('blobs').put(blob, pendingKey(rollId));
+  });
+  notify();
+  return roll;
+}
+
+export async function getPending(rollId: string): Promise<Blob | undefined> {
+  return getBlob(pendingKey(rollId));
 }
 
 /** Rewinds the roll and sends it to the lab. Empty rolls are discarded. */
@@ -177,8 +240,11 @@ export async function finishRoll(rollId: string, speed: DevelopSpeed, now = Date
   const roll = await getRoll(rollId);
   if (!roll) throw new Error('Roll not found');
   if (roll.status !== 'loaded') return roll;
-  if (roll.shots === 0) {
-    await del('rolls', rollId);
+  if ((roll.negatives ?? roll.shots) === 0) {
+    await tx(['rolls', 'blobs'], (t) => {
+      t.objectStore('rolls').delete(rollId);
+      t.objectStore('blobs').delete(pendingKey(rollId));
+    });
     notify();
     return null;
   }
@@ -299,6 +365,7 @@ export async function deleteRoll(rollId: string): Promise<void> {
       for (const k of Object.values(blobKey)) t.objectStore('blobs').delete(k(p.id));
     }
     t.objectStore('rolls').delete(rollId);
+    t.objectStore('blobs').delete(pendingKey(rollId));
   });
   notify();
 }

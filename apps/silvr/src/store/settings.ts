@@ -1,5 +1,4 @@
 import type { DateFormat } from '../film/overlays';
-import type { Aspect } from '../film/types';
 import { get, put } from './db';
 import type { DevelopSpeed } from './rolls';
 
@@ -15,7 +14,6 @@ export interface Settings {
   mirrorFront: boolean;
   defaultRollSize: number;
   defaultSpeed: DevelopSpeed;
-  aspect: Aspect | 'auto';
   onboarded: boolean;
 }
 
@@ -29,7 +27,6 @@ export const DEFAULT_SETTINGS: Settings = {
   mirrorFront: true,
   defaultRollSize: 24,
   defaultSpeed: 'instant',
-  aspect: 'auto',
   onboarded: false,
 };
 

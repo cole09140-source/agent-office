@@ -1,4 +1,5 @@
 import { mulberry32 } from './random';
+import { getCamera, hasCamera, PIXEL_PALETTES } from '../cameras/models';
 import { getStock } from './stocks';
 import type { DevelopSettings, FilmLook, FilmStock, LightLeak, ResolvedLook, RGB } from './types';
 
@@ -71,6 +72,9 @@ export function effectiveLook(stock: FilmStock, dev: DevelopSettings): FilmLook 
   const e = clamp(stock.baseExpired + dev.expired);
   const l: FilmLook = { ...base, gamma: [...base.gamma], lift: [...base.lift], gain: [...base.gain] };
 
+  // Exposure compensation dial on the camera.
+  l.exposure += clamp(dev.ev ?? 0, -2, 2);
+
   // Push processing: more density & contrast, coarser grain. Pull: the reverse.
   l.exposure += 0.3 * p;
   l.contrast *= 1 + 0.16 * p;
@@ -142,6 +146,9 @@ export function lightLeaks(seed: number): LightLeak[] {
 export function resolveLook(dev: DevelopSettings): ResolvedLook {
   const stock = getStock(dev.stockId);
   const l = effectiveLook(stock, dev);
+  // Frames from before camera bodies existed (and imports) get a neutral lens.
+  const lens = hasCamera(dev.cameraId) ? getCamera(dev.cameraId).lens : null;
+  const pixel = stock.kind === 'pixel';
   return {
     lut: buildLut(l),
     saturation: l.saturation,
@@ -155,13 +162,19 @@ export function resolveLook(dev: DevelopSettings): ResolvedLook {
     halation: l.halation,
     halationColor: l.halationColor,
     bloom: l.bloom,
-    vignette: l.vignette,
-    chroma: l.chroma,
+    vignette: clamp(l.vignette + (lens?.vignette ?? 0)),
+    chroma: l.chroma + (lens?.chroma ?? 0),
     flash: dev.flash ? 1 : 0,
     leaks: dev.leak === null ? [] : lightLeaks(dev.leak),
     dust: l.dust,
     // Keep the shader seed small so float precision on mobile GPUs is preserved.
     seed: (dev.seed % 9973) / 7.3,
+    distort: lens?.distort ?? 0,
+    fisheye: lens?.fisheye ? 1 : 0,
+    soft: lens?.soft ?? 0,
+    streak: lens?.streak ?? 0,
+    streakColor: lens?.streakColor ?? [0.35, 0.55, 1],
+    pixel: pixel ? PIXEL_PALETTES[dev.palette ?? 'moss'] ?? PIXEL_PALETTES.moss : null,
   };
 }
 
@@ -179,9 +192,12 @@ export function developKey(dev: DevelopSettings): string {
     dev.border,
     dev.seed,
     dev.rotate ?? 0,
+    dev.cameraId ?? '-',
+    (dev.ev ?? 0).toFixed(2),
+    dev.palette ?? '-',
     RENDER_VERSION,
   ].join('|');
 }
 
 /** Bump when the render pipeline changes so cached prints re-develop. */
-export const RENDER_VERSION = 1;
+export const RENDER_VERSION = 2;

@@ -1,4 +1,5 @@
 import { lattice, seedHash } from './random';
+import { FISHEYE_A, pixelCells } from './shader';
 import type { ResolvedLook } from './types';
 
 export interface PixelBuffer {
@@ -88,6 +89,41 @@ function sampleBilinear(buf: PixelBuffer, u: number, v: number, out: number[]): 
   }
 }
 
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+/**
+ * Lens projection (see shader lensUv): maps an output uv to the source uv.
+ * Returns [u, v, inside] where inside is the fisheye circle mask.
+ */
+export function lensUv(u: number, v: number, ax: number, ay: number, distort: number, fisheye: number): [number, number, number] {
+  let px = (u - 0.5) * ax;
+  let py = (v - 0.5) * ay;
+  let inside = 1;
+  if (fisheye > 0.5) {
+    const R = 0.5 * Math.min(ax, ay);
+    const r = Math.hypot(px, py);
+    const rn = r / R;
+    inside = 1 - smoothstep(0.985, 1, rn);
+    const rs = Math.tan(Math.min(rn, 1) * FISHEYE_A) / Math.tan(FISHEYE_A);
+    if (r > 0) {
+      px = (px / r) * rs * R;
+      py = (py / r) * rs * R;
+    }
+  } else if (distort !== 0) {
+    const r2 = (px * px + py * py) / (0.25 * (ax * ax + ay * ay));
+    const k = (1 + distort * r2) / (1 + Math.max(distort, 0));
+    px *= k;
+    py *= k;
+  }
+  return [px / ax + 0.5, py / ay + 0.5, inside];
+}
+
+/** Ordered-dither palette index (0..3) for a luminance at a pixel-grid cell. */
+export function ditherIndex(luma: number, cellX: number, cellY: number): number {
+  const t = (BAYER[(cellY & 3) * 4 + (cellX & 3)] + 0.5) / 16 - 0.5;
+  return Math.min(3, Math.max(0, Math.floor(luma * 3 + 0.5 + t)));
+}
+
 /**
  * Reference implementation of the film pipeline (see shader.ts). Used when
  * WebGL2 is unavailable and by unit tests. `src` must already be cropped to
@@ -97,6 +133,10 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
   const { width: W, height: H } = src;
   const out = new Uint8ClampedArray(W * H * 4);
   const blur = blurField(src);
+  const softField = look.soft !== 0 ? blurField(src, 250) : null;
+  const cells = pixelCells(W, H);
+  const tmpS = [0, 0, 0];
+  const tmpK = [0, 0, 0];
   const lut = look.lut;
   const m = look.matrix;
   const maxSide = Math.max(W, H);
@@ -108,6 +148,7 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
   const tmp = [0, 0, 0];
   const nz = [0, 0, 0, 0];
   const hs = seedHash(look.seed);
+  const sampleUv = (su: number, sv: number, c: number) => sample(su * W - 0.5, sv * H - 0.5, c);
   const sample = (x: number, y: number, c: number) => {
     const xi = Math.min(W - 1, Math.max(0, Math.round(x)));
     const yi = Math.min(H - 1, Math.max(0, Math.round(y)));
@@ -117,23 +158,45 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
 
   for (let py = 0; py < H; py++) {
     for (let px = 0; px < W; px++) {
-      const u = (px + 0.5) / W;
-      const v = (py + 0.5) / H;
-      const cx = (u - 0.5) * ax;
-      const cy = (v - 0.5) * ay;
+      const u0 = (px + 0.5) / W;
+      const v0 = (py + 0.5) / H;
+      const cx = (u0 - 0.5) * ax;
+      const cy = (v0 - 0.5) * ay;
       const dist = Math.hypot(cx, cy) / cornerLen;
+      let qu = u0;
+      let qv = v0;
+      if (look.pixel) {
+        qu = (Math.floor(u0 * cells[0]) + 0.5) / cells[0];
+        qv = (Math.floor(v0 * cells[1]) + 0.5) / cells[1];
+      }
+      const [u, v, inside] = lensUv(qu, qv, ax, ay, look.distort, look.fisheye);
 
       const caScale = (chromaPx / maxSide) * 2 * dist;
-      const cax = (u - 0.5) * caScale * W;
-      const cay = (v - 0.5) * caScale * H;
-      let r = sample(px + cax, py + cay, 0);
-      let g = sample(px, py, 1);
-      let b = sample(px - cax, py - cay, 2);
+      const cau = (u - 0.5) * caScale;
+      const cav = (v - 0.5) * caScale;
+      let r = sampleUv(u + cau, v + cav, 0);
+      let g = sampleUv(u, v, 1);
+      let b = sampleUv(u - cau, v - cav, 2);
 
       sampleBilinear(blur, u, v, tmp);
       const br = tmp[0];
       const bg = tmp[1];
       const bb = tmp[2];
+
+      if (softField) {
+        sampleBilinear(softField, u, v, tmpS);
+        if (look.soft > 0) {
+          const k = look.soft * smoothstep(0.2, 1, dist);
+          r += (tmpS[0] - r) * k;
+          g += (tmpS[1] - g) * k;
+          b += (tmpS[2] - b) * k;
+        } else {
+          const k = -look.soft * 1.5;
+          r = clamp01(r + k * (r - tmpS[0]));
+          g = clamp01(g + k * (g - tmpS[1]));
+          b = clamp01(b + k * (b - tmpS[2]));
+        }
+      }
 
       const r1 = clamp01(m[0] * r + m[1] * g + m[2] * b);
       const g1 = clamp01(m[3] * r + m[4] * g + m[5] * b);
@@ -151,6 +214,16 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
       g = lutC(g, 1);
       b = lutC(b, 2);
 
+      if (look.pixel) {
+        const q = ditherIndex(r * LR + g * LG + b * LB, Math.floor(u0 * cells[0]), Math.floor(v0 * cells[1]));
+        const o = (py * W + px) * 4;
+        out[o] = look.pixel[q][0] * 255; // Uint8ClampedArray rounds on assignment
+        out[o + 1] = look.pixel[q][1] * 255;
+        out[o + 2] = look.pixel[q][2] * 255;
+        out[o + 3] = 255;
+        continue;
+      }
+
       const y2 = r * LR + g * LG + b * LB;
       const sh = 1 - smoothstep(0, 0.5, y2);
       const hi = smoothstep(0.5, 1, y2);
@@ -162,6 +235,22 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
       r = 1 - (1 - r) * (1 - look.halationColor[0] * hm);
       g = 1 - (1 - g) * (1 - look.halationColor[1] * hm);
       b = 1 - (1 - b) * (1 - look.halationColor[2] * hm);
+
+      if (look.streak > 0) {
+        let acc = 0;
+        for (let i = 1; i <= 6; i++) {
+          const off = i * 0.035;
+          const w = 1 - i / 7;
+          sampleBilinear(blur, u + off, v, tmpK);
+          acc += w * smoothstep(0.75, 1, tmpK[0] * LR + tmpK[1] * LG + tmpK[2] * LB);
+          sampleBilinear(blur, u - off, v, tmpK);
+          acc += w * smoothstep(0.75, 1, tmpK[0] * LR + tmpK[1] * LG + tmpK[2] * LB);
+        }
+        const k = (look.streak * 1.5 * acc) / 6;
+        r = 1 - (1 - clamp01(r)) * (1 - look.streakColor[0] * k);
+        g = 1 - (1 - clamp01(g)) * (1 - look.streakColor[1] * k);
+        b = 1 - (1 - clamp01(b)) * (1 - look.streakColor[2] * k);
+      }
 
       let blr = br;
       let blg = bg;
@@ -190,6 +279,7 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
       if (look.grain > 0) {
         const gx = (u * W) / grainPx;
         const gy = (v * H) / grainPx;
+        // NB: grain uses the lens-mapped uv, like the shader.
         const yg = clamp01(r * LR + g * LG + b * LB);
         const t = 2 * yg - 1;
         const amp = look.grain * (0.35 + 0.65 * (1 - t * t)) * 1.8;
@@ -202,9 +292,9 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
       }
 
       const o = (py * W + px) * 4;
-      out[o] = clamp01(r) * 255 + 0.5;
-      out[o + 1] = clamp01(g) * 255 + 0.5;
-      out[o + 2] = clamp01(b) * 255 + 0.5;
+      out[o] = clamp01(r) * inside * 255; // Uint8ClampedArray rounds on assignment
+      out[o + 1] = clamp01(g) * inside * 255;
+      out[o + 2] = clamp01(b) * inside * 255;
       out[o + 3] = 255;
     }
   }

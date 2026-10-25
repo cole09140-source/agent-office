@@ -7,6 +7,12 @@ type Ctx = CanvasRenderingContext2D;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+/** Early digicam imprint, e.g. "2026.10.24 21:07". */
+export function formatDigitalStamp(ts: number): string {
+  const d = new Date(ts);
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 /** Classic camera-back date imprint, e.g. "'26 10 24". */
 export function formatStamp(ts: number, fmt: DateFormat): string {
   const d = new Date(ts);
@@ -32,16 +38,34 @@ const SEGMENTS: Record<string, string> = {
   '9': 'abcdfg',
 };
 
-function drawDigit(ctx: Ctx, ch: string, x: number, y: number, h: number): number {
+/** Advance width of one imprint character (keep in sync with drawDigit). */
+export function digitAdvance(ch: string, h: number): number {
   const w = h * 0.52;
   const t = h * 0.12;
   if (ch === ' ') return w * 0.55;
+  if (ch === "'" || ch === '.' || ch === ':') return t * 2;
+  return w + t * 1.2;
+}
+
+function drawDigit(ctx: Ctx, ch: string, x: number, y: number, h: number): number {
+  const w = h * 0.52;
+  const t = h * 0.12;
+  if (ch === ' ') return digitAdvance(ch, h);
   if (ch === "'") {
     ctx.fillRect(x + t * 0.2, y, t * 0.8, h * 0.3);
-    return t * 2;
+    return digitAdvance(ch, h);
+  }
+  if (ch === '.') {
+    ctx.fillRect(x + t * 0.4, y + h - t, t, t);
+    return digitAdvance(ch, h);
+  }
+  if (ch === ':') {
+    ctx.fillRect(x + t * 0.4, y + h * 0.25, t, t);
+    ctx.fillRect(x + t * 0.4, y + h * 0.65, t, t);
+    return digitAdvance(ch, h);
   }
   const segs = SEGMENTS[ch];
-  if (!segs) return w;
+  if (!segs) return digitAdvance(ch, h);
   const half = h / 2;
   const skew = h * 0.08; // slight italic like real camera LCDs
   const seg = (sx: number, sy: number, sw: number, sh: number, yMid: number) => {
@@ -59,7 +83,7 @@ function drawDigit(ctx: Ctx, ch: string, x: number, y: number, h: number): numbe
       case 'g': seg(t, half - t / 2, w - 2 * t, t, half); break;
     }
   }
-  return w + t * 1.2;
+  return digitAdvance(ch, h);
 }
 
 /** Orange LED date imprint, bottom-right of the image area. */
@@ -67,9 +91,8 @@ export function drawDateStamp(ctx: Ctx, text: string, imgX: number, imgY: number
   const short = Math.min(imgW, imgH);
   const h = Math.max(8, short * 0.034);
   const margin = short * 0.045;
-  // Measure by dry-running the digit widths.
   let width = 0;
-  for (const ch of text) width += ch === ' ' ? h * 0.52 * 0.55 : ch === "'" ? h * 0.24 : h * 0.52 + h * 0.144;
+  for (const ch of text) width += digitAdvance(ch, h);
   let x = imgX + imgW - margin - width;
   const y = imgY + imgH - margin - h;
   ctx.save();

@@ -8,7 +8,8 @@ import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, settings, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go } from '../state/router';
-import { deleteRoll, ensurePrint, listPhotos, markSeen, subscribe, type Photo } from '../store/rolls';
+import { getCamera } from '../cameras/models';
+import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, subscribe, viewable, type Photo } from '../store/rolls';
 
 export function RollScreen({ id }: { id: string }) {
   const roll = rolls.value.find((r) => r.id === id);
@@ -77,13 +78,14 @@ export function RollScreen({ id }: { id: string }) {
     }
   };
 
-  const developing = roll.status !== 'developed';
+  const developing = !viewable(roll);
+  const camName = roll.kind === 'camera' ? getCamera(roll.cameraId).name : '';
 
   return (
     <div class="page" data-testid="roll-screen">
       <Header
-        title={roll.kind === 'import' ? t('gal.imported') : stock.name}
-        sub={`${formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · ${t('gal.frames', { n: photos?.length ?? roll.shots })}`}
+        title={roll.kind === 'import' ? t('gal.imported') : `${camName} · ${stock.name}`}
+        sub={`${inCamera(roll) ? t('cam.inCamera') : formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · ${t('gal.frames', { n: photos?.length ?? roll.shots })}`}
         onBack={() => back({ name: 'gallery' })}
         right={
           <>

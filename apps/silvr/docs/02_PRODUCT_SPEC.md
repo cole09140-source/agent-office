@@ -56,7 +56,34 @@
 - 여러 탭 동시 사용 시 BroadcastChannel로 동기화
 - iOS Safari 탭 사용자에게 1회 홈 화면 추가 안내(7일 저장소 삭제 정책 대응)
 
-## 3. 필름 스톡 (12종, 모두 자체 명칭)
+## 3. 카메라 바디 (14종, 모두 자체 명칭)
+
+카메라마다 **촬영 방식, 렌즈 특성, 포맷, 플래시, 날짜 각인, 셔터음, 뷰파인더, 넣을 수 있는 필름과 장수**가 다릅니다. 렌즈 특성은 GPU 셰이더와 CPU 레퍼런스 양쪽에 같은 수식으로 구현돼 있습니다.
+
+| ID | 이름 | 계열 | 촬영 방식 | 포맷 / 장수 | 렌즈·특징 | 셔터음·뷰파인더 |
+|----|------|------|-----------|-------------|-----------|-----------------|
+| pro35 | Pro 35 | SLR | 1장 | 3:2·4:3·1:1 / 12·24·36 | 깨끗한 렌즈, 1×/2× 줌, 노출 다이얼 | 미러 슬랩 · 스플릿 프리즘 |
+| snap27 | Snap 27 | 일회용 | 1장 | 3:2 / 27 고정 | 뭉개진 플라스틱 렌즈, 배럴 왜곡, **매번 플래시 충전**(LED+충전음), 날짜 기본 켬, Snap 800 고정 | 플라스틱 클릭+휠 · 터널 파인더 |
+| instasq | Insta SQ | 인스턴트 | 1장 | 1:1 / 10장 팩 | 인스턴트 테두리, **사진 배출 애니메이션**, 45초간 서서히 현상, 카메라 안에서 바로 보기 | 모터 배출음 · 흰 프레임 |
+| half72 | Half 72 | 하프프레임 | **2번 눌러 1장** (세로 3:4 두 장을 나란히) | 3:2 / 72·48·24 하프 | 대기 중인 A면은 새로고침해도 보존, 중간에 되감으면 B면은 빈 칸 | 리프 셔터 · A/B 표시 |
+| zonelc | Zone LC | 컴팩트 | 1장 | 3:2 / 24·36 | 강한 터널 비네팅, X-Pro 교차현상 기본 | 리프 셔터 · 코너 마크 |
+| toy120 | Toy 120 | 중판 토이 | 1장 | 1:1 / 12 고정 | 심한 주변부 흐림, 비네팅, 색수차, 빛샘 45% | 플라스틱 · 비네팅 |
+| quad4 | Quad Action | 4렌즈 | **1번 눌러 4장**(0.2초 간격) → 2×2 | 3:2 / 24·36 | 렌즈마다 비네팅 | 4연속 클릭 · 2×2 진행 표시 |
+| doublex | Double X | 다중노출 | **2번 눌러 1장** (스크린 합성) | 3:2 / 24·36 | 첫 노출을 뷰파인더에 고스트로 표시 | 미러 슬랩 · 1/2, 2/2 |
+| panox | Pano X | 파노라마 | 1장 | 65:24 / 21 고정 | 와이드, 중앙 필터 비네팅 | 리프 셔터 · 와이드 가이드 |
+| fish180 | Fish 180 | 어안 | 1장 | 1:1 원형 / 24·36 | 180° 원형 어안 투영, 원 밖은 검정 | 플라스틱 |
+| cine | Cine Scope | 아나모픽 | 1장 | 2.39:1 / 24·36 | **푸른 수평 스트릭 플레어**, Neon 800T 기본 | 클로 이송음 · 24FPS 프레임 |
+| ccd03 | CCD 2003 | 디카 | 1장 | 4:3 / 99장 메모리 | 샤픈, 보라 번짐, 디지털 날짜 `2026.10.25 14:03`, 1×~3× 줌, 바로 보기 | 디지털 셔터+삐 · LCD 정보 |
+| pixel | Pixel Pocket | 2비트 픽셀 | 1장 | 8:7 / 30장 | 128×112 셀, Bayer 디더링, 팔레트 5종(moss/mono/sepia/ice/berry), **PNG 무손실** | 칩튠 · 픽셀 프레임 |
+| range | Range M | 레인지파인더 | 1장 | 3:2 / 24·36 | 선명한 렌즈(샤픈), Mono 400 기본 | 조용한 리프 · 브라이트 프레임+이중상 패치 |
+
+공통 규칙
+- 카메라를 고르면 그 카메라의 **대표 필름**이 자동 선택됩니다(바꿀 수 있음). 마지막으로 쓴 카메라·필름은 기억합니다.
+- 롤은 카메라에 묶입니다. 촬영 중에는 카메라를 바꿀 수 없습니다(실제 필름처럼).
+- 인스턴트·디지털 카메라(Insta SQ, CCD 2003, Pixel Pocket)는 현상소를 거치지 않습니다. 찍은 사진은 바로 보이고, 팩이나 카드를 다 쓰면 자동으로 앨범에 들어갑니다.
+- 다크룸 재현상은 카메라 범위 안에서만 됩니다. 카메라가 허용한 필름만 고를 수 있고, 디지털 센서는 증감현상·만료·빛샘을 숨기며, 픽셀 카메라는 팔레트만 바꿀 수 있습니다. 노출 보정은 모든 카메라에서 됩니다.
+
+## 4. 필름 스톡 (16종, 모두 자체 명칭)
 
 | ID | 이름 | 계열 | 무료/PRO | 특징 |
 |----|------|------|----------|------|
@@ -72,22 +99,26 @@
 | silver100 | Silver 100 | 흑백 | PRO | 고운 입자 |
 | dream160 | Dream 160 | 컬러 네거 | PRO | 저대비 파스텔 |
 | expired98 | Expired '98 | 만료 필름 | PRO | 마젠타 포그, 먼지 |
+| xpro200 | X-Pro 200 | 교차현상 | PRO | 강한 대비, 연두 하이라이트, 청록 그림자 |
+| instamini | Insta Mini | 인스턴트 | 무료 | 밝고 차가운 미니 인스턴트 |
+| ccd | CCD Sensor | 디지털(전용) | — | CCD 2003 전용 |
+| pixel | Pixel Sensor | 픽셀(전용) | — | Pixel Pocket 전용 |
 
 > 결제가 꺼져 있어(`PAYMENTS_ENABLED = false`) PRO 필름도 모두 무료이며 PRO 배지는 숨겨져 있습니다.
 
-## 4. 데이터 모델
+## 5. 데이터 모델
 
 ```
-Roll   { id, kind: camera|import, stockId, capacity, shots, aspect, status: loaded|developing|developed,
-         createdAt, finishedAt?, readyAt?, seenAt?, coverPhotoId? }
+Roll   { id, kind: camera|import, cameraId?, stockId, capacity, shots(노출 수), negatives?(완성된 컷 수), aspect,
+         status: loaded|developing|developed, pending?{kind: half|double}, createdAt, finishedAt?, readyAt?, seenAt?, coverPhotoId? }
 Photo  { id, rollId, frame, takenAt, width, height, develop: DevelopSettings, printKey?, printW?, printH? }
-DevelopSettings { stockId, push, expired, grain, halation, leak(seed|null), flash, dateStamp, border, seed, rotate? }
-blobs  `${photoId}:neg` (원본, JPEG 0.95, 최대 4096px) · `:print` (현상본, 최대 3600px) · `:thumb` (540px)
+DevelopSettings { stockId, cameraId?, push, expired, grain, halation, ev?, leak(seed|null), flash, dateStamp, border, seed, rotate?, palette? }
+blobs  `${photoId}:neg` (원본, JPEG 0.95, 최대 4096px) · `:print` (현상본, 최대 3600px, 픽셀 카메라는 PNG 1024px) · `:thumb` (540px) · `pending:${rollId}` (짝을 기다리는 첫 노출)
 LogRoll / LogFrame (아날로그 노트), kv(settings, lastStock, iosHint)
 ```
 - 현상본은 `developKey(recipe)+dateFormat` 기준 캐시. 레시피가 바뀌면 자동 재현상. `RENDER_VERSION` 증가 시 전체 재현상
 
-## 5. 결제 연동 지점 (미구현)
+## 6. 결제 연동 지점 (미구현)
 - `src/entitlements.ts`: `PAYMENTS_ENABLED`, `hasPro()`, `canUse(feature)`, `canUseStock(stock)`
 - 권장 방식: RevenueCat Capacitor SDK (iOS StoreKit 2 / Google Play Billing), 웹은 Stripe Checkout
 - 게이트 대상: `proStocks`(PRO 필름), `rushDevelop`(즉시 현상) 등. 결제를 붙일 때 StockCard 선택 시 `canUseStock()`이 false면 페이월로 보내는 UI를 추가

@@ -1,6 +1,7 @@
 import { renderCpu } from './cpuRender';
 import { GlFilmRenderer } from './glRenderer';
-import { borderLayout, drawDateStamp, drawDust, drawWithBorder, formatStamp, type DateFormat } from './overlays';
+import { getCamera, hasCamera } from '../cameras/models';
+import { borderLayout, drawDateStamp, drawDust, drawWithBorder, formatDigitalStamp, formatStamp, type DateFormat } from './overlays';
 import { resolveLook } from './resolve';
 import { getStock } from './stocks';
 import type { DevelopSettings } from './types';
@@ -119,7 +120,11 @@ export function composePrint(negative: HTMLCanvasElement, dev: DevelopSettings, 
   const fctx = film.getContext('2d')!;
   const look = resolveLook(dev);
   drawDust(fctx, look.dust, dev.seed, stock.kind, 0, 0, w, h);
-  if (dev.dateStamp) drawDateStamp(fctx, formatStamp(meta.takenAt, meta.dateFormat), 0, 0, w, h);
+  const camera = hasCamera(dev.cameraId) ? getCamera(dev.cameraId) : null;
+  if (dev.dateStamp && camera?.stamp !== 'none') {
+    const text = camera?.stamp === 'digital' ? formatDigitalStamp(meta.takenAt) : formatStamp(meta.takenAt, meta.dateFormat);
+    drawDateStamp(fctx, text, 0, 0, w, h);
+  }
   const layout = borderLayout(dev.border, w, h);
   if (dev.border === 'none') return film;
   const out = makeCanvas(layout.width, layout.height);
@@ -133,9 +138,13 @@ export function composePrint(negative: HTMLCanvasElement, dev: DevelopSettings, 
 async function developNow(original: Blob, dev: DevelopSettings, meta: DevelopMeta, maxLong: number): Promise<DevelopOutput> {
   const bitmap = await createImageBitmap(original);
   try {
-    const src = scaleTo(bitmap, bitmap.width, bitmap.height, safeMaxLong(bitmap.width, bitmap.height, dev, maxLong));
+    const camMax = hasCamera(dev.cameraId) ? getCamera(dev.cameraId).maxLong : undefined;
+    const limit = Math.min(maxLong, camMax ?? maxLong);
+    const src = scaleTo(bitmap, bitmap.width, bitmap.height, safeMaxLong(bitmap.width, bitmap.height, dev, limit));
     const out = composePrint(src, dev, meta);
-    const blob = await canvasToBlob(out, 'image/jpeg', 0.92);
+    // Pixel art stays lossless (JPEG would smear the 4-colour palette); everything else is JPEG.
+    const lossless = getStock(dev.stockId).kind === 'pixel';
+    const blob = await canvasToBlob(out, lossless ? 'image/png' : 'image/jpeg', 0.92);
     const thumbCanvas = scaleTo(out, out.width, out.height, THUMB_MAX_LONG);
     const thumb = await canvasToBlob(thumbCanvas, 'image/jpeg', 0.82);
     return { blob, thumb, width: out.width, height: out.height };

@@ -7,7 +7,10 @@ import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go } from '../state/router';
-import { deletePhoto, getPhoto, listPhotos, subscribe, type Photo } from '../store/rolls';
+import { getCamera, hasCamera } from '../cameras/models';
+import { deletePhoto, getPhoto, listPhotos, subscribe, viewable, type Photo } from '../store/rolls';
+
+const INSTANT_DEV_S = 45;
 
 export function PhotoScreen({ id }: { id: string }) {
   const [photo, setPhoto] = useState<Photo | null | undefined>(undefined);
@@ -49,7 +52,7 @@ export function PhotoScreen({ id }: { id: string }) {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const undeveloped = !!roll && roll.status !== 'developed';
+  const undeveloped = !!roll && !viewable(roll);
   useEffect(() => {
     if (undeveloped) go({ name: 'lab' }, true);
   }, [undeveloped]);
@@ -61,12 +64,15 @@ export function PhotoScreen({ id }: { id: string }) {
       </div>
     );
   }
-  if (roll && roll.status !== 'developed') return null;
+  if (undeveloped) return null;
   const stock = photo ? getStock(photo.develop.stockId) : undefined;
+  const camera = photo && hasCamera(photo.develop.cameraId) ? getCamera(photo.develop.cameraId) : undefined;
+  // Instant prints keep developing for a while after they eject.
+  const instantDev = photo && camera?.id === 'instasq' ? Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000) : 0;
 
   const share = async (download: boolean) => {
     if (!blob || !photo) return;
-    const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt) }], download);
+    const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg') }], download);
     if (res === 'downloaded' && !download) toast(t('view.saveImage'));
   };
 
@@ -104,7 +110,13 @@ export function PhotoScreen({ id }: { id: string }) {
         }}
       >
         {url ? (
-          <img src={url} alt={stock?.name ?? ''} class="print" data-testid="print" />
+          <img
+            src={url}
+            alt={stock?.name ?? ''}
+            class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
+            style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
+            data-testid="print"
+          />
         ) : (
           <div class="developing-tray mono" aria-live="polite">
             {error ? t('common.error') : t('view.developing')}
@@ -146,6 +158,12 @@ export function PhotoScreen({ id }: { id: string }) {
             <dd>
               {stock.name} · ISO {stock.iso}
             </dd>
+            {camera && (
+              <>
+                <dt>{t('dr.camera')}</dt>
+                <dd>{camera.name}</dd>
+              </>
+            )}
             <dt>{t('view.taken')}</dt>
             <dd>{formatDate(photo.takenAt, signalLang.value, true)}</dd>
             <dt>{t('view.frame')}</dt>

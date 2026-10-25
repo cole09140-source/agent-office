@@ -1,6 +1,6 @@
 import { computed, signal } from '@preact/signals';
 import { detectLang } from '../i18n';
-import { getActiveRoll, listRolls, subscribe, type Roll } from '../store/rolls';
+import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
 import { DEFAULT_SETTINGS, saveSettings, type Settings } from '../store/settings';
 import { signalLang } from './lang';
 
@@ -11,8 +11,9 @@ export const now = signal(Date.now());
 export const ready = signal(false);
 
 export const developingRolls = computed(() => rolls.value.filter((r) => r.status === 'developing'));
-export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed'));
-export const newRollCount = computed(() => developedRolls.value.filter((r) => !r.seenAt).length);
+/** Rolls shown in the album: developed, plus instant/digital cameras' rolls still in the camera. */
+export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || inCamera(r)));
+export const newRollCount = computed(() => developedRolls.value.filter((r) => r.status === 'developed' && !r.seenAt).length);
 
 export function applyLang(s: Settings): void {
   signalLang.value = s.lang === 'auto' ? detectLang() : s.lang;
