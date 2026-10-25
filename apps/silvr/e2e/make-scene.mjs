@@ -1,9 +1,10 @@
 // Generates a synthetic outdoor scene as a Y4M clip for Chrome's fake camera.
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 export function makeScene(path, W = 1280, H = 720, frames = 4) {
-  if (existsSync(path)) return path;
-  mkdirSync(path.replace(/\/[^/]+$/, ''), { recursive: true });
+  if (existsSync(path) && statSync(path).isFile()) return path;
+  mkdirSync(dirname(path), { recursive: true });
   const header = Buffer.from(`YUV4MPEG2 W${W} H${H} F30:1 Ip A1:1 C420jpeg\n`);
   const chunks = [header];
   const clamp = (v) => (v < 0 ? 0 : v > 255 ? 255 : v);

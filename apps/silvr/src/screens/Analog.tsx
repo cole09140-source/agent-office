@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { download } from '../platform/share';
 import { confirm } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go } from '../state/router';
+import { back, go, isCurrent } from '../state/router';
 import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, saveLogFrame, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
 
 /** Last meter reading, so the log form can prefill it. */
@@ -223,7 +223,7 @@ export function LogScreen({ id }: { id: string }) {
   const remove = async () => {
     if (!(await confirm(t('an.log.deleteConfirm'), t('common.delete'), true))) return;
     await deleteLogRoll(id);
-    go({ name: 'analog' }, true);
+    if (isCurrent({ name: 'log', id })) go({ name: 'analog' }, true);
   };
 
   return (

@@ -86,6 +86,14 @@ export function goTab(r: Route): void {
   }
 }
 
+/**
+ * Still on `r`? Navigation after an await must check this: if the user went
+ * back meanwhile, a replace would overwrite the screen they returned to.
+ */
+export function isCurrent(r: Route): boolean {
+  return routeToHash(route.value) === routeToHash(r);
+}
+
 /** In-app back; falls back to `fallback` when the page was opened via a deep link. */
 export function back(fallback: Route): void {
   if (depth() > 0) history.back();

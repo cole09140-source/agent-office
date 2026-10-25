@@ -10,7 +10,12 @@ async function clipped(page: Page): Promise<string[]> {
     for (const el of Array.from(document.querySelectorAll<HTMLElement>('button, h1, h2, h3, label, .stock-name, .seg button, .chip, .toast'))) {
       const style = getComputedStyle(el);
       if (style.display === 'none' || el.offsetParent === null) continue;
-      if (el.scrollWidth > el.clientWidth + 1 && style.overflowX !== 'auto' && !el.classList.contains('stock-strip')) {
+      // Measure the content itself: scrollWidth also counts the chips' ::after hit area (inset −2px).
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const content = range.getBoundingClientRect().width;
+      const box = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      if (content > box + 1 && style.overflowX !== 'auto' && !el.classList.contains('stock-strip')) {
         out.push(`${el.tagName.toLowerCase()}.${el.className}: "${el.textContent?.trim().slice(0, 30)}"`);
       }
     }

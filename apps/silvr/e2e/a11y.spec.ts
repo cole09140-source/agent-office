@@ -3,6 +3,15 @@ import { expect, test } from '@playwright/test';
 import { loadRoll, shoot, start } from './helpers';
 
 async function audit(page: import('@playwright/test').Page, name: string) {
+  // Let sheet/screen entrance animations finish; axe reads blended colors mid-fade.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
   const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   const issues = res.violations.map((v) => `${name}: ${v.id} (${v.impact}) × ${v.nodes.length} — ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(', ')}`);
   return issues;

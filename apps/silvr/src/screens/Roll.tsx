@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, settings, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go } from '../state/router';
+import { back, go, isCurrent } from '../state/router';
 import { getCamera } from '../cameras/models';
 import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, subscribe, viewable, type Photo } from '../store/rolls';
 
@@ -74,7 +74,7 @@ export function RollScreen({ id }: { id: string }) {
   const remove = async () => {
     if (await confirm(t('gal.deleteRollConfirm', { n: photos?.length ?? roll.shots }), t('common.delete'), true)) {
       await deleteRoll(roll.id);
-      go({ name: 'gallery' }, true);
+      if (isCurrent({ name: 'roll', id: roll.id })) go({ name: 'gallery' }, true);
     }
   };
 

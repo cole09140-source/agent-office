@@ -163,8 +163,10 @@ test('R36 both languages: no raw keys or unfilled placeholders on any screen', a
     }
     await page.getByTestId('tab-camera').click();
     await page.getByTestId('roll-btn').click();
+    await expect(page.getByTestId('roll-sheet')).toBeVisible();
     await scan(`${lang}/roll-sheet`);
     await page.keyboard.press('Escape');
+    await expect(page.getByTestId('roll-sheet')).toBeHidden();
   }
   expect(leaks).toEqual([]);
 });

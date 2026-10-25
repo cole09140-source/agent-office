@@ -6,7 +6,7 @@ import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go } from '../state/router';
+import { back, go, isCurrent } from '../state/router';
 import { getCamera, hasCamera } from '../cameras/models';
 import { deletePhoto, getPhoto, listPhotos, subscribe, viewable, type Photo } from '../store/rolls';
 
@@ -86,6 +86,7 @@ export function PhotoScreen({ id }: { id: string }) {
     if (!(await confirm(t('view.deleteConfirm'), t('common.delete'), true))) return;
     const next = siblings[idx + 1] ?? siblings[idx - 1];
     await deletePhoto(photo.id);
+    if (!isCurrent({ name: 'photo', id: photo.id })) return;
     if (next) go({ name: 'photo', id: next.id }, true);
     else go({ name: 'gallery' }, true);
   };

@@ -8,7 +8,7 @@ import { getStock, STOCKS } from '../film/stocks';
 import type { BorderStyle, DevelopSettings } from '../film/types';
 import { stockDescription, t, type MsgKey } from '../i18n';
 import { confirm, settings, toast } from '../state/app';
-import { back } from '../state/router';
+import { back, isCurrent } from '../state/router';
 import { blobKey, getBlob, getPhoto, listPhotos, updateDevelop, updateDevelopMany, type Photo } from '../store/rolls';
 
 const PREVIEW_LONG = 1400;
@@ -88,7 +88,7 @@ export function DarkroomScreen({ id }: { id: string }) {
     try {
       await updateDevelop(photo.id, dev);
       toast(t('dr.saved'));
-      back({ name: 'photo', id: photo.id });
+      if (isCurrent({ name: 'darkroom', id: photo.id })) back({ name: 'photo', id: photo.id });
     } finally {
       setSaving(false);
     }
@@ -108,7 +108,7 @@ export function DarkroomScreen({ id }: { id: string }) {
       ]),
     );
     toast(t('dr.applyRollDone'));
-    back({ name: 'photo', id: photo.id });
+    if (isCurrent({ name: 'darkroom', id: photo.id })) back({ name: 'photo', id: photo.id });
   };
 
   if (!dev || !photo) {

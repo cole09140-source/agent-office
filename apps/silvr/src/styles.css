@@ -1487,7 +1487,8 @@ input[type='range']::-moz-range-thumb {
   position: relative;
   flex: 0 0 auto;
   scroll-snap-align: start;
-  width: 96px;
+  /* fits the longest era label ("1954 · 레인지파인더") with headroom for wider CJK fonts */
+  width: 104px;
   display: flex;
   flex-direction: column;
   align-items: center;

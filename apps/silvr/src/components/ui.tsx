@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { canUseStock, PAYMENTS_ENABLED } from '../entitlements';
 import { t } from '../i18n';
 import { confirmReq, settings, toasts } from '../state/app';
@@ -91,7 +91,9 @@ export function Sheet({
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
-  useEffect(() => {
+  // Layout effect: Escape/back and focus must work the moment the sheet is visible.
+  // A plain effect waits for the next frame, which a busy camera preview can delay.
+  useLayoutEffect(() => {
     if (!open) return;
     const opener = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
