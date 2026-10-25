@@ -30,18 +30,29 @@ export async function requestOrientationPermission(): Promise<void> {
 }
 
 /**
- * Pure mapping from tilt angles to clockwise quarter turns needed to make a
- * portrait frame upright. gamma < 0: left edge down (top points left).
+ * Pure mapping from tilt angles (degrees) to clockwise quarter turns needed to
+ * make a portrait frame upright. Uses the world-up vector in device
+ * coordinates, (−cosβ·sinγ, sinβ, cosβ·cosγ) for Z-X'-Y'' Euler angles, so it
+ * stays correct when β/γ wrap (camera pointed above the horizon).
+ * ux > 0: the device's right edge points up (top points left) → turn CCW (3).
  */
 export function quarterTurnsFor(g: number | null, b: number | null): number {
   if (g === null || b === null) return 0;
-  if (Math.abs(g) < 50 || Math.abs(b) > 40) return 0;
-  return g < 0 ? 3 : 1;
+  const rad = Math.PI / 180;
+  const ux = -Math.cos(b * rad) * Math.sin(g * rad);
+  const uy = Math.sin(b * rad);
+  if (Math.abs(ux) <= Math.max(0.5, Math.abs(uy))) return 0;
+  return ux < 0 ? 1 : 3;
 }
 
-/** Quarter turns for a capture right now, only when the frame is portrait and the UI is portrait. */
-export function captureRotation(frameW: number, frameH: number): number {
+/**
+ * Quarter turns for a capture right now, only when the frame is portrait and
+ * the UI is portrait. An un-mirrored selfie frame is left-right swapped
+ * relative to the device, so its sideways turns are reversed.
+ */
+export function captureRotation(frameW: number, frameH: number, unmirroredSelfie = false): number {
   if (frameW >= frameH) return 0;
   if (typeof window !== 'undefined' && window.innerWidth > window.innerHeight) return 0;
-  return quarterTurnsFor(gamma, beta);
+  const q = quarterTurnsFor(gamma, beta);
+  return unmirroredSelfie && q !== 0 ? 4 - q : q;
 }

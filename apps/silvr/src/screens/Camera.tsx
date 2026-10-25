@@ -220,8 +220,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (s.sound) shutterSound();
       if (s.haptics) haptic(18);
       if (aborted()) return;
-      const neg = await captureVideoFrame(c.video, aspect, zoom, c.facing === 'user' && s.mirrorFront);
-      const rotate = captureRotation(c.width, c.height);
+      const mirror = c.facing === 'user' && s.mirrorFront;
+      const neg = await captureVideoFrame(c.video, aspect, zoom, mirror);
+      const rotate = captureRotation(c.width, c.height, c.facing === 'user' && !mirror);
       setBlink(true);
       setTimeout(() => setBlink(false), 140);
       setScreenFlash(false);

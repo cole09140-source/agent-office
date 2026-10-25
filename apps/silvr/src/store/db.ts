@@ -64,7 +64,10 @@ async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
   try {
     return await fn(await openDb());
   } catch (err) {
-    if ((err as DOMException)?.name !== 'InvalidStateError') throw err;
+    // InvalidStateError: closed connection. UnknownError: WebKit's "Connection to
+    // Indexed Database server lost" after backgrounding. Reopen and retry once.
+    const name = (err as DOMException)?.name;
+    if (name !== 'InvalidStateError' && name !== 'UnknownError') throw err;
     dbPromise = null;
     return fn(await openDb());
   }

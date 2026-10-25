@@ -237,6 +237,11 @@ describe('mobile safety', () => {
     expect(quarterTurnsFor(-85, 5)).toBe(3); // top pointing left
     expect(quarterTurnsFor(85, -5)).toBe(1); // top pointing right
     expect(quarterTurnsFor(70, 80)).toBe(0); // tilted back, not sideways
+    // Sideways and pointed above the horizon: Euler angles wrap (β≈±180, γ flips sign).
+    expect(quarterTurnsFor(80, 165)).toBe(3); // same pose as (-80, 15)
+    expect(quarterTurnsFor(-80, -165)).toBe(1); // same pose as (80, -15)
+    expect(quarterTurnsFor(-80, 15)).toBe(3);
+    expect(quarterTurnsFor(10, 175)).toBe(0); // face-up / upside-down-ish, not sideways
   });
   it('rotation is part of the develop key', () => {
     const d = defaultDevelop(getStock('sunny200'), 1);

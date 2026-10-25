@@ -1,3 +1,4 @@
+import { seedHash } from './random';
 import { FRAG, MAX_LEAKS, VERT } from './shader';
 import type { ResolvedLook } from './types';
 
@@ -184,7 +185,7 @@ export class GlFilmRenderer {
     gl.uniform1f(this.u('uBlurLod'), blurLod);
     gl.uniform1f(this.u('uGrainPx'), Math.max(0.5, look.grainSize * (shortOut / 1200)));
     gl.uniform1f(this.u('uChromaPx'), look.chroma * (shortOut / 1200));
-    gl.uniform1f(this.u('uSeed'), opts.seed ?? look.seed);
+    gl.uniform1ui(this.u('uSeedHash'), seedHash(opts.seed ?? look.seed));
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.srcTex);

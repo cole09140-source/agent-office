@@ -14,6 +14,7 @@ void main() {
  */
 export const FRAG = `#version 300 es
 precision highp float;
+precision highp int; // the PCG grain hash needs full 32-bit integer math
 in vec2 vUv;
 out vec4 outColor;
 
@@ -39,7 +40,7 @@ uniform float uBloom;
 uniform float uVignette;
 uniform float uChromaPx;
 uniform float uFlash;
-uniform float uSeed;
+uniform uint uSeedHash; // seedHash(seed) from random.ts, computed on the CPU so both paths agree
 uniform int uLeakCount;
 uniform vec4 uLeakPos[${MAX_LEAKS}];   // x, y, radius, intensity
 uniform vec3 uLeakColor[${MAX_LEAKS}];
@@ -144,7 +145,7 @@ void main() {
   vec2 px = vec2(uv.x, uv.y) * uOutSize / uGrainPx;
   float yg = clamp(dot(c, LUMA), 0.0, 1.0);
   float amp = uGrain * (0.35 + 0.65 * (1.0 - (2.0 * yg - 1.0) * (2.0 * yg - 1.0)));
-  vec4 n = vnoise4(px, pcg(uint(uSeed * 1000.0)));
+  vec4 n = vnoise4(px, uSeedHash);
   c += amp * 1.8 * ((1.0 - uGrainChroma) * vec3(n.x) + uGrainChroma * n.yzw);
 
   outColor = vec4(clamp(c, 0.0, 1.0), 1.0);
