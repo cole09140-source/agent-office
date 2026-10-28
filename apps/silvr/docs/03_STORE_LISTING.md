@@ -76,7 +76,7 @@ SILVR shoots like real film and develops like a real darkroom.
 5. 밀착 인화 — "롤 한 장으로 공유"
 6. Sunny 16 계산기 — "실제 필름 카메라까지"
 
-> 스크린샷은 실제 기기에서 찍은 실사로 다시 촬영하세요. E2E 테스트 이미지(`e2e/.shots/`)는 합성 테스트 장면입니다.
+> 스크린샷은 `scripts/store-shots/`로 만듭니다(iPhone 6.7" 1290×2796, Android 1080×1920, 한·영, 문구 프레임 포함). 가상 카메라에 넣는 장면 사진은 AI로 만든 이미지이므로, 실제 촬영 사진으로 바꾸려면 사진만 교체해 다시 실행하세요. E2E 테스트 이미지(`e2e/.shots/`)는 합성 테스트 장면이라 쓰지 마세요.
 
 ## 심사 메모 (App Review Notes)
 - 로그인 불필요. 모든 기능은 오프라인에서 동작합니다.

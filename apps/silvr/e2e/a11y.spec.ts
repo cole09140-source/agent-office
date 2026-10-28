@@ -73,3 +73,25 @@ test('keyboard: shutter with Space, sheets close with Escape, focus visible', as
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('roll-sheet')).toBeHidden();
 });
+
+test('keyboard: Tab and Shift+Tab stay inside an open sheet', async ({ page }) => {
+  await start(page);
+  await page.getByTestId('tab-analog').click();
+  await page.getByTestId('btn-new-log').click();
+  const sheet = page.locator('.sheet[role=dialog]');
+  await expect(sheet).toBeVisible();
+  const inside = () => sheet.evaluate((el) => el.contains(document.activeElement));
+  // Press past the end of the form in both directions, so leaving would show.
+  const stops = await sheet.evaluate(
+    (el) => Array.from(el.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')).filter((e) => e.tabIndex >= 0).length,
+  );
+  const seen = new Set<string>();
+  for (const key of ['Tab', 'Shift+Tab']) {
+    for (let i = 0; i < stops + 3; i++) {
+      await page.keyboard.press(key);
+      expect(await inside(), `${key} #${i + 1} left the sheet`).toBe(true);
+      seen.add(await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 60) ?? ''));
+    }
+  }
+  expect(seen.size).toBeGreaterThan(3); // focus actually moves through the form
+});

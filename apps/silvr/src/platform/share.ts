@@ -23,10 +23,18 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
+let lastShared: string[] = [];
+
 /** Native (Capacitor) path: write to cache, then open the OS share sheet (which offers "Save Image"). */
 async function nativeShare(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
   // Loaded lazily so the web build never pays for the native plugins.
   const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
+  const names = files.map((f) => f.name);
+  const remove = (paths: string[]) => paths.forEach((path) => void Filesystem.deleteFile({ path, directory: Directory.Cache }).catch(() => undefined));
+  // Like saveFile: the share target (Instagram, mail…) may still be reading the images
+  // when the chooser returns, so the previous batch is only cleaned up now.
+  remove(lastShared.filter((p) => !names.includes(p)));
+  lastShared = names;
   const uris: string[] = [];
   try {
     for (const f of files) {
@@ -37,9 +45,9 @@ async function nativeShare(files: { blob: Blob; name: string }[]): Promise<Share
     return 'shared';
   } catch (err) {
     if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
+    remove(names);
+    lastShared = [];
     throw err;
-  } finally {
-    for (const f of files) void Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => undefined);
   }
 }
 

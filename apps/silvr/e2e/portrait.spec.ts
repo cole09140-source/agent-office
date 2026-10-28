@@ -32,3 +32,31 @@ test('portrait camera → portrait viewfinder and portrait prints for every form
   expect(ratios[2]).toBeCloseTo(1, 1);
   expect(errors).toEqual([]);
 });
+
+/** A tall print must stay inside its stage on small phones; it used to cover the action buttons. */
+for (const [w, h] of [[360, 640], [375, 667]]) {
+  test(`small phone ${w}×${h}: a portrait print never covers the viewer or darkroom buttons`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await start(page);
+    await loadRoll(page, 'sunny200', '12');
+    await shoot(page, 1);
+    await page.getByTestId('roll-btn').click();
+    await page.getByTestId('btn-rewind').click();
+    await page.getByTestId('confirm-ok').click();
+    await page.getByTestId('speed-instant').click();
+    await expect(page.locator('[data-testid=thumb] img')).toHaveCount(1, { timeout: 30_000 });
+    await page.getByTestId('thumb').first().click();
+    await expect(page.getByTestId('print')).toBeVisible();
+    await page.waitForTimeout(1300);
+    const covered = (ids: string[]) =>
+      page.evaluate((ids) => ids.filter((id) => {
+        const b = document.querySelector(`[data-testid=${id}]`)!.getBoundingClientRect();
+        return !document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)?.closest(`[data-testid=${id}]`);
+      }), ids);
+    expect(await covered(['btn-share', 'btn-save', 'btn-darkroom', 'btn-delete'])).toEqual([]);
+    await page.getByTestId('btn-darkroom').click();
+    await expect(page.getByTestId('dr-canvas')).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(await covered(['btn-dr-save'])).toEqual([]);
+  });
+}

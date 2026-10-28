@@ -96,7 +96,10 @@ export function Sheet({
   useLayoutEffect(() => {
     if (!open) return;
     const opener = document.activeElement as HTMLElement | null;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeRef.current();
+      else if (e.key === 'Tab' && ref.current) trapTab(e, ref.current);
+    };
     window.addEventListener('keydown', onKey);
     const offBack = pushBackHandler(() => closeRef.current());
     ref.current?.querySelector<HTMLElement>('button, input, select')?.focus({ preventScroll: true });
@@ -117,6 +120,27 @@ export function Sheet({
       </div>
     </div>
   );
+}
+
+/** Keep Tab / Shift+Tab cycling inside a modal sheet. */
+function trapTab(e: KeyboardEvent, box: HTMLElement): void {
+  const items = Array.from(box.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')).filter(
+    (el) => el.tabIndex >= 0 && !el.hasAttribute('disabled') && el.getClientRects().length > 0,
+  );
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const active = document.activeElement;
+  if (!box.contains(active)) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && active === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }
 
 export function Toggle({ label, checked, onChange, testId }: { label: string; checked: boolean; onChange: (v: boolean) => void; testId?: string }) {

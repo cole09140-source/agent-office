@@ -5,7 +5,7 @@
 ```bash
 cd apps/silvr
 npm ci
-npm run test:all     # typecheck + unit + build + E2E (선택, 약 8분)
+npm run test:all     # typecheck + unit + build + E2E (선택, 약 25분)
 npm run build        # → dist/
 ```
 
@@ -74,12 +74,26 @@ npm run cap:android      # build → cap sync android → Android Studio 열기
 - [x] 스토어 문안 KR/EN
 
 ### 사람이 해야 하는 항목 ⏳
-- [ ] **실기기 QA**(필수): iPhone(iOS 16~18)과 Android 2대 이상에서 카메라, 플래시(토치), 가로 촬영 회전, 공유, 사진 앱 저장을 확인. 이 환경에는 실제 기기가 없어 가상 카메라로만 검증했습니다.
-- [ ] 개인정보 처리방침의 연락처 `privacy@silvr.app`를 실제 주소로 교체
-- [ ] 앱 이름 "SILVR" 상표 검색(KIPRIS, USPTO). 충돌 시 `capacitor.config.json`, `manifest.webmanifest`, i18n 문자열 변경
-- [ ] 실사 스크린샷 촬영(문안의 6컷 구성 참고)
+- [x] 개인정보 처리방침·이용약관에 운영자(아티움그룹 주식회사)와 보호책임자·연락처(play@muzig.ai) 기재 (2026-10-28)
+- [x] 상표 1차 조사: `docs/06_TRADEMARK_SEARCH.md`. 한국·미국 낮음~중간, EU·호주 중간~높음(Silvr Group 등 9류 등록). 출원 전 변리사 검토 권장, 이름 유지 여부는 결정 필요
+- [x] 스토어 스크린샷: 6컷 × (iPhone 6.7" 1290×2796 · Android 1080×1920) × (한·영), 문구 프레임 포함(`scripts/store-shots/`, 아래 F). 장면 사진은 AI로 만든 이미지 → 실제 사진으로 바꾸려면 사진만 바꿔 다시 실행
+- [x] Android 에뮬레이터 검수(Android 15, 14항목 통과, `scripts/android-qa.mjs`)
+- [ ] **실기기 QA**(필수): `SILVR-1.0.0-debug.apk`를 Android 폰 2대 이상에 설치해 카메라, 플래시(토치), 가로 촬영 회전, 공유, 사진 앱 저장 확인. iPhone(iOS 16~18)은 Mac에서 `npm run cap:ios`로 빌드 후 확인
 - [ ] 웹 배포 도메인 확정 후 `index.html`의 `og:image`를 절대 URL로 변경(SNS 미리보기용)
 - [ ] (선택) 결제: `src/entitlements.ts` 교체. RevenueCat Capacitor SDK 권장
+
+## F. 출시 도구
+```bash
+# 스토어 스크린샷: 장면 사진 → 가상 카메라 영상 → 4세트 촬영 → 문구 프레임
+node scripts/store-shots/make-scene.mjs <out.y4m> alley.png seaside.png cafe.png neon.png
+npm run build
+SCENE=<out.y4m> OUT=<저장 폴더> npx playwright test -c scripts/store-shots/store-shots.config.ts
+node scripts/store-shots/frame.mjs <저장 폴더>
+
+# Android 실기기·에뮬레이터 검수(디버그 APK 설치 후, adb 연결)
+node scripts/android-qa.mjs <adb 기기 이름> <캡처 폴더>
+```
+디버그 APK 빌드: `npm run build && npx cap sync android` 후 `android/`에서 `gradlew assembleDebug`(JDK 21, Android SDK). 경로에 한글이 있으면 Gradle이 거부하므로 `subst`로 영문 드라이브를 연결해 빌드합니다.
 
 ## E. 운영 팁
 - 필름 렌더링 수식을 바꾸면 `src/film/resolve.ts`의 `RENDER_VERSION`을 올리세요. 기존 사진이 새 수식으로 자동 재현상됩니다(원본은 보존).

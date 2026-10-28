@@ -15,7 +15,8 @@
 | [docs/02_PRODUCT_SPEC.md](docs/02_PRODUCT_SPEC.md) | 기능 명세, 카메라 14종, 필름 16종, 데이터 모델, 결제 연동 지점 |
 | [docs/03_STORE_LISTING.md](docs/03_STORE_LISTING.md) | App Store / Google Play 문안(KR/EN) |
 | [docs/04_LAUNCH_GUIDE.md](docs/04_LAUNCH_GUIDE.md) | 웹, iOS, Android 배포 절차와 출시 체크리스트 |
-| [docs/05_QA_REPORT.md](docs/05_QA_REPORT.md) | QA 결과: 1차 10라운드, 카메라 15라운드, 심화 50라운드 |
+| [docs/05_QA_REPORT.md](docs/05_QA_REPORT.md) | QA 결과: 1차 10라운드, 카메라 15라운드, 심화 50라운드, 출시 준비 점검 |
+| [docs/06_TRADEMARK_SEARCH.md](docs/06_TRADEMARK_SEARCH.md) | "SILVR" 상표 1차 조사(KR·US·EU)와 대체 이름 후보 |
 
 ## 개발
 
@@ -45,4 +46,5 @@ src/
 public/        manifest, 아이콘, 개인정보·약관·라이선스
 ios/ android/  Capacitor 네이티브 프로젝트
 tests/ e2e/    vitest / Playwright
+scripts/       아이콘·스플래시 생성, 스토어 스크린샷(store-shots), Android 기기 검수(android-qa)
 ```
