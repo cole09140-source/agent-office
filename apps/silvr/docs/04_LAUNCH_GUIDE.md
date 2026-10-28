@@ -61,7 +61,7 @@ cd android
 1. **업로드 키**: `android/keystore/silvr-upload.jks` + `android/keystore.properties`(storeFile·storePassword·keyAlias·keyPassword). 둘 다 git에서 제외돼 있고, 없으면 릴리스가 서명되지 않은 채로 빌드됩니다. 원본은 별도 백업(2026-10-28 생성분은 `Desktop\클로드코드\_결과물\SILVR_안드로이드\서명키_백업`)
 2. 릴리스는 R8 코드 축소·리소스 축소가 켜져 있습니다(앱 전용 플러그인은 Capacitor 규칙으로 보존). 출시 전 `scripts/android-release-smoke.mjs`로 서명본을 기기에서 확인
 3. 버전: `android/app/build.gradle`의 `versionCode`(올릴 때마다 +1)·`versionName`
-4. Play Console: Play 앱 서명 사용(권장), `.aab` 업로드, 데이터 보안 양식 "수집·공유 데이터 없음", 콘텐츠 등급 설문, 스토어 문안·스크린샷 입력
+4. Play Console: 입력할 값은 `docs/07_PLAY_CONSOLE.md`(등록정보·그래픽·데이터 보안·콘텐츠 등급·출시 노트). 개인정보처리방침 URL이 필수라 웹 배포(도메인)가 먼저 필요
 5. 앱 전용 네이티브 코드: `GalleryPlugin.java`(사진을 `Pictures/SILVR`에 저장, Android 10+ MediaStore·7~9 저장소 권한). 매니페스트: 카메라·위치(선택)·진동·저장소(28 이하), 자동 백업 끔(`allowBackup=false`), 세로 고정
 
 ## D. 출시 전 체크리스트
@@ -93,6 +93,7 @@ node scripts/store-shots/make-scene.mjs <out.y4m> alley.png seaside.png cafe.png
 npm run build
 SCENE=<out.y4m> OUT=<저장 폴더> npx playwright test -c scripts/store-shots/store-shots.config.ts
 node scripts/store-shots/frame.mjs <저장 폴더>
+node scripts/store-shots/play-assets.mjs <저장 폴더>   # Play 그래픽 이미지(1024×500)·512 아이콘
 
 # Android 실기기·에뮬레이터 검수(디버그 APK 설치 후, adb 연결) — 21항목
 node scripts/android-qa.mjs <adb 기기 이름> <캡처 폴더>
