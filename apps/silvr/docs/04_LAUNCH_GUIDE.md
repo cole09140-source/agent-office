@@ -45,7 +45,7 @@ Xcode에서:
 2. General → Version `1.0.0`, Build `1`
 3. Info.plist 권한 문구는 이미 넣어 두었습니다(카메라, 사진 추가·읽기, 위치, 모션). 화면은 세로로 고정돼 있습니다.
 4. Product → Archive → App Store Connect 업로드
-5. App Store Connect: `docs/03_STORE_LISTING.md` 문안, 개인정보 라벨 "데이터 수집 안 함", 개인정보 처리방침 URL(웹 배포의 `/privacy.html`)
+5. App Store Connect: 입력할 값은 `docs/08_APP_STORE_CONNECT.md`(아티움그룹 주식회사 조직 등록, 앱 정보, 개인정보 라벨 "데이터 수집 안 함", 연령 등급 4+, 심사 정보). 개인정보·지원 URL은 웹 배포의 `/privacy.html`·`/support.html`
 
 ## C. Android (Google Play)
 
@@ -78,6 +78,8 @@ cd android
 
 ### 사람이 해야 하는 항목 ⏳
 - [x] 개인정보 처리방침·이용약관에 운영자(아티움그룹 주식회사)와 보호책임자·연락처(play@muzig.ai) 기재 (2026-10-28)
+- [x] 고객지원 페이지(`public/support.html`, 지원 URL용)와 설정 화면 저작권 표기(© 2026 ATIUM GROUP Co., Ltd.)
+- [ ] 스토어 개발자 계정: 아티움그룹 주식회사 **조직** 계정(D-U-N-S 필요). 예전 Play 계정 ATIUM COMPANY는 2024-03 해지 → `docs/07_PLAY_CONSOLE.md` 0절 주의 사항
 - [x] 상표 1차 조사: `docs/06_TRADEMARK_SEARCH.md`. 한국·미국 낮음~중간, EU·호주 중간~높음(Silvr Group 등 9류 등록). 출원 전 변리사 검토 권장, 이름 유지 여부는 결정 필요
 - [x] 스토어 스크린샷: 6컷 × (iPhone 6.7" 1290×2796 · Android 1080×1920) × (한·영), 문구 프레임 포함(`scripts/store-shots/`, 아래 F). 장면 사진은 AI로 만든 이미지 → 실제 사진으로 바꾸려면 사진만 바꿔 다시 실행
 - [x] Android 에뮬레이터 검수(Android 15): 디버그 21항목, 서명된 릴리스 6단계 통과

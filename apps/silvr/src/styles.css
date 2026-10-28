@@ -79,6 +79,10 @@ a {
 .muted {
   color: var(--fg-2);
 }
+.app-credit {
+  margin: 20px 0 4px;
+  text-align: center;
+}
 .small {
   font-size: 13px;
 }

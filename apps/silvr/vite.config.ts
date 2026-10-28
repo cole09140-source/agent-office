@@ -11,7 +11,7 @@ function serviceWorker(): Plugin {
     apply: 'build',
     generateBundle(_opts, bundle) {
       const assets = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
-      const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'licenses.html', 'legal.css'];
+      const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css'];
       const urls = ['./', ...new Set([...assets, ...publicFiles])].map((f) => (f === './' ? f : `./${f}`));
       const template = readFileSync(new URL('./src/sw-template.js', import.meta.url), 'utf8');
       const version = `${pkg.version}-${Date.now().toString(36)}`;

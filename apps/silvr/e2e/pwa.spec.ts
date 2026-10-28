@@ -57,7 +57,7 @@ test('manifest and icons are valid for installation', async ({ page, request }) 
     const r = await request.get(new URL(icon.src, new URL(href!, page.url())).toString());
     expect(r.ok(), icon.src).toBe(true);
   }
-  for (const p of ['privacy.html', 'terms.html', 'licenses.html', 'legal.css', 'icons/apple-touch-icon.png', 'icons/og.png']) {
+  for (const p of ['privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css', 'icons/apple-touch-icon.png', 'icons/og.png']) {
     expect((await request.get(new URL(p, page.url()).toString())).ok(), p).toBe(true);
   }
 });

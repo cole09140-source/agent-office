@@ -216,6 +216,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.terms')}</span>
           <Icon name="chevron" size={18} />
         </a>
+        <a class="row link" href="./support.html" target="_blank" rel="noopener">
+          <span>{t('set.support')}</span>
+          <Icon name="chevron" size={18} />
+        </a>
         <a class="row link" href="./licenses.html" target="_blank" rel="noopener">
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
@@ -232,6 +236,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <button class="btn danger wide" onClick={reset} data-testid="btn-reset">
         {t('set.reset')}
       </button>
+      <p class="muted small app-credit">© 2026 ATIUM GROUP Co., Ltd.</p>
     </div>
   );
 }

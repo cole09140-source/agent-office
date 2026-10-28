@@ -9,7 +9,11 @@
 | 연령 등급 | 4+ / 전체 이용가 |
 | 가격 | 무료 (인앱 결제 없음, v1.0 기준) |
 | 개인정보 라벨 | "데이터 수집 안 함 (Data Not Collected)" |
-| 개인정보 처리방침 URL | `https://<배포 도메인>/privacy.html` |
+| 개인정보 처리방침 URL | `https://<SILVR 웹 주소>/privacy.html` |
+| 지원 URL | `https://<SILVR 웹 주소>/support.html` |
+| 개발자 / 판매자 | ATIUM GROUP (법적 이름: 아티움그룹 주식회사 / ATIUM GROUP Co., Ltd.) |
+| 저작권 | © 2026 ATIUM GROUP Co., Ltd. |
+| 연락처 | play@muzig.ai · https://muzig.ai |
 
 ## 한국어
 

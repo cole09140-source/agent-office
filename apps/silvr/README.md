@@ -17,7 +17,8 @@
 | [docs/04_LAUNCH_GUIDE.md](docs/04_LAUNCH_GUIDE.md) | 웹, iOS, Android 배포 절차와 출시 체크리스트 |
 | [docs/05_QA_REPORT.md](docs/05_QA_REPORT.md) | QA 결과: 1차 10라운드, 카메라 15라운드, 심화 50라운드, 출시 준비 점검 |
 | [docs/06_TRADEMARK_SEARCH.md](docs/06_TRADEMARK_SEARCH.md) | "SILVR" 상표 1차 조사(KR·US·EU)와 대체 이름 후보 |
-| [docs/07_PLAY_CONSOLE.md](docs/07_PLAY_CONSOLE.md) | Google Play Console 입력값: 등록정보, 데이터 보안, 콘텐츠 등급, 출시 노트 |
+| [docs/07_PLAY_CONSOLE.md](docs/07_PLAY_CONSOLE.md) | Google Play Console 입력값(아티움그룹 조직 계정): 개발자 계정, 등록정보, 데이터 보안, 콘텐츠 등급, 출시 노트 |
+| [docs/08_APP_STORE_CONNECT.md](docs/08_APP_STORE_CONNECT.md) | App Store Connect 입력값(아티움그룹 조직 등록): 앱 정보, 개인정보 라벨, 연령 등급, 심사 정보 |
 
 ## 개발
 
