@@ -46,5 +46,5 @@ src/
 public/        manifest, 아이콘, 개인정보·약관·라이선스
 ios/ android/  Capacitor 네이티브 프로젝트
 tests/ e2e/    vitest / Playwright
-scripts/       아이콘·스플래시 생성, 스토어 스크린샷(store-shots), Android 기기 검수(android-qa)
+scripts/       아이콘·스플래시 생성, 스토어 스크린샷(store-shots), Android 기기 검수(android-qa, android-release-smoke)
 ```

@@ -71,6 +71,17 @@ export function RollScreen({ id }: { id: string }) {
     }
   };
 
+  const exportContact = async (download: boolean) => {
+    if (!sheet) return;
+    try {
+      const res = await shareImages([sheet], download);
+      if (res === 'downloaded') toast(t('view.savedToast'));
+    } catch (err) {
+      console.error('[silvr] share failed', err);
+      toast(t('common.error'));
+    }
+  };
+
   const remove = async () => {
     if (await confirm(t('gal.deleteRollConfirm', { n: photos?.length ?? roll.shots }), t('common.delete'), true)) {
       await deleteRoll(roll.id);
@@ -114,10 +125,10 @@ export function RollScreen({ id }: { id: string }) {
       <Sheet open={!!sheet} onClose={() => setSheet(null)} title={t('gal.contact')} testId="contact-sheet">
         {sheetUrl && <img class="contact-preview" src={sheetUrl} alt={t('gal.contact')} />}
         <div class="btn-row">
-          <button class="btn ghost" onClick={() => sheet && shareImages([sheet], true)} data-testid="btn-contact-save">
+          <button class="btn ghost" onClick={() => void exportContact(true)} data-testid="btn-contact-save">
             <Icon name="download" size={18} /> {t('view.saveImage')}
           </button>
-          <button class="btn primary" onClick={() => sheet && shareImages([sheet])} data-testid="btn-contact-share">
+          <button class="btn primary" onClick={() => void exportContact(false)} data-testid="btn-contact-share">
             <Icon name="share" size={18} /> {t('view.share')}
           </button>
         </div>

@@ -201,7 +201,11 @@ export function LogScreen({ id }: { id: string }) {
     let lon: number | undefined;
     if (withLoc && navigator.geolocation) {
       try {
-        const pos = await new Promise<GeolocationPosition>((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000, maximumAge: 60000 }));
+        // High accuracy = GPS. Without it Android's WebView asks only the network provider,
+        // which has no fix outdoors without Wi-Fi/cell positioning, so nothing would be saved.
+        const pos = await new Promise<GeolocationPosition>((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }),
+        );
         lat = Math.round(pos.coords.latitude * 1e5) / 1e5;
         lon = Math.round(pos.coords.longitude * 1e5) / 1e5;
       } catch {

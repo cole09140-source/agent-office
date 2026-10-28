@@ -54,12 +54,15 @@ Xcode에서:
 ```bash
 cd apps/silvr
 npm ci
-npm run cap:android      # build → cap sync android → Android Studio 열기
+npm run build && npx cap sync android
+cd android
+./gradlew assembleRelease bundleRelease   # → app/build/outputs/apk/release, bundle/release
 ```
-1. `android/app/build.gradle`에서 `versionCode 1`, `versionName "1.0.0"` 확인
-2. Build → Generate Signed App Bundle (.aab), 업로드 키 생성 및 보관
-3. Play Console: 데이터 보안 양식 "수집·공유 데이터 없음", 콘텐츠 등급 설문, 스토어 문안 입력
-4. AndroidManifest에는 CAMERA와 위치(선택) 권한, 세로 고정이 이미 설정돼 있습니다.
+1. **업로드 키**: `android/keystore/silvr-upload.jks` + `android/keystore.properties`(storeFile·storePassword·keyAlias·keyPassword). 둘 다 git에서 제외돼 있고, 없으면 릴리스가 서명되지 않은 채로 빌드됩니다. 원본은 별도 백업(2026-10-28 생성분은 `Desktop\클로드코드\_결과물\SILVR_안드로이드\서명키_백업`)
+2. 릴리스는 R8 코드 축소·리소스 축소가 켜져 있습니다(앱 전용 플러그인은 Capacitor 규칙으로 보존). 출시 전 `scripts/android-release-smoke.mjs`로 서명본을 기기에서 확인
+3. 버전: `android/app/build.gradle`의 `versionCode`(올릴 때마다 +1)·`versionName`
+4. Play Console: Play 앱 서명 사용(권장), `.aab` 업로드, 데이터 보안 양식 "수집·공유 데이터 없음", 콘텐츠 등급 설문, 스토어 문안·스크린샷 입력
+5. 앱 전용 네이티브 코드: `GalleryPlugin.java`(사진을 `Pictures/SILVR`에 저장, Android 10+ MediaStore·7~9 저장소 권한). 매니페스트: 카메라·위치(선택)·진동·저장소(28 이하), 자동 백업 끔(`allowBackup=false`), 세로 고정
 
 ## D. 출시 전 체크리스트
 
@@ -77,8 +80,9 @@ npm run cap:android      # build → cap sync android → Android Studio 열기
 - [x] 개인정보 처리방침·이용약관에 운영자(아티움그룹 주식회사)와 보호책임자·연락처(play@muzig.ai) 기재 (2026-10-28)
 - [x] 상표 1차 조사: `docs/06_TRADEMARK_SEARCH.md`. 한국·미국 낮음~중간, EU·호주 중간~높음(Silvr Group 등 9류 등록). 출원 전 변리사 검토 권장, 이름 유지 여부는 결정 필요
 - [x] 스토어 스크린샷: 6컷 × (iPhone 6.7" 1290×2796 · Android 1080×1920) × (한·영), 문구 프레임 포함(`scripts/store-shots/`, 아래 F). 장면 사진은 AI로 만든 이미지 → 실제 사진으로 바꾸려면 사진만 바꿔 다시 실행
-- [x] Android 에뮬레이터 검수(Android 15, 14항목 통과, `scripts/android-qa.mjs`)
-- [ ] **실기기 QA**(필수): `SILVR-1.0.0-debug.apk`를 Android 폰 2대 이상에 설치해 카메라, 플래시(토치), 가로 촬영 회전, 공유, 사진 앱 저장 확인. iPhone(iOS 16~18)은 Mac에서 `npm run cap:ios`로 빌드 후 확인
+- [x] Android 에뮬레이터 검수(Android 15): 디버그 21항목, 서명된 릴리스 6단계 통과
+- [x] Android 릴리스: 업로드 키 서명 APK·AAB(`Desktop\클로드코드\_결과물\SILVR_안드로이드`)
+- [ ] **실기기 QA**(필수): `SILVR-1.0.0-release.apk`를 Android 폰 2대 이상에 설치해 카메라, 플래시(토치), 가로 촬영 회전, 공유, 사진 앱 저장 확인. iPhone(iOS 16~18)은 Mac에서 `npm run cap:ios`로 빌드 후 확인
 - [ ] 웹 배포 도메인 확정 후 `index.html`의 `og:image`를 절대 URL로 변경(SNS 미리보기용)
 - [ ] (선택) 결제: `src/entitlements.ts` 교체. RevenueCat Capacitor SDK 권장
 
@@ -90,8 +94,10 @@ npm run build
 SCENE=<out.y4m> OUT=<저장 폴더> npx playwright test -c scripts/store-shots/store-shots.config.ts
 node scripts/store-shots/frame.mjs <저장 폴더>
 
-# Android 실기기·에뮬레이터 검수(디버그 APK 설치 후, adb 연결)
+# Android 실기기·에뮬레이터 검수(디버그 APK 설치 후, adb 연결) — 21항목
 node scripts/android-qa.mjs <adb 기기 이름> <캡처 폴더>
+# 서명된 릴리스 APK 스모크(앱을 지우고 설치함) — 6단계
+node scripts/android-release-smoke.mjs <adb 기기 이름> <app-release.apk> <캡처 폴더>
 ```
 디버그 APK 빌드: `npm run build && npx cap sync android` 후 `android/`에서 `gradlew assembleDebug`(JDK 21, Android SDK). 경로에 한글이 있으면 Gradle이 거부하므로 `subst`로 영문 드라이브를 연결해 빌드합니다.
 

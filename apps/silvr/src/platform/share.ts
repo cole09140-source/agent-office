@@ -4,6 +4,7 @@ export type ShareResult = 'shared' | 'downloaded' | 'cancelled';
 
 interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
+  getPlatform?: () => string;
 }
 
 function capacitor(): CapacitorGlobal | undefined {
@@ -12,6 +13,24 @@ function capacitor(): CapacitorGlobal | undefined {
 
 export function isNative(): boolean {
   return !!capacitor()?.isNativePlatform?.();
+}
+
+function isNativeAndroid(): boolean {
+  return isNative() && capacitor()?.getPlatform?.() === 'android';
+}
+
+interface SilvrGalleryPlugin {
+  saveImage(opts: { data: string; name: string; mime: string }): Promise<{ uri: string }>;
+}
+
+/** Android app: Save goes straight to Pictures/SILVR (app-local plugin, see GalleryPlugin.java). */
+async function saveToGallery(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
+  const { registerPlugin } = await import('@capacitor/core');
+  const gallery = registerPlugin<SilvrGalleryPlugin>('SilvrGallery');
+  for (const f of files) {
+    await gallery.saveImage({ data: await blobToBase64(f.blob), name: f.name, mime: f.blob.type || 'image/jpeg' });
+  }
+  return 'downloaded';
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -72,7 +91,7 @@ export function download(blob: Blob, name: string): void {
  * Web Share with files, or a plain download.
  */
 export async function shareImages(files: { blob: Blob; name: string }[], preferDownload = false): Promise<ShareResult> {
-  if (isNative()) return nativeShare(files);
+  if (isNative()) return preferDownload && isNativeAndroid() ? saveToGallery(files) : nativeShare(files);
   const fileObjs = files.map((f) => new File([f.blob], f.name, { type: f.blob.type || 'image/jpeg' }));
   // On iOS a download lands in Files (or does nothing in an installed PWA); the share sheet's "Save Image" reaches Photos.
   const viaShare = !preferDownload || isIos();
