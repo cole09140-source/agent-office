@@ -30,8 +30,8 @@ iPhone 앱을 아티움그룹 주식회사 명의로 올릴 때 입력할 값입
 | 카테고리 | 기본: 사진 및 비디오 · 보조: 라이프스타일(선택) |
 | 저작권 | © 2026 ATIUM GROUP Co., Ltd. |
 | 판매자 | ATIUM GROUP Co., Ltd. (조직 등록 시 자동 표시) |
-| 개인정보 처리방침 URL | `https://<SILVR 웹 주소>/privacy.html` |
-| 지원 URL | `https://<SILVR 웹 주소>/support.html` |
+| 개인정보 처리방침 URL | `https://silvr.muzig.ai/privacy.html` (웹 배포 후 유효) |
+| 지원 URL | `https://silvr.muzig.ai/support.html` (웹 배포 후 유효) |
 | 마케팅 URL(선택) | https://muzig.ai |
 | 콘텐츠 권한 | 제3자 콘텐츠 없음 |
 | 가격 | 무료 |

@@ -1,0 +1,10 @@
+# Upload only what the web build needs (Vercel builds from source).
+node_modules
+dist
+android
+ios
+e2e/.cache
+e2e/.shots
+test-results
+playwright-report
+docs

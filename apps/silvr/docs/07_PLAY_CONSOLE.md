@@ -49,7 +49,7 @@ SILVR는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**�
 | 이메일 | play@muzig.ai |
 | 전화(선택) | 비워 두기 권장 (공개됨) |
 | 웹사이트 | https://muzig.ai (SILVR 웹 배포 후에는 그 주소로 바꿔도 됨) |
-| 개인정보처리방침 URL | **필수.** `https://<SILVR 웹 주소>/privacy.html` — 웹(PWA)을 배포해야 생김(같은 곳에 `terms.html`·`support.html`도 올라감) |
+| 개인정보처리방침 URL | **필수.** `https://silvr.muzig.ai/privacy.html` — 웹(PWA) 배포 후 유효(같은 곳에 `terms.html`·`support.html`도 올라감) |
 
 ## 3. 앱 콘텐츠
 ### 개인정보처리방침

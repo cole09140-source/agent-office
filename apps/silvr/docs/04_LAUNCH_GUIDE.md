@@ -17,6 +17,19 @@ npm run build        # → dist/
 | Vercel / Netlify | 동일 설정. SPA rewrite 불필요(해시 라우팅) |
 | GitHub Pages | `dist/` 업로드. 정상 동작 |
 
+### A-1. 회사 기준 배포안: Vercel + `silvr.muzig.ai`
+개인정보처리방침·지원 URL(스토어 필수)을 회사 도메인 아래에 둡니다. 설정은 `vercel.json`(빌드·출력·캐시 헤더)과 `.vercelignore`에 들어 있습니다.
+
+```bash
+cd apps/silvr
+npx vercel link --scope kokokoal      # 처음 한 번: 새 프로젝트 "silvr" 만들기
+npx vercel --prod --scope kokokoal    # 배포 (Vercel이 npm ci → SITE_URL=… npm run build → dist 게시)
+npx vercel domains add silvr.muzig.ai --scope kokokoal
+```
+그다음 가비아 DNS(muzig.ai)에 레코드 1개: **CNAME · 호스트 `silvr` · 값 `cname.vercel-dns.com.`** — Vercel이 HTTPS 인증서를 자동 발급합니다(수분~수십 분).
+
+확인: `https://silvr.muzig.ai/privacy.html`, `/terms.html`, `/support.html`이 열리고, 홈에서 카메라가 동작(HTTPS 필수)하는지.
+
 **캐시 헤더 권장값**
 - `sw.js`, `index.html`, `manifest.webmanifest`: `Cache-Control: no-cache`
 - `assets/*` (해시 파일명): `Cache-Control: public, max-age=31536000, immutable`
@@ -85,7 +98,8 @@ cd android
 - [x] Android 에뮬레이터 검수(Android 15): 디버그 21항목, 서명된 릴리스 6단계 통과
 - [x] Android 릴리스: 업로드 키 서명 APK·AAB(`Desktop\클로드코드\_결과물\SILVR_안드로이드`)
 - [ ] **실기기 QA**(필수): `SILVR-1.0.0-release.apk`를 Android 폰 2대 이상에 설치해 카메라, 플래시(토치), 가로 촬영 회전, 공유, 사진 앱 저장 확인. iPhone(iOS 16~18)은 Mac에서 `npm run cap:ios`로 빌드 후 확인
-- [ ] 웹 배포 도메인 확정 후 `index.html`의 `og:image`를 절대 URL로 변경(SNS 미리보기용)
+- [x] SNS 미리보기 절대 주소: 빌드 때 `SITE_URL`을 주면 og:image·og:url·canonical이 절대 주소로 들어감(`vercel.json`에 `https://silvr.muzig.ai` 설정)
+- [ ] 웹 배포(Vercel)와 `silvr.muzig.ai` DNS 연결 — 아래 A-1
 - [ ] (선택) 결제: `src/entitlements.ts` 교체. RevenueCat Capacitor SDK 권장
 
 ## F. 출시 도구

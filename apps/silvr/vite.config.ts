@@ -24,9 +24,29 @@ function serviceWorker(): Plugin {
   };
 }
 
+/**
+ * SITE_URL=https://… at build time: SNS previews need an absolute og:image, and the
+ * canonical URL helps stores and crawlers. Without it the build stays path-relative.
+ */
+function siteUrl(): Plugin {
+  const url = process.env.SITE_URL?.replace(/\/+$/, '');
+  return {
+    name: 'silvr-site-url',
+    apply: 'build',
+    transformIndexHtml(html) {
+      if (!url) return html;
+      return html
+        .replace('content="./icons/og.png"', `content="${url}/icons/og.png"`)
+        .replace('  </head>', `    <meta property="og:url" content="${url}/" />
+    <link rel="canonical" href="${url}/" />
+  </head>`);
+    },
+  };
+}
+
 export default defineConfig({
   base: './',
-  plugins: [preact(), serviceWorker()],
+  plugins: [preact(), serviceWorker(), siteUrl()],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
