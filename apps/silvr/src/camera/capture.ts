@@ -23,7 +23,8 @@ export function snapshotVideo(video: HTMLVideoElement): HTMLCanvasElement {
  * when the shooting time came from EXIF; otherwise takenAt is only the file's time.
  */
 export async function importFile(file: File): Promise<Negative & { takenAt: number; dated: boolean }> {
-  const shot = exifTakenAt(await file.slice(0, 256 * 1024).arrayBuffer());
+  // JPEG keeps EXIF in the first segments; HEIC's EXIF item can sit a little further in.
+  const shot = exifTakenAt(await file.slice(0, 1024 * 1024).arrayBuffer());
   const bitmap = await createImageBitmap(file);
   try {
     const neg = await toNegative(cropExposure(bitmap, bitmap.width, bitmap.height, null));

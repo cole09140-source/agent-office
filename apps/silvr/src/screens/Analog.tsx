@@ -8,7 +8,7 @@ import { saveFile } from '../platform/share';
 import { confirm, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent } from '../state/router';
-import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, saveLogFrame, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
+import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, addLogFrame, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
 
 /** Last meter reading, so the log form can prefill it. */
 export const meter = signal({ iso: 400, light: 'sunny' as Light, aperture: 8, comp: 0 });
@@ -232,8 +232,7 @@ export function LogScreen({ id }: { id: string }) {
         /* location optional */
       }
     }
-    const next = (frames[frames.length - 1]?.frame ?? 0) + 1;
-    await saveLogFrame({ rollId: id, frame: next, aperture, shutter, lens: lens.trim(), note: note.trim(), takenAt: Date.now(), lat, lon });
+    await addLogFrame({ rollId: id, aperture, shutter, lens: lens.trim(), note: note.trim(), takenAt: Date.now(), lat, lon });
     setNote('');
     setAdding(false);
     await reload();

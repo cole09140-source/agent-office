@@ -102,6 +102,10 @@ public class GalleryPlugin extends Plugin {
         for (int n = 1; file.exists(); n++) file = new File(dir, base + " (" + n + ")" + ext);
         try (FileOutputStream out = new FileOutputStream(file)) {
             out.write(bytes);
+        } catch (Exception e) {
+            //noinspection ResultOfMethodCallIgnored
+            file.delete(); // no half-written image left in Pictures/SILVR
+            throw e;
         }
         MediaScannerConnection.scanFile(getContext(), new String[] { file.getAbsolutePath() }, new String[] { mime }, null);
         return Uri.fromFile(file);

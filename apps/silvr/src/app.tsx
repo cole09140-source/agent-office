@@ -68,9 +68,22 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [stockId, setStockId] = useState(DEFAULT_STOCK_ID);
   const [progress, setProgress] = useState<number | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const importing = useRef(false);
 
   const onFiles = async (files: FileList | null) => {
-    if (!files?.length) return;
+    // One import at a time until it is saved: picking again meanwhile made a duplicate roll.
+    if (!files?.length || importing.current) return;
+    importing.current = true;
+    try {
+      await importFiles(files);
+    } finally {
+      importing.current = false;
+      setProgress(null);
+      if (input.current) input.current.value = '';
+    }
+  };
+
+  const importFiles = async (files: FileList) => {
     const stock = getStock(stockId);
     const list = Array.from(files).filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(f.name));
     setProgress(0);
@@ -96,8 +109,6 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
       }
       setProgress(items.length + failed);
     }
-    if (input.current) input.current.value = '';
-    setProgress(null);
     if (failed) toast(t('err.import'));
     if (!items.length) return;
     items.sort((a, b) => a.takenAt - b.takenAt);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { trapTab } from '../components/ui';
 import { t, type MsgKey } from '../i18n';
 
 const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
@@ -10,14 +11,28 @@ const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  // Move focus to each new step so screen readers read it.
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Move focus to each step (the first too) so screen readers read it and Tab starts here.
   useEffect(() => {
-    if (i > 0) titleRef.current?.focus();
+    titleRef.current?.focus();
   }, [i]);
+  // The app is rendered behind the onboarding: keep it out of reach (inert) and Tab inside.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box?.parentElement) return;
+    const behind = Array.from(box.parentElement.children).filter((el): el is HTMLElement => el !== box && el instanceof HTMLElement);
+    behind.forEach((el) => (el.inert = true));
+    const onKey = (e: KeyboardEvent) => e.key === 'Tab' && trapTab(e, box);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      behind.forEach((el) => (el.inert = false));
+      window.removeEventListener('keydown', onKey);
+    };
+  }, []);
   const last = i === SLIDES.length - 1;
   const s = SLIDES[i];
   return (
-    <div class="onboarding" role="dialog" aria-modal="true" aria-label="SILVR" data-testid="onboarding">
+    <div class="onboarding" role="dialog" aria-modal="true" aria-label="SILVR" ref={boxRef} data-testid="onboarding">
       <div class="onb-brand">
         <span class="logo">SILVR</span>
         <span class="muted small">{t('app.tagline')}</span>

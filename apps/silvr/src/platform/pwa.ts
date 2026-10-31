@@ -8,6 +8,12 @@ interface BeforeInstallPromptEvent extends Event {
 
 export const installPrompt = signal<BeforeInstallPromptEvent | null>(null);
 export const updateReady = signal<(() => void) | null>(null);
+/** True while a shot is being taken and saved: an update reload waits for it, or the frame is lost. */
+export const captureBusy = signal(false);
+
+async function whenIdle(): Promise<void> {
+  while (captureBusy.value) await new Promise((r) => setTimeout(r, 200));
+}
 
 export async function promptInstall(): Promise<void> {
   const e = installPrompt.value;
@@ -53,7 +59,7 @@ export function initPwa(): void {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (reloading || !(hadController || userRequested)) return;
         reloading = true;
-        location.reload();
+        void whenIdle().then(() => location.reload());
       });
     } catch (err) {
       console.warn('[silvr] service worker registration failed', err);

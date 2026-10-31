@@ -1,4 +1,4 @@
-import { canvasToBlob, makeCanvas } from '../film/develop';
+import { canvasToBlob, makeCanvas, MAX_CANVAS_PIXELS } from '../film/develop';
 import { cropForAspect, outputSize, type Orientation } from '../film/geometry';
 import type { Aspect } from '../film/types';
 import type { CameraModel } from './models';
@@ -87,8 +87,13 @@ export function composeHalf(left: HTMLCanvasElement, right: HTMLCanvasElement | 
 }
 
 export function composeQuad(frames: HTMLCanvasElement[]): HTMLCanvasElement {
-  const fw = frames[0].width;
-  const fh = frames[0].height;
+  // Four full-size frames side by side can pass iOS's canvas limit (2560×1920 → 17.9 MP):
+  // shrink the cells so the sheet always fits, or toBlob fails and all four shots are lost.
+  const gap0 = Math.max(2, Math.round(Math.min(frames[0].width, frames[0].height) * 0.03));
+  const area = (frames[0].width * 2 + gap0) * (frames[0].height * 2 + gap0);
+  const k = Math.min(1, Math.sqrt(MAX_CANVAS_PIXELS / area));
+  const fw = Math.max(1, Math.floor(frames[0].width * k));
+  const fh = Math.max(1, Math.floor(frames[0].height * k));
   const L = quadLayout(fw, fh);
   const out = makeCanvas(L.width, L.height);
   const ctx = out.getContext('2d')!;

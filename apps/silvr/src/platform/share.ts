@@ -42,30 +42,53 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-let lastShared: string[] = [];
+type FsModule = typeof import('@capacitor/filesystem');
+
+/**
+ * Each native share/save gets its own cache folder (share-…/NAME): sharing the same photo
+ * again never overwrites a file a share target (Instagram, mail, Drive…) may still be reading
+ * after the chooser returns. Folders older than 10 minutes go on the next share; all of them
+ * at start-up and on "delete all data" (clearShareCache).
+ */
+const SHARE_DIR = 'share-';
+const shareDirs: { dir: string; at: number }[] = [];
+
+function newShareDir({ Filesystem, Directory }: FsModule): string {
+  const now = Date.now();
+  for (let i = shareDirs.length - 1; i >= 0; i--) {
+    if (now - shareDirs[i].at < 10 * 60_000) continue;
+    void Filesystem.rmdir({ path: shareDirs[i].dir, directory: Directory.Cache, recursive: true }).catch(() => undefined);
+    shareDirs.splice(i, 1);
+  }
+  const dir = `${SHARE_DIR}${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  shareDirs.push({ dir, at: now });
+  return dir;
+}
+
+function dropShareDir({ Filesystem, Directory }: FsModule, dir: string): void {
+  void Filesystem.rmdir({ path: dir, directory: Directory.Cache, recursive: true }).catch(() => undefined);
+  const i = shareDirs.findIndex((d) => d.dir === dir);
+  if (i >= 0) shareDirs.splice(i, 1);
+}
+
+const isCancel = (err: unknown) => /cancel/i.test(String((err as Error)?.message ?? err));
 
 /** Native (Capacitor) path: write to cache, then open the OS share sheet (which offers "Save Image"). */
 async function nativeShare(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
   // Loaded lazily so the web build never pays for the native plugins.
-  const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
-  const names = files.map((f) => f.name);
-  const remove = (paths: string[]) => paths.forEach((path) => void Filesystem.deleteFile({ path, directory: Directory.Cache }).catch(() => undefined));
-  // Like saveFile: the share target (Instagram, mail…) may still be reading the images
-  // when the chooser returns, so the previous batch is only cleaned up now.
-  remove(lastShared.filter((p) => !names.includes(p)));
-  lastShared = names;
+  const [fs, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
+  const dir = newShareDir(fs);
   const uris: string[] = [];
   try {
     for (const f of files) {
-      const res = await Filesystem.writeFile({ path: f.name, data: await blobToBase64(f.blob), directory: Directory.Cache });
+      const res = await fs.Filesystem.writeFile({ path: `${dir}/${f.name}`, data: await blobToBase64(f.blob), directory: fs.Directory.Cache, recursive: true });
       uris.push(res.uri);
     }
     await Share.share({ title: t('share.title'), files: uris });
     return 'shared';
   } catch (err) {
-    if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
-    remove(names);
-    lastShared = [];
+    if (isCancel(err)) return 'cancelled';
+    dropShareDir(fs, dir);
     throw err;
   }
 }
@@ -108,34 +131,30 @@ export async function shareImages(files: { blob: Blob; name: string }[], preferD
   return 'downloaded';
 }
 
-let lastSavedFile: string | null = null;
-
 /**
  * Hands a (possibly large) non-image file to the user: native share sheet,
  * the Web Share sheet on iOS (where downloads are unreliable), else a download.
  */
 export async function saveFile(blob: Blob, name: string): Promise<ShareResult> {
   if (isNative()) {
-    const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
-    // The share target (Drive, mail…) may still be reading the previous file when the
-    // chooser returns, so it is only cleaned up on the next save.
-    if (lastSavedFile && lastSavedFile !== name) void Filesystem.deleteFile({ path: lastSavedFile, directory: Directory.Cache }).catch(() => undefined);
-    lastSavedFile = name;
+    const [fs, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')]);
+    const { Filesystem, Directory } = fs;
+    const dir = newShareDir(fs);
+    const path = `${dir}/${name}`;
     // Written in chunks so a few-hundred-MB backup never becomes one giant base64 string.
     const CHUNK = 3 * 1024 * 1024; // multiple of 3: chunks encode without padding
     try {
       let uri = '';
       for (let at = 0; at === 0 || at < blob.size; at += CHUNK) {
         const data = await blobToBase64(blob.slice(at, at + CHUNK));
-        if (at === 0) uri = (await Filesystem.writeFile({ path: name, data, directory: Directory.Cache })).uri;
-        else await Filesystem.appendFile({ path: name, data, directory: Directory.Cache });
+        if (at === 0) uri = (await Filesystem.writeFile({ path, data, directory: Directory.Cache, recursive: true })).uri;
+        else await Filesystem.appendFile({ path, data, directory: Directory.Cache });
       }
       await Share.share({ title: name, files: [uri] });
       return 'shared';
     } catch (err) {
-      if (/cancel/i.test(String((err as Error)?.message ?? err))) return 'cancelled';
-      void Filesystem.deleteFile({ path: name, directory: Directory.Cache }).catch(() => undefined);
-      lastSavedFile = null;
+      if (isCancel(err)) return 'cancelled';
+      dropShareDir(fs, dir);
       throw err;
     }
   }
@@ -165,10 +184,15 @@ export async function clearShareCache(): Promise<void> {
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache });
     await Promise.all(
-      files.filter((f) => f.type === 'file' && f.name.startsWith('SILVR')).map((f) => Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => undefined)),
+      files.map((f) =>
+        f.type === 'directory' && f.name.startsWith(SHARE_DIR)
+          ? Filesystem.rmdir({ path: f.name, directory: Directory.Cache, recursive: true }).catch(() => undefined)
+          : f.type === 'file' && f.name.startsWith('SILVR') // copies written by older versions
+            ? Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => undefined)
+            : undefined,
+      ),
     );
-    lastShared = [];
-    lastSavedFile = null;
+    shareDirs.length = 0;
   } catch {
     /* empty or unreadable cache: nothing to clean */
   }

@@ -115,6 +115,8 @@ export async function readZip(file: Blob): Promise<ZipEntry[]> {
   const cdSize = tail.getUint32(eocd + 12, true);
   const cdOffset = tail.getUint32(eocd + 16, true);
   if (cdOffset + cdSize > file.size) throw new Error('Truncated zip file');
+  // 65,535 entries × a short name stays far below this; a forged size must not be read into memory.
+  if (cdSize > 32 * 1024 * 1024) throw new Error('Zip directory too large');
   const cd = new DataView(await file.slice(cdOffset, cdOffset + cdSize).arrayBuffer());
   const dec = new TextDecoder();
   const out: ZipEntry[] = [];

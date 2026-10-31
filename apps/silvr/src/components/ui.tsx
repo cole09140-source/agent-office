@@ -123,7 +123,7 @@ export function Sheet({
 }
 
 /** Keep Tab / Shift+Tab cycling inside a modal sheet. */
-function trapTab(e: KeyboardEvent, box: HTMLElement): void {
+export function trapTab(e: KeyboardEvent, box: HTMLElement): void {
   const items = Array.from(box.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')).filter(
     (el) => el.tabIndex >= 0 && !el.hasAttribute('disabled') && el.getClientRects().length > 0,
   );

@@ -19,7 +19,19 @@ function jpeg(date: string | null, little: boolean): ArrayBuffer {
   return new Uint8Array([0xff, 0xd8, 0xff, 0xe1, len >> 8, len & 255, ...app1, 0xff, 0xda, 0, 2]).buffer;
 }
 
+/** Minimal HEIF-like file: ftyp box, filler, then the EXIF item payload (offset + "Exif\0\0" + TIFF). */
+function heif(date: string): ArrayBuffer {
+  const jpg = new Uint8Array(jpeg(date, false));
+  const exif = jpg.slice(6, jpg.length - 4); // "Exif\0\0" + TIFF, without JPEG framing
+  const ftyp = [0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63, 0, 0, 0, 0];
+  return new Uint8Array([...ftyp, ...new Array(40).fill(0), 0, 0, 0, 6, ...exif]).buffer;
+}
+
 describe('EXIF shooting time for imports', () => {
+  it('reads the EXIF item of a HEIC file', () => {
+    expect(exifTakenAt(heif('2023:03:04 05:06:07'))).toBe(new Date(2023, 2, 4, 5, 6, 7).getTime());
+  });
+
   it('reads DateTimeOriginal as local time, both byte orders', () => {
     const want = new Date(2025, 5, 1, 14, 30, 5).getTime();
     expect(exifTakenAt(jpeg('2025:06:01 14:30:05', true))).toBe(want);

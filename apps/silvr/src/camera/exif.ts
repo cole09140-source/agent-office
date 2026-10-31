@@ -1,11 +1,12 @@
 /**
- * Reads the shooting time from a JPEG's EXIF (DateTimeOriginal, else DateTime).
+ * Reads the shooting time from a JPEG's or HEIC's EXIF (DateTimeOriginal, else DateTime).
  * Imported files are temporary copies on iOS, so `lastModified` is the pick time,
  * not when the photo was taken. Returns local-time milliseconds, or null.
  */
 export function exifTakenAt(buf: ArrayBuffer): number | null {
   const v = new DataView(buf);
-  if (v.byteLength < 4 || v.getUint16(0) !== 0xffd8) return null; // not a JPEG
+  if (v.byteLength < 4) return null;
+  if (v.getUint16(0) !== 0xffd8) return heifTakenAt(v); // not a JPEG
   let p = 2;
   while (p + 4 <= v.byteLength) {
     const marker = v.getUint16(p);
@@ -15,6 +16,22 @@ export function exifTakenAt(buf: ArrayBuffer): number | null {
       return readTiff(v, p + 10, Math.min(v.byteLength, p + 2 + len)); // "Exif\0\0" + TIFF
     }
     p += 2 + len;
+  }
+  return null;
+}
+
+/**
+ * HEIC/HEIF (ISO-BMFF): the EXIF item holds the same "Exif\0\0" + TIFF block as a JPEG
+ * APP1, so find that block (after an "ftyp" brand check) and parse it the same way.
+ */
+function heifTakenAt(v: DataView): number | null {
+  if (v.byteLength < 12 || v.getUint32(4) !== 0x66747970) return null; // "ftyp"
+  for (let i = 12; i + 14 <= v.byteLength; i++) {
+    if (v.getUint32(i) !== 0x45786966 || v.getUint16(i + 4) !== 0) continue; // "Exif\0\0"
+    const order = v.getUint16(i + 6);
+    if (order !== 0x4949 && order !== 0x4d4d) continue;
+    const t = readTiff(v, i + 6, v.byteLength);
+    if (t !== null) return t;
   }
   return null;
 }

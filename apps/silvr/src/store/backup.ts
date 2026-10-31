@@ -37,6 +37,8 @@ export interface BackupSummary {
   rolls: number;
   photos: number;
   logRolls: number;
+  /** Waiting first exposures (half frame / double exposure) carried in the backup. */
+  pending?: number;
 }
 
 export interface RestoreResult extends BackupSummary {
@@ -55,13 +57,24 @@ export class BackupError extends Error {
   }
 }
 
+/** A library of ~200k photos fits easily; anything bigger is not ours. */
+const MAX_MANIFEST_BYTES = 128 * 1024 * 1024;
+
 /** Plain zip tops out at 4 GB; stop before reading gigabytes for nothing. */
 const MAX_BACKUP_BYTES = 0xffffffff - 64 * 1024 * 1024;
 
 const ext = (type: string) => (type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg');
 
 export async function createBackup(now = Date.now(), onProgress?: (done: number, total: number) => void): Promise<{ blob: Blob; summary: BackupSummary }> {
-  const [rolls, photos, logRolls, logFrames] = await Promise.all([getAll<Roll>('rolls'), getAll<Photo>('photos'), getAll<LogRoll>('logRolls'), getAll<LogFrame>('logFrames')]);
+  // One snapshot: separate reads could pair rolls and photos from different moments if another tab shoots meanwhile.
+  const [rolls, photos, logRolls, logFrames] = await atomic(['rolls', 'photos', 'logRolls', 'logFrames'], async (t) =>
+    Promise.all([
+      rq(t.objectStore('rolls').getAll()) as Promise<Roll[]>,
+      rq(t.objectStore('photos').getAll()) as Promise<Photo[]>,
+      rq(t.objectStore('logRolls').getAll()) as Promise<LogRoll[]>,
+      rq(t.objectStore('logFrames').getAll()) as Promise<LogFrame[]>,
+    ]),
+  );
   const files: ZipInput[] = [];
   const blobs: BlobRef[] = [];
   const add = async (key: string) => {
@@ -80,12 +93,13 @@ export async function createBackup(now = Date.now(), onProgress?: (done: number,
     const { printKey: _k, printW: _w, printH: _h, ...rest } = p;
     kept.push(rest);
   }
-  for (const r of rolls) if (r.pending) await add(`pending:${r.id}`);
+  let pending = 0;
+  for (const r of rolls) if (r.pending && (await add(`pending:${r.id}`))) pending++;
   if (files.reduce((n, f) => n + f.data.size, 0) > MAX_BACKUP_BYTES) throw new BackupError('Library larger than 4 GB', 'too-large');
   const manifest: BackupManifest = { format: BACKUP_FORMAT, version: BACKUP_VERSION, createdAt: now, rolls, photos: kept, logRolls, logFrames, blobs };
   files.unshift({ name: 'manifest.json', data: new Blob([JSON.stringify(manifest)], { type: 'application/json' }) });
   const blob = await writeZip(files, new Date(now), onProgress);
-  return { blob, summary: { rolls: rolls.length, photos: kept.length, logRolls: logRolls.length } };
+  return { blob, summary: { rolls: rolls.length, photos: kept.length, logRolls: logRolls.length, pending } };
 }
 
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length < 200;
@@ -186,9 +200,11 @@ function sanitizeLogFrame(f: LogFrame): LogFrame | null {
   return frame;
 }
 
-/** Verifies an entry's checksum, then returns it as a lazy slice (a big roll is never held in memory at once). */
+/** Verifies an entry's checksum in 4 MB chunks (a huge or forged entry is never read into memory at once), then returns it as a lazy slice. */
 async function readEntry(data: Blob, crc: number, type: string): Promise<Blob | null> {
-  if (crc32(new Uint8Array(await data.arrayBuffer())) !== crc) return null;
+  let c = 0;
+  for (let at = 0; at < data.size; at += 4 * 1024 * 1024) c = crc32(new Uint8Array(await data.slice(at, at + 4 * 1024 * 1024).arrayBuffer()), c);
+  if (c !== crc) return null;
   return data.slice(0, data.size, type);
 }
 
@@ -212,6 +228,7 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
   if (!me) throw new BackupError('manifest.json missing');
   let manifest: BackupManifest;
   try {
+    if (me.size > MAX_MANIFEST_BYTES) throw new Error('manifest too large'); // JSON.parse of a forged giant would exhaust memory
     const raw = await readEntry(me.data, me.crc, 'application/json');
     if (!raw) throw new Error('checksum');
     manifest = JSON.parse(await raw.text()) as BackupManifest;

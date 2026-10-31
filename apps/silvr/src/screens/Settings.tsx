@@ -34,7 +34,8 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     try {
       const now = Date.now();
       const { blob, summary } = await createBackup(now, (done, total) => setBackupStatus(t('set.backup.working', { done, total })));
-      if (!summary.photos && !summary.logRolls) {
+      // A roll holding only a waiting first exposure still has something worth moving to a new phone.
+      if (!summary.photos && !summary.logRolls && !summary.pending) {
         setBackupStatus(t('set.backup.empty'));
         return;
       }

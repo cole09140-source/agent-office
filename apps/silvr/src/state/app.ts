@@ -1,7 +1,7 @@
 import { computed, signal } from '@preact/signals';
 import { detectLang } from '../i18n';
 import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
-import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from '../store/settings';
+import { DEFAULT_SETTINGS, loadSettings, patchSettings, type Settings } from '../store/settings';
 import { signalLang } from './lang';
 
 export const settings = signal<Settings>({ ...DEFAULT_SETTINGS });
@@ -45,7 +45,10 @@ export async function updateSettings(patch: Partial<Settings>): Promise<void> {
   settings.value = next;
   applyLang(next);
   try {
-    await saveSettings(next);
+    // Merge into what is stored (another tab may have changed other settings), then adopt it.
+    const saved = await patchSettings(patch);
+    settings.value = saved;
+    applyLang(saved);
   } catch (err) {
     // Keep the change for this session; the banner already explains storage is unavailable.
     console.warn('[silvr] settings not saved', err);

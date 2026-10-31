@@ -90,6 +90,10 @@ export function DarkroomScreen({ id }: { id: string }) {
       await updateDevelop(photo.id, dev);
       toast(t('dr.saved'));
       if (isCurrent({ name: 'darkroom', id: photo.id })) back({ name: 'photo', id: photo.id });
+    } catch (err) {
+      // Stay in the darkroom with the edit intact, and say why nothing happened.
+      console.error('[silvr] darkroom save failed', err);
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -98,16 +102,22 @@ export function DarkroomScreen({ id }: { id: string }) {
   const applyRoll = async () => {
     if (!photo || !dev) return;
     if (!(await confirm(t('dr.applyRollConfirm'), t('dr.applyRoll')))) return;
-    const all = await listPhotos(photo.rollId);
-    // Look settings carry over; per-frame facts (flash fired, seed, leak, date, rotation) stay with each frame.
-    await updateDevelopMany(
-      all.map((p) => [
-        p.id,
-        p.id === photo.id
-          ? dev
-          : { ...p.develop, stockId: dev.stockId, push: dev.push, expired: dev.expired, grain: dev.grain, halation: dev.halation, border: dev.border, ev: dev.ev, palette: dev.palette },
-      ]),
-    );
+    try {
+      const all = await listPhotos(photo.rollId);
+      // Look settings carry over; per-frame facts (flash fired, seed, leak, date, rotation) stay with each frame.
+      await updateDevelopMany(
+        all.map((p) => [
+          p.id,
+          p.id === photo.id
+            ? dev
+            : { ...p.develop, stockId: dev.stockId, push: dev.push, expired: dev.expired, grain: dev.grain, halation: dev.halation, border: dev.border, ev: dev.ev, palette: dev.palette },
+        ]),
+      );
+    } catch (err) {
+      console.error('[silvr] apply to roll failed', err);
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
+      return;
+    }
     toast(t('dr.applyRollDone'));
     if (isCurrent({ name: 'darkroom', id: photo.id })) back({ name: 'photo', id: photo.id });
   };

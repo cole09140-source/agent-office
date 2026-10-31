@@ -88,7 +88,8 @@ export class CameraController {
       // Desktop webcams report no facingMode; treat them like a selfie camera only if asked.
       if (!stream.getVideoTracks()[0]?.getSettings().facingMode) this.facing = facing;
       this.video.srcObject = stream;
-      await this.video.play().catch(() => undefined);
+      let playError: unknown = null;
+      await this.video.play().catch((err) => (playError = err));
       if (!this.video.videoWidth) {
         await new Promise<void>((resolve) => {
           const done = () => resolve();
@@ -96,7 +97,14 @@ export class CameraController {
           setTimeout(done, 2500);
         });
       }
-      return gen === this.generation;
+      if (gen !== this.generation) return false;
+      // Stream open but nothing playing (e.g. playback refused): report it so the screen shows
+      // Retry — a tap — instead of a live-looking viewfinder whose shutter fails.
+      if (playError && this.video.paused) {
+        this.stopTracks();
+        throw Object.assign(new Error('Camera preview could not start'), { name: 'AbortError', cause: playError });
+      }
+      return true;
     };
     this.starting = run();
     try {

@@ -55,7 +55,7 @@ describe('backup / restore', () => {
   it('restores everything onto an empty device', async () => {
     const { r1, r2 } = await library();
     const { blob, summary } = await createBackup();
-    expect(summary).toEqual({ rolls: 2, photos: 3, logRolls: 1 });
+    expect(summary).toEqual({ rolls: 2, photos: 3, logRolls: 1, pending: 1 });
     await clearAll();
     const res = await restoreBackup(blob);
     expect(res).toMatchObject({ rolls: 2, photos: 3, logRolls: 1, skipped: 0, damaged: 0 });

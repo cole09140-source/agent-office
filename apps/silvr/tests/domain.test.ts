@@ -4,7 +4,7 @@ import { advise, evFor, exactShutter, formatShutter, nearestShutter } from '../s
 import { defaultDevelop } from '../src/film/resolve';
 import { getStock } from '../src/film/stocks';
 import { clearAll } from '../src/store/db';
-import { deleteLogRoll, listLogFrames, listLogRolls, logToCsv, saveLogFrame, saveLogRoll } from '../src/store/filmLog';
+import { addLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, saveLogFrame, saveLogRoll } from '../src/store/filmLog';
 import {
   addShot,
   deletePhoto,
@@ -24,7 +24,7 @@ import {
   blobKey,
   type Roll,
 } from '../src/store/rolls';
-import { DEFAULT_SETTINGS, loadSettings, saveSettings } from '../src/store/settings';
+import { DEFAULT_SETTINGS, loadSettings, patchSettings, saveSettings } from '../src/store/settings';
 import { parseHash, routeToHash } from '../src/state/router';
 import { MESSAGES, translate } from '../src/i18n';
 
@@ -139,6 +139,13 @@ describe('settings', () => {
     await saveSettings({ ...DEFAULT_SETTINGS, lang: 'en', defaultRollSize: 36 });
     expect((await loadSettings()).defaultRollSize).toBe(36);
   });
+
+  it('merges concurrent changes instead of overwriting the whole object', async () => {
+    await Promise.all([patchSettings({ sound: false }), patchSettings({ grid: true })]); // two tabs
+    const s = await loadSettings();
+    expect(s.sound).toBe(false);
+    expect(s.grid).toBe(true);
+  });
 });
 
 describe('film log', () => {
@@ -153,6 +160,17 @@ describe('film log', () => {
     expect(csv.split('\n')[1]).toBe('frame,datetime,aperture,shutter,lens,note,lat,lon');
     await deleteLogRoll(r.id);
     expect(await listLogRolls()).toHaveLength(0);
+    expect(await listLogFrames(r.id)).toHaveLength(0);
+  });
+
+  it('numbers frames in one transaction: no duplicates, never past the roll, nothing for a deleted roll', async () => {
+    const r = await saveLogRoll({ camera: 'FM2', film: 'HP5', iso: 400, exposures: 3, startedAt: 1, note: '' });
+    const base = { rollId: r.id, aperture: 'f/8', shutter: '1/125', lens: '', note: '', takenAt: 1 };
+    const results = await Promise.all([1, 2, 3, 4, 5].map(() => addLogFrame(base))); // e.g. two tabs / double taps
+    expect(results.filter(Boolean)).toHaveLength(3);
+    expect((await listLogFrames(r.id)).map((f) => f.frame)).toEqual([1, 2, 3]);
+    await deleteLogRoll(r.id);
+    expect(await addLogFrame(base)).toBeNull();
     expect(await listLogFrames(r.id)).toHaveLength(0);
   });
 });

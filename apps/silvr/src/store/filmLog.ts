@@ -1,4 +1,4 @@
-import { del, getAll, getAllByIndex, put, tx } from './db';
+import { atomic, del, getAll, getAllByIndex, put, rq } from './db';
 import { uid } from './rolls';
 
 /** A real, physical roll the user is shooting on an analog camera. */
@@ -36,10 +36,11 @@ export async function saveLogRoll(roll: Omit<LogRoll, 'id'> & { id?: string }): 
 }
 
 export async function deleteLogRoll(id: string): Promise<void> {
-  const frames = await listLogFrames(id);
-  await tx(['logRolls', 'logFrames'], (t) => {
-    frames.forEach((f) => t.objectStore('logFrames').delete(f.id));
-    t.objectStore('logRolls').delete(id);
+  // Read and delete together, so a frame added from another tab meanwhile isn't left orphaned.
+  await atomic(['logRolls', 'logFrames'], async (t) => {
+    const frames = (await rq(t.objectStore('logFrames').index('rollId').getAll(id))) as LogFrame[];
+    for (const f of frames) await rq(t.objectStore('logFrames').delete(f.id));
+    await rq(t.objectStore('logRolls').delete(id));
   });
 }
 
@@ -51,6 +52,23 @@ export async function saveLogFrame(frame: Omit<LogFrame, 'id'> & { id?: string }
   const f: LogFrame = { ...frame, id: frame.id ?? uid() };
   await put('logFrames', f);
   return f;
+}
+
+/**
+ * Adds the next frame of a log roll. Numbering, the exposure limit and the parent check
+ * happen in one transaction, so two tabs (or two taps) never save the same frame number.
+ * Returns null when the roll is gone or already full.
+ */
+export async function addLogFrame(frame: Omit<LogFrame, 'id' | 'frame'>): Promise<LogFrame | null> {
+  return atomic(['logRolls', 'logFrames'], async (t) => {
+    const roll = (await rq(t.objectStore('logRolls').get(frame.rollId))) as LogRoll | undefined;
+    if (!roll) return null;
+    const frames = (await rq(t.objectStore('logFrames').index('rollId').getAll(frame.rollId))) as LogFrame[];
+    if (frames.length >= roll.exposures) return null;
+    const f: LogFrame = { ...frame, id: uid(), frame: frames.reduce((m, x) => Math.max(m, x.frame), 0) + 1 };
+    await rq(t.objectStore('logFrames').put(f));
+    return f;
+  });
 }
 
 export async function deleteLogFrame(id: string): Promise<void> {

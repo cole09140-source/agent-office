@@ -19,7 +19,8 @@ import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
 import { cameraDescription, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
-import { go } from '../state/router';
+import { captureBusy } from '../platform/pwa';
+import { go, isCurrent } from '../state/router';
 import { get, put } from '../store/db';
 import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
 
@@ -66,6 +67,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [zoom, setZoom] = useState(1);
   const [formatPick, setFormatPick] = useState<Aspect | null>(null);
   const [busy, setBusy] = useState(false);
+  // An update reload (this tab's button or another tab's) waits until the shot is saved.
+  useEffect(() => {
+    captureBusy.value = busy;
+    return () => {
+      captureBusy.value = false;
+    };
+  }, [busy]);
   const [blink, setBlink] = useState(false);
   const [ejecting, setEjecting] = useState(false);
   const [quadIndex, setQuadIndex] = useState<number | undefined>(undefined);
@@ -324,7 +332,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       toast(t('cam.packDone'));
       if (done) {
         await markSeen(done.id);
-        go({ name: 'roll', id: done.id });
+        if (isCurrent({ name: 'camera' })) go({ name: 'roll', id: done.id }); // not if the user moved on meanwhile
       }
     } else {
       setSpeedOpen(true);
@@ -336,7 +344,16 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     void requestOrientationPermission(); // inside the tap gesture; no-op once answered
     shootingRef.current = true;
     // Fresh read: the signal lags IndexedDB, and a stale copy could miss a pending exposure.
-    const r = await getRoll(activeRoll.value.id);
+    let r: Roll | undefined;
+    try {
+      r = await getRoll(activeRoll.value.id);
+    } catch (err) {
+      // A failed read must not leave the shutter locked for good.
+      console.error('[silvr] could not read the roll', err);
+      shootingRef.current = false;
+      toast(t('common.error'));
+      return;
+    }
     if (!r || r.status !== 'loaded') {
       shootingRef.current = false;
       return;
@@ -402,7 +419,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       setTimeout(() => setBlink(false), 140);
       setScreenFlash(false);
       if (camera.flash === 'charge' && fire) setCharge('empty');
-      const rotate = camera.capture === 'single' || camera.capture === 'double' ? captureRotation(c.width, c.height, c.facing === 'user' && !mirror) : 0;
+      // Turning the whole sheet works for half/quad too: each cell turns upright with it.
+      const rotate = captureRotation(c.width, c.height, c.facing === 'user' && !mirror);
 
       let result: Awaited<ReturnType<typeof addShot>> | null = null;
       if (camera.capture === 'half' || camera.capture === 'double') {
@@ -524,7 +542,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     }
     const done = await finishRoll(r.id, speed);
     if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
-    if (!done) return;
+    if (!done || !isCurrent({ name: 'camera' })) return; // the user switched tabs while it was saving
     if (done.status === 'developed') go({ name: 'roll', id: done.id });
     else go({ name: 'lab' });
   };
