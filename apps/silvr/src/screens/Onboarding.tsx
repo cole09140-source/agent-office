@@ -1,0 +1,71 @@
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { trapTab } from '../components/ui';
+import { t, type MsgKey } from '../i18n';
+
+const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
+  { title: 'onb.1.title', body: 'onb.1.body', art: 'roll' },
+  { title: 'onb.2.title', body: 'onb.2.body', art: 'lab' },
+  { title: 'onb.3.title', body: 'onb.3.body', art: 'dark' },
+];
+
+export function Onboarding({ onDone }: { onDone: () => void }) {
+  const [i, setI] = useState(0);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Move focus to each step (the first too) so screen readers read it and Tab starts here.
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, [i]);
+  // The app is rendered behind the onboarding: keep it out of reach (inert) and Tab inside.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box?.parentElement) return;
+    const behind = Array.from(box.parentElement.children).filter((el): el is HTMLElement => el !== box && el instanceof HTMLElement);
+    behind.forEach((el) => (el.inert = true));
+    const onKey = (e: KeyboardEvent) => e.key === 'Tab' && trapTab(e, box);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      behind.forEach((el) => (el.inert = false));
+      window.removeEventListener('keydown', onKey);
+    };
+  }, []);
+  const last = i === SLIDES.length - 1;
+  const s = SLIDES[i];
+  return (
+    <div class="onboarding" role="dialog" aria-modal="true" aria-label="SILVR" ref={boxRef} data-testid="onboarding">
+      <div class="onb-brand">
+        <span class="logo">SILVR</span>
+        <span class="muted small">{t('app.tagline')}</span>
+      </div>
+      <div class={`onb-art art-${s.art}`} aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+      <h1 tabIndex={-1} ref={titleRef}>
+        <span class="sr-only">
+          {i + 1}/{SLIDES.length}.{' '}
+        </span>
+        {t(s.title)}
+      </h1>
+      <p>{t(s.body)}</p>
+      {last && <p class="onb-privacy small">{t('onb.privacy')}</p>}
+      <div class="dots" aria-hidden="true">
+        {SLIDES.map((_, k) => (
+          <i key={k} class={k === i ? 'on' : ''} />
+        ))}
+      </div>
+      <div class="btn-row">
+        {!last && (
+          <button class="btn ghost" onClick={onDone} data-testid="onb-skip">
+            {t('common.skip')}
+          </button>
+        )}
+        <button class="btn primary" onClick={() => (last ? onDone() : setI(i + 1))} data-testid="onb-next">
+          {last ? t('common.start') : t('common.next')}
+        </button>
+      </div>
+    </div>
+  );
+}
