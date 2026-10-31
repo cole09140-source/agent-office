@@ -145,7 +145,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const startCamera = async (facingMode = cam().facing) => {
     setState('starting');
     try {
-      await cam().start(facingMode);
+      if (!(await cam().start(facingMode))) return; // superseded by a newer start/stop
       setFacing(cam().facing);
       setVideoSize({ w: cam().width, h: cam().height });
       setState('live');
@@ -178,8 +178,16 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const v = cam().video;
     v.className = 'fallback-video';
     videoHostRef.current.appendChild(v);
-    return () => v.remove();
+    return () => {
+      v.remove();
+      v.style.transform = '';
+    };
   }, [gpu]);
+  // Match the GPU preview: zoom crops the centre, the front camera is shown mirrored.
+  useEffect(() => {
+    if (gpu) return;
+    cam().video.style.transform = `scale(${zoom})${facing === 'user' ? ' scaleX(-1)' : ''}`;
+  }, [gpu, zoom, facing]);
 
   // ----- layout -----
   useEffect(() => {
@@ -509,8 +517,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     try {
       await flushPending(r);
     } catch (err) {
+      // finishRoll would drop the pending blob, so keep the roll loaded instead of losing that frame.
       console.error('[silvr] could not keep the pending exposure', err);
-      toast(t('common.error'));
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'), undefined, 6000);
+      return;
     }
     const done = await finishRoll(r.id, speed);
     if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
@@ -613,6 +623,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               half: roll?.pending?.kind === 'half' ? 1 : 0,
               quadIndex,
               ghost: ghostUrl,
+              // The front preview is always mirrored; the first exposure is saved unmirrored when "mirror front" is off.
+              ghostMirror: facing === 'user' && !s.mirrorFront,
               dateText: dateOn && camera.stamp === 'digital' ? formatDigitalStamp(Date.now()) : undefined,
             }}
           />

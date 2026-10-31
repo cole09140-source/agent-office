@@ -91,6 +91,9 @@ export async function createBackup(now = Date.now(), onProgress?: (done: number,
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length < 200;
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const clamp = (v: unknown, lo: number, hi: number, fallback: number) => (isNum(v) ? Math.min(hi, Math.max(lo, v)) : fallback);
+/** A timestamp Date/Intl can format (a forged 1e20 would throw RangeError on every render). */
+const isTime = (v: unknown): v is number => isNum(v) && v >= 0 && v <= 8.64e15;
+const text = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7'];
 const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
 
@@ -104,14 +107,14 @@ function validRoll(r: Roll): boolean {
     r.shots >= 0 &&
     r.capacity >= 1 &&
     r.capacity <= 1000 &&
-    isNum(r.createdAt) &&
+    isTime(r.createdAt) &&
     ['loaded', 'developing', 'developed'].includes(r.status) &&
     ['camera', 'import'].includes(r.kind)
   );
 }
 
 function validPhoto(p: Photo): boolean {
-  return !!p && isStr(p.id) && isStr(p.rollId) && isNum(p.frame) && p.width >= 1 && p.height >= 1 && isNum(p.takenAt) && !!p.develop && typeof p.develop === 'object';
+  return !!p && isStr(p.id) && isStr(p.rollId) && isNum(p.frame) && p.width >= 1 && p.height >= 1 && isTime(p.takenAt) && !!p.develop && typeof p.develop === 'object';
 }
 
 /** Rebuilds develop settings from known fields only, so a damaged recipe can't break rendering. */
@@ -140,8 +143,47 @@ function sanitizeRoll(r: Roll): Roll {
   const roll: Roll = { ...r, aspect: ASPECTS.includes(r.aspect) ? r.aspect : '3:2', capacity: Math.round(r.capacity), shots: Math.min(Math.round(r.shots), Math.round(r.capacity)) };
   if (roll.cameraId !== undefined && !(typeof roll.cameraId === 'string' && hasCamera(roll.cameraId))) delete roll.cameraId;
   const pd = roll.pending;
-  if (pd && !(['half', 'double'].includes(pd.kind) && isNum(pd.takenAt) && pd.width >= 1 && pd.height >= 1)) delete roll.pending;
+  if (pd && !(['half', 'double'].includes(pd.kind) && isTime(pd.takenAt) && pd.width >= 1 && pd.height >= 1)) {
+    if (pd.kind === 'half') roll.shots = Math.max(0, roll.shots - 1); // the waiting half had used a frame
+    delete roll.pending;
+  }
+  for (const k of ['finishedAt', 'readyAt', 'seenAt'] as const) if (roll[k] !== undefined && !isTime(roll[k])) delete roll[k];
+  // A roll in the lab needs a ready time, or the lab clock would poll it forever.
+  if (roll.status === 'developing' && roll.readyAt === undefined) roll.readyAt = Date.now();
   return roll;
+}
+
+/** Shooting-log records rebuilt field by field: strings stay strings, numbers stay in range. */
+function sanitizeLogRoll(r: LogRoll): LogRoll | null {
+  if (!r || !isStr(r.id)) return null;
+  return {
+    id: r.id,
+    camera: text(r.camera, 60),
+    film: text(r.film, 60),
+    iso: Math.round(clamp(r.iso, 1, 12800, 400)),
+    exposures: Math.round(clamp(r.exposures, 1, 100, 36)),
+    startedAt: isTime(r.startedAt) ? r.startedAt : Date.now(),
+    note: text(r.note, 500),
+  };
+}
+
+function sanitizeLogFrame(f: LogFrame): LogFrame | null {
+  if (!f || !isStr(f.id) || !isStr(f.rollId)) return null;
+  const frame: LogFrame = {
+    id: f.id,
+    rollId: f.rollId,
+    frame: Math.round(clamp(f.frame, 1, 1000, 1)),
+    aperture: text(f.aperture, 10),
+    shutter: text(f.shutter, 20),
+    lens: text(f.lens, 40),
+    note: text(f.note, 140),
+    takenAt: isTime(f.takenAt) ? f.takenAt : Date.now(),
+  };
+  if (isNum(f.lat) && isNum(f.lon) && Math.abs(f.lat) <= 90 && Math.abs(f.lon) <= 180) {
+    frame.lat = f.lat;
+    frame.lon = f.lon;
+  }
+  return frame;
 }
 
 /** Verifies an entry's checksum, then returns it as a lazy slice (a big roll is never held in memory at once). */
@@ -195,8 +237,8 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
     if (list) list.push(p);
     else photosByRoll.set(p.rollId, [p]);
   }
-  const logRolls = arr<LogRoll>(manifest.logRolls).filter((r) => isStr(r.id));
-  const logFrames = arr<LogFrame>(manifest.logFrames).filter((f) => isStr(f.id) && isStr(f.rollId));
+  const logRolls = arr<LogRoll>(manifest.logRolls).map(sanitizeLogRoll).filter((r): r is LogRoll => !!r);
+  const logFrames = arr<LogFrame>(manifest.logFrames).map(sanitizeLogFrame).filter((f): f is LogFrame => !!f);
 
   try {
     const localPhotoIds = new Set((await getAll<Photo>('photos')).map((p) => p.id));
@@ -259,7 +301,11 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
           delete roll.pending;
           keepPending = false;
         }
-        if (!keepPending && roll.pending) delete roll.pending;
+        if (!keepPending && roll.pending) {
+          // Its blob is missing or damaged: drop the waiting exposure the way dropPending does.
+          if (roll.pending.kind === 'half') roll.shots = Math.max(0, roll.shots - 1);
+          delete roll.pending;
+        }
         // A finished roll with nothing left in it isn't kept (rewinding an empty roll deletes it too).
         if (roll.status !== 'loaded' && !fresh.length) return { kind: 'empty' as const, added: 0 };
         const maxFrame = fresh.reduce((m, it) => Math.max(m, it.photo.frame), 0);

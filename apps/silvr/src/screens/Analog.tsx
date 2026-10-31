@@ -4,10 +4,10 @@ import { advise, APERTURES, ISOS, LIGHTS, type Light } from '../companion/exposu
 import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Sheet, Slider } from '../components/ui';
 import { t } from '../i18n';
-import { download } from '../platform/share';
-import { confirm } from '../state/app';
+import { saveFile } from '../platform/share';
+import { confirm, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go, isCurrent } from '../state/router';
+import { back, go, goTab, isCurrent } from '../state/router';
 import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, saveLogFrame, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
 
 /** Last meter reading, so the log form can prefill it. */
@@ -77,11 +77,18 @@ function NewRollSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [film, setFilm] = useState('');
   const [iso, setIso] = useState(400);
   const [exp, setExp] = useState(36);
+  const [saving, setSaving] = useState(false);
   const submit = async (e: Event) => {
     e.preventDefault();
-    const r = await saveLogRoll({ camera: camera.trim() || '—', film: film.trim() || '—', iso, exposures: exp, startedAt: Date.now(), note: '' });
-    onClose();
-    go({ name: 'log', id: r.id });
+    if (saving) return; // a double tap would start two rolls
+    setSaving(true);
+    try {
+      const r = await saveLogRoll({ camera: camera.trim() || '—', film: film.trim() || '—', iso, exposures: exp, startedAt: Date.now(), note: '' });
+      onClose();
+      go({ name: 'log', id: r.id });
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <Sheet open={open} onClose={onClose} title={t('an.log.new')} testId="new-log">
@@ -116,7 +123,7 @@ function NewRollSheet({ open, onClose }: { open: boolean; onClose: () => void })
             </select>
           </label>
         </div>
-        <button class="btn primary wide" type="submit" data-testid="log-create">
+        <button class="btn primary wide" type="submit" disabled={saving} data-testid="log-create">
           {t('common.start')}
         </button>
       </form>
@@ -176,6 +183,7 @@ export function LogScreen({ id }: { id: string }) {
   const [lens, setLens] = useState('');
   const [note, setNote] = useState('');
   const [withLoc, setWithLoc] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const reload = async () => {
     const rs = await listLogRolls();
@@ -197,6 +205,18 @@ export function LogScreen({ id }: { id: string }) {
 
   const add = async (e: Event) => {
     e.preventDefault();
+    // The location lookup can take seconds: a second tap must not save the same frame twice
+    // (same number, and past the roll's exposure count).
+    if (saving || !roll || frames.length >= roll.exposures) return;
+    setSaving(true);
+    try {
+      await addFrame();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addFrame = async () => {
     let lat: number | undefined;
     let lon: number | undefined;
     if (withLoc && navigator.geolocation) {
@@ -219,15 +239,21 @@ export function LogScreen({ id }: { id: string }) {
     await reload();
   };
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
     const csv = logToCsv(roll, frames);
-    download(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `SILVR_log_${roll.film.replace(/[^\w-]+/g, '_')}.csv`);
+    try {
+      // saveFile goes through the share sheet in the native apps, where an <a download> does nothing.
+      await saveFile(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `SILVR_log_${roll.film.replace(/[^\w-]+/g, '_')}.csv`);
+    } catch (err) {
+      console.error('[silvr] csv export failed', err);
+      toast(t('common.error'));
+    }
   };
 
   const remove = async () => {
     if (!(await confirm(t('an.log.deleteConfirm'), t('common.delete'), true))) return;
     await deleteLogRoll(id);
-    if (isCurrent({ name: 'log', id })) go({ name: 'analog' }, true);
+    if (isCurrent({ name: 'log', id })) goTab({ name: 'analog' }); // unwind, so back never lands on the deleted log
   };
 
   return (
@@ -303,7 +329,7 @@ export function LogScreen({ id }: { id: string }) {
             <input type="checkbox" role="switch" checked={withLoc} onChange={(e) => setWithLoc(e.currentTarget.checked)} />
             <span class="switch" aria-hidden="true" />
           </label>
-          <button class="btn primary wide" type="submit" data-testid="frame-save">
+          <button class="btn primary wide" type="submit" disabled={saving} data-testid="frame-save">
             {t('common.save')}
           </button>
         </form>

@@ -6,7 +6,7 @@ import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go, isCurrent } from '../state/router';
+import { back, go, goTab, isCurrent } from '../state/router';
 import { getCamera, hasCamera } from '../cameras/models';
 import { deletePhoto, getPhoto, listPhotos, subscribe, viewable, type Photo } from '../store/rolls';
 
@@ -70,14 +70,23 @@ export function PhotoScreen({ id }: { id: string }) {
   // Instant prints keep developing for a while after they eject.
   const instantDev = photo && camera?.id === 'instasq' ? Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000) : 0;
 
+  // One share/save at a time: a double tap saved the print twice, or the second share
+  // was refused and its cleanup deleted the file the first share sheet was still reading.
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
   const share = async (download: boolean) => {
-    if (!blob || !photo) return;
+    if (!blob || !photo || sharingRef.current) return;
+    sharingRef.current = true;
+    setSharing(true);
     try {
       const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg') }], download);
       if (res === 'downloaded') toast(t('view.savedToast'));
     } catch (err) {
       console.error('[silvr] share failed', err);
       toast(t('common.error'));
+    } finally {
+      sharingRef.current = false;
+      setSharing(false);
     }
   };
 
@@ -88,14 +97,14 @@ export function PhotoScreen({ id }: { id: string }) {
     await deletePhoto(photo.id);
     if (!isCurrent({ name: 'photo', id: photo.id })) return;
     if (next) go({ name: 'photo', id: next.id }, true);
-    else go({ name: 'gallery' }, true);
+    else goTab({ name: 'gallery' }); // the emptied roll is gone too: unwind so back can't reach it
   };
 
   return (
     <div class="viewer" data-testid="photo-screen">
       <Header
         title={stock?.name ?? ''}
-        sub={photo ? `${photo.frame} / ${siblings.length}` : undefined}
+        sub={photo && idx >= 0 ? `${idx + 1} / ${siblings.length}` : undefined}
         onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
         right={
           <button class="icon-btn" onClick={() => setInfo(true)} aria-label={t('view.info')}>
@@ -140,11 +149,11 @@ export function PhotoScreen({ id }: { id: string }) {
         )}
       </div>
       <div class="viewer-actions">
-        <button onClick={() => share(false)} disabled={!blob} data-testid="btn-share">
+        <button onClick={() => share(false)} disabled={!blob || sharing} data-testid="btn-share">
           <Icon name="share" />
           <span>{t('view.share')}</span>
         </button>
-        <button onClick={() => share(true)} disabled={!blob} data-testid="btn-save">
+        <button onClick={() => share(true)} disabled={!blob || sharing} data-testid="btn-save">
           <Icon name="download" />
           <span>{t('view.saveImage')}</span>
         </button>

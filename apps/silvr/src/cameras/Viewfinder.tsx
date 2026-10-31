@@ -9,6 +9,8 @@ export interface ViewfinderState {
   quadIndex?: number;
   /** Double exposure: object URL of the first exposure. */
   ghost?: string;
+  /** Flip the ghost to line up with a mirrored live preview. */
+  ghostMirror?: boolean;
   dateText?: string;
   palette?: string;
 }
@@ -67,7 +69,7 @@ export function ViewfinderOverlay({ camera, state }: { camera: CameraModel; stat
     case 'double':
       return (
         <div class="vf vf-double" aria-hidden="true">
-          {state.ghost && <img class="vf-ghost" src={state.ghost} alt="" />}
+          {state.ghost && <img class="vf-ghost" src={state.ghost} alt="" style={state.ghostMirror ? { transform: 'scaleX(-1)' } : undefined} />}
           <span class="vf-double-tag mono">{state.ghost ? '2/2' : '1/2'}</span>
         </div>
       );

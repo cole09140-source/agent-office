@@ -326,18 +326,24 @@ export async function ensurePrint(photo: Photo, opts: PrintOptions): Promise<{ p
       const recipe = developKey(photo.develop);
       // Read-check-write in one transaction so a concurrent re-develop is never overwritten.
       let stored = false;
-      await tx(['photos', 'blobs'], (t) => {
-        const ps = t.objectStore('photos');
-        const r = ps.get(photo.id);
-        r.onsuccess = () => {
-          const fresh = r.result as Photo | undefined;
-          if (!fresh || developKey(fresh.develop) !== recipe) return; // deleted or recipe changed meanwhile
-          ps.put({ ...fresh, printKey: key, printW: out.width, printH: out.height });
-          t.objectStore('blobs').put(out.blob, blobKey.print(photo.id));
-          t.objectStore('blobs').put(out.thumb, blobKey.thumb(photo.id));
-          stored = true;
-        };
-      });
+      try {
+        await tx(['photos', 'blobs'], (t) => {
+          const ps = t.objectStore('photos');
+          const r = ps.get(photo.id);
+          r.onsuccess = () => {
+            const fresh = r.result as Photo | undefined;
+            if (!fresh || developKey(fresh.develop) !== recipe) return; // deleted or recipe changed meanwhile
+            ps.put({ ...fresh, printKey: key, printW: out.width, printH: out.height });
+            t.objectStore('blobs').put(out.blob, blobKey.print(photo.id));
+            t.objectStore('blobs').put(out.thumb, blobKey.thumb(photo.id));
+            stored = true;
+          };
+        });
+      } catch (err) {
+        // The print is only a cache: on a full disk still show / save / share it, just don't keep it.
+        console.warn('[silvr] print cache not saved', err);
+        stored = false;
+      }
       if (!stored && !(await getPhoto(photo.id))) return null;
       if (stored) Object.assign(photo, { printKey: key, printW: out.width, printH: out.height });
       return out;

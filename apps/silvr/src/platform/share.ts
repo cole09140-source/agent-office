@@ -154,6 +154,26 @@ export async function saveFile(blob: Blob, name: string): Promise<ShareResult> {
   return 'downloaded';
 }
 
+/**
+ * Native only: deletes the share/save copies (prints, contact sheets, backup zips) left in the
+ * app cache. The in-memory "clean up next time" lists die with the process, so this runs at
+ * start-up and on "delete all data" — the privacy policy promises nothing is left behind.
+ */
+export async function clearShareCache(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+    const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache });
+    await Promise.all(
+      files.filter((f) => f.type === 'file' && f.name.startsWith('SILVR')).map((f) => Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => undefined)),
+    );
+    lastShared = [];
+    lastSavedFile = null;
+  } catch {
+    /* empty or unreadable cache: nothing to clean */
+  }
+}
+
 export function fileName(prefix: string, ts: number, ext = 'jpg'): string {
   const d = new Date(ts);
   const p = (n: number) => String(n).padStart(2, '0');

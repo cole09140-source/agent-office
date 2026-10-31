@@ -94,7 +94,12 @@ public class GalleryPlugin extends Plugin {
     private Uri saveToPictures(byte[] bytes, String name, String mime) throws Exception {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), ALBUM);
         if (!dir.exists() && !dir.mkdirs()) throw new IllegalStateException("Cannot create " + dir);
+        // MediaStore renames duplicates on 10+; here two prints taken in the same second would overwrite.
         File file = new File(dir, name);
+        int dot = name.lastIndexOf('.');
+        String base = dot > 0 ? name.substring(0, dot) : name;
+        String ext = dot > 0 ? name.substring(dot) : "";
+        for (int n = 1; file.exists(); n++) file = new File(dir, base + " (" + n + ")" + ext);
         try (FileOutputStream out = new FileOutputStream(file)) {
             out.write(bytes);
         }

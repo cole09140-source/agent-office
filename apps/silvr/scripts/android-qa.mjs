@@ -57,7 +57,8 @@ async function attach() {
   page = await (await device.webView({ pkg: PKG })).page();
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   // Capacitor's debug bridge logs every rejected plugin call; a dismissed share sheet is handled by the app.
-  page.on('console', (m) => m.type() === 'error' && !/Share canceled/.test(m.text()) && errors.push(`console: ${m.text()}`));
+  page.on('console', (m) => m.type() === 'error' && !/Share canceled/.test(m.text()) && errors.push(`console: ${m.text()} @ ${m.location()?.url ?? ''}`));
+  page.on('response', (r) => r.status() >= 400 && errors.push(`http ${r.status()} ${r.url()}`));
   await page.waitForLoadState('domcontentloaded');
 }
 const tid = (id) => page.getByTestId(id);
@@ -264,6 +265,26 @@ await check('shooting log saves GPS coordinates when location is on', async () =
   shot('12-log');
   if (typeof frame?.lat !== 'number') throw new Error(`no coordinates saved: ${JSON.stringify(frame)}`);
   return `${frame.lat}, ${frame.lon}`;
+});
+
+await check('shooting log CSV export hands the file to the share sheet', async () => {
+  await tid('btn-csv').click();
+  await sleep(2500);
+  const top = focusedWindow();
+  shot('12b-csv');
+  if (!isChooser(top)) throw new Error(`no share sheet: ${top}`);
+  back();
+  await sleep(1000);
+});
+
+await check('legal pages open inside the app and link back to Settings', async () => {
+  await tid('tab-settings').click();
+  await page.locator('a.row.link[href="./privacy.html"]').click();
+  await page.waitForURL(/privacy\.html/, { timeout: 10000 });
+  shot('12c-privacy');
+  await page.locator('.back a').click();
+  await page.waitForURL(/#\/settings/, { timeout: 10000 });
+  await page.getByTestId('settings-screen').waitFor({ state: 'visible', timeout: 15000 });
 });
 
 await check('small screen 360×640dp: print never covers the viewer buttons', async () => {

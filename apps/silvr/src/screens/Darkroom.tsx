@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Header, Segmented, Slider, StockCard, Toggle } from '../components/ui';
-import { composePrint, scaleTo } from '../film/develop';
+import { composePrint, gpuDevelopAvailable, scaleTo } from '../film/develop';
 import { randomSeed } from '../film/random';
 import { defaultDevelop } from '../film/resolve';
 import { filmsFor, getCamera, hasCamera, PALETTE_IDS } from '../cameras/models';
@@ -34,7 +34,8 @@ export function DarkroomScreen({ id }: { id: string }) {
       if (!neg) return;
       const bmp = await createImageBitmap(neg);
       try {
-        if (alive) setSrc(scaleTo(bmp, bmp.width, bmp.height, PREVIEW_LONG));
+        // Without WebGL every slider move re-develops on the CPU: keep that preview small.
+        if (alive) setSrc(scaleTo(bmp, bmp.width, bmp.height, gpuDevelopAvailable() ? PREVIEW_LONG : 700));
       } finally {
         bmp.close?.();
       }

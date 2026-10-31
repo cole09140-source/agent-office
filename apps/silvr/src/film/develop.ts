@@ -24,15 +24,27 @@ export const EXPORT_MAX_LONG = 3600;
 export const MAX_CANVAS_PIXELS = 16_000_000;
 export const THUMB_MAX_LONG = 540;
 
+/** The CPU fallback works at most at this long edge and scales up: 3600px takes many seconds on a phone. */
+export const CPU_MAX_LONG = 1600;
+
 let sharedRenderer: GlFilmRenderer | null | undefined;
+let rendererFailedAt = 0;
 
 function exportRenderer(): GlFilmRenderer | null {
   if (sharedRenderer && sharedRenderer.isLost) sharedRenderer = undefined;
+  // A failed context can be temporary (too many contexts, GPU process restart): retry now and then.
+  if (sharedRenderer === null && Date.now() - rendererFailedAt > 30_000) sharedRenderer = undefined;
   if (sharedRenderer === undefined) {
     const canvas = document.createElement('canvas');
     sharedRenderer = GlFilmRenderer.create(canvas);
+    if (!sharedRenderer) rendererFailedAt = Date.now();
   }
   return sharedRenderer;
+}
+
+/** False when developing would fall back to the (slow) CPU path. */
+export function gpuDevelopAvailable(): boolean {
+  return !!exportRenderer();
 }
 
 export function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/jpeg', quality = 0.92): Promise<Blob> {
@@ -78,11 +90,19 @@ export function renderFilm(source: CanvasImageSource & TexImageSource, w: number
       console.warn('[silvr] GPU develop failed, falling back to CPU', err);
     }
   }
-  ctx.drawImage(source, 0, 0, w, h);
-  const img = ctx.getImageData(0, 0, w, h);
-  const data = renderCpu({ data: img.data, width: w, height: h }, look);
-  img.data.set(data);
-  ctx.putImageData(img, 0, 0);
+  const k = Math.min(1, CPU_MAX_LONG / Math.max(w, h));
+  const cw = Math.max(1, Math.round(w * k));
+  const ch = Math.max(1, Math.round(h * k));
+  const work = k < 1 ? makeCanvas(cw, ch) : out;
+  const wctx = work.getContext('2d')!;
+  wctx.drawImage(source, 0, 0, cw, ch);
+  const img = wctx.getImageData(0, 0, cw, ch);
+  img.data.set(renderCpu({ data: img.data, width: cw, height: ch }, look));
+  wctx.putImageData(img, 0, 0);
+  if (work !== out) {
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(work, 0, 0, w, h);
+  }
   return out;
 }
 

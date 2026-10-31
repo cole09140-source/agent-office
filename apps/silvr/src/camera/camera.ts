@@ -22,7 +22,7 @@ export class CameraController {
   readonly video: HTMLVideoElement;
   facing: Facing = 'environment';
   private stream: MediaStream | null = null;
-  private starting: Promise<void> | null = null;
+  private starting: Promise<boolean> | null = null;
   private generation = 0;
 
   constructor() {
@@ -55,23 +55,33 @@ export class CameraController {
     return this.stream?.getVideoTracks()[0];
   }
 
-  async start(facing: Facing = this.facing): Promise<void> {
+  /**
+   * Starts (or switches) the camera. Resolves false when a newer start/stop superseded this
+   * request: its late success or failure must not touch the screen's state.
+   */
+  async start(facing: Facing = this.facing): Promise<boolean> {
     if (typeof window !== 'undefined' && !window.isSecureContext) throw Object.assign(new Error('insecure'), { name: 'InsecureContext' });
     if (!CameraController.supported()) throw Object.assign(new Error('unsupported'), { name: 'Unsupported' });
     const gen = ++this.generation;
-    const run = async () => {
+    const run = async (): Promise<boolean> => {
       this.stopTracks();
       const base: MediaTrackConstraints = { facingMode: { ideal: facing }, width: { ideal: 2560 }, height: { ideal: 1440 } };
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: base, audio: false });
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: base, audio: false });
+        } catch (err) {
+          if (classifyError(err) !== 'notfound') throw err;
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
       } catch (err) {
-        if (classifyError(err) !== 'notfound') throw err;
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        // e.g. NotReadableError from an abandoned request while a newer one owns the camera.
+        if (gen !== this.generation) return false;
+        throw err;
       }
       if (gen !== this.generation) {
         stream.getTracks().forEach((t) => t.stop());
-        return;
+        return false;
       }
       this.stream = stream;
       this.facing = (stream.getVideoTracks()[0]?.getSettings().facingMode as Facing) ?? facing;
@@ -86,10 +96,11 @@ export class CameraController {
           setTimeout(done, 2500);
         });
       }
+      return gen === this.generation;
     };
     this.starting = run();
     try {
-      await this.starting;
+      return await this.starting;
     } finally {
       this.starting = null;
     }

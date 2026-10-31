@@ -120,6 +120,32 @@ describe('backup / restore', () => {
     await expect(restoreBackup(newer)).rejects.toMatchObject({ code: 'newer' });
   });
 
+  it('rebuilds forged shooting-log records so they cannot crash the screens', async () => {
+    const manifest = {
+      format: 'silvr-backup',
+      version: 1,
+      createdAt: 1,
+      rolls: [],
+      photos: [],
+      logRolls: [{ id: 'L', camera: 42, film: null, iso: 'x', exposures: 1e9, startedAt: 1e20, note: { evil: 1 } }],
+      logFrames: [
+        { id: 'F', rollId: 'L', frame: -5, aperture: 8, shutter: null, takenAt: 'yesterday', lat: 999, lon: 1 },
+        { id: 'G', rollId: 7 },
+      ],
+      blobs: {},
+    };
+    const zip = await writeZip([{ name: 'manifest.json', data: new Blob([JSON.stringify(manifest)]) }]);
+    expect(await restoreBackup(zip)).toMatchObject({ logRolls: 1 });
+    const [roll] = await listLogRolls();
+    expect(roll).toMatchObject({ id: 'L', camera: '', film: '', iso: 400, exposures: 100, note: '' });
+    expect(new Date(roll.startedAt).toISOString()).toMatch(/^\d{4}-/); // formattable
+    const frames = await listLogFrames('L');
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toMatchObject({ frame: 1, aperture: '', shutter: '' });
+    expect(frames[0].lat).toBeUndefined();
+    expect(Number.isFinite(frames[0].takenAt)).toBe(true);
+  });
+
   it('skips damaged negatives and rejects foreign files', async () => {
     await library();
     const { blob } = await createBackup();

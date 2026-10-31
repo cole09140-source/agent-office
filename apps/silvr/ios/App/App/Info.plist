@@ -67,13 +67,6 @@
 	<string>폰을 가로로 들고 찍은 사진을 바르게 회전합니다. (Rotates photos taken with the phone held sideways.)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>

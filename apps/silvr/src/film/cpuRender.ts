@@ -142,12 +142,10 @@ export function renderCpu(src: PixelBuffer, look: ResolvedLook): Uint8ClampedArr
     out[0] *= 2;
     out[1] *= 2;
     out[2] *= 2;
-    for (const [a, b] of [
-      [du, 0],
-      [-du, 0],
-      [0, dv],
-      [0, -dv],
-    ]) {
+    // Unrolled offsets: this runs per pixel, so no arrays allocated here.
+    for (let i = 0; i < 4; i++) {
+      const a = i === 0 ? du : i === 1 ? -du : 0;
+      const b = i === 2 ? dv : i === 3 ? -dv : 0;
       sampleBilinear(blur, u + a, v + b, tmpB);
       out[0] += tmpB[0];
       out[1] += tmpB[1];

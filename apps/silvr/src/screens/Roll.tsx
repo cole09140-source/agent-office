@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Sheet, Thumb, useObjectUrl } from '../components/ui';
 import { contactSheet } from '../film/contactSheet';
@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, settings, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go, isCurrent } from '../state/router';
+import { back, go, goTab, isCurrent } from '../state/router';
 import { getCamera } from '../cameras/models';
 import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, subscribe, viewable, type Photo } from '../store/rolls';
 
@@ -71,21 +71,28 @@ export function RollScreen({ id }: { id: string }) {
     }
   };
 
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
   const exportContact = async (download: boolean) => {
-    if (!sheet) return;
+    if (!sheet || sharingRef.current) return; // one save/share at a time (see Photo)
+    sharingRef.current = true;
+    setSharing(true);
     try {
       const res = await shareImages([sheet], download);
       if (res === 'downloaded') toast(t('view.savedToast'));
     } catch (err) {
       console.error('[silvr] share failed', err);
       toast(t('common.error'));
+    } finally {
+      sharingRef.current = false;
+      setSharing(false);
     }
   };
 
   const remove = async () => {
     if (await confirm(t('gal.deleteRollConfirm', { n: photos?.length ?? roll.shots }), t('common.delete'), true)) {
       await deleteRoll(roll.id);
-      if (isCurrent({ name: 'roll', id: roll.id })) go({ name: 'gallery' }, true);
+      if (isCurrent({ name: 'roll', id: roll.id })) goTab({ name: 'gallery' }); // unwind past the deleted roll
     }
   };
 
@@ -125,10 +132,10 @@ export function RollScreen({ id }: { id: string }) {
       <Sheet open={!!sheet} onClose={() => setSheet(null)} title={t('gal.contact')} testId="contact-sheet">
         {sheetUrl && <img class="contact-preview" src={sheetUrl} alt={t('gal.contact')} />}
         <div class="btn-row">
-          <button class="btn ghost" onClick={() => void exportContact(true)} data-testid="btn-contact-save">
+          <button class="btn ghost" onClick={() => void exportContact(true)} disabled={sharing} data-testid="btn-contact-save">
             <Icon name="download" size={18} /> {t('view.saveImage')}
           </button>
-          <button class="btn primary" onClick={() => void exportContact(false)} data-testid="btn-contact-share">
+          <button class="btn primary" onClick={() => void exportContact(false)} disabled={sharing} data-testid="btn-contact-share">
             <Icon name="share" size={18} /> {t('view.share')}
           </button>
         </div>

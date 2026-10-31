@@ -9,7 +9,7 @@ import { clearAll } from '../store/db';
 import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
 import { installPrompt, promptInstall } from '../platform/pwa';
-import { fileName, isIos, isNative, saveFile } from '../platform/share';
+import { clearShareCache, fileName, isIos, isNative, saveFile } from '../platform/share';
 
 declare const __APP_VERSION__: string;
 
@@ -51,7 +51,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
   };
 
   const saveBackup = async () => {
-    if (!backupFile) return;
+    // Busy while writing: on native a big backup is written in chunks for seconds, and a second
+    // tap would interleave its chunks into the same file or delete it under the share sheet.
+    if (!backupFile || backupBusy) return;
+    setBackupBusy(true);
     try {
       const res = await saveFile(backupFile.blob, backupFile.name);
       if (res === 'cancelled') return;
@@ -65,6 +68,8 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     } catch (err) {
       console.error('[silvr] backup save failed', err);
       setBackupStatus(t('set.backup.saveFailed'));
+    } finally {
+      setBackupBusy(false);
     }
   };
 
@@ -94,10 +99,15 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
   const reset = async () => {
     if (!(await confirm(t('set.resetConfirm'), t('set.reset'), true))) return;
     await clearAll();
+    await clearShareCache();
     broadcastReset();
     location.hash = '#/camera';
     location.reload();
   };
+
+  // In the native apps a new window has nowhere to go (iOS hands capacitor:// to the system and
+  // nothing opens), so legal pages open in place and link back to Settings.
+  const legalLink = isNative() ? {} : { target: '_blank', rel: 'noopener' };
 
   return (
     <div class="page" data-testid="settings-screen">
@@ -188,7 +198,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <Icon name="chevron" size={18} />
         </button>
         {backupFile && (
-          <button class="btn primary wide backup-save" onClick={saveBackup} data-testid="btn-backup-save">
+          <button class="btn primary wide backup-save" onClick={saveBackup} disabled={backupBusy} data-testid="btn-backup-save">
             <Icon name="download" size={18} /> {t('set.backup.save')}
           </button>
         )}
@@ -208,19 +218,19 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         </p>
       </section>
       <section class="card">
-        <a class="row link" href="./privacy.html" target="_blank" rel="noopener">
+        <a class="row link" href="./privacy.html" {...legalLink}>
           <span>{t('set.privacy')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./terms.html" target="_blank" rel="noopener">
+        <a class="row link" href="./terms.html" {...legalLink}>
           <span>{t('set.terms')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./support.html" target="_blank" rel="noopener">
+        <a class="row link" href="./support.html" {...legalLink}>
           <span>{t('set.support')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./licenses.html" target="_blank" rel="noopener">
+        <a class="row link" href="./licenses.html" {...legalLink}>
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
         </a>

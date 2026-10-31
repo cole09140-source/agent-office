@@ -7,6 +7,7 @@ import { defaultDevelop } from './film/resolve';
 import { DEFAULT_STOCK_ID, getStock, STOCKS } from './film/stocks';
 import { stockDescription, t, type MsgKey } from './i18n';
 import { isIos, isStandalone, updateReady } from './platform/pwa';
+import { clearShareCache, isNative } from './platform/share';
 import { get, put } from './store/db';
 import { AnalogScreen, LogScreen } from './screens/Analog';
 import { CameraScreen } from './screens/Camera';
@@ -84,7 +85,8 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
           height: neg.height,
           takenAt: neg.takenAt,
           develop: defaultDevelop(stock, randomSeed(), {
-            dateStamp: settings.value.dateStamp,
+            // Only stamp a date we actually know (EXIF); a file time would print the import day.
+            dateStamp: settings.value.dateStamp && neg.dated,
             leak: Math.random() < stock.leakChance ? randomSeed() : null,
           }),
         });
@@ -154,6 +156,11 @@ function useLabClock() {
 }
 
 export function App() {
+  // Leftover share/backup copies from an earlier session (native cache).
+  useEffect(() => {
+    void clearShareCache();
+  }, []);
+
   const [importOpen, setImportOpen] = useState(false);
   const r = route.value;
   useLabClock();
@@ -161,7 +168,8 @@ export function App() {
   // Safari tabs lose storage after 7 idle days; nudge iOS users to install once.
   const onboarded = settings.value.onboarded;
   useEffect(() => {
-    if (!ready.value || !onboarded || !isIos() || isStandalone()) return;
+    // The App Store app is not a Safari tab: no "add to home screen" hint there.
+    if (!ready.value || !onboarded || isNative() || !isIos() || isStandalone()) return;
     get<boolean>('kv', 'iosHint')
       .then((seen) => {
         if (seen) return;

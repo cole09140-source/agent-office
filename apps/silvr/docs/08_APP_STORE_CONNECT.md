@@ -14,6 +14,7 @@ iPhone 앱을 아티움그룹 주식회사 명의로 올릴 때 입력할 값입
 | 연회비 | US$99 |
 
 ## 1. 새 앱
+> **iPhone 전용** 빌드입니다(`TARGETED_DEVICE_FAMILY = 1`). iPad에서는 iPhone 앱 호환 모드로 실행되며, iPad 스크린샷은 필요 없습니다.
 | 항목 | 값 |
 |------|----|
 | 플랫폼 | iOS |
@@ -43,6 +44,9 @@ iPhone 앱을 아티움그룹 주식회사 명의로 올릴 때 입력할 값입
 
 ## 4. 연령 등급 설문
 폭력·성적 콘텐츠·욕설·약물·도박·공포 모두 "없음", 무제한 웹 접근 "아니요", 사용자 생성 콘텐츠 공유 기능 "아니요" → **4+**
+
+## 4-1. 개인정보 매니페스트
+`ios/App/App/PrivacyInfo.xcprivacy`가 앱 타깃 리소스에 들어 있습니다(추적 없음, 수집 데이터 없음, `@capacitor/filesystem`의 파일 시각 API: `NSPrivacyAccessedAPICategoryFileTimestamp` / `C617.1`). 플러그인을 추가하면 그 플러그인 README의 요구 사항을 이 파일에 더하세요.
 
 ## 5. 수출 규정(암호화)
 `Info.plist`에 `ITSAppUsesNonExemptEncryption = false`가 이미 들어 있어 업로드 때마다 묻지 않습니다(표준 HTTPS 외 암호화 없음).
