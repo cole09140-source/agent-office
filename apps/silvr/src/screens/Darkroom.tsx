@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Header, Segmented, Slider, StockCard, Toggle } from '../components/ui';
+import { Empty, Header, Segmented, Slider, StockCard, Toggle } from '../components/ui';
 import { composePrint, gpuDevelopAvailable, scaleTo } from '../film/develop';
 import { randomSeed } from '../film/random';
 import { defaultDevelop } from '../film/resolve';
@@ -16,6 +16,7 @@ const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
 
 export function DarkroomScreen({ id }: { id: string }) {
   const [photo, setPhoto] = useState<Photo>();
+  const [missing, setMissing] = useState(false);
   const [dev, setDev] = useState<DevelopSettings>();
   const [src, setSrc] = useState<HTMLCanvasElement>();
   const [compare, setCompare] = useState(false);
@@ -27,7 +28,8 @@ export function DarkroomScreen({ id }: { id: string }) {
     let alive = true;
     (async () => {
       const p = await getPhoto(id);
-      if (!p || !alive) return;
+      if (!alive) return;
+      if (!p) return setMissing(true);
       setPhoto(p);
       setDev({ ...p.develop });
       const neg = await getBlob(blobKey.neg(p.id));
@@ -54,7 +56,7 @@ export function DarkroomScreen({ id }: { id: string }) {
     raf.current = requestAnimationFrame(() => {
       const c = canvasRef.current;
       if (!c) return;
-      const out = compare ? src : composePrint(src, dev, { takenAt: photo.takenAt, frame: photo.frame, dateFormat: settings.value.dateFormat });
+      const out = compare ? src : composePrint(src, dev, { takenAt: photo.takenAt, frame: photo.frame, dateFormat: settings.value.dateFormat, undated: photo.undated });
       c.width = out.width;
       c.height = out.height;
       c.getContext('2d')!.drawImage(out, 0, 0);
@@ -112,6 +114,7 @@ export function DarkroomScreen({ id }: { id: string }) {
             ? dev
             : { ...p.develop, stockId: dev.stockId, push: dev.push, expired: dev.expired, grain: dev.grain, halation: dev.halation, border: dev.border, ev: dev.ev, palette: dev.palette },
         ]),
+        { id: photo.rollId, stockId: dev.stockId },
       );
     } catch (err) {
       console.error('[silvr] apply to roll failed', err);
@@ -126,6 +129,7 @@ export function DarkroomScreen({ id }: { id: string }) {
     return (
       <div class="page">
         <Header title={t('dr.title')} onBack={() => back({ name: 'gallery' })} />
+        {missing && <Empty title={t('common.notFound')} />}
       </div>
     );
   }
@@ -229,7 +233,7 @@ export function DarkroomScreen({ id }: { id: string }) {
             </button>
           )}
           {!isPixel && camera?.flash !== 'none' && <Toggle label={t('dr.flash')} checked={dev.flash} onChange={(v) => set({ flash: v })} />}
-          {camera?.stamp !== 'none' && <Toggle label={t('dr.date')} checked={dev.dateStamp} onChange={(v) => set({ dateStamp: v })} testId="tg-date" />}
+          {camera?.stamp !== 'none' && !photo.undated && <Toggle label={t('dr.date')} checked={dev.dateStamp} onChange={(v) => set({ dateStamp: v })} testId="tg-date" />}
         </div>
         {!isPixel && (
           <section>

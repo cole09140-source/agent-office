@@ -6,7 +6,7 @@ import { randomSeed } from './film/random';
 import { defaultDevelop } from './film/resolve';
 import { DEFAULT_STOCK_ID, getStock, STOCKS } from './film/stocks';
 import { stockDescription, t, type MsgKey } from './i18n';
-import { isIos, isStandalone, updateReady } from './platform/pwa';
+import { holdCapture, isIos, isStandalone, updateReady } from './platform/pwa';
 import { clearShareCache, isNative } from './platform/share';
 import { get, put } from './store/db';
 import { AnalogScreen, LogScreen } from './screens/Analog';
@@ -20,7 +20,7 @@ import { RollScreen } from './screens/Roll';
 import { SettingsScreen } from './screens/Settings';
 import { confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
 import { go, goTab, route, type Route } from './state/router';
-import { importRoll, type ImportItem } from './store/rolls';
+import { addImportBatch, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem } from './store/rolls';
 
 const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
   { name: 'camera', icon: 'camera', label: 'tab.camera' },
@@ -57,7 +57,10 @@ function TabBar() {
         >
           <Icon name={tab.icon} size={22} />
           <span>{t(tab.label)}</span>
-          {!!badges[tab.name] && <i class="dot" aria-label={String(badges[tab.name])} />}
+          {!!badges[tab.name] && (
+            <i class="dot" aria-hidden="true" />
+          )}
+          {!!badges[tab.name] && <span class="sr-only">({badges[tab.name]})</span>}
         </button>
       ))}
     </nav>
@@ -67,6 +70,7 @@ function TabBar() {
 function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [stockId, setStockId] = useState(DEFAULT_STOCK_ID);
   const [progress, setProgress] = useState<number | null>(null);
+  const [total, setTotal] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const importing = useRef(false);
 
@@ -74,9 +78,11 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
     // One import at a time until it is saved: picking again meanwhile made a duplicate roll.
     if (!files?.length || importing.current) return;
     importing.current = true;
+    const release = holdCapture(); // an update reload must not cut the import off
     try {
       await importFiles(files);
     } finally {
+      release();
       importing.current = false;
       setProgress(null);
       if (input.current) input.current.value = '';
@@ -86,53 +92,66 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
   const importFiles = async (files: FileList) => {
     const stock = getStock(stockId);
     const list = Array.from(files).filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(f.name));
+    setTotal(list.length);
     setProgress(0);
-    const items: ImportItem[] = [];
+    const roll = newImportRoll(stock.id);
+    let batch: ImportItem[] = [];
+    let saved = 0;
     let failed = 0;
-    for (const f of list) {
-      try {
-        const neg = await importFile(f);
-        items.push({
-          negative: neg.blob,
-          width: neg.width,
-          height: neg.height,
-          takenAt: neg.takenAt,
-          develop: defaultDevelop(stock, randomSeed(), {
-            // Only stamp a date we actually know (EXIF); a file time would print the import day.
-            dateStamp: settings.value.dateStamp && neg.dated,
-            leak: Math.random() < stock.leakChance ? randomSeed() : null,
-          }),
-        });
-      } catch (err) {
-        console.warn('[silvr] import failed', f.name, err);
-        failed++;
-      }
-      setProgress(items.length + failed);
-    }
-    if (failed) toast(t('err.import'));
-    if (!items.length) return;
-    items.sort((a, b) => a.takenAt - b.takenAt);
     try {
-      const roll = await importRoll(stock.id, items);
-      onClose();
-      go({ name: 'roll', id: roll.id });
+      for (const f of list) {
+        try {
+          const neg = await importFile(f);
+          batch.push({
+            negative: neg.blob,
+            width: neg.width,
+            height: neg.height,
+            takenAt: neg.takenAt,
+            undated: !neg.dated,
+            develop: defaultDevelop(stock, randomSeed(), {
+              // Only stamp a date we actually know (EXIF); a file time would print the import day.
+              dateStamp: settings.value.dateStamp && neg.dated,
+              leak: Math.random() < stock.leakChance ? randomSeed() : null,
+            }),
+          });
+        } catch (err) {
+          console.warn('[silvr] import failed', f.name, err);
+          failed++;
+        }
+        // Save as we go: holding every negative until the end runs a phone out of memory.
+        if (batch.length >= IMPORT_BATCH) {
+          await addImportBatch(roll, batch);
+          saved += batch.length;
+          batch = [];
+        }
+        setProgress(saved + batch.length + failed);
+      }
+      await addImportBatch(roll, batch);
+      saved += batch.length;
     } catch (err) {
       console.error('[silvr] import save failed', err);
-      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'), undefined, 6000);
     }
+    if (failed) toast(t('err.import'));
+    if (!saved) return;
+    // Whatever was saved stays, in shooting order.
+    await finishImport(roll.id).catch((err) => console.error('[silvr] import order not saved', err));
+    onClose();
+    go({ name: 'roll', id: roll.id });
   };
 
   return (
     <Sheet open={open} onClose={() => progress === null && onClose()} title={t('gal.import')} testId="import-sheet">
       <p class="muted small">{stockDescription(stockId)}</p>
       <div class="stock-strip">
-        {STOCKS.map((st) => (
+        {/* The CCD / pixel sensors belong to their cameras (the darkroom offers imports the same list). */}
+        {STOCKS.filter((st) => !st.exclusive).map((st) => (
           <StockCard key={st.id} stock={st} selected={st.id === stockId} onClick={() => setStockId(st.id)} />
         ))}
       </div>
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.currentTarget.files)} data-testid="import-input" />
       <button class="btn primary wide" disabled={progress !== null} onClick={() => input.current?.click()} data-testid="btn-pick-files">
-        {progress !== null ? t('gal.importing', { n: progress }) : t('gal.import')}
+        {progress !== null ? t('gal.importing', { n: progress, total }) : t('gal.import')}
       </button>
     </Sheet>
   );
@@ -141,6 +160,8 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
 /** Ticks the clock and announces rolls that finish developing while the app is open. */
 function useLabClock() {
   const known = useRef<Set<string> | null>(null);
+  /** Rolls this session saw in the lab: only they get a "developed" toast (a restore's old rolls don't). */
+  const inLab = useRef(new Set<string>());
   useEffect(() => {
     const tick = () => {
       now.value = Date.now();
@@ -151,6 +172,7 @@ function useLabClock() {
     return () => clearInterval(id);
   }, []);
   useEffect(() => {
+    for (const r of rolls.value) if (r.status === 'developing') inLab.current.add(r.id);
     const developed = rolls.value.filter((r) => r.status === 'developed');
     if (known.current === null) {
       if (ready.value) known.current = new Set(developed.map((r) => r.id));
@@ -159,7 +181,7 @@ function useLabClock() {
     for (const r of developed) {
       if (known.current.has(r.id)) continue;
       known.current.add(r.id);
-      if (r.kind === 'camera' && r.readyAt !== r.finishedAt && !r.seenAt) {
+      if (r.kind === 'camera' && inLab.current.has(r.id) && r.readyAt !== r.finishedAt && !r.seenAt) {
         toast(t('lab.developedToast', { stock: getStock(r.stockId).name }), { label: t('lab.open'), run: () => go({ name: 'roll', id: r.id }) }, 6000);
       }
     }
@@ -173,6 +195,7 @@ export function App() {
   }, []);
 
   const [importOpen, setImportOpen] = useState(false);
+  const cameraShown = useRef(false);
   const r = route.value;
   useLabClock();
 
@@ -209,7 +232,10 @@ export function App() {
   let screen;
   switch (r.name) {
     case 'camera':
-      screen = <CameraScreen onImport={openImport} />;
+      // Not under the first-run onboarding: the OS camera prompt would cover its first slide.
+      // Once shown it stays (onboarding replayed from another tab must not drop a shot).
+      if (settings.value.onboarded) cameraShown.current = true;
+      screen = cameraShown.current ? <CameraScreen onImport={openImport} /> : null;
       break;
     case 'lab':
       screen = <LabScreen />;
@@ -238,7 +264,7 @@ export function App() {
   }
 
   return (
-    <div class={`app route-${r.name}`}>
+    <div class={`app route-${r.name}${updateReady.value ? ' has-update' : ''}`}>
       <main class="screen">
         {storageError.value && (
           <p class="storage-banner" role="alert" data-testid="storage-banner">

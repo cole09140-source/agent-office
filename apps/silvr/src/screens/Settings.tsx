@@ -1,3 +1,4 @@
+import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
@@ -8,10 +9,15 @@ import { BackupError, createBackup, restoreBackup } from '../store/backup';
 import { clearAll } from '../store/db';
 import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
-import { installPrompt, promptInstall } from '../platform/pwa';
+import { holdCapture, installPrompt, promptInstall } from '../platform/pwa';
 import { clearShareCache, fileName, isIos, isNative, saveFile } from '../platform/share';
 
 declare const __APP_VERSION__: string;
+
+// Module level: a long backup / restore keeps its progress and result when you leave Settings.
+const backupStatusSig = signal('');
+const backupBusySig = signal(false);
+const backupFileSig = signal<{ blob: Blob; name: string } | null>(null);
 
 export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
   const s = settings.value;
@@ -23,14 +29,19 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     navigator.storage?.persisted?.().then(setPersisted).catch(() => undefined);
   }, []);
 
-  const [backupStatus, setBackupStatus] = useState('');
-  const [backupBusy, setBackupBusy] = useState(false);
-  const [backupFile, setBackupFile] = useState<{ blob: Blob; name: string } | null>(null);
+  const backupStatus = backupStatusSig.value;
+  const backupBusy = backupBusySig.value;
+  const backupFile = backupFileSig.value;
+  const setBackupStatus = (v: string) => (backupStatusSig.value = v);
+  const setBackupBusy = (v: boolean) => (backupBusySig.value = v);
+  const setBackupFile = (v: { blob: Blob; name: string } | null) => (backupFileSig.value = v);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportBackup = async () => {
+    if (backupBusySig.value) return;
     setBackupBusy(true);
     setBackupFile(null);
+    const release = holdCapture(); // an update reload waits for long backup / restore work
     try {
       const now = Date.now();
       const { blob, summary } = await createBackup(now, (done, total) => setBackupStatus(t('set.backup.working', { done, total })));
@@ -47,6 +58,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       console.error('[silvr] backup failed', err);
       setBackupStatus(err instanceof BackupError && err.code === 'too-large' ? t('set.backup.tooLarge') : t('set.backup.failed'));
     } finally {
+      release();
       setBackupBusy(false);
     }
   };
@@ -56,6 +68,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     // tap would interleave its chunks into the same file or delete it under the share sheet.
     if (!backupFile || backupBusy) return;
     setBackupBusy(true);
+    const release = holdCapture();
     try {
       const res = await saveFile(backupFile.blob, backupFile.name);
       if (res === 'cancelled') return;
@@ -70,14 +83,16 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       console.error('[silvr] backup save failed', err);
       setBackupStatus(t('set.backup.saveFailed'));
     } finally {
+      release();
       setBackupBusy(false);
     }
   };
 
   const importBackup = async (file: File | undefined) => {
-    if (!file) return;
+    if (!file || backupBusySig.value) return;
     setBackupBusy(true);
     setBackupStatus(t('set.backup.restoring'));
+    const release = holdCapture();
     try {
       const r = await restoreBackup(file);
       const lines = [t('set.backup.restored', { rolls: r.rolls, photos: r.photos })];
@@ -92,6 +107,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       else if (partial?.rolls) setBackupStatus(t('set.backup.partial', { rolls: partial.rolls }));
       else setBackupStatus(t('set.backup.failed'));
     } finally {
+      release();
       setBackupBusy(false);
       if (fileRef.current) fileRef.current.value = '';
     }
@@ -172,11 +188,16 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.storage')}</span>
           <span class="muted mono">{usage === null ? '—' : t('set.storage.used', { used: formatBytes(usage) })}</span>
         </div>
-        {navigator.storage?.persist && (
+        {/* App storage is already durable in the native apps. */}
+        {!isNative() && navigator.storage?.persist && (
           <button
             class="row link"
             disabled={persisted}
-            onClick={async () => setPersisted(await navigator.storage.persist())}
+            onClick={async () => {
+              const ok = await navigator.storage.persist().catch(() => false);
+              setPersisted(ok);
+              if (!ok) toast(t('set.storage.refused'));
+            }}
           >
             <span>{t('set.storage.persist')}</span>
             <span class="muted">{persisted ? t('set.storage.persisted') : <Icon name="chevron" size={18} />}</span>

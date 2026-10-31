@@ -25,30 +25,44 @@ export function useObjectUrl(blob: Blob | null | undefined): string | undefined 
 /** Loads (developing on demand) the print/thumb for a photo. */
 export function usePrint(photo: Photo | undefined, kind: 'thumb' | 'print'): { blob?: Blob; error: boolean } {
   const [state, setState] = useState<{ blob?: Blob; error: boolean }>({ error: false });
-  const key = photo ? `${photo.id}|${photo.printKey ?? ''}|${JSON.stringify(photo.develop)}` : '';
+  // Not printKey: ensurePrint sets it once the print is cached, which would load everything twice.
+  const key = photo ? `${photo.id}|${JSON.stringify(photo.develop)}` : '';
   const fmt = settings.value.dateFormat;
   useEffect(() => {
     if (!photo) return;
     let alive = true;
+    const stop = new AbortController();
     setState((s) => ({ blob: s.blob, error: false }));
-    ensurePrint(photo, { dateFormat: fmt, urgent: kind === 'print' })
+    // Only the viewer's print is dropped when it goes away (swiped past); thumbnails keep developing.
+    ensurePrint(photo, { dateFormat: fmt, urgent: kind === 'print', signal: kind === 'print' ? stop.signal : undefined })
       .then((r) => alive && setState({ blob: r ? r[kind] : undefined, error: !r }))
       .catch((err) => {
+        if ((err as Error)?.name === 'AbortError') return; // scrolled or navigated away before it started
         console.error('[silvr] develop failed', err);
         if (alive) setState({ error: true });
       });
     return () => {
       alive = false;
+      stop.abort();
     };
   }, [key, kind, fmt]);
   return state;
 }
 
 export function Thumb({ photo, onClick, label, tabIndex }: { photo: Photo; onClick?: () => void; label?: string; tabIndex?: number }) {
-  const { blob, error } = usePrint(photo, 'thumb');
+  // Develop only thumbnails near the screen: a 500-photo roll would otherwise queue 500 develops at once.
+  const ref = useRef<HTMLButtonElement>(null);
+  const [near, setNear] = useState(typeof IntersectionObserver === 'undefined');
+  useEffect(() => {
+    if (near || !ref.current) return;
+    const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && setNear(true), { rootMargin: '800px' });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [near]);
+  const { blob, error } = usePrint(near ? photo : undefined, 'thumb');
   const url = useObjectUrl(blob);
   return (
-    <button class="thumb" onClick={onClick} aria-label={label ?? t('view.photoN', { n: photo.frame })} tabIndex={tabIndex} data-testid="thumb">
+    <button ref={ref} class="thumb" onClick={onClick} aria-label={label ?? t('view.photoN', { n: photo.frame })} tabIndex={tabIndex} data-testid="thumb">
       {url ? <img src={url} alt="" loading="lazy" decoding="async" /> : <span class={`thumb-wait ${error ? 'err' : ''}`} />}
     </button>
   );

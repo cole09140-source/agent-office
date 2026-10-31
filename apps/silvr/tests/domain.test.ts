@@ -44,9 +44,11 @@ describe('lab timing', () => {
     const m = new Date(readyAtFor('morning', t0));
     expect([m.getDate(), m.getHours(), m.getMinutes()]).toEqual([25, 9, 0]);
   });
-  it('"tomorrow 9 AM" is tomorrow even right after midnight', () => {
+  it('"tomorrow 9 AM" sent after midnight arrives that morning', () => {
     const early = new Date(2026, 9, 24, 0, 30).getTime();
-    expect(new Date(readyAtFor('morning', early)).getDate()).toBe(25);
+    expect(new Date(readyAtFor('morning', early)).getDate()).toBe(24);
+    const dawn = new Date(2026, 9, 24, 5, 0).getTime();
+    expect(new Date(readyAtFor('morning', dawn)).getDate()).toBe(25);
   });
   it('handles month rollover', () => {
     const end = new Date(2026, 9, 31, 20).getTime();

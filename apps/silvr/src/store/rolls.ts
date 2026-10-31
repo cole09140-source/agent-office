@@ -1,5 +1,5 @@
 import { getCamera } from '../cameras/models';
-import { develop, promote, type DevelopOutput } from '../film/develop';
+import { cancelQueued, develop, promote, type DevelopOutput } from '../film/develop';
 import type { DateFormat } from '../film/overlays';
 import { developKey } from '../film/resolve';
 import type { Aspect, DevelopSettings } from '../film/types';
@@ -38,6 +38,9 @@ export interface PendingExposure {
   takenAt: number;
   width: number;
   height: number;
+  /** How it was taken, for when it is committed on its own (rewind mid-pair). */
+  rotate?: number;
+  flash?: boolean;
 }
 
 export interface Photo {
@@ -48,6 +51,8 @@ export interface Photo {
   width: number;
   height: number;
   develop: DevelopSettings;
+  /** Imported without a known shooting date (no EXIF): never date-stamped, takenAt is only the file time. */
+  undated?: boolean;
   /** developKey() of the print currently stored, if any. */
   printKey?: string;
   printW?: number;
@@ -80,8 +85,9 @@ export function readyAtFor(speed: DevelopSpeed, now: number): number {
     case '3d':
       return now + 72 * HOUR;
     case 'morning': {
+      // "Wake up to your photos": sent after midnight but before dawn, that is this morning.
       const d = new Date(now);
-      d.setDate(d.getDate() + 1);
+      if (d.getHours() >= 5) d.setDate(d.getDate() + 1);
       d.setHours(9, 0, 0, 0);
       return d.getTime();
     }
@@ -186,10 +192,13 @@ export async function addShot(
   size: { width: number; height: number },
   takenAt = Date.now(),
   exposures = 1,
+  /** takenAt of the pending exposure this shot was composed with (another tab may have used it). */
+  pairedWith?: number,
 ): Promise<ShotResult> {
   const result = await atomic(['rolls', 'photos', 'blobs'], async (t) => {
     const roll = await readRoll(t, rollId);
     if (!roll || roll.status !== 'loaded') throw new Error('Roll is not loaded');
+    if (pairedWith !== undefined && roll.pending?.takenAt !== pairedWith) throw new Error('Pending exposure already used');
     if (roll.shots + exposures > roll.capacity) throw new Error('Roll is full');
     roll.shots += exposures;
     roll.negatives = (roll.negatives ?? roll.shots - exposures) + 1;
@@ -292,6 +301,8 @@ export async function markSeen(rollId: string, now = Date.now()): Promise<void> 
     const roll = await readRoll(t, rollId);
     if (!roll || roll.seenAt) return;
     roll.seenAt = now;
+    // Keep it developed for good: a clock set back later must not return a viewed roll to the lab.
+    if (roll.status === 'developing' && roll.readyAt !== undefined && roll.readyAt <= now) roll.status = 'developed';
     changed = true;
     await rq(t.objectStore('rolls').put(roll));
   });
@@ -302,27 +313,57 @@ export interface PrintOptions {
   dateFormat: DateFormat;
   /** The user is waiting on this print (viewer); jump the develop queue. */
   urgent?: boolean;
+  /** The screen went away: drop the develop if it has not started and nobody else waits on it. */
+  signal?: AbortSignal;
 }
 
-const inflight = new Map<string, Promise<DevelopOutput | null>>();
+/** One develop shared by everyone asking for the same print. */
+interface PrintJob {
+  promise: Promise<DevelopOutput | null>;
+  /** Callers that may still walk away (they passed a signal). */
+  waiters: number;
+  /** A caller without a signal (thumbnail, export) waits on it: never cancel. */
+  pinned: boolean;
+  /** Handed to the develop queue (before that it is still reading the negative). */
+  queued: boolean;
+}
+const inflight = new Map<string, PrintJob>();
+
+const aborted = () => new DOMException('Print no longer needed', 'AbortError');
+
+/** The print-cache key: the date format only matters when a date is printed. */
+export function printKeyFor(photo: Photo, dateFormat: DateFormat): string {
+  return `${developKey(photo.develop)}|${photo.develop.dateStamp && !photo.undated ? dateFormat : '-'}`;
+}
+
+/** Whether the stored print is current (also accepts the older "recipe|format" key of unstamped prints). */
+function printIsCurrent(photo: Photo, key: string, dateFormat: DateFormat): boolean {
+  return photo.printKey === key || (key.endsWith('|-') && photo.printKey === `${developKey(photo.develop)}|${dateFormat}`);
+}
 
 /**
  * Returns an up-to-date print for the photo, developing (and caching) it when
  * the stored print is missing or was made with an older recipe.
  */
 export async function ensurePrint(photo: Photo, opts: PrintOptions): Promise<{ print: Blob; thumb: Blob } | null> {
-  const key = `${developKey(photo.develop)}|${opts.dateFormat}`;
-  if (photo.printKey === key) {
+  const key = printKeyFor(photo, opts.dateFormat);
+  if (printIsCurrent(photo, key, opts.dateFormat)) {
     const [print, thumb] = await Promise.all([getBlob(blobKey.print(photo.id)), getBlob(blobKey.thumb(photo.id))]);
     if (print && thumb) return { print, thumb };
   }
+  const signal = opts.signal;
+  if (signal?.aborted) throw aborted();
   const jobKey = `${photo.id}|${key}`;
-  let job = inflight.get(jobKey);
-  if (!job) {
-    job = (async () => {
+  let entry = inflight.get(jobKey);
+  if (!entry) {
+    const job: PrintJob = { promise: Promise.resolve(null), waiters: 0, pinned: false, queued: false };
+    job.promise = (async () => {
       const neg = await getBlob(blobKey.neg(photo.id));
       if (!neg) return null;
-      const out = await develop(neg, photo.develop, { takenAt: photo.takenAt, frame: photo.frame, dateFormat: opts.dateFormat }, { urgent: opts.urgent, id: jobKey });
+      // Everyone left while the negative was being read: don't develop for nobody.
+      if (!job.pinned && job.waiters === 0) throw aborted();
+      job.queued = true;
+      const out = await develop(neg, photo.develop, { takenAt: photo.takenAt, frame: photo.frame, dateFormat: opts.dateFormat, undated: photo.undated }, { urgent: opts.urgent, id: jobKey });
       const recipe = developKey(photo.develop);
       // Read-check-write in one transaction so a concurrent re-develop is never overwritten.
       let stored = false;
@@ -347,13 +388,34 @@ export async function ensurePrint(photo: Photo, opts: PrintOptions): Promise<{ p
       if (!stored && !(await getPhoto(photo.id))) return null;
       if (stored) Object.assign(photo, { printKey: key, printW: out.width, printH: out.height });
       return out;
-    })().finally(() => inflight.delete(jobKey));
+    })().finally(() => {
+      if (inflight.get(jobKey) === job) inflight.delete(jobKey);
+    });
     inflight.set(jobKey, job);
+    entry = job;
   } else if (opts.urgent) {
     promote(jobKey);
   }
-  const out = await job;
-  return out ? { print: out.blob, thumb: out.thumb } : null;
+  const job = entry;
+  if (!signal) {
+    job.pinned = true;
+    const out = await job.promise;
+    return out ? { print: out.blob, thumb: out.thumb } : null;
+  }
+  job.waiters++;
+  const onAbort = () => {
+    job.waiters--;
+    if (job.waiters > 0 || job.pinned) return;
+    // Cancel only while it waits its turn; a running develop finishes and fills the cache.
+    if ((cancelQueued(jobKey) || !job.queued) && inflight.get(jobKey) === job) inflight.delete(jobKey);
+  };
+  signal.addEventListener('abort', onAbort, { once: true });
+  try {
+    const out = await job.promise;
+    return out ? { print: out.blob, thumb: out.thumb } : null;
+  } finally {
+    signal.removeEventListener('abort', onAbort);
+  }
 }
 
 export async function updateDevelop(photoId: string, dev: DevelopSettings): Promise<Photo | undefined> {
@@ -362,8 +424,13 @@ export async function updateDevelop(photoId: string, dev: DevelopSettings): Prom
 }
 
 /** Re-develops several frames atomically (darkroom "apply to roll"). Missing photos are skipped, never recreated. */
-export async function updateDevelopMany(changes: [string, DevelopSettings][]): Promise<(Photo | undefined)[]> {
-  const out = await atomic(['photos'], async (t) => {
+export async function updateDevelopMany(changes: [string, DevelopSettings][], roll?: { id: string; stockId: string }): Promise<(Photo | undefined)[]> {
+  const out = await atomic(['photos', 'rolls'], async (t) => {
+    // Re-developing a whole roll on another film relabels the roll too (header, album, contact sheet).
+    if (roll) {
+      const r = await readRoll(t, roll.id);
+      if (r && r.status !== 'loaded' && r.stockId !== roll.stockId) await rq(t.objectStore('rolls').put({ ...r, stockId: roll.stockId }));
+    }
     const res: (Photo | undefined)[] = [];
     for (const [id, dev] of changes) {
       const photo = (await rq(t.objectStore('photos').get(id))) as Photo | undefined;
@@ -418,40 +485,64 @@ export interface ImportItem {
   width: number;
   height: number;
   takenAt: number;
+  undated?: boolean;
   develop: DevelopSettings;
+}
+
+/** A new imported roll; it is written with its first batch of photos. */
+export function newImportRoll(stockId: string, now = Date.now()): Roll {
+  return { id: uid(), kind: 'import', stockId, capacity: 0, shots: 0, aspect: '3:2', createdAt: now, status: 'developed', finishedAt: now, readyAt: now };
+}
+
+/**
+ * Appends imported photos to their roll (creating it with the first batch). Saving in small
+ * batches keeps a big import from holding every negative in memory, and a full disk keeps
+ * what was saved instead of losing the whole import.
+ */
+export async function addImportBatch(roll: Roll, items: ImportItem[]): Promise<void> {
+  if (!items.length) return;
+  await atomic(['rolls', 'photos', 'blobs'], async (t) => {
+    // Created by the first batch only: if it is gone later it was deleted meanwhile; don't bring it back.
+    const cur = (await readRoll(t, roll.id)) ?? (roll.shots === 0 ? { ...roll } : null);
+    if (!cur) throw new Error('Import roll was deleted');
+    let n = cur.shots;
+    for (const it of items) {
+      const p: Photo = { id: uid(), rollId: cur.id, frame: ++n, takenAt: it.takenAt, width: it.width, height: it.height, develop: it.develop, ...(it.undated ? { undated: true } : {}) };
+      await rq(t.objectStore('photos').put(p));
+      await rq(t.objectStore('blobs').put(it.negative, blobKey.neg(p.id)));
+      if (!cur.coverPhotoId) cur.coverPhotoId = p.id;
+    }
+    cur.shots = cur.capacity = n;
+    await rq(t.objectStore('rolls').put(cur));
+    roll.shots = n;
+  });
+  notify();
+}
+
+/** Puts an imported roll in shooting order once all its batches are in. */
+export async function finishImport(rollId: string): Promise<void> {
+  await atomic(['rolls', 'photos'], async (t) => {
+    const roll = await readRoll(t, rollId);
+    if (!roll) return;
+    const ps = t.objectStore('photos');
+    const photos = ((await rq(ps.index('rollId').getAll(rollId))) as Photo[]).sort((a, b) => a.takenAt - b.takenAt || a.frame - b.frame);
+    for (let i = 0; i < photos.length; i++) {
+      if (photos[i].frame === i + 1) continue;
+      // The film border prints the frame number, so a print made under the old number is stale.
+      await rq(ps.put({ ...photos[i], frame: i + 1, printKey: undefined }));
+    }
+    roll.coverPhotoId = photos[0]?.id;
+    await rq(t.objectStore('rolls').put(roll));
+  });
+  notify();
 }
 
 /** Imported photos land on their own, already-developed roll. */
 export async function importRoll(stockId: string, items: ImportItem[], now = Date.now()): Promise<Roll> {
-  const roll: Roll = {
-    id: uid(),
-    kind: 'import',
-    stockId,
-    capacity: items.length,
-    shots: items.length,
-    aspect: '3:2',
-    createdAt: now,
-    status: 'developed',
-    finishedAt: now,
-    readyAt: now,
-  };
-  const photos: Photo[] = items.map((it, i) => ({
-    id: uid(),
-    rollId: roll.id,
-    frame: i + 1,
-    takenAt: it.takenAt,
-    width: it.width,
-    height: it.height,
-    develop: it.develop,
-  }));
-  roll.coverPhotoId = photos[0]?.id;
-  await tx(['rolls', 'photos', 'blobs'], (t) => {
-    t.objectStore('rolls').put(roll);
-    photos.forEach((p, i) => {
-      t.objectStore('photos').put(p);
-      t.objectStore('blobs').put(items[i].negative, blobKey.neg(p.id));
-    });
-  });
-  notify();
-  return roll;
+  const roll = newImportRoll(stockId, now);
+  for (let i = 0; i < items.length; i += IMPORT_BATCH) await addImportBatch(roll, items.slice(i, i + IMPORT_BATCH));
+  await finishImport(roll.id);
+  return (await getRoll(roll.id)) ?? roll;
 }
+
+export const IMPORT_BATCH = 8;

@@ -11,9 +11,18 @@ import { back, go, goTab, isCurrent } from '../state/router';
 import { getCamera } from '../cameras/models';
 import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, subscribe, viewable, type Photo } from '../store/rolls';
 
+const SHEET_MAX_FRAMES = 72;
+
 export function RollScreen({ id }: { id: string }) {
   const roll = rolls.value.find((r) => r.id === id);
   const [photos, setPhotos] = useState<Photo[] | null>(null);
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
   const [working, setWorking] = useState(false);
   const [sheet, setSheet] = useState<{ blob: Blob; name: string } | null>(null);
   const sheetUrl = useObjectUrl(sheet?.blob);
@@ -37,7 +46,7 @@ export function RollScreen({ id }: { id: string }) {
     return (
       <div class="page">
         <Header title={t('gal.title')} onBack={() => back({ name: 'gallery' })} />
-        <Empty title={photos === null ? t('common.loading') : t('gal.empty')} />
+        <Empty title={photos === null ? t('common.loading') : t('common.notFound')} />
       </div>
     );
   }
@@ -48,7 +57,9 @@ export function RollScreen({ id }: { id: string }) {
     setWorking(true);
     const frames: { image: ImageBitmap; width: number; height: number; frame: number }[] = [];
     try {
-      for (const p of photos) {
+      // A sheet holds a roll's worth (72 half frames); a 400-photo import would hold 400 bitmaps at once.
+      for (const p of photos.slice(0, SHEET_MAX_FRAMES)) {
+        if (!mounted.current) return; // left the roll: stop developing for a sheet nobody will see
         const pr = await ensurePrint(p, { dateFormat: settings.value.dateFormat });
         if (!pr) continue;
         const bmp = await createImageBitmap(pr.thumb);
@@ -82,7 +93,7 @@ export function RollScreen({ id }: { id: string }) {
       if (res === 'downloaded') toast(t('view.savedToast'));
     } catch (err) {
       console.error('[silvr] share failed', err);
-      toast(t('common.error'));
+      toast((err as { code?: string })?.code === 'DENIED' ? t('err.storagePermission') : t('common.error'));
     } finally {
       sharingRef.current = false;
       setSharing(false);
@@ -107,7 +118,7 @@ export function RollScreen({ id }: { id: string }) {
         onBack={() => back({ name: 'gallery' })}
         right={
           <>
-            <button class="icon-btn" onClick={exportSheet} disabled={working || developing} aria-label={t('gal.contact')} data-testid="btn-contact">
+            <button class="icon-btn" onClick={exportSheet} disabled={working || developing || !photos?.length} aria-label={t('gal.contact')} data-testid="btn-contact">
               <Icon name="sheet" />
             </button>
             <button class="icon-btn" onClick={remove} aria-label={t('gal.deleteRoll')} data-testid="btn-delete-roll">

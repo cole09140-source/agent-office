@@ -8,7 +8,7 @@ import { saveFile } from '../platform/share';
 import { confirm, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent } from '../state/router';
-import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, addLogFrame, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
+import { deleteLogFrame, deleteLogRoll, listLogFrames, listLogRolls, logToCsv, addLogFrame, fileStamp, saveLogRoll, type LogFrame, type LogRoll } from '../store/filmLog';
 
 /** Last meter reading, so the log form can prefill it. */
 export const meter = signal({ iso: 400, light: 'sunny' as Light, aperture: 8, comp: 0 });
@@ -86,6 +86,9 @@ function NewRollSheet({ open, onClose }: { open: boolean; onClose: () => void })
       const r = await saveLogRoll({ camera: camera.trim() || '—', film: film.trim() || '—', iso, exposures: exp, startedAt: Date.now(), note: '' });
       onClose();
       go({ name: 'log', id: r.id });
+    } catch (err) {
+      console.error('[silvr] log roll not saved', err);
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -187,14 +190,27 @@ export function LogScreen({ id }: { id: string }) {
 
   const reload = async () => {
     const rs = await listLogRolls();
-    setRoll(rs.find((r) => r.id === id) ?? null);
+    const found = rs.find((r) => r.id === id) ?? null;
+    // The first time: suggest a shutter speed for this roll's film, not the meter's ISO.
+    if (found && roll === undefined) {
+      const a = advise(m.light, found.iso, m.aperture, m.comp);
+      setShutter(a.outOfRange ? '' : a.label); // past the dial: leave it for the user rather than suggest a wrong speed
+    }
+    setRoll(found);
     setFrames(await listLogFrames(id));
   };
   useEffect(() => {
     void reload();
   }, [id]);
 
-  if (roll === null) return <Empty title="—" />;
+  if (roll === null) {
+    return (
+      <div class="page">
+        <Header title={t('an.title')} onBack={() => back({ name: 'analog' })} />
+        <Empty title={t('common.notFound')} />
+      </div>
+    );
+  }
   if (!roll) return null;
 
   const useMeter = () => {
@@ -211,6 +227,9 @@ export function LogScreen({ id }: { id: string }) {
     setSaving(true);
     try {
       await addFrame();
+    } catch (err) {
+      console.error('[silvr] log frame not saved', err);
+      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -229,7 +248,7 @@ export function LogScreen({ id }: { id: string }) {
         lat = Math.round(pos.coords.latitude * 1e5) / 1e5;
         lon = Math.round(pos.coords.longitude * 1e5) / 1e5;
       } catch {
-        /* location optional */
+        toast(t('an.log.noLocation')); // saved without it; say so rather than leave a silent gap
       }
     }
     await addLogFrame({ rollId: id, aperture, shutter, lens: lens.trim(), note: note.trim(), takenAt: Date.now(), lat, lon });
@@ -242,7 +261,7 @@ export function LogScreen({ id }: { id: string }) {
     const csv = logToCsv(roll, frames);
     try {
       // saveFile goes through the share sheet in the native apps, where an <a download> does nothing.
-      await saveFile(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `SILVR_log_${roll.film.replace(/[^\w-]+/g, '_')}.csv`);
+      await saveFile(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `SILVR_log_${roll.film.replace(/[^\p{L}\p{N}_-]+/gu, '_')}_${fileStamp(roll.startedAt)}.csv`);
     } catch (err) {
       console.error('[silvr] csv export failed', err);
       toast(t('common.error'));

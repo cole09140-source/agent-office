@@ -82,11 +82,23 @@ const csvCell = (v: string | number | undefined) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+/** "2026-10-31 14:05:09" in the phone's time (what the app shows; spreadsheets read it as a date). */
+function localDateTime(ts: number): string {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+/** Short date for file names, e.g. 20261031. */
+export function fileStamp(ts: number): string {
+  return localDateTime(ts).slice(0, 10).replace(/-/g, '');
+}
+
 /** CSV export for spreadsheet / lab notes. */
 export function logToCsv(roll: LogRoll, frames: LogFrame[]): string {
   const head = ['frame', 'datetime', 'aperture', 'shutter', 'lens', 'note', 'lat', 'lon'];
   const rows = frames.map((f) =>
-    [f.frame, new Date(f.takenAt).toISOString(), f.aperture, f.shutter, f.lens, f.note, f.lat, f.lon].map(csvCell).join(','),
+    [f.frame, localDateTime(f.takenAt), f.aperture, f.shutter, f.lens, f.note, f.lat, f.lon].map(csvCell).join(','),
   );
   const meta = `# ${[roll.camera, roll.film, `ISO ${roll.iso}`, `${roll.exposures} exp`].map((s) => s.replace(/[\n,]/g, ' ').replace(/^[=+\-@]/, "'$&")).join(' / ')}`;
   return [meta, head.join(','), ...rows].join('\n') + '\n';

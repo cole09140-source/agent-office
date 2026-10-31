@@ -105,8 +105,8 @@ export async function createBackup(now = Date.now(), onProgress?: (done: number,
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length < 200;
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const clamp = (v: unknown, lo: number, hi: number, fallback: number) => (isNum(v) ? Math.min(hi, Math.max(lo, v)) : fallback);
-/** A timestamp Date/Intl can format (a forged 1e20 would throw RangeError on every render). */
-const isTime = (v: unknown): v is number => isNum(v) && v >= 0 && v <= 8.64e15;
+/** A timestamp Date/Intl can format (a forged 1e20 would throw RangeError on every render). Negative = before 1970 (old scans). */
+const isTime = (v: unknown): v is number => isNum(v) && Math.abs(v) <= 8.64e15;
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7'];
 const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
@@ -120,7 +120,8 @@ function validRoll(r: Roll): boolean {
     isNum(r.shots) &&
     r.shots >= 0 &&
     r.capacity >= 1 &&
-    r.capacity <= 1000 &&
+    // Imported rolls are as long as the import was (no film length); camera rolls stay bounded.
+    r.capacity <= (r.kind === 'import' ? 1_000_000 : 1000) &&
     isTime(r.createdAt) &&
     ['loaded', 'developing', 'developed'].includes(r.status) &&
     ['camera', 'import'].includes(r.kind)
@@ -243,17 +244,27 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
     const ref = blobRefs.get(key);
     const entry = ref && byName.get(ref.file);
     if (!ref || !entry) return null;
-    return readEntry(entry.data, entry.crc, typeof ref.type === 'string' ? ref.type : 'image/jpeg');
+    // Only image types: a forged manifest must not turn a negative into, say, text/html.
+    const type = typeof ref.type === 'string' && /^image\/(jpeg|png|webp)$/.test(ref.type) ? ref.type : 'image/jpeg';
+    return readEntry(entry.data, entry.crc, type);
   };
 
   const result: RestoreResult = { rolls: 0, photos: 0, logRolls: 0, skipped: 0, damaged: 0 };
-  const rolls = arr<Roll>(manifest.rolls).filter(validRoll).map(sanitizeRoll);
+  const allRolls = arr<Roll>(manifest.rolls);
+  const rolls = allRolls.filter(validRoll).map(sanitizeRoll);
+  const rollIds = new Set(rolls.map((r) => r.id));
   const photosByRoll = new Map<string, Photo[]>();
-  for (const p of arr<Photo>(manifest.photos).filter(validPhoto)) {
+  const allPhotos = arr<Photo>(manifest.photos);
+  for (const p of allPhotos.filter(validPhoto)) {
+    if (!rollIds.has(p.rollId)) continue;
     const list = photosByRoll.get(p.rollId);
     if (list) list.push(p);
     else photosByRoll.set(p.rollId, [p]);
   }
+  // Report what could not be read instead of silently restoring less.
+  let kept = 0;
+  photosByRoll.forEach((list) => (kept += list.length));
+  result.damaged += allRolls.length - rolls.length + (allPhotos.length - kept);
   const logRolls = arr<LogRoll>(manifest.logRolls).map(sanitizeLogRoll).filter((r): r is LogRoll => !!r);
   const logFrames = arr<LogFrame>(manifest.logFrames).map(sanitizeLogFrame).filter((f): f is LogFrame => !!f);
 
@@ -348,8 +359,25 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
     const haveLogRoll = new Set(localLogRolls.map((r) => r.id));
     const haveLogFrame = new Set(localLogFrames.map((f) => f.id));
     const newLogRolls = logRolls.filter((r) => !haveLogRoll.has(r.id));
-    const logIds = new Set([...haveLogRoll, ...newLogRolls.map((r) => r.id)]);
-    const newLogFrames = logFrames.filter((f) => logIds.has(f.rollId) && !haveLogFrame.has(f.id));
+    const exposures = new Map([...localLogRolls, ...newLogRolls].map((r) => [r.id, r.exposures]));
+    // Frame numbers already used per log roll: a merge must not create a second #12 or exceed the roll.
+    const used = new Map<string, Set<number>>();
+    for (const f of localLogFrames) {
+      if (!used.has(f.rollId)) used.set(f.rollId, new Set());
+      used.get(f.rollId)!.add(f.frame);
+    }
+    const newLogFrames = logFrames.filter((f) => {
+      const max = exposures.get(f.rollId);
+      if (max === undefined || haveLogFrame.has(f.id)) return false;
+      const taken = used.get(f.rollId) ?? new Set<number>();
+      if (taken.has(f.frame) || taken.size >= max) {
+        result.skipped++; // say so rather than dropping it quietly
+        return false;
+      }
+      taken.add(f.frame);
+      used.set(f.rollId, taken);
+      return true;
+    });
     if (newLogRolls.length || newLogFrames.length) {
       await tx(['logRolls', 'logFrames'], (t) => {
         newLogRolls.forEach((r) => t.objectStore('logRolls').put(r));

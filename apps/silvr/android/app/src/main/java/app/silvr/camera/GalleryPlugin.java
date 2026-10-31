@@ -57,6 +57,16 @@ public class GalleryPlugin extends Plugin {
             call.reject("data and name are required");
             return;
         }
+        // A bare file name only (no "../" out of Pictures/SILVR), and only image types.
+        name = new java.io.File(name).getName();
+        if (name.isEmpty() || name.startsWith(".")) {
+            call.reject("invalid file name");
+            return;
+        }
+        if (!"image/jpeg".equals(mime) && !"image/png".equals(mime) && !"image/webp".equals(mime)) {
+            call.reject("unsupported type");
+            return;
+        }
         try {
             byte[] bytes = Base64.decode(data, Base64.DEFAULT);
             Uri uri = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? saveToMediaStore(bytes, name, mime) : saveToPictures(bytes, name, mime);

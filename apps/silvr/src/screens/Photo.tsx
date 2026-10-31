@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
-import { formatDate, Header, Sheet, useObjectUrl, usePrint } from '../components/ui';
+import { Empty, formatDate, Header, Sheet, useObjectUrl, usePrint } from '../components/ui';
 import { getStock } from '../film/stocks';
 import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
@@ -60,7 +60,8 @@ export function PhotoScreen({ id }: { id: string }) {
   if (photo === null) {
     return (
       <div class="page">
-        <Header title="" onBack={() => back({ name: 'gallery' })} />
+        <Header title={t('gal.title')} onBack={() => back({ name: 'gallery' })} />
+        <Empty title={t('common.notFound')} />
       </div>
     );
   }
@@ -68,7 +69,7 @@ export function PhotoScreen({ id }: { id: string }) {
   const stock = photo ? getStock(photo.develop.stockId) : undefined;
   const camera = photo && hasCamera(photo.develop.cameraId) ? getCamera(photo.develop.cameraId) : undefined;
   // Instant prints keep developing for a while after they eject.
-  const instantDev = photo && camera?.id === 'instasq' ? Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000) : 0;
+  const instantDev = photo && camera?.id === 'instasq' ? Math.min(INSTANT_DEV_S, Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000)) : 0;
 
   // One share/save at a time: a double tap saved the print twice, or the second share
   // was refused and its cleanup deleted the file the first share sheet was still reading.
@@ -83,7 +84,7 @@ export function PhotoScreen({ id }: { id: string }) {
       if (res === 'downloaded') toast(t('view.savedToast'));
     } catch (err) {
       console.error('[silvr] share failed', err);
-      toast(t('common.error'));
+      toast((err as { code?: string })?.code === 'DENIED' ? t('err.storagePermission') : t('common.error'));
     } finally {
       sharingRef.current = false;
       setSharing(false);
@@ -127,7 +128,7 @@ export function PhotoScreen({ id }: { id: string }) {
         {url ? (
           <img
             src={url}
-            alt={photo && stock ? `${stock.name} · ${t('view.photoN', { n: photo.frame })} · ${formatDate(photo.takenAt, signalLang.value)}` : ''}
+            alt={photo && stock ? `${stock.name} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
             class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
             style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
             data-testid="print"
@@ -180,7 +181,7 @@ export function PhotoScreen({ id }: { id: string }) {
               </>
             )}
             <dt>{t('view.taken')}</dt>
-            <dd>{formatDate(photo.takenAt, signalLang.value, true)}</dd>
+            <dd>{photo.undated ? '—' : formatDate(photo.takenAt, signalLang.value, true)}</dd>
             <dt>{t('view.frame')}</dt>
             <dd>#{photo.frame}</dd>
             <dt>{t('view.size')}</dt>

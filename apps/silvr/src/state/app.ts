@@ -14,7 +14,7 @@ export const storageError = signal(false);
 
 export const developingRolls = computed(() => rolls.value.filter((r) => r.status === 'developing'));
 /** Rolls shown in the album: developed, plus instant/digital cameras' rolls still in the camera. */
-export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || inCamera(r)));
+export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && (r.negatives ?? r.shots) > 0)));
 export const newRollCount = computed(() => developedRolls.value.filter((r) => r.status === 'developed' && !r.seenAt).length);
 
 export function applyLang(s: Settings): void {

@@ -5,7 +5,7 @@ import { captureRotation, requestOrientationPermission, startOrientation } from 
 import { blankLike, blobToCanvas, composeDouble, composeHalf, composeQuad, cropExposure, exposureSpec, toNegative } from '../cameras/compose';
 import { capacityLabel, LoadPanel } from '../cameras/LoadPanel';
 import { canLoad, DEFAULT_CAMERA_ID, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
-import { playAdvance, playBeep, playFlashCharge, playShutter } from '../cameras/sound';
+import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { Icon } from '../components/Icon';
 import { Canister, Sheet, Slider, Thumb, useObjectUrl } from '../components/ui';
@@ -19,7 +19,7 @@ import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
 import { cameraDescription, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
-import { captureBusy } from '../platform/pwa';
+import { holdCapture } from '../platform/pwa';
 import { go, isCurrent } from '../state/router';
 import { get, put } from '../store/db';
 import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
@@ -67,13 +67,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [zoom, setZoom] = useState(1);
   const [formatPick, setFormatPick] = useState<Aspect | null>(null);
   const [busy, setBusy] = useState(false);
-  // An update reload (this tab's button or another tab's) waits until the shot is saved.
-  useEffect(() => {
-    captureBusy.value = busy;
-    return () => {
-      captureBusy.value = false;
-    };
-  }, [busy]);
   const [blink, setBlink] = useState(false);
   const [ejecting, setEjecting] = useState(false);
   const [quadIndex, setQuadIndex] = useState<number | undefined>(undefined);
@@ -311,28 +304,51 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     });
   };
 
+  /**
+   * The pending first half / first exposure as a canvas; null when it is gone or can no longer
+   * be decoded (a damaged backup, a failed blob read). An undecodable one must not lock the roll.
+   */
+  const loadPending = async (id: string): Promise<HTMLCanvasElement | null> => {
+    const blob = await getPending(id);
+    if (!blob) return null;
+    try {
+      return await blobToCanvas(blob);
+    } catch (err) {
+      console.error('[silvr] pending exposure is unreadable', err);
+      return null;
+    }
+  };
+
   /** Turns a pending first half / first exposure into a negative on its own (rewind mid-pair). */
   const flushPending = async (r: Roll) => {
     if (!r.pending) return;
-    const blob = await getPending(r.id);
-    if (!blob) {
+    const first = await loadPending(r.id);
+    if (!first) {
       await dropPending(r.id);
       return;
     }
-    const first = await blobToCanvas(blob);
     const half = r.pending.kind === 'half';
     const neg = await toNegative(half ? composeHalf(first, blankLike(first)) : first);
-    await addShot(r.id, neg.blob, developFor(r), { width: neg.width, height: neg.height }, r.pending.takenAt, half ? 0 : 1);
+    const pd = r.pending;
+    const rotate = Number.isInteger(pd.rotate) ? (pd.rotate as number) & 3 : 0;
+    await addShot(r.id, neg.blob, developFor(r, { rotate, flash: pd.flash === true }), { width: neg.width, height: neg.height }, pd.takenAt, half ? 0 : 1, pd.takenAt);
   };
+
+  const storageToast = (err: unknown) => toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'), undefined, 6000);
 
   const afterRollFull = async (r: Roll) => {
     haptic([20, 60, 20]);
     if (camera.instant) {
-      const done = await finishRoll(r.id, 'instant');
-      toast(t('cam.packDone'));
-      if (done) {
-        await markSeen(done.id);
-        if (isCurrent({ name: 'camera' })) go({ name: 'roll', id: done.id }); // not if the user moved on meanwhile
+      try {
+        const done = await finishRoll(r.id, 'instant');
+        toast(t('cam.packDone'));
+        if (done) {
+          await markSeen(done.id);
+          if (isCurrent({ name: 'camera' })) go({ name: 'roll', id: done.id }); // not if the user moved on meanwhile
+        }
+      } catch (err) {
+        console.error('[silvr] could not finish the pack', err);
+        storageToast(err);
       }
     } else {
       setSpeedOpen(true);
@@ -342,6 +358,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const doCapture = async () => {
     if (!activeRoll.value || shootingRef.current) return;
     void requestOrientationPermission(); // inside the tap gesture; no-op once answered
+    if (s.sound) unlockAudio();
     shootingRef.current = true;
     // Fresh read: the signal lags IndexedDB, and a stale copy could miss a pending exposure.
     let r: Roll | undefined;
@@ -355,7 +372,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       return;
     }
     if (!r || r.status !== 'loaded') {
+      // The screen's roll is stale (just unloaded, another tab, evicted storage): show what is really loaded.
       shootingRef.current = false;
+      void refreshRolls().catch(() => undefined);
       return;
     }
     if (framesLeft(r) <= 0 && !r.pending) {
@@ -364,6 +383,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       return;
     }
     setBusy(true);
+    const release = holdCapture(); // an update reload waits until the shot is saved
     let torchOn = false;
     const aborted = () => !mountedRef.current || document.hidden;
     try {
@@ -426,14 +446,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (camera.capture === 'half' || camera.capture === 'double') {
         if (!r.pending) {
           const first = await toNegative(exposures[0]);
-          await savePending(r.id, first.blob, { kind: camera.capture, takenAt, width: first.width, height: first.height });
+          await savePending(r.id, first.blob, { kind: camera.capture, takenAt, width: first.width, height: first.height, rotate, flash: fire });
           if (camera.capture === 'double') toast(t('cam.double1'));
         } else {
-          const blob = await getPending(r.id);
-          const first = blob ? await blobToCanvas(blob) : blankLike(exposures[0]);
+          const first = (await loadPending(r.id)) ?? blankLike(exposures[0]);
           const composite = camera.capture === 'half' ? composeHalf(first, exposures[0]) : composeDouble(first, exposures[0]);
           const neg = await toNegative(composite);
-          result = await addShot(r.id, neg.blob, developFor(r, { flash: fire, rotate }), { width: neg.width, height: neg.height }, r.pending.takenAt, 1);
+          result = await addShot(r.id, neg.blob, developFor(r, { flash: fire, rotate }), { width: neg.width, height: neg.height }, r.pending.takenAt, 1, r.pending.takenAt);
         }
       } else {
         const composite = camera.capture === 'quad' ? composeQuad(exposures) : exposures[0];
@@ -458,6 +477,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       toast(quota ? t('err.storage') : t('common.error'));
     } finally {
       if (torchOn) void cam().setTorch(false);
+      release();
       shootingRef.current = false;
       if (mountedRef.current) {
         setBusy(false);
@@ -484,6 +504,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const onLoad = async () => {
     if (loadingRoll) return;
     setLoadingRoll(true);
+    if (s.sound) unlockAudio();
     // Runs inside the tap gesture: iOS motion permission (for sideways shots) and durable storage.
     void requestOrientationPermission();
     void navigator.storage?.persist?.().catch(() => undefined);
@@ -517,7 +538,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     setRollInfoOpen(false);
     const shot = (r.negatives ?? r.shots) > 0 || !!r.pending;
     if (!shot) {
-      if (await confirm(t('cam.emptyRewind'), t('cam.unload'), true)) await finishRoll(r.id, 'instant');
+      if (!(await confirm(t('cam.emptyRewind'), t('cam.unload'), true))) return;
+      try {
+        await finishRoll(r.id, 'instant');
+      } catch (err) {
+        console.error('[silvr] could not unload the roll', err);
+        storageToast(err);
+      }
       return;
     }
     if (r.shots < r.capacity && !(await confirm(t('cam.rewindConfirm', { n: r.shots }), t('cam.rewind')))) return;
@@ -531,17 +558,33 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   /** Commits any pending exposure, then sends the roll off. */
   const finishWithPending = async (stale: Roll, speed: DevelopSpeed) => {
-    const r = (await getRoll(stale.id)) ?? stale; // the signal can lag a just-saved pending exposure
+    if (shootingRef.current) return;
+    // Lock the shutter while the pending exposure is committed, or a shot could pair with it twice.
+    shootingRef.current = true;
+    setBusy(true);
+    const release = holdCapture();
+    let done: Roll | null;
     try {
-      await flushPending(r);
+      const r = (await getRoll(stale.id)) ?? stale; // the signal can lag a just-saved pending exposure
+      try {
+        await flushPending(r);
+      } catch (err) {
+        // finishRoll would drop the pending blob, so keep the roll loaded instead of losing that frame.
+        console.error('[silvr] could not keep the pending exposure', err);
+        storageToast(err);
+        return;
+      }
+      done = await finishRoll(r.id, speed);
+      if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
     } catch (err) {
-      // finishRoll would drop the pending blob, so keep the roll loaded instead of losing that frame.
-      console.error('[silvr] could not keep the pending exposure', err);
-      toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'), undefined, 6000);
+      console.error('[silvr] could not send the roll', err);
+      storageToast(err);
       return;
+    } finally {
+      release();
+      shootingRef.current = false;
+      if (mountedRef.current) setBusy(false);
     }
-    const done = await finishRoll(r.id, speed);
-    if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
     if (!done || !isCurrent({ name: 'camera' })) return; // the user switched tabs while it was saving
     if (done.status === 'developed') go({ name: 'roll', id: done.id });
     else go({ name: 'lab' });
@@ -566,7 +609,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
 
   return (
-    <div class={`camera cam-${camera.id}`} data-testid="camera-screen" data-camera={camera.id}>
+    <div class={`camera cam-${camera.id}${roll ? '' : ' unloaded'}`} data-testid="camera-screen" data-camera={camera.id}>
       <div class={`cam-top ${busy ? 'locked' : ''}`} inert={busy || undefined}>
         <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
           <span class="chip-txt">{camera.name}</span>
@@ -656,7 +699,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           {blink && <div class="blink" />}
           {ejecting && <div class="eject" aria-hidden="true" />}
           {roll && camera.viewfinder !== 'lcd' && camera.viewfinder !== 'pixel' && (
-            <div class="counter mono" data-testid="counter" aria-label={t('cam.left', { n: left })}>
+            <div class="counter mono" data-testid="counter" role="img" aria-label={t('cam.left', { n: left })}>
               <span>{counterText}</span>
               <small>/{roll.capacity}</small>
             </div>
@@ -671,7 +714,17 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {state === 'error' && (
           <div class="cam-error" data-testid="camera-error">
             <h2>{t('cam.noCamera.title')}</h2>
-            <p>{error === 'insecure' ? t('cam.err.insecure') : error === 'unsupported' ? t('cam.err.unsupported') : t('cam.noCamera.body')}</p>
+            <p>
+              {error === 'insecure'
+                ? t('cam.err.insecure')
+                : error === 'unsupported'
+                  ? t('cam.err.unsupported')
+                  : error === 'busy'
+                    ? t('cam.err.busy')
+                    : error === 'notfound'
+                      ? t('cam.err.notfound')
+                      : t('cam.noCamera.body')}
+            </p>
             <div class="btn-row">
               <button class="btn ghost" onClick={() => startCamera()}>
                 {t('common.retry')}
@@ -697,7 +750,14 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               <span class="mono">{t('cam.left', { n: left })}</span>
             </button>
           )}
-          <button class={`shutter ${busy ? 'busy' : ''}`} onClick={doCapture} disabled={state !== 'live' || busy} aria-label={t('cam.shutter')} data-testid="shutter">
+          <button
+            class={`shutter ${busy ? 'busy' : ''}`}
+            onClick={doCapture}
+            disabled={state !== 'live'}
+            aria-disabled={busy || undefined}
+            aria-label={t('cam.shutter')}
+            data-testid="shutter"
+          >
             <span />
           </button>
           <div class="cam-right">

@@ -10,6 +10,22 @@ export const installPrompt = signal<BeforeInstallPromptEvent | null>(null);
 export const updateReady = signal<(() => void) | null>(null);
 /** True while a shot is being taken and saved: an update reload waits for it, or the frame is lost. */
 export const captureBusy = signal(false);
+let inFlight = 0;
+/**
+ * Marks a capture/save as in flight until the returned release runs. Counted at module level,
+ * not per screen: leaving the camera mid-save must not let a waiting reload drop the frame.
+ */
+export function holdCapture(): () => void {
+  inFlight++;
+  captureBusy.value = true;
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    inFlight--;
+    captureBusy.value = inFlight > 0;
+  };
+}
 
 async function whenIdle(): Promise<void> {
   while (captureBusy.value) await new Promise((r) => setTimeout(r, 200));

@@ -79,12 +79,13 @@ export async function getAllByIndex<T>(store: StoreName, index: string, key: IDB
   return withDb((db) => req(db.transaction(store).objectStore(store).index(index).getAll(key)) as Promise<T[]>);
 }
 
+/** Resolves once the write is committed (a full disk fails at commit, not at the request). */
 export async function put<T>(store: StoreName, value: T, key?: IDBValidKey): Promise<void> {
-  await withDb((db) => req(db.transaction(store, 'readwrite').objectStore(store).put(value, key)));
+  await tx([store], (t) => t.objectStore(store).put(value, key));
 }
 
 export async function del(store: StoreName, key: IDBValidKey | IDBKeyRange): Promise<void> {
-  await withDb((db) => req(db.transaction(store, 'readwrite').objectStore(store).delete(key)));
+  await tx([store], (t) => t.objectStore(store).delete(key));
 }
 
 /** Runs several writes atomically across stores. */
@@ -94,7 +95,7 @@ export async function tx(stores: StoreName[], fn: (t: IDBTransaction) => void): 
       new Promise<void>((resolve, reject) => {
         const t = db.transaction(stores, 'readwrite');
         t.oncomplete = () => resolve();
-        t.onerror = () => reject(t.error);
+        t.onerror = (e) => reject((e.target as IDBRequest | null)?.error ?? t.error);
         t.onabort = () => reject(t.error ?? new Error('transaction aborted'));
         try {
           fn(t);

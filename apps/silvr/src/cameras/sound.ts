@@ -21,6 +21,14 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
+/**
+ * Creates/resumes the audio context inside a tap. iOS WebKit keeps a context that is first
+ * created or resumed after an await (outside the gesture) suspended, so every sound is silent.
+ */
+export function unlockAudio(): void {
+  audio();
+}
+
 function noise(ac: AudioContext, at: number, dur: number, gain: number, freq: number, q = 0.9): void {
   const len = Math.max(1, Math.floor(ac.sampleRate * dur));
   const buf = ac.createBuffer(1, len, ac.sampleRate);

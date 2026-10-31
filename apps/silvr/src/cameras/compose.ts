@@ -112,12 +112,16 @@ export function composeQuad(frames: HTMLCanvasElement[]): HTMLCanvasElement {
   return out;
 }
 
-export function composeDouble(first: CanvasImageSource, second: HTMLCanvasElement): HTMLCanvasElement {
+export function composeDouble(first: HTMLCanvasElement, second: HTMLCanvasElement): HTMLCanvasElement {
   const w = second.width;
   const h = second.height;
   const out = makeCanvas(w, h);
   const ctx = out.getContext('2d')!;
-  ctx.drawImage(first, 0, 0, w, h);
+  // Cover-crop, never stretch: the phone may have turned between the two presses.
+  const fw = first.width;
+  const fh = first.height;
+  const k = Math.max(w / fw, h / fh);
+  ctx.drawImage(first, (w - fw * k) / 2, (h - fh * k) / 2, fw * k, fh * k);
   const a = ctx.getImageData(0, 0, w, h);
   const b = second.getContext('2d')!.getImageData(0, 0, w, h);
   const ad = a.data;

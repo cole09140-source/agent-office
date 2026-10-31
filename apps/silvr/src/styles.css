@@ -305,6 +305,11 @@ a {
   background: #000;
   overflow: hidden;
 }
+/* Choosing a body and film (no roll yet): scroll instead of clipping the Load button
+   on short screens (landscape browser tabs) and with large text. */
+.camera.unloaded {
+  overflow-y: auto;
+}
 .cam-top {
   display: flex;
   justify-content: safe center;
@@ -912,8 +917,11 @@ input[type='range']::-moz-range-thumb {
 .update-bar {
   position: fixed;
   top: calc(8px + var(--safe-t));
-  left: 50%;
-  transform: translateX(-50%);
+  left: 16px;
+  right: 16px;
+  margin-inline: auto;
+  width: max-content;
+  max-width: calc(100% - 32px);
   z-index: 70;
   display: flex;
   gap: 12px;
@@ -924,6 +932,10 @@ input[type='range']::-moz-range-thumb {
   color: #1a0f05;
   font-weight: 650;
   font-size: 14px;
+}
+/* Below the camera's flash / timer / format / zoom row, like the toasts. */
+.route-camera .update-bar {
+  top: calc(124px + var(--safe-t));
 }
 .update-bar button {
   text-decoration: underline;
@@ -1586,6 +1598,21 @@ input[type='range']::-moz-range-thumb {
 }
 .route-camera .toasts {
   top: calc(124px + var(--safe-t));
+}
+.route-camera.has-update .toasts {
+  top: calc(184px + var(--safe-t));
+}
+/* Landscape phones: the shutter sits halfway down, so keep messages just under the controls row. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .route-camera .update-bar {
+    top: calc(60px + var(--safe-t));
+  }
+  .route-camera .toasts {
+    top: calc(60px + var(--safe-t));
+  }
+  .route-camera.has-update .toasts {
+    top: calc(108px + var(--safe-t));
+  }
 }
 .flash-charge.charge-ready .charge-led {
   background: #ff3b30;

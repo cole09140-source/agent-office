@@ -10,6 +10,8 @@ export interface DevelopMeta {
   takenAt: number;
   frame: number;
   dateFormat: DateFormat;
+  /** No known shooting date: never stamp one. */
+  undated?: boolean;
 }
 
 export interface DevelopOutput {
@@ -100,6 +102,8 @@ export function renderFilm(source: CanvasImageSource & TexImageSource, w: number
   img.data.set(renderCpu({ data: img.data, width: cw, height: ch }, look));
   wctx.putImageData(img, 0, 0);
   if (work !== out) {
+    // Pixel art keeps hard block edges and its 4-colour palette; everything else scales smoothly.
+    ctx.imageSmoothingEnabled = !look.pixel;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(work, 0, 0, w, h);
   }
@@ -141,7 +145,7 @@ export function composePrint(negative: HTMLCanvasElement, dev: DevelopSettings, 
   const look = resolveLook(dev);
   drawDust(fctx, look.dust, dev.seed, stock.kind, 0, 0, w, h);
   const camera = hasCamera(dev.cameraId) ? getCamera(dev.cameraId) : null;
-  if (dev.dateStamp && camera?.stamp !== 'none') {
+  if (dev.dateStamp && !meta.undated && camera?.stamp !== 'none') {
     const text = camera?.stamp === 'digital' ? formatDigitalStamp(meta.takenAt) : formatStamp(meta.takenAt, meta.dateFormat);
     drawDateStamp(fctx, text, 0, 0, w, h);
   }
@@ -176,6 +180,7 @@ async function developNow(original: Blob, dev: DevelopSettings, meta: DevelopMet
 interface Job {
   id?: string;
   run: () => Promise<void>;
+  cancel: () => void;
 }
 const urgent: Job[] = [];
 const background: Job[] = [];
@@ -189,7 +194,8 @@ async function pump(): Promise<void> {
   pumping = true;
   try {
     for (;;) {
-      const job = urgent.shift() ?? background.shift();
+      // Newest urgent first: the photo on screen now, not the ones swiped past.
+      const job = urgent.pop() ?? background.shift();
       if (!job) break;
       await job.run();
     }
@@ -208,6 +214,7 @@ export function develop(original: Blob, dev: DevelopSettings, meta: DevelopMeta,
     const job: Job = {
       id: opts.id,
       run: () => developNow(original, dev, meta, opts.maxLong ?? EXPORT_MAX_LONG).then(resolve, reject),
+      cancel: () => reject(new DOMException('Develop cancelled', 'AbortError')),
     };
     const at = opts.id ? promoted.get(opts.id) : undefined;
     if (opts.id) promoted.delete(opts.id);
@@ -215,6 +222,19 @@ export function develop(original: Blob, dev: DevelopSettings, meta: DevelopMeta,
     (isUrgent ? urgent : background).push(job);
     void pump();
   });
+}
+
+/** Drops a job that has not started yet (its screen is gone). True if one was dropped. */
+export function cancelQueued(id: string): boolean {
+  for (const q of [urgent, background]) {
+    const i = q.findIndex((j) => j.id === id);
+    if (i >= 0) {
+      q.splice(i, 1)[0].cancel();
+      return true;
+    }
+  }
+  promoted.delete(id);
+  return false;
 }
 
 /** Moves a queued background job to the front (the user just opened that photo). */
