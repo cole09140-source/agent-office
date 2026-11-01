@@ -83,12 +83,32 @@ export function ViewfinderOverlay({ camera, state }: { camera: CameraModel; stat
     case 'lcd':
       return (
         <div class="vf vf-lcd mono" aria-hidden="true">
-          <span class="lcd-tl">▣ 4:3 · F</span>
+          <span class="lcd-tl">▣ 4:3 · {camera.maxLong && camera.maxLong <= 800 ? 'VGA' : 'F'}</span>
           <span class="lcd-tr">
             <i class="lcd-batt" /> {String(state.left).padStart(2, '0')}
           </span>
           <span class="lcd-focus" />
           {state.dateText && <span class="lcd-br">{state.dateText}</span>}
+        </div>
+      );
+    case 'sport':
+      return (
+        <div class="vf vf-sport" aria-hidden="true">
+          <span class="vf-sport-frame" />
+          <span class="vf-sport-ring" />
+        </div>
+      );
+    case 'waist':
+      return (
+        <div class="vf vf-waist" aria-hidden="true">
+          <span class="vf-waist-grid" />
+          <span class="vf-waist-spot" />
+        </div>
+      );
+    case 'gate':
+      return (
+        <div class="vf vf-gate" aria-hidden="true">
+          <span class="vf-cine-tag mono">18 FPS · 4:3</span>
         </div>
       );
     case 'pixel':

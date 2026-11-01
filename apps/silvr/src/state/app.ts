@@ -1,7 +1,8 @@
 import { computed, signal } from '@preact/signals';
 import { detectLang } from '../i18n';
 import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
-import { DEFAULT_SETTINGS, loadSettings, patchSettings, type Settings } from '../store/settings';
+import { setPinned } from '../cameras/pins';
+import { DEFAULT_SETTINGS, loadSettings, patchSettingsWith, type Settings } from '../store/settings';
 import { signalLang } from './lang';
 
 export const settings = signal<Settings>({ ...DEFAULT_SETTINGS });
@@ -41,12 +42,21 @@ export function broadcastReset(): void {
 }
 
 export async function updateSettings(patch: Partial<Settings>): Promise<void> {
-  const next = { ...settings.value, ...patch };
+  return updateSettingsWith(() => patch);
+}
+
+/**
+ * Applies a change computed from current settings: first to this tab's copy (instant UI),
+ * then again inside the storage transaction against what is stored, so a change based on
+ * a list (e.g. pinned cameras) merges with what another tab wrote meanwhile.
+ */
+export async function updateSettingsWith(change: (s: Settings) => Partial<Settings>): Promise<void> {
+  const next = { ...settings.value, ...change(settings.value) };
   settings.value = next;
   applyLang(next);
   try {
     // Merge into what is stored (another tab may have changed other settings), then adopt it.
-    const saved = await patchSettings(patch);
+    const saved = await patchSettingsWith(change);
     settings.value = saved;
     applyLang(saved);
   } catch (err) {
@@ -56,6 +66,11 @@ export async function updateSettings(patch: Partial<Settings>): Promise<void> {
     return;
   }
   settingsChannel?.postMessage('settings');
+}
+
+/** Pins or unpins a camera in the picker (merged atomically with other tabs' pins). */
+export function setCameraPinned(id: string, pinned: boolean): Promise<void> {
+  return updateSettingsWith((s) => ({ pinnedCameras: setPinned(s.pinnedCameras, id, pinned) }));
 }
 
 let refreshing: Promise<void> | null = null;

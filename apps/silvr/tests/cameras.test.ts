@@ -1,20 +1,22 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { blendDouble, exposureSpec, halfLayout, quadLayout } from '../src/cameras/compose';
-import { canLoad, CAMERAS, filmsFor, getCamera, PALETTE_IDS, PIXEL_PALETTES } from '../src/cameras/models';
+import { canLoad, CAMERAS, ejectsPrints, filmsFor, getCamera, PALETTE_IDS, PIXEL_PALETTES } from '../src/cameras/models';
 import { ditherIndex, lensUv, renderCpu } from '../src/film/cpuRender';
 import { aspectRatio, cropForAspect } from '../src/film/geometry';
 import { digitAdvance, formatDigitalStamp } from '../src/film/overlays';
 import { defaultDevelop, developKey, effectiveLook, resolveLook } from '../src/film/resolve';
 import { pixelCells } from '../src/film/shader';
 import { getStock, STOCKS } from '../src/film/stocks';
+import { cameraDescription, cameraEra, stockDescription } from '../src/i18n';
+import { signalLang } from '../src/state/lang';
 import { clearAll } from '../src/store/db';
 import { addShot, finishRoll, getPending, inCamera, listPhotos, listRolls, loadRoll, savePending, viewable, type Roll } from '../src/store/rolls';
 
 describe('camera catalogue', () => {
-  it('has 14 distinct, well-formed bodies', () => {
-    expect(CAMERAS).toHaveLength(14);
-    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(14);
+  it('has 22 distinct, well-formed bodies', () => {
+    expect(CAMERAS).toHaveLength(22);
+    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(22);
     for (const c of CAMERAS) {
       expect(canLoad(c, c.defaultStock), `${c.id} default film`).toBe(true);
       expect(c.capacities.length).toBeGreaterThan(0);
@@ -32,6 +34,25 @@ describe('camera catalogue', () => {
     expect(filmsFor(getCamera('ccd03')).map((s) => s.id)).toEqual(['ccd']);
     expect(filmsFor(getCamera('pixel')).map((s) => s.id)).toEqual(['pixel']);
     expect(canLoad(getCamera('pro35'), 'ccd')).toBe(false);
+    expect(filmsFor(getCamera('kidcam')).map((s) => s.id)).toEqual(['toycmos']);
+    expect(filmsFor(getCamera('aqua27')).map((s) => s.id)).toEqual(['aqua400']);
+    for (const id of ['aqua400', 'instawide', 'reel40', 'toycmos']) expect(canLoad(getCamera('pro35'), id), id).toBe(false);
+  });
+  it('gives every body its own look (new bodies are not recolours)', () => {
+    const sig = (c: (typeof CAMERAS)[number]) => [c.body, c.viewfinder, c.formats.join(), c.border ?? '-', c.defaultStock, c.capture].join('|');
+    expect(new Set(CAMERAS.map((c) => c.body)).size).toBe(CAMERAS.length);
+    expect(new Set(CAMERAS.map(sig)).size).toBe(CAMERAS.length);
+  });
+  it('every body and film has Korean and English copy', () => {
+    for (const lang of ['ko', 'en'] as const) {
+      signalLang.value = lang;
+      for (const c of CAMERAS) {
+        expect(cameraDescription(c.id), `${lang} ${c.id}`).not.toBe('');
+        if (lang === 'ko') expect(cameraEra(c.era), c.era).toMatch(/^\d{4} · [^A-Za-z]*(\d|SLR|TLR)?[^A-Za-z]*$/);
+      }
+      for (const st of STOCKS) expect(stockDescription(st.id), `${lang} ${st.id}`).not.toBe('');
+    }
+    signalLang.value = 'ko';
   });
   it('falls back to Pro 35 for unknown / legacy ids', () => {
     expect(getCamera(undefined).id).toBe('pro35');
@@ -43,7 +64,8 @@ describe('camera catalogue', () => {
     expect(CAMERAS.some((c) => c.flash === 'charge')).toBe(true);
     expect(CAMERAS.some((c) => c.lens.fisheye)).toBe(true);
     expect(CAMERAS.some((c) => c.lens.streak > 0)).toBe(true);
-    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['ccd03', 'instasq', 'pixel']);
+    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['ccd03', 'instasq', 'instaw', 'kidcam', 'pixel']);
+    expect(CAMERAS.filter(ejectsPrints).map((c) => c.id).sort()).toEqual(['instasq', 'instaw']);
   });
   it('has 4-tone palettes ordered dark → light', () => {
     for (const id of PALETTE_IDS) {
@@ -80,6 +102,13 @@ describe('capture geometry', () => {
     expect(blendDouble(1, 0)).toBeCloseTo(0.82);
     expect(blendDouble(0.5, 0.5)).toBeGreaterThan(0.41);
     expect(blendDouble(1, 1)).toBeLessThanOrEqual(1);
+  });
+  it('the wide instant always frames landscape, even from a portrait sensor', () => {
+    const spec = exposureSpec(getCamera('instaw'), '3:2');
+    expect(spec).toEqual({ aspect: '3:2', orient: 'landscape' });
+    const c = cropForAspect(1080, 1920, spec.aspect, 1, spec.orient);
+    expect((1080 * c.w) / (1920 * c.h)).toBeCloseTo(1.5);
+    expect(exposureSpec(getCamera('pro35'), '3:2').orient).toBe('auto');
   });
   it('new formats have the right ratios', () => {
     expect(aspectRatio('65:24')).toBeCloseTo(2.708, 2);
@@ -165,6 +194,14 @@ describe('lens & sensor rendering', () => {
     expect(developKey({ ...d, cameraId: 'toy120' })).not.toBe(developKey(d));
     expect(developKey({ ...d, ev: 0.33 })).not.toBe(developKey(d));
     expect(developKey({ ...d, palette: 'ice' })).not.toBe(developKey(d));
+  });
+  it('a big flash fires harder than a normal one', () => {
+    const st = getStock('sunny200');
+    const d = defaultDevelop(st, 1, { flash: true });
+    expect(resolveLook({ ...d, cameraId: 'party' }).flash).toBeGreaterThan(resolveLook({ ...d, cameraId: 'pro35' }).flash);
+    expect(resolveLook({ ...d, cameraId: 'pro35' }).flash).toBe(1);
+    expect(resolveLook({ ...d, cameraId: 'party', flash: false }).flash).toBe(0);
+    expect(effectiveLook(st, d, 1.8).contrast).toBeGreaterThan(effectiveLook(st, d).contrast);
   });
   it('legacy frames without a camera get a neutral lens', () => {
     const look = resolveLook(defaultDevelop(getStock('sunny200'), 1));
@@ -275,6 +312,20 @@ describe('engine hardening (QA R41)', () => {
     expect(borderLayout('film35', 2, 900)).toEqual({ width: 2, height: 900, img: { x: 0, y: 0, w: 2, h: 900 } });
     expect(borderLayout('instant', 15, 15).width).toBe(15);
     expect(borderLayout('film35', 16, 900).width).toBeGreaterThan(16);
+    for (const b of ['slide', 'gate', 'sprocket'] as const) expect(borderLayout(b, 10, 900)).toEqual({ width: 10, height: 900, img: { x: 0, y: 0, w: 10, h: 900 } });
+  });
+  it('new borders: square slide mount, rounded cine gate, sprocket edges', async () => {
+    const { borderLayout } = await import('../src/film/overlays');
+    const slide = borderLayout('slide', 600, 400);
+    expect(slide.width).toBe(slide.height);
+    expect(slide.img.x + slide.img.w / 2).toBeCloseTo(slide.width / 2, 0);
+    expect(slide.img.y + slide.img.h / 2).toBeCloseTo(slide.height / 2, 0);
+    const gate = borderLayout('gate', 400, 300);
+    expect(gate.width / gate.height).toBeCloseTo(430 / 330, 2);
+    const land = borderLayout('sprocket', 650, 240);
+    expect([land.width, land.img.x, land.img.y > 0]).toEqual([650, 0, true]);
+    const port = borderLayout('sprocket', 240, 650);
+    expect([port.height, port.img.y, port.img.x > 0]).toEqual([650, 0, true]);
   });
   it('contact sheets for the longest rolls stay under the iOS canvas cap', async () => {
     const { sheetHeight } = await import('../src/film/contactSheet');

@@ -19,9 +19,9 @@ function gradient(w: number, h: number) {
 }
 
 describe('film stocks', () => {
-  it('has 16 unique stocks with sane parameters', () => {
-    expect(STOCKS).toHaveLength(16);
-    expect(new Set(STOCKS.map((s) => s.id)).size).toBe(16);
+  it('has 20 unique stocks with sane parameters', () => {
+    expect(STOCKS).toHaveLength(20);
+    expect(new Set(STOCKS.map((s) => s.id)).size).toBe(20);
     for (const s of STOCKS) {
       expect(s.look.matrix).toHaveLength(9);
       expect(s.leakChance).toBeGreaterThanOrEqual(0);

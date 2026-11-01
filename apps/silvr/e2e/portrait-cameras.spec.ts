@@ -12,6 +12,11 @@ const CASES: [string, number, number][] = [
   ['fish180', 1, 0.02],
   ['pixel', 8 / 7, 0.03],
   ['ccd03', 4 / 3, 0.03],
+  ['instaw', 1 / 1.23, 0.03], // wide instant stays landscape on a portrait sensor
+  ['sprocket', 2.604, 0.06],
+  ['super8', 1.303, 0.03],
+  ['slide35', 1, 0.02],
+  ['kidcam', 4 / 3, 0.03],
 ];
 
 for (const [id, ratio, tol] of CASES) {

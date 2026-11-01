@@ -66,7 +66,7 @@ const mul = (a: RGB, b: RGB): RGB => [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
  * Applies the develop recipe (push/pull, expiry, flash, user multipliers) on
  * top of the stock's intrinsic look. Pure so it can be unit tested.
  */
-export function effectiveLook(stock: FilmStock, dev: DevelopSettings): FilmLook {
+export function effectiveLook(stock: FilmStock, dev: DevelopSettings, flashPower = 1): FilmLook {
   const base = stock.look;
   const p = clamp(dev.push, PUSH_RANGE[0], PUSH_RANGE[1]);
   const e = clamp(stock.baseExpired + dev.expired);
@@ -97,11 +97,11 @@ export function effectiveLook(stock: FilmStock, dev: DevelopSettings): FilmLook 
     l.vignette += 0.15 * e;
   }
 
-  // On-camera flash: hot centre, deeper fall-off, punchier tones.
+  // On-camera flash: hot centre, deeper fall-off, punchier tones (stronger on bodies with a big flash).
   if (dev.flash) {
-    l.exposure += 0.1;
-    l.contrast *= 1.08;
-    l.vignette += 0.25;
+    l.exposure += 0.1 * flashPower;
+    l.contrast *= 1 + 0.08 * flashPower;
+    l.vignette += 0.25 * flashPower;
   }
 
   l.grain *= clamp(dev.grain, 0, 2);
@@ -145,9 +145,11 @@ export function lightLeaks(seed: number): LightLeak[] {
 
 export function resolveLook(dev: DevelopSettings): ResolvedLook {
   const stock = getStock(dev.stockId);
-  const l = effectiveLook(stock, dev);
   // Frames from before camera bodies existed (and imports) get a neutral lens.
-  const lens = hasCamera(dev.cameraId) ? getCamera(dev.cameraId).lens : null;
+  const camera = hasCamera(dev.cameraId) ? getCamera(dev.cameraId) : null;
+  const flashPower = camera?.flashPower ?? 1;
+  const l = effectiveLook(stock, dev, flashPower);
+  const lens = camera?.lens ?? null;
   const pixel = stock.kind === 'pixel';
   return {
     lut: buildLut(l),
@@ -164,7 +166,7 @@ export function resolveLook(dev: DevelopSettings): ResolvedLook {
     bloom: l.bloom,
     vignette: clamp(l.vignette + (lens?.vignette ?? 0)),
     chroma: l.chroma + (lens?.chroma ?? 0),
-    flash: dev.flash ? 1 : 0,
+    flash: dev.flash ? flashPower : 0,
     leaks: dev.leak === null ? [] : lightLeaks(dev.leak),
     dust: l.dust,
     // Keep the shader seed small so float precision on mobile GPUs is preserved.

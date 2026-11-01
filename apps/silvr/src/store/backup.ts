@@ -109,7 +109,7 @@ const clamp = (v: unknown, lo: number, hi: number, fallback: number) => (isNum(v
 const isTime = (v: unknown): v is number => isNum(v) && Math.abs(v) <= 8.64e15;
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7'];
-const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
+const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print', 'slide', 'gate', 'sprocket'];
 
 function validRoll(r: Roll): boolean {
   return (

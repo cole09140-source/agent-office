@@ -25,6 +25,7 @@ const PATHS = {
   sparkle: 'M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z',
   check: 'M5 12l5 5 9-10',
   chevron: 'M9 5l7 7-7 7',
+  pin: 'M9 3h6 M10 3v6l-3.5 4.5h11L14 9V3 M12 13.5V21',
 } as const;
 
 export type IconName = keyof typeof PATHS;

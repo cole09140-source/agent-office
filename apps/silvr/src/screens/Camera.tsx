@@ -4,7 +4,7 @@ import { snapshotVideo } from '../camera/capture';
 import { captureRotation, requestOrientationPermission, startOrientation } from '../camera/orientation';
 import { blankLike, blobToCanvas, composeDouble, composeHalf, composeQuad, cropExposure, exposureSpec, toNegative } from '../cameras/compose';
 import { capacityLabel, LoadPanel } from '../cameras/LoadPanel';
-import { canLoad, DEFAULT_CAMERA_ID, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
+import { canLoad, DEFAULT_CAMERA_ID, ejectsPrints, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { Icon } from '../components/Icon';
@@ -22,7 +22,9 @@ import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, 
 import { holdCapture } from '../platform/pwa';
 import { go, isCurrent } from '../state/router';
 import { get, put } from '../store/db';
-import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
+import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, readyAtFor, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
+import { formatArrival } from '../components/arrival';
+import { signalLang } from '../state/lang';
 
 let controller: CameraController | null = null;
 const cam = () => (controller ??= new CameraController());
@@ -465,7 +467,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       else if (camera.capture === 'half') setAnnounce(t('cam.halfNext'));
       if (result && camera.instant) {
         setLastPhoto(result.photo);
-        if (camera.id === 'instasq') {
+        if (ejectsPrints(camera)) {
           setEjecting(true);
           setTimeout(() => setEjecting(false), 1300);
         } else if (s.sound && camera.sound !== 'digital') playBeep();
@@ -741,7 +743,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       {roll ? (
         <div class="cam-bottom">
           {camera.instant && lastPhoto ? (
-            <div class={`last-shot ${camera.id === 'instasq' ? 'instant' : ''}`} data-testid="last-shot">
+            <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''}`} data-testid="last-shot">
               <Thumb photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
             </div>
           ) : (
@@ -815,9 +817,12 @@ const SPEEDS: DevelopSpeed[] = ['instant', '1h', 'morning', '3d'];
 
 export function SpeedSheet({ open, onClose, onPick, full }: { open: boolean; onClose: () => void; onPick: (s: DevelopSpeed) => void; full: boolean }) {
   const def = settings.value.defaultSpeed;
+  // Read on every render: the sheet re-renders when it opens, so arrival times are current.
+  const at = Date.now();
   return (
     <Sheet open={open} onClose={onClose} title={full ? t('cam.rollFull') : t('speed.title')} testId="speed-sheet">
       {full && <p class="muted">{t('speed.title')}</p>}
+      <p class="muted small speed-why">{t('speed.why')}</p>
       <div class="speed-list">
         {SPEEDS.map((sp) => (
           <button key={sp} class={`speed ${sp === def ? 'def' : ''}`} onClick={() => onPick(sp)} data-testid={`speed-${sp}`}>
@@ -825,6 +830,9 @@ export function SpeedSheet({ open, onClose, onPick, full }: { open: boolean; onC
               {t(`speed.${sp}` as const)}
               {sp === def && <small class="speed-def"> · {t('speed.default')}</small>}
             </strong>
+            <span class="speed-at tnum" data-testid={`speed-at-${sp}`}>
+              {formatArrival(readyAtFor(sp, at), at, signalLang.value)}
+            </span>
             <span>{t(`speed.${sp}.d` as const)}</span>
           </button>
         ))}

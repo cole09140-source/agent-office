@@ -82,10 +82,23 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
   await page.getByTestId('roll-btn').click();
   await page.getByTestId('btn-rewind').click();
   await page.getByTestId('confirm-ok').click();
+  // the sheet says why you'd wait and when each speed arrives
+  await expect(page.getByTestId('speed-sheet')).toContainText('Instant shows them now');
+  await expect(page.getByTestId('speed-at-instant')).toHaveText('In your album right away');
+  await expect(page.getByTestId('speed-at-1h')).toHaveText(/^Arrives (today|tomorrow) \d{1,2}:\d{2}\s[AP]M$/);
+  await expect(page.getByTestId('speed-at-morning')).toHaveText(/^Arrives (today|tomorrow) 9:00\sAM$/);
+  await expect(page.getByTestId('speed-at-3d')).toHaveText(/^Arrives [A-Z][a-z]{2} \d{1,2}$/);
   await page.getByTestId('speed-1h').click();
   await expect(page.getByTestId('lab-screen')).toBeVisible();
   await expect(page.getByTestId('lab-item')).toHaveCount(1);
   await expect(page.getByTestId('lab-item')).toContainText(/Ready in (59m|1h)/);
+  await expect(page.getByTestId('lab-eta')).toContainText(/Arrives (today|tomorrow)/);
+  await expect(page.getByTestId('lab-intro')).toContainText('Develop now');
+  // an empty album points to the lab while a roll develops
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('gallery-screen')).toContainText('1 roll is developing in the lab.');
+  await page.getByTestId('btn-open-lab').click();
+  await expect(page.getByTestId('lab-screen')).toBeVisible();
   await page.screenshot({ path: 'e2e/.shots/09-lab.png' });
   // camera is free for a new roll
   await page.getByTestId('tab-camera').click();

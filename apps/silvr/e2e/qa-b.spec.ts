@@ -4,7 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { loadCamera, rewindAndDevelop, shoot, start } from './helpers';
 
-const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range'];
+const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket'];
 const presses = (id: string) => (id === 'half72' || id === 'doublex' ? 2 : 1);
 
 async function shootFrame(page: Page, id: string) {

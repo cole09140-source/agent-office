@@ -1,7 +1,8 @@
 export type RGB = [number, number, number];
 
 export type FilmKind = 'color' | 'slide' | 'bw' | 'instant' | 'cine' | 'digital' | 'pixel';
-export type BorderStyle = 'none' | 'film35' | 'instant' | 'print';
+/** slide: square slide mount; gate: cine gate with rounded corners; sprocket: exposed sprocket holes. */
+export type BorderStyle = 'none' | 'film35' | 'instant' | 'print' | 'slide' | 'gate' | 'sprocket';
 /** Frame format as long:short; orientation follows the camera frame unless forced. */
 export type Aspect = '3:2' | '4:3' | '1:1' | '65:24' | '2.39:1' | '8:7';
 

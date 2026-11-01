@@ -142,6 +142,135 @@ export function CameraBody({ camera, width = 96 }: { camera: CameraModel; width?
         </g>
       );
       break;
+    case 'aqua':
+      // Disposable sealed in a chunky clear housing: big shutter paddle, sport finder, dome port.
+      shape = (
+        <g>
+          <rect x="10" y="16" width="100" height="54" rx="12" fill={body} />
+          <rect x="16" y="22" width="88" height="42" rx="8" fill="#ffffff" opacity="0.18" />
+          <rect x="84" y="8" width="18" height="10" rx="3" fill={accent} />
+          <rect x="18" y="26" width="20" height="12" rx="3" fill="#e9f6fb" stroke={trim} stroke-width="1.5" />
+          <circle cx="72" cy="42" r="17" fill={trim} />
+          {lens(72, 42, 12)}
+          <path d="M18 62 q5 -4 10 0 t10 0 t10 0" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.75" />
+          <circle cx="26" cy="50" r="2" fill="#ffffff" opacity="0.6" />
+          <circle cx="33" cy="46" r="1.3" fill="#ffffff" opacity="0.6" />
+        </g>
+      );
+      break;
+    case 'wide':
+      // Wide instant: broad body, lens left of centre, print slot on top, grip on the right.
+      shape = (
+        <g>
+          <rect x="6" y="20" width="108" height="50" rx="8" fill={body} />
+          <rect x="6" y="20" width="108" height="10" rx="6" fill={trim} />
+          <rect x="20" y="18" width="56" height="2.5" rx="1" fill="#0b0b0c" />
+          <rect x="14" y="22" width="12" height="6" rx="1.5" fill="#2a3440" />
+          <rect x="84" y="22" width="22" height="7" rx="1.5" fill="#f6f6f6" stroke="#bbb" stroke-width="0.8" />
+          <rect x="96" y="32" width="18" height="38" rx="7" fill={accent} />
+          <circle cx="50" cy="49" r="18" fill={trim} />
+          {lens(50, 49, 14)}
+        </g>
+      );
+      break;
+    case 'tlr':
+      // Twin-lens reflex: tall box, viewing lens over taking lens, folding hood on top.
+      shape = (
+        <g>
+          <path d="M38 4 H82 L78 14 H42 Z" fill={trim} />
+          <rect x="36" y="12" width="48" height="66" rx="4" fill={body} />
+          <rect x="42" y="18" width="36" height="24" rx="3" fill={accent} opacity="0.4" />
+          <rect x="84" y="36" width="4" height="8" fill={trim} />
+          <circle cx="92" cy="40" r="6" fill={trim} />
+          <circle cx="92" cy="40" r="6" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="1.5 1.5" opacity="0.5" />
+          {lens(60, 30, 9)}
+          {lens(60, 59, 11)}
+        </g>
+      );
+      break;
+    case 'super8':
+      // Super 8 movie camera: boxy body, pistol grip with trigger, zoom barrel, rear eyepiece.
+      shape = (
+        <g>
+          <rect x="8" y="26" width="12" height="10" rx="3" fill={trim} />
+          <rect x="24" y="12" width="40" height="8" rx="2" fill={accent} />
+          <rect x="18" y="18" width="70" height="34" rx="6" fill={body} />
+          <path d="M46 50 H62 L56 76 H40 Z" fill={trim} />
+          <rect x="62" y="52" width="4" height="8" rx="1.5" fill={accent} />
+          <rect x="86" y="24" width="20" height="22" rx="3" fill={trim} />
+          <text x="28" y="44" font-size="14" font-weight="900" fill={accent} font-family="ui-sans-serif, system-ui">
+            8
+          </text>
+          {lens(106, 35, 9)}
+        </g>
+      );
+      break;
+    case 'trip':
+      // 60s auto compact: honeycomb selenium meter cell ringing the lens.
+      shape = (
+        <g>
+          <rect x="88" y="16" width="12" height="7" rx="2" fill={trim} />
+          <rect x="12" y="22" width="96" height="44" rx="5" fill={body} />
+          <rect x="12" y="22" width="96" height="11" rx="4" fill={trim} opacity="0.55" />
+          <rect x="18" y="25" width="14" height="6" rx="1.5" fill="#2a3440" />
+          <rect x="12" y="40" width="96" height="18" fill={accent} />
+          <circle cx="60" cy="48" r="19" fill="#3b3f46" />
+          {Array.from({ length: 20 }, (_, i) => {
+            const a = (i / 20) * Math.PI * 2;
+            return <circle key={i} cx={60 + Math.cos(a) * 16} cy={48 + Math.sin(a) * 16} r="1.4" fill="#8f9bab" />;
+          })}
+          {lens(60, 48, 12)}
+        </g>
+      );
+      break;
+    case 'flash':
+      // Party compact with an oversized flash head.
+      shape = (
+        <g>
+          <rect x="14" y="10" width="44" height="20" rx="4" fill={trim} />
+          <rect x="18" y="13" width="36" height="14" rx="2" fill="#fffbe6" />
+          <path d="M24 13v14 M30 13v14 M36 13v14 M42 13v14 M48 13v14" stroke="#e6dcb0" stroke-width="1.2" />
+          <rect x="10" y="28" width="100" height="40" rx="10" fill={body} />
+          <rect x="90" y="23" width="10" height="6" rx="2" fill={accent} />
+          <rect x="84" y="33" width="14" height="8" rx="2" fill="#2a3440" />
+          <rect x="10" y="57" width="100" height="5" fill={accent} />
+          {lens(52, 47, 12)}
+        </g>
+      );
+      break;
+    case 'kid':
+      // Kids' digicam: rubbery twin grips, big friendly lens ring.
+      shape = (
+        <g>
+          <rect x="6" y="26" width="22" height="44" rx="10" fill={trim} />
+          <rect x="92" y="26" width="22" height="44" rx="10" fill={trim} />
+          <rect x="24" y="11" width="14" height="9" rx="3" fill={accent} />
+          <rect x="18" y="18" width="84" height="48" rx="14" fill={body} />
+          <rect x="76" y="24" width="16" height="9" rx="3" fill="#2a3440" />
+          <circle cx="30" cy="30" r="4" fill={accent} />
+          <circle cx="60" cy="44" r="16" fill={accent} />
+          {lens(60, 44, 11)}
+        </g>
+      );
+      break;
+    case 'sprocket':
+      // Wide sprocket-hole panorama: two big winding knobs, cream front, perforation motif.
+      shape = (
+        <g>
+          <circle cx="22" cy="23" r="10" fill={trim} />
+          <circle cx="98" cy="23" r="10" fill={trim} />
+          <circle cx="22" cy="23" r="10" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+          <circle cx="98" cy="23" r="10" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+          <rect x="6" y="26" width="108" height="42" rx="6" fill={body} />
+          <rect x="6" y="34" width="108" height="22" fill={accent} />
+          <rect x="46" y="28" width="28" height="5" rx="1.5" fill="#2a3440" />
+          {Array.from({ length: 12 }, (_, i) => (
+            <rect key={i} x={14 + i * 8} y="59" width="4" height="4" rx="0.8" fill={accent} />
+          ))}
+          {lens(60, 45, 13)}
+        </g>
+      );
+      break;
     case 'pixel':
       shape = (
         <g>

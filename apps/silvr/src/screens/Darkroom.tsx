@@ -12,7 +12,7 @@ import { back, isCurrent } from '../state/router';
 import { blobKey, getBlob, getPhoto, listPhotos, updateDevelop, updateDevelopMany, type Photo } from '../store/rolls';
 
 const PREVIEW_LONG = 1400;
-const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print'];
+const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print', 'slide', 'gate', 'sprocket'];
 
 export function DarkroomScreen({ id }: { id: string }) {
   const [photo, setPhoto] = useState<Photo>();
@@ -238,7 +238,9 @@ export function DarkroomScreen({ id }: { id: string }) {
         {!isPixel && (
           <section>
             <h3>{t('dr.border')}</h3>
-            <Segmented label={t('dr.border')} value={dev.border} onChange={(v) => set({ border: v })} options={BORDERS.map((b) => ({ value: b, label: t(`dr.border.${b}` as const) }))} />
+            <div class="border-seg">
+              <Segmented label={t('dr.border')} value={dev.border} onChange={(v) => set({ border: v })} options={BORDERS.map((b) => ({ value: b, label: t(`dr.border.${b}` as const) }))} grid />
+            </div>
           </section>
         )}
         <div class="btn-row">

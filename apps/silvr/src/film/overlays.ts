@@ -165,6 +165,20 @@ export function borderLayout(style: BorderStyle, w: number, h: number): BorderLa
     const m = Math.round(s * 0.04);
     return { width: w + m * 2, height: h + m * 2, img: { x: m, y: m, w, h } };
   }
+  if (style === 'slide') {
+    // A 2×2" slide mount around a 36×24 window: always square, whatever the frame shape.
+    const side = Math.round(Math.max(w, h) * 1.4);
+    return { width: side, height: side, img: { x: Math.round((side - w) / 2), y: Math.round((side - h) / 2), w, h } };
+  }
+  if (style === 'gate') {
+    const m = Math.round(s * 0.05);
+    return { width: w + m * 2, height: h + m * 2, img: { x: m, y: m, w, h } };
+  }
+  if (style === 'sprocket') {
+    // The picture runs over the perforations; only the thin film edges sit outside it.
+    const edge = Math.round(s * 0.02);
+    return w >= h ? { width: w, height: h + edge * 2, img: { x: 0, y: edge, w, h } } : { width: w + edge * 2, height: h, img: { x: edge, y: 0, w, h } };
+  }
   if (style === 'film35') {
     const landscape = w >= h;
     const band = Math.round(s * 0.16);
@@ -213,6 +227,37 @@ function drawFilmBand(ctx: Ctx, x: number, y: number, len: number, band: number,
   }
 }
 
+/**
+ * Perforations exposed onto the picture (sprocket-hole cameras), in landscape coordinates:
+ * the strip runs along x for `len`, `s` is the film width across.
+ */
+function drawSprockets(ctx: Ctx, len: number, s: number, label: string, frame: number) {
+  const across = s * 0.08; // KS perforation ≈ 2.8 × 2 mm on 35 mm film, 4.75 mm pitch
+  const along = s * 0.057;
+  const pitch = s * 0.136;
+  const inset = s * 0.06;
+  if (pitch < 1 || len < pitch) return;
+  const n = Math.floor((len - along) / pitch) + 1;
+  const x0 = (len - (n - 1) * pitch - along) / 2;
+  ctx.fillStyle = 'rgba(8, 7, 6, 0.94)';
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * pitch;
+    for (const y of [inset, s - inset - across]) {
+      roundRect(ctx, x, y, along, across, along * 0.2);
+      ctx.fill();
+    }
+  }
+  // Latent edge print between the holes and the film edge.
+  const fs = s * 0.032;
+  ctx.fillStyle = 'rgba(255, 168, 70, 0.7)';
+  ctx.font = `600 ${fs}px ui-monospace, "SF Mono", Menlo, monospace`;
+  ctx.textBaseline = 'middle';
+  const ty = s - inset / 2;
+  ctx.fillText(label, len * 0.06, ty);
+  ctx.fillText(`▶ ${frame}`, len * 0.52, ty);
+  ctx.fillText(label, len * 0.68, ty);
+}
+
 export interface BorderMeta {
   label: string;
   frame: number;
@@ -240,6 +285,71 @@ export function drawWithBorder(ctx: Ctx, image: CanvasImageSource, style: Border
     ctx.fillStyle = '#fbfaf7';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(image, img.x, img.y, img.w, img.h);
+    return;
+  }
+  if (style === 'slide') {
+    const s = Math.min(img.w, img.h);
+    ctx.fillStyle = '#e9e7e1';
+    ctx.fillRect(0, 0, width, height);
+    // Moulded lip around the window.
+    const lip = s * 0.04;
+    ctx.fillStyle = '#dad7cf';
+    roundRect(ctx, img.x - lip, img.y - lip, img.w + lip * 2, img.h + lip * 2, lip * 1.5);
+    ctx.fill();
+    ctx.save();
+    roundRect(ctx, img.x, img.y, img.w, img.h, s * 0.025);
+    ctx.clip();
+    ctx.drawImage(image, img.x, img.y, img.w, img.h);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.lineWidth = Math.max(1, s * 0.004);
+    roundRect(ctx, img.x, img.y, img.w, img.h, s * 0.025);
+    ctx.stroke();
+    // Lab imprint on the mount.
+    ctx.save();
+    ctx.fillStyle = 'rgba(70, 66, 60, 0.8)';
+    ctx.font = `700 ${Math.max(6, width * 0.03)}px ui-monospace, "SF Mono", Menlo, monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(meta.label, width / 2, (img.y - lip) / 2);
+    ctx.fillText(String(meta.frame).padStart(2, '0'), width / 2, (img.y + img.h + lip + height) / 2);
+    ctx.restore();
+    return;
+  }
+  if (style === 'gate') {
+    const s = Math.min(img.w, img.h);
+    ctx.fillStyle = '#060505';
+    ctx.fillRect(0, 0, width, height);
+    const r = s * 0.08;
+    ctx.save();
+    roundRect(ctx, img.x, img.y, img.w, img.h, r);
+    ctx.clip();
+    ctx.drawImage(image, img.x, img.y, img.w, img.h);
+    // The gate sits out of focus: its edge bleeds softly into the picture.
+    const lw = s * 0.06;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = s * 0.06;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = lw;
+    roundRect(ctx, img.x - lw / 2, img.y - lw / 2, img.w + lw, img.h + lw, r + lw / 2);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  if (style === 'sprocket') {
+    ctx.fillStyle = '#0d0b0a';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(image, img.x, img.y, img.w, img.h);
+    ctx.save();
+    if (img.w >= img.h) {
+      ctx.translate(img.x, img.y);
+      drawSprockets(ctx, img.w, img.h, meta.label, meta.frame);
+    } else {
+      ctx.translate(img.x + img.w, img.y);
+      ctx.rotate(Math.PI / 2);
+      drawSprockets(ctx, img.h, img.w, meta.label, meta.frame);
+    }
+    ctx.restore();
     return;
   }
   if (style === 'film35') {

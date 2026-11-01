@@ -617,6 +617,9 @@ a {
 .seg.grid button {
   border-radius: 13px;
 }
+.border-seg .seg.grid {
+  grid-template-columns: repeat(4, 1fr);
+}
 .seg button.on {
   background: var(--fg);
   color: var(--bg);
@@ -881,6 +884,17 @@ input[type='range']::-moz-range-thumb {
 .speed span {
   font-size: 12px;
   color: var(--fg-2);
+}
+.speed span.speed-at {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.speed-why {
+  margin: 0 0 4px;
+}
+.lab-intro {
+  margin: 0 0 12px;
 }
 
 .toasts {
@@ -1501,10 +1515,15 @@ input[type='range']::-moz-range-thumb {
 .camera-strip::-webkit-scrollbar {
   display: none;
 }
+.camera-cell {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  scroll-snap-align: start;
+}
 .camera-card {
   position: relative;
   flex: 0 0 auto;
-  scroll-snap-align: start;
   /* fits the longest era label ("1954 · 레인지파인더") with headroom for wider CJK fonts */
   width: 104px;
   display: flex;
@@ -1525,6 +1544,57 @@ input[type='range']::-moz-range-thumb {
   top: 4px;
   right: 4px;
   margin: 0;
+}
+/* Pin toggle: a 44px tap target in the card's top-left corner (PRO badge sits top-right). */
+.camera-pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 5px;
+  border: 0;
+  border-radius: 12px 0 12px 0;
+  background: none;
+  color: var(--fg-2);
+  -webkit-tap-highlight-color: transparent;
+}
+.camera-pin-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.camera-pin:active .camera-pin-dot {
+  transform: scale(0.88);
+}
+.camera-pin.on {
+  color: #1a0f05;
+}
+.camera-pin.on .camera-pin-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.camera-pin.on svg path {
+  fill: currentColor;
+}
+@media (hover: hover) {
+  .camera-pin:not(.on):hover {
+    color: var(--fg);
+  }
+}
+.camera-divider {
+  flex: 0 0 1px;
+  align-self: stretch;
+  margin: 10px 0;
+  background: var(--line);
 }
 .camera-name {
   font-size: 12px;
@@ -1873,6 +1943,68 @@ input[type='range']::-moz-range-thumb {
 }
 .vfs-pixel .preview {
   image-rendering: pixelated;
+}
+/* Waterproof sport finder: a wire frame and aiming ring seen through the housing. */
+.vf-sport {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 40, 60, 0.4) 100%);
+}
+.vf-sport-frame,
+.vf-sport-ring {
+  position: absolute;
+  border: 2px solid rgba(255, 214, 0, 0.75);
+}
+.vf-sport-frame {
+  inset: 9%;
+  border-radius: 4px;
+}
+.vf-sport-ring {
+  left: 50%;
+  top: 50%;
+  width: 16%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+/* TLR waist-level finder: bright ground glass, grid, microprism spot, mirror-reversed image. */
+.vfs-waist .preview {
+  transform: scaleX(-1);
+}
+.vf-waist {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.06) 0 30%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+  box-shadow: inset 0 0 0 6px rgba(10, 10, 10, 0.85);
+}
+.vf-waist-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+  background-size: 25% 25%;
+}
+.vf-waist-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.5px) 0 0 / 4px 4px;
+}
+/* Super 8 gate: rounded corners and a soft, out-of-focus edge. */
+.vf-gate {
+  border-radius: 9% / 12%;
+  box-shadow:
+    0 0 0 60px #050505,
+    inset 0 0 18px 10px rgba(0, 0, 0, 0.8);
+}
+/* Wide instant prints eject sideways-wide. */
+.cam-instaw .eject {
+  left: 8%;
+  right: 8%;
+  aspect-ratio: 1.23;
+}
+.cam-instaw .eject::before {
+  inset: 5% 4% 20%;
 }
 .px-tag {
   position: absolute;

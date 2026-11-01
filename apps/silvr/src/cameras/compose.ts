@@ -14,7 +14,7 @@ export interface FrameSpec {
 /** Shape of a single exposure for a camera (half-frame halves are portrait 3:4). */
 export function exposureSpec(camera: CameraModel, aspect: Aspect): FrameSpec {
   if (camera.capture === 'half') return { aspect: '4:3', orient: 'portrait' };
-  return { aspect, orient: 'auto' };
+  return { aspect, orient: camera.orient ?? 'auto' };
 }
 
 /** Crops (and optionally mirrors) a source into one exposure canvas. */

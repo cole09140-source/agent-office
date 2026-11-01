@@ -53,7 +53,12 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
         </button>
       )}
       {list.length === 0 ? (
-        <Empty title={t('gal.empty')} hint={t('gal.emptyHint')}>
+        <Empty title={t('gal.empty')} hint={developing > 0 ? t('gal.emptyHintLab', { n: developing }) : t('gal.emptyHint')}>
+          {developing > 0 && (
+            <button class="btn primary" onClick={() => go({ name: 'lab' }, true)} data-testid="btn-open-lab">
+              <Icon name="lab" size={18} /> {t('gal.openLab')}
+            </button>
+          )}
           <button class="btn ghost" onClick={onImport}>
             <Icon name="import" size={18} /> {t('gal.import')}
           </button>

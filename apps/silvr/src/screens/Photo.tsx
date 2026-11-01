@@ -7,7 +7,7 @@ import { fileName, shareImages } from '../platform/share';
 import { confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent } from '../state/router';
-import { getCamera, hasCamera } from '../cameras/models';
+import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
 import { deletePhoto, getPhoto, listPhotos, subscribe, viewable, type Photo } from '../store/rolls';
 
 const INSTANT_DEV_S = 45;
@@ -69,7 +69,7 @@ export function PhotoScreen({ id }: { id: string }) {
   const stock = photo ? getStock(photo.develop.stockId) : undefined;
   const camera = photo && hasCamera(photo.develop.cameraId) ? getCamera(photo.develop.cameraId) : undefined;
   // Instant prints keep developing for a while after they eject.
-  const instantDev = photo && camera?.id === 'instasq' ? Math.min(INSTANT_DEV_S, Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000)) : 0;
+  const instantDev = photo && camera && ejectsPrints(camera) ? Math.min(INSTANT_DEV_S, Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000)) : 0;
 
   // One share/save at a time: a double tap saved the print twice, or the second share
   // was refused and its cleanup deleted the file the first share sheet was still reading.

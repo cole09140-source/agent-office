@@ -8,9 +8,48 @@ export type CaptureMode =
   | 'quad' // four lenses fire in sequence into a 2×2 grid (one press)
   | 'double'; // two exposures stacked on one frame (two presses)
 
-export type BodyStyle = 'slr' | 'range' | 'disposable' | 'compact' | 'half' | 'instant' | 'toy' | 'pano' | 'fish' | 'quad' | 'double' | 'cine' | 'digicam' | 'pixel';
-export type ViewfinderStyle = 'slr' | 'range' | 'tunnel' | 'compact' | 'half' | 'instant' | 'toy' | 'pano' | 'none' | 'quad' | 'double' | 'cine' | 'lcd' | 'pixel';
-export type ShutterSound = 'slr' | 'leaf' | 'disposable' | 'instant' | 'toy' | 'quad' | 'digital' | 'pixel' | 'cine';
+export type BodyStyle =
+  | 'slr'
+  | 'range'
+  | 'disposable'
+  | 'compact'
+  | 'half'
+  | 'instant'
+  | 'toy'
+  | 'pano'
+  | 'fish'
+  | 'quad'
+  | 'double'
+  | 'cine'
+  | 'digicam'
+  | 'pixel'
+  | 'aqua'
+  | 'wide'
+  | 'tlr'
+  | 'super8'
+  | 'trip'
+  | 'flash'
+  | 'kid'
+  | 'sprocket';
+export type ViewfinderStyle =
+  | 'slr'
+  | 'range'
+  | 'tunnel'
+  | 'compact'
+  | 'half'
+  | 'instant'
+  | 'toy'
+  | 'pano'
+  | 'none'
+  | 'quad'
+  | 'double'
+  | 'cine'
+  | 'lcd'
+  | 'pixel'
+  | 'sport' // waterproof sport finder: big wire frame
+  | 'waist' // TLR ground glass seen from above: laterally reversed
+  | 'gate'; // cine gate with rounded corners
+export type ShutterSound = 'slr' | 'leaf' | 'disposable' | 'instant' | 'toy' | 'quad' | 'digital' | 'pixel' | 'cine' | 'motor';
 /** standard: torch / screen flash. charge: must be charged before every flash shot. none: no flash. */
 export type FlashMode = 'standard' | 'charge' | 'none';
 export type StampStyle = 'led' | 'digital' | 'none';
@@ -49,6 +88,10 @@ export interface CameraModel {
   leakChance?: number;
   /** Output size cap for the print (pixel camera stays small). */
   maxLong?: number;
+  /** Strength of the flash look when it fires (1 = a normal small flash). */
+  flashPower?: number;
+  /** Forces the frame orientation regardless of how the sensor is held (wide instant prints). */
+  orient?: 'landscape';
   pro: boolean;
 }
 
@@ -424,6 +467,201 @@ export const CAMERAS: CameraModel[] = [
     ev: true,
     pro: true,
   },
+  {
+    id: 'aqua27',
+    name: 'Aqua 27',
+    era: '1994 · Waterproof',
+    body: 'aqua',
+    colors: ['#1fa3c9', '#ffd400', '#0b3d5c'],
+    films: ['aqua400'],
+    defaultStock: 'aqua400',
+    capacities: [27],
+    formats: ['3:2'],
+    capture: 'single',
+    // Shooting through a plastic housing window: soft, a little barrel, colour fringes.
+    lens: lens({ soft: 0.5, distort: 0.05, vignette: 0.2, chroma: 0.9 }),
+    flash: 'charge',
+    defaultFlash: true,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'disposable',
+    viewfinder: 'sport',
+    instant: false,
+    zoom: [1],
+    ev: false,
+    pro: false,
+  },
+  {
+    id: 'instaw',
+    name: 'Insta W',
+    era: '1999 · Wide',
+    body: 'wide',
+    colors: ['#2e2e30', '#f2b705', '#d6d6d6'],
+    films: ['instawide', 'insta600'],
+    defaultStock: 'instawide',
+    capacities: [10],
+    formats: ['3:2'],
+    orient: 'landscape',
+    capture: 'single',
+    lens: lens({ soft: 0.15, vignette: 0.12 }),
+    flash: 'standard',
+    defaultFlash: true,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'instant',
+    viewfinder: 'instant',
+    instant: true,
+    zoom: [1],
+    ev: true,
+    border: 'instant',
+    pro: false,
+  },
+  {
+    id: 'twin66',
+    name: 'Twin 66',
+    era: '1957 · TLR',
+    body: 'tlr',
+    colors: ['#1b1b1b', '#c9b88f', '#8e8e8e'],
+    films: 'any',
+    defaultStock: 'muse400',
+    capacities: [12],
+    formats: ['1:1'],
+    capture: 'single',
+    // Sharp four-element taking lens, gentle corner fall-off.
+    lens: lens({ soft: -0.2, vignette: 0.18 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'leaf',
+    viewfinder: 'waist',
+    instant: false,
+    zoom: [1],
+    ev: true,
+    pro: true,
+  },
+  {
+    id: 'super8',
+    name: 'Super 8',
+    era: '1972 · Super 8',
+    body: 'super8',
+    colors: ['#2b2b2b', '#e0a526', '#bdbdbd'],
+    films: ['reel40', 'neon800t', 'mono400'],
+    defaultStock: 'reel40',
+    capacities: [50, 24],
+    formats: ['4:3'],
+    capture: 'single',
+    lens: lens({ soft: 0.35, distort: 0.03, vignette: 0.3, chroma: 0.6 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'cine',
+    viewfinder: 'gate',
+    instant: false,
+    zoom: [1],
+    ev: true,
+    border: 'gate',
+    leakChance: 0.12,
+    pro: true,
+  },
+  {
+    id: 'slide35',
+    name: 'Slide 35',
+    era: '1968 · Slide',
+    body: 'trip',
+    colors: ['#d4d4d2', '#1a1a1a', '#6b6b6b'],
+    films: ['chrome100', 'velvet50', 'xpro200'],
+    defaultStock: 'chrome100',
+    capacities: [36, 24],
+    formats: ['3:2'],
+    capture: 'single',
+    lens: lens({ soft: -0.3, vignette: 0.08, chroma: 0.2 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'leaf',
+    viewfinder: 'compact',
+    instant: false,
+    zoom: [1],
+    ev: true,
+    border: 'slide',
+    pro: true,
+  },
+  {
+    id: 'party',
+    name: 'Party Flash',
+    era: '1989 · Big flash',
+    body: 'flash',
+    colors: ['#ece8df', '#e63946', '#2b2b2b'],
+    films: 'any',
+    defaultStock: 'snap800',
+    capacities: [24, 36],
+    formats: ['3:2'],
+    capture: 'single',
+    lens: lens({ soft: 0.1, vignette: 0.1, chroma: 0.3 }),
+    flash: 'standard',
+    defaultFlash: true,
+    flashPower: 1.8,
+    stamp: 'led',
+    defaultDate: true,
+    sound: 'motor',
+    viewfinder: 'compact',
+    instant: false,
+    zoom: [1],
+    ev: false,
+    pro: false,
+  },
+  {
+    id: 'kidcam',
+    name: 'KidCam 0.3',
+    era: '2008 · Kids digicam',
+    body: 'kid',
+    colors: ['#2f80ed', '#ffcc00', '#ff5a5f'],
+    films: ['toycmos'],
+    defaultStock: 'toycmos',
+    capacities: [80],
+    formats: ['4:3'],
+    capture: 'single',
+    lens: lens({ soft: 0.3, distort: 0.04, vignette: 0.15, chroma: 0.8 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'digital',
+    defaultDate: true,
+    sound: 'digital',
+    viewfinder: 'lcd',
+    instant: true,
+    zoom: [1, 2],
+    ev: false,
+    maxLong: 640, // 0.3 MP: 640×480
+    pro: false,
+  },
+  {
+    id: 'sprocket',
+    name: 'Sprocket 35',
+    era: '2010 · Sprocket',
+    body: 'sprocket',
+    colors: ['#1d1d1d', '#e9e4d8', '#c0392b'],
+    films: 'any',
+    defaultStock: 'mint400',
+    capacities: [18, 12],
+    formats: ['65:24'],
+    capture: 'single',
+    lens: lens({ soft: 0.3, distort: 0.03, vignette: 0.35, chroma: 0.6 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'toy',
+    viewfinder: 'pano',
+    instant: false,
+    zoom: [1],
+    ev: false,
+    border: 'sprocket',
+    leakChance: 0.2,
+    pro: true,
+  },
 ];
 
 const BY_ID = new Map(CAMERAS.map((c) => [c.id, c]));
@@ -445,6 +683,11 @@ export function filmsFor(camera: CameraModel): FilmStock[] {
 
 export function canLoad(camera: CameraModel, stockId: string): boolean {
   return filmsFor(camera).some((s) => s.id === stockId);
+}
+
+/** Instant-print bodies: prints eject and develop in front of you (square and wide packs). */
+export function ejectsPrints(camera: CameraModel): boolean {
+  return camera.instant && camera.border === 'instant';
 }
 
 /** Exposure counter unit: half-frame counts halves, others count frames. */

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { loadCamera, rewindAndDevelop, shoot, start } from './helpers';
 
 /** Expected print shape per camera (fake camera is landscape 16:9). */
-const CASES: { id: string; presses: number; ratio: number; tol?: number; check?: 'fisheye' | 'pixel' | 'quad' | 'half' }[] = [
+const CASES: { id: string; presses: number; ratio: number; tol?: number; check?: 'fisheye' | 'pixel' | 'quad' | 'half' | 'slide' | 'gate' | 'sprocket' | 'lowres' }[] = [
   { id: 'pro35', presses: 1, ratio: 1.5 },
   { id: 'snap27', presses: 1, ratio: 1.5 },
   { id: 'instasq', presses: 1, ratio: 0.87, tol: 0.05 }, // square image inside an instant frame
@@ -17,6 +17,14 @@ const CASES: { id: string; presses: number; ratio: number; tol?: number; check?:
   { id: 'ccd03', presses: 1, ratio: 4 / 3 },
   { id: 'pixel', presses: 1, ratio: 8 / 7, tol: 0.03, check: 'pixel' },
   { id: 'range', presses: 1, ratio: 1.2, tol: 0.25 }, // mono film → 35mm strip border
+  { id: 'aqua27', presses: 1, ratio: 1.5 },
+  { id: 'instaw', presses: 1, ratio: 1.23, tol: 0.03 }, // landscape 3:2 inside a wide instant frame
+  { id: 'twin66', presses: 1, ratio: 1 },
+  { id: 'super8', presses: 1, ratio: 1.303, tol: 0.03, check: 'gate' }, // 4:3 in a rounded black gate
+  { id: 'slide35', presses: 1, ratio: 1, check: 'slide' }, // square slide mount
+  { id: 'party', presses: 1, ratio: 1.5 },
+  { id: 'kidcam', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'sprocket', presses: 1, ratio: 2.604, tol: 0.05, check: 'sprocket' }, // 65:24 + thin film edges
 ];
 
 async function pixels(page: Page, w: number, h: number) {
@@ -79,6 +87,29 @@ for (const cse of CASES) {
         expect(near, `pixel ${i / 4}: ${d[i]},${d[i + 1]},${d[i + 2]}`).toBe(true);
       }
     }
+    if (cse.check === 'slide' || cse.check === 'gate') {
+      // Mount corners are light plastic; gate corners are black.
+      const d = await pixels(page, 40, 40);
+      const corner = d[0] + d[1] + d[2];
+      const centre = d[(20 * 40 + 20) * 4] + d[(20 * 40 + 20) * 4 + 1] + d[(20 * 40 + 20) * 4 + 2];
+      if (cse.check === 'slide') expect(corner).toBeGreaterThan(600);
+      else expect(corner).toBeLessThan(40);
+      expect(Math.abs(centre - corner)).toBeGreaterThan(30);
+    }
+    if (cse.check === 'lowres') {
+      // 0.3 MP sensor: the print is never larger than VGA.
+      expect(Math.max(w, h)).toBeLessThanOrEqual(640);
+    }
+    if (cse.check === 'sprocket') {
+      // A row of dark perforations runs through the top of the picture.
+      const W = 260;
+      const H = 100;
+      const d = await pixels(page, W, H);
+      const row = Array.from({ length: W }, (_, x) => d[(11 * W + x) * 4] + d[(11 * W + x) * 4 + 1] + d[(11 * W + x) * 4 + 2]);
+      const dark = row.filter((v) => v < 60).length;
+      expect(dark).toBeGreaterThan(W * 0.2);
+      expect(dark).toBeLessThan(W * 0.7);
+    }
     if (cse.check === 'quad' || cse.check === 'half') {
       // The frame line between sub-frames is dark.
       const d = await pixels(page, 201, 100);
@@ -127,6 +158,24 @@ test('half-frame: a pending half survives a reload and pairs up', async ({ page 
   // A lone first half is kept (with a blank B side) when the roll really goes to the lab.
   await rewindAndDevelop(page);
   await expect(page.getByTestId('thumb')).toHaveCount(2);
+});
+
+test('party compact: the big flash is on and the date imprint too', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'party');
+  await expect(page.getByTestId('btn-flash')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('btn-date')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('wide instant: the print ejects wide and keeps developing in the photo view', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'instaw');
+  await shoot(page, 1);
+  await expect(page.locator('.eject')).toBeVisible();
+  await expect(page.getByTestId('last-shot')).toHaveClass(/instant/);
+  await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('last-shot').getByTestId('thumb').click();
+  await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);
 });
 
 test('instant camera: print ejects, develops, and is viewable in the camera', async ({ page }) => {
