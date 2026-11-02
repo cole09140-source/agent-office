@@ -1,9 +1,11 @@
 import { normalizePins } from '../cameras/pins';
+import { isLocale, type Locale } from '../intl/locales';
 import type { DateFormat } from '../film/overlays';
 import { atomic, get, put, rq } from './db';
 import type { DevelopSpeed } from './rolls';
 
-export type Lang = 'auto' | 'ko' | 'en';
+/** 'auto' follows the device language (detectLocale); otherwise one of the 10 UI languages. */
+export type Lang = 'auto' | Locale;
 
 export interface Settings {
   lang: Lang;
@@ -40,6 +42,7 @@ const KEY = 'settings';
 function withDefaults(saved: Partial<Settings> | undefined): Settings {
   const s = { ...DEFAULT_SETTINGS, ...(saved ?? {}) };
   s.pinnedCameras = normalizePins(s.pinnedCameras);
+  if (s.lang !== 'auto' && !isLocale(s.lang)) s.lang = 'auto'; // a language a newer build added, then downgraded
   return s;
 }
 

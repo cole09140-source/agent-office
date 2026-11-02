@@ -336,7 +336,7 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 45_000 });
   await page.getByTestId('tab-analog').click();
-  await expect(page.getByText('Nikon FM2')).toBeVisible();
+  await expect(page.getByText('Nikon FM2').first()).toBeVisible();
   // Restoring the same file again adds nothing.
   await page.getByTestId('tab-settings').click();
   await page.getByTestId('restore-input').setInputFiles({ name: 'backup.zip', mimeType: 'application/zip', buffer: bytes });

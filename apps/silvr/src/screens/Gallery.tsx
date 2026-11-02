@@ -2,14 +2,14 @@ import { useEffect, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Thumb } from '../components/ui';
 import { getStock } from '../film/stocks';
-import { t } from '../i18n';
+import { t, legalLang } from '../i18n';
 import { activeRoll, developedRolls, developingRolls } from '../state/app';
 import { signalLang } from '../state/lang';
 import { go, goTab } from '../state/router';
 import { getCamera, hasCamera } from '../cameras/models';
 import { isNative } from '../platform/share';
 import { getPhoto, inCamera, type Photo, type Roll } from '../store/rolls';
-import { hasShots, rollSheetRequest, shotsText } from './Camera';
+import { hasShots, rollSheetRequest, shotCount, shotsText } from './Camera';
 import { restoreRequest } from './Settings';
 
 /** A film roll in the camera with shots on it (instant/digital rolls already show in the album). */
@@ -37,7 +37,7 @@ export function framesText(r: Roll, count?: number): string {
 /** The help page (FAQ, contact) in the current language. */
 export function HelpLink({ class: cls = '' }: { class?: string }) {
   return (
-    <a class={`link-btn help-link ${cls}`} href={`./support.html?lang=${signalLang.value}`} {...(isNative() ? {} : { target: '_blank', rel: 'noopener' })} data-testid="help-link">
+    <a class={`link-btn help-link ${cls}`} href={`./support.html?lang=${legalLang()}`} {...(isNative() ? {} : { target: '_blank', rel: 'noopener' })} data-testid="help-link">
       {t('gal.help')}
     </a>
   );
@@ -61,12 +61,17 @@ function RollCard({ roll }: { roll: Roll }) {
       {cover ? <Thumb photo={cover} onClick={open} label={stock.name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={stock.name} tabIndex={-1} />}
       <button class="roll-meta" onClick={open}>
         <strong>
-          {roll.kind === 'import' ? t('gal.imported') : `${getCamera(roll.cameraId).name} · ${stock.name}`}
+          {roll.kind === 'import' ? t('gal.imported') : <bdi>{`${getCamera(roll.cameraId).name} · ${stock.name}`}</bdi>}
           {inCamera(roll) ? <span class="badge">{t('cam.inCamera')}</span> : !roll.seenAt && <span class="badge new">{t('gal.new')}</span>}
         </strong>
         <span class="muted small">
           {formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · {framesText(roll)}
-          {roll.kind === 'import' && ` · ${stock.name}`}
+          {roll.kind === 'import' && (
+            <>
+              {' · '}
+              <bdi>{stock.name}</bdi>
+            </>
+          )}
         </span>
       </button>
     </li>
@@ -96,14 +101,14 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
       )}
       {camRoll && list.length > 0 && (
         <button class="banner" onClick={developFromCamera} data-testid="banner-in-camera">
-          <Icon name="camera" size={18} /> {t('gal.inCameraBanner', { shots: shotsText(camRoll) })}
+          <Icon name="camera" size={18} /> {t('gal.inCameraBanner', { shots: shotsText(camRoll), n: shotCount(camRoll) })}
           <Icon name="chevron" size={16} />
         </button>
       )}
       {list.length === 0 ? (
         <Empty
           title={t('gal.empty')}
-          hint={camRoll ? t('gal.emptyHintCamera', { shots: shotsText(camRoll) }) : developing > 0 ? t('gal.emptyHintLab', { n: developing }) : t('gal.emptyHint')}
+          hint={camRoll ? t('gal.emptyHintCamera', { shots: shotsText(camRoll), n: shotCount(camRoll) }) : developing > 0 ? t('gal.emptyHintLab', { n: developing }) : t('gal.emptyHint')}
         >
           {camRoll && developing > 0 && <p class="empty-hint">{t('gal.emptyHintLab', { n: developing })}</p>}
           {camRoll && (

@@ -1,13 +1,14 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { canUseStock, PAYMENTS_ENABLED } from '../entitlements';
-import { t } from '../i18n';
+import { isRtl, t } from '../i18n';
 import { announcement, confirmReq, dismissToast, pauseToast, resumeToast, settings, toasts } from '../state/app';
 import { ensurePrint, type Photo } from '../store/rolls';
 import type { FilmStock } from '../film/types';
 import { pushBackHandler } from '../platform/back';
 import { isNative } from '../platform/share';
 import { Icon } from './Icon';
+import { arrowStep, centerInStrip } from '../platform/dir';
 
 export function useObjectUrl(blob: Blob | null | undefined): string | undefined {
   const [url, setUrl] = useState<string>();
@@ -325,7 +326,9 @@ export function Slider(props: {
     ? undefined
     : (e: KeyboardEvent) => {
         const page = Math.max(step, snap(min + (max - min) / 10) - min);
-        const delta: Record<string, number> = { ArrowRight: step, ArrowUp: step, ArrowLeft: -step, ArrowDown: -step, PageUp: page, PageDown: -page };
+        // Like the native range: in a right-to-left UI the minimum is at the right, so Right lowers the value.
+        const h = isRtl() ? -step : step;
+        const delta: Record<string, number> = { ArrowRight: h, ArrowUp: step, ArrowLeft: -h, ArrowDown: -step, PageUp: page, PageDown: -page };
         let next: number | undefined;
         if (e.key in delta) next = snap(value + delta[e.key]);
         else if (e.key === 'Home') next = min;
@@ -371,7 +374,25 @@ export function Slider(props: {
 }
 
 /** Radio group: one Tab stop; arrow keys / Home / End move and select (WAI-ARIA radio pattern). */
-export function Segmented<T extends string | number>({ options, value, onChange, label, grid }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string; grid?: boolean }) {
+export function Segmented<T extends string | number>({
+  options,
+  value,
+  onChange,
+  label,
+  grid,
+  list,
+  testId,
+}: {
+  /** `lang`/`dir` mark an option written in another language (e.g. language names in the picker). */
+  options: { value: T; label: string; lang?: string; dir?: 'ltr' | 'rtl' }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+  grid?: boolean;
+  /** Stacked rows with a check mark (long option lists such as languages). */
+  list?: boolean;
+  testId?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const current = options.findIndex((o) => o.value === value);
   const onKeyDown = (e: KeyboardEvent) => {
@@ -379,8 +400,8 @@ export function Segmented<T extends string | number>({ options, value, onChange,
     if (!n) return;
     const at = Math.max(0, current);
     let next = -1;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (at + 1) % n;
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (at - 1 + n) % n;
+    const step = arrowStep(e.key);
+    if (step) next = (at + step + n) % n;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = n - 1;
     if (next < 0) return;
@@ -390,7 +411,7 @@ export function Segmented<T extends string | number>({ options, value, onChange,
     ref.current?.querySelectorAll<HTMLElement>('[role=radio]')[next]?.focus();
   };
   return (
-    <div class={`seg ${grid ? 'grid' : ''}`} role="radiogroup" aria-label={label} ref={ref} onKeyDown={onKeyDown}>
+    <div class={`seg ${grid ? 'grid' : ''} ${list ? 'list' : ''}`} role="radiogroup" aria-label={label} ref={ref} onKeyDown={onKeyDown} data-testid={testId}>
       {options.map((o, i) => (
         <button
           key={String(o.value)}
@@ -400,8 +421,18 @@ export function Segmented<T extends string | number>({ options, value, onChange,
           tabIndex={i === current || (current < 0 && i === 0) ? 0 : -1}
           class={o.value === value ? 'on' : ''}
           onClick={() => onChange(o.value)}
+          lang={list ? undefined : o.lang}
+          dir={list ? undefined : o.dir}
+          data-value={String(o.value)}
         >
-          {o.label}
+          {list ? (
+            <span class="seg-label" lang={o.lang} dir={o.dir}>
+              {o.label}
+            </span>
+          ) : (
+            o.label
+          )}
+          {list && o.value === value && <Icon name="check" size={18} />}
         </button>
       ))}
     </div>
@@ -449,7 +480,7 @@ export function StockCard({ stock, selected, onClick }: { stock: FilmStock; sele
     if (!strip.getAttribute('role') || strip.getAttribute('role') === 'group') strip.setAttribute('role', 'radiogroup');
     if (!strip.hasAttribute('aria-label') && !strip.hasAttribute('aria-labelledby')) strip.setAttribute('aria-label', t('cam.chooseFilm'));
     if (!selected) return;
-    strip.scrollLeft = el.offsetLeft - strip.offsetLeft - (strip.clientWidth - el.clientWidth) / 2;
+    centerInStrip(strip, el);
   }, []);
   // No film chosen in this strip (e.g. a stock this body can't take): the first card holds the Tab stop.
   useLayoutEffect(() => {
@@ -463,16 +494,8 @@ export function StockCard({ stock, selected, onClick }: { stock: FilmStock; sele
     const cards = stockCards(strip);
     const at = cards.indexOf(el);
     const last = cards.length - 1;
-    const next =
-      e.key === 'ArrowRight' || e.key === 'ArrowDown'
-        ? Math.min(last, at + 1)
-        : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-          ? Math.max(0, at - 1)
-          : e.key === 'Home'
-            ? 0
-            : e.key === 'End'
-              ? last
-              : -1;
+    const step = arrowStep(e.key);
+    const next = step ? Math.min(last, Math.max(0, at + step)) : e.key === 'Home' ? 0 : e.key === 'End' ? last : -1;
     if (next < 0 || at < 0) return;
     e.preventDefault();
     e.stopPropagation();
@@ -617,32 +640,5 @@ export function savedToastText(): string {
   return t('view.savedWeb');
 }
 
-export function formatDuration(ms: number, lang: 'ko' | 'en'): string {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  const d = Math.floor(s / 86400);
-  const h = Math.floor((s % 86400) / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const u = lang === 'ko' ? { d: '일', h: '시간', m: '분', s: '초' } : { d: 'd', h: 'h', m: 'm', s: 's' };
-  const sep = lang === 'ko' ? ' ' : ' ';
-  if (d > 0) return `${d}${u.d}${sep}${h}${u.h}`;
-  if (h > 0) return `${h}${u.h}${sep}${m}${u.m}`;
-  if (m > 0) return `${m}${u.m}${sep}${sec}${u.s}`;
-  return `${sec}${u.s}`;
-}
-
-export function formatDate(ts: number, lang: 'ko' | 'en', withTime = false): string {
-  return new Intl.DateTimeFormat(lang === 'ko' ? 'ko-KR' : 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
-  }).format(ts);
-}
-
-export function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 ** 2) return `${(n / 1024).toFixed(0)} KB`;
-  if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)} MB`;
-  return `${(n / 1024 ** 3).toFixed(2)} GB`;
-}
+// Locale-aware formatting lives in intl/format; re-exported here for existing imports.
+export { formatBytes, formatDate, formatDuration } from '../intl/format';

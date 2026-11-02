@@ -5,7 +5,7 @@ import { Empty, formatDate, formatDuration, Header, savedToastText, Sheet, Thumb
 import { contactSheet } from '../film/contactSheet';
 import { borderImageRect } from '../film/overlays';
 import { getStock } from '../film/stocks';
-import { t } from '../i18n';
+import { isolate, t } from '../i18n';
 import { pushBackHandler } from '../platform/back';
 import { fileName, isNative, shareImages } from '../platform/share';
 import { announce, confirm, now, rolls, settings, toast } from '../state/app';
@@ -141,7 +141,7 @@ export function RollScreen({ id }: { id: string }) {
         frames.push({ image: bmp, width: bmp.width, height: bmp.height, frame: p.frame, crop: pictureRect(p) });
       }
       const blob = await contactSheet(frames, {
-        title: `${stock.name} · ${formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)}`,
+        title: `${isolate(stock.name)} · ${formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)}`,
         subtitle: `FILM CAMELA  ·  ISO ${stock.iso}  ·  ${photos.length} EXP`,
         camera: hasCamera(roll.cameraId) ? getCamera(roll.cameraId).name : undefined,
         instant: hasCamera(roll.cameraId) && ejectsPrints(getCamera(roll.cameraId)),

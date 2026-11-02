@@ -44,6 +44,7 @@ export function Icon({ name, size = 24, label }: { name: IconName; size?: number
       aria-hidden={label ? undefined : 'true'}
       role={label ? 'img' : undefined}
       aria-label={label}
+      class={`icon icon-${name}`}
     >
       <path d={PATHS[name]} />
     </svg>

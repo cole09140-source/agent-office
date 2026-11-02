@@ -27,6 +27,8 @@ import {
 import { DEFAULT_SETTINGS, loadSettings, patchSettings, saveSettings } from '../src/store/settings';
 import { parseHash, routeToHash } from '../src/state/router';
 import { MESSAGES, translate } from '../src/i18n';
+import { messageInfo } from '../src/intl/message';
+import { pluralCounts } from '../src/locales/ko';
 
 const neg = () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/jpeg' });
 const dev = () => defaultDevelop(getStock('sunny200'), 1);
@@ -213,9 +215,11 @@ describe('i18n', () => {
     const ko = MESSAGES.ko as Record<string, string>;
     const en = MESSAGES.en as Record<string, string>;
     expect(Object.keys(en).sort()).toEqual(Object.keys(ko).sort());
+    // Variables (plain placeholders and plural selectors) match; en may add the agreement counts.
     for (const k of Object.keys(ko)) {
-      const ph = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
-      expect(ph(en[k]), k).toEqual(ph(ko[k]));
+      const vars = (s: string) => [...messageInfo(s).vars].sort();
+      const extra = (pluralCounts as Record<string, readonly string[] | undefined>)[k] ?? [];
+      expect(vars(en[k]).filter((v) => !extra.includes(v)), k).toEqual(vars(ko[k]));
     }
   });
   it('interpolates', () => {

@@ -10,6 +10,12 @@ function serviceWorker(): Plugin {
     name: 'silvr-sw',
     apply: 'build',
     generateBundle(_opts, bundle) {
+      // Every emitted file is precached, including the lazy locale chunks (src/locales/ja.ts …),
+      // so a language chosen offline still loads. Guard: each lazy locale must be its own chunk.
+      for (const l of ['ja', 'zh', 'es', 'fr', 'pt', 'ru', 'hi', 'ar']) {
+        const found = Object.values(bundle).some((c) => c.type === 'chunk' && c.facadeModuleId?.replace(/\\/g, '/').endsWith(`/src/locales/${l}.ts`));
+        if (!found) this.error(`locale chunk for "${l}" is missing: it would not be precached for offline use`);
+      }
       const assets = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
       const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css'];
       const urls = ['./', ...new Set([...assets, ...publicFiles])].map((f) => (f === './' ? f : `./${f}`));

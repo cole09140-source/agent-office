@@ -3,7 +3,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { advise, APERTURES, ISOS, LIGHTS, LOG_APERTURES, LOG_SHUTTERS, type Light } from '../companion/exposure';
 import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Sheet, Slider } from '../components/ui';
-import { t } from '../i18n';
+import { formatTime } from '../intl/format';
+import { ltr, t } from '../i18n';
+import { arrowStep, centerInStrip, revealInStrip } from '../platform/dir';
 import { saveFile } from '../platform/share';
 import { confirm, toast } from '../state/app';
 import { signalLang } from '../state/lang';
@@ -48,7 +50,7 @@ function Meter() {
         </div>
         <div>
           <small class="muted">EV (ISO {m.iso})</small>
-          <strong class="mono" data-testid="meter-ev">
+          <strong class="mono" data-testid="meter-ev" dir="ltr">
             {a.ev.toFixed(1)}
           </strong>
         </div>
@@ -84,7 +86,7 @@ function Meter() {
           ))}
         </div>
       </div>
-      <Slider label={t('an.comp')} value={m.comp} min={-3} max={3} step={1 / 3} onInput={(v) => set({ comp: Math.round(v * 3) / 3 })} format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}`} />
+      <Slider label={t('an.comp')} value={m.comp} min={-3} max={3} step={1 / 3} onInput={(v) => set({ comp: Math.round(v * 3) / 3 })} format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)}`)} />
     </section>
   );
 }
@@ -221,9 +223,9 @@ export function AnalogScreen() {
               <li key={r.id}>
                 <button class="list-row" onClick={() => go({ name: 'log', id: r.id })}>
                   <span>
-                    <strong>{r.film}</strong>
+                    <strong><bdi>{r.film}</bdi></strong>
                     <small class="muted">
-                      {r.camera} · ISO {r.iso} · {formatDate(r.startedAt, signalLang.value)}
+                      <bdi>{r.camera}</bdi> · <bdi>ISO {r.iso}</bdi> · {formatDate(r.startedAt, signalLang.value)}
                     </small>
                   </span>
                   <span class="list-row-end">
@@ -257,7 +259,7 @@ function StopPicker({ label, options, value, onChange, testId, autofocus }: { la
   useLayoutEffect(() => {
     const el = row.current;
     const on = el?.querySelector<HTMLElement>('[aria-checked="true"]');
-    if (el && on) el.scrollLeft = on.offsetLeft - el.clientWidth / 2 + on.offsetWidth / 2;
+    if (el && on) centerInStrip(el, on);
   }, []);
   // After a keyboard pick, focus follows the new stop (the list can shift when an off-list value drops out).
   useLayoutEffect(() => {
@@ -267,17 +269,16 @@ function StopPicker({ label, options, value, onChange, testId, autofocus }: { la
     const on = el.querySelector<HTMLElement>('[aria-checked="true"]');
     if (!on) return;
     on.focus({ preventScroll: true });
-    if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) {
-      el.scrollLeft = on.offsetLeft - el.clientWidth / 2 + on.offsetWidth / 2;
-    }
+    revealInStrip(el, on);
   }, [value]);
   const onKeyDown = (e: KeyboardEvent) => {
     const n = opts.length;
     if (!n) return;
     const at = Math.max(0, current);
     let next = -1;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = current < 0 ? 0 : (at + 1) % n;
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = current < 0 ? n - 1 : (at - 1 + n) % n;
+    const step = arrowStep(e.key);
+    if (step > 0) next = current < 0 ? 0 : (at + 1) % n;
+    else if (step < 0) next = current < 0 ? n - 1 : (at - 1 + n) % n;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = n - 1;
     if (next < 0) return;
@@ -488,7 +489,7 @@ export function LogScreen({ id }: { id: string }) {
     if (isCurrent({ name: 'log', id })) goTab({ name: 'analog' }); // unwind, so back never lands on the deleted log
   };
 
-  const timeOf = (ts: number) => new Date(ts).toLocaleTimeString(signalLang.value === 'ko' ? 'ko-KR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  const timeOf = (ts: number) => formatTime(ts);
   const isEdit = editing?.mode === 'edit';
   // Where focus lands when the frame sheet opens (manual entry: its first field, the sheet's default).
   const sheetFocus = manual ? null : aperture ? 'aperture' : shutter ? 'shutter' : 'save';

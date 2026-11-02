@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { importFile } from './camera/capture';
 import { Icon, type IconName } from './components/Icon';
+import { formatWait } from './intl/format';
 import { Announcer, Canister, ConfirmDialog, Sheet, StockStrip, Toasts } from './components/ui';
 import { DEFAULT_CAMERA_ID, getCamera, hasCamera, stockFits } from './cameras/models';
 import { randomSeed } from './film/random';
@@ -20,7 +21,6 @@ import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
 import { restoreRequest, SettingsScreen } from './screens/Settings';
 import { activeRoll, announce, confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
-import { signalLang } from './state/lang';
 import { go, goTab, route, routeToHash, type Route } from './state/router';
 import { addImportBatch, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem, type RollStatus } from './store/rolls';
 
@@ -231,16 +231,7 @@ function useLabClock() {
   }, [rolls.value, ready.value]);
 }
 
-/** "1시간", "2일 3시간", "45분" / "1 h", "2 d 3 h", "45 min": how long until a roll is back. */
-export function formatWait(ms: number, lang: 'ko' | 'en'): string {
-  const min = Math.max(1, Math.round(ms / 60_000));
-  const d = Math.floor(min / 1440);
-  const h = Math.floor((min % 1440) / 60);
-  const m = min % 60;
-  const u = lang === 'ko' ? { d: '일', h: '시간', m: '분' } : { d: ' d', h: ' h', m: ' min' };
-  const parts = d > 0 ? [d && `${d}${u.d}`, h && `${h}${u.h}`] : [h && `${h}${u.h}`, m && `${m}${u.m}`];
-  return parts.filter(Boolean).join(' ');
-}
+export { formatWait } from './intl/format';
 
 /**
  * Tells screen readers about roll changes that happen without a screen change:
@@ -263,7 +254,7 @@ function useRollAnnouncements() {
     for (const x of rolls.value) {
       // Sent to the lab with a wait (instant development opens the roll, which speaks for itself).
       if (before.status.get(x.id) === 'loaded' && x.status === 'developing' && x.readyAt && x.readyAt - Date.now() > 30_000) {
-        announce(t('a11y.sentToLab', { wait: formatWait(x.readyAt - Date.now(), signalLang.value) }));
+        announce(t('a11y.sentToLab', { wait: formatWait(x.readyAt - Date.now()) }));
         return;
       }
     }

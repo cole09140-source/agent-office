@@ -4,8 +4,8 @@ import { Icon } from '../components/Icon';
 import { HelpLink } from './Gallery';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
-import { t } from '../i18n';
-import { signalLang } from '../state/lang';
+import { isRtl, legalLang, t } from '../i18n';
+import { ENDONYMS, HTML_LANG, LOCALES } from '../intl/locales';
 import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
 import { BackupError, createBackup, restoreBackup } from '../store/backup';
 import { clearAll } from '../store/db';
@@ -195,15 +195,17 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <Header title={t('set.title')} />
       <section class="card">
         <div class="field">
-          <span>{t('set.lang')}</span>
+          <span id="lang-h">{t('set.lang')}</span>
+          {/* Language names are endonyms (never translated), each marked with its own lang/dir. */}
           <Segmented<Lang>
+            list
             label={t('set.lang')}
             value={s.lang}
             onChange={(lang) => updateSettings({ lang })}
+            testId="lang-picker"
             options={[
               { value: 'auto', label: t('set.lang.auto') },
-              { value: 'ko', label: '한국어' },
-              { value: 'en', label: 'English' },
+              ...LOCALES.map((l) => ({ value: l, label: ENDONYMS[l], lang: HTML_LANG[l], dir: isRtl(l) ? ('rtl' as const) : ('ltr' as const) })),
             ]}
           />
         </div>
@@ -347,23 +349,23 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         )}
       </section>
       <section class="card">
-        <a class="row link" href={`./privacy.html?lang=${signalLang.value}`} {...legalLink}>
+        <a class="row link" href={`./privacy.html?lang=${legalLang()}`} {...legalLink}>
           <span>{t('set.privacy')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href={`./terms.html?lang=${signalLang.value}`} {...legalLink}>
+        <a class="row link" href={`./terms.html?lang=${legalLang()}`} {...legalLink}>
           <span>{t('set.terms')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href={`./support.html?lang=${signalLang.value}`} {...legalLink}>
+        <a class="row link" href={`./support.html?lang=${legalLang()}`} {...legalLink}>
           <span>{t('set.support')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href={`./licenses.html?lang=${signalLang.value}`} {...legalLink}>
+        <a class="row link" href={`./licenses.html?lang=${legalLang()}`} {...legalLink}>
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <button class="row link" onClick={onReplayOnboarding}>
+        <button class="row link" onClick={onReplayOnboarding} data-testid="btn-replay-intro">
           <span>{t('set.replayOnb')}</span>
           <Icon name="chevron" size={18} />
         </button>

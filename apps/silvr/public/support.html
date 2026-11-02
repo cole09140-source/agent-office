@@ -38,6 +38,7 @@
   var q = new URLSearchParams(location.search).get('lang');
   var langs = navigator.languages || [navigator.language];
   var lang = q || (location.hash === '#en' ? 'en' : langs.some(function (l) { return /^ko/i.test(l || ''); }) ? 'ko' : 'en');
+  if (lang !== 'ko') lang = 'en'; /* ko + en only for now; the app's other 8 languages read the English part */
   /* Page language and title follow the reader (screen readers, tab title); the Korean part keeps lang="ko". */
   var ko = document.getElementById('ko');
   if (ko) ko.lang = 'ko';

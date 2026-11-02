@@ -12,7 +12,8 @@ async function boot() {
   void initNativeBack({ depth, atRoot: () => route.value.name === 'camera', toRoot: () => go({ name: 'camera' }, true) });
   const s = await loadSettings();
   settings.value = s;
-  applyLang(s);
+  // A lazy locale is a local chunk (precached offline); never let it hold the app back for long.
+  await Promise.race([applyLang(s), new Promise((r) => setTimeout(r, 2500))]);
   try {
     await refreshRolls();
   } catch (err) {

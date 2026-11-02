@@ -8,7 +8,7 @@ import { t } from '../i18n';
 import { confirm, developingRolls, now } from '../state/app';
 import { signalLang } from '../state/lang';
 import { rushRoll } from '../store/rolls';
-import { shotsText } from './Camera';
+import { shotCount, shotsText } from './Camera';
 import { developFromCamera, filmInCamera, framesText } from './Gallery';
 
 export function LabScreen() {
@@ -20,7 +20,7 @@ export function LabScreen() {
     <div class="page" data-testid="lab-screen">
       <Header title={t('lab.title')} />
       {list.length === 0 ? (
-        <Empty title={t('lab.empty')} hint={camRoll ? t('lab.emptyCamera', { shots: shotsText(camRoll) }) : t('lab.emptyWhat')}>
+        <Empty title={t('lab.empty')} hint={camRoll ? t('lab.emptyCamera', { shots: shotsText(camRoll), n: shotCount(camRoll) }) : t('lab.emptyWhat')}>
           {camRoll ? (
             <button class="btn primary" onClick={developFromCamera} data-testid="btn-develop-now">
               <Icon name="lab" size={18} /> {t('gal.developNow')}
@@ -57,7 +57,7 @@ export function LabScreen() {
                   </div>
                   <div class="lab-body">
                     <strong class="lab-name">
-                      <span>{getCamera(r.cameraId).name}</span> · <span>{stock.name}</span>
+                      <bdi>{getCamera(r.cameraId).name}</bdi> · <bdi>{stock.name}</bdi>
                     </strong>
                     <span class="muted">{framesText(r)}</span>
                     <div class="progress" role="progressbar" aria-label={name} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-valuetext={eta}>

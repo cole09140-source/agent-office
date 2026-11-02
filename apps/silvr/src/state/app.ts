@@ -1,5 +1,5 @@
 import { computed, signal } from '@preact/signals';
-import { detectLang } from '../i18n';
+import { detectLang, isLocaleLoaded, loadLocale, setDocumentLang } from '../i18n';
 import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
 import { setPinned } from '../cameras/pins';
 import { DEFAULT_SETTINGS, loadSettings, patchSettingsWith, type Settings } from '../store/settings';
@@ -18,9 +18,29 @@ export const developingRolls = computed(() => rolls.value.filter((r) => r.status
 export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && (r.negatives ?? r.shots) > 0)));
 export const newRollCount = computed(() => developedRolls.value.filter((r) => r.status === 'developed' && !r.seenAt).length);
 
-export function applyLang(s: Settings): void {
-  signalLang.value = s.lang === 'auto' ? detectLang() : s.lang;
-  if (typeof document !== 'undefined') document.documentElement.lang = signalLang.value;
+let langSeq = 0;
+
+/**
+ * Switches the UI language. A lazy locale loads first; until then the UI stays in its current
+ * language (never half-translated). If the chunk cannot load, the language still switches and
+ * every string falls back to English. <html lang> and dir follow.
+ */
+export function applyLang(s: Settings): Promise<void> {
+  const lang = s.lang === 'auto' ? detectLang() : s.lang;
+  const seq = ++langSeq;
+  const commit = () => {
+    if (seq !== langSeq) return; // a newer choice won
+    signalLang.value = lang;
+    setDocumentLang(lang);
+  };
+  if (isLocaleLoaded(lang)) {
+    commit();
+    return Promise.resolve();
+  }
+  return loadLocale(lang).then(commit, (err) => {
+    console.warn(`[silvr] could not load the ${lang} messages; showing English`, err);
+    commit();
+  });
 }
 
 const settingsChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('silvr-settings') : null;
@@ -32,7 +52,7 @@ if (settingsChannel) {
     }
     const s = await loadSettings();
     settings.value = s;
-    applyLang(s);
+    void applyLang(s);
   };
 }
 
@@ -53,12 +73,12 @@ export async function updateSettings(patch: Partial<Settings>): Promise<void> {
 export async function updateSettingsWith(change: (s: Settings) => Partial<Settings>): Promise<void> {
   const next = { ...settings.value, ...change(settings.value) };
   settings.value = next;
-  applyLang(next);
+  void applyLang(next);
   try {
     // Merge into what is stored (another tab may have changed other settings), then adopt it.
     const saved = await patchSettingsWith(change);
     settings.value = saved;
-    applyLang(saved);
+    void applyLang(saved);
   } catch (err) {
     // Keep the change for this session; the banner already explains storage is unavailable.
     console.warn('[silvr] settings not saved', err);

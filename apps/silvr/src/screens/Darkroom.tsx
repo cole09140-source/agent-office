@@ -6,7 +6,7 @@ import { defaultBorderFor, defaultDevelop, developKey } from '../film/resolve';
 import { filmsFor, getCamera, hasCamera, PALETTE_IDS } from '../cameras/models';
 import { getStock, STOCKS } from '../film/stocks';
 import { DIGITAL_TONES, type BorderStyle, type DevelopSettings, type DigitalTone } from '../film/types';
-import { stockDescription, t, type MsgKey } from '../i18n';
+import { ltr, stockDescription, t, type MsgKey } from '../i18n';
 import { confirm, confirmReq, settings, toast } from '../state/app';
 import { pushBackHandler } from '../platform/back';
 import { back, depth, go, goTab, isCurrent, route, routeToHash, type Route } from '../state/router';
@@ -309,7 +309,7 @@ export function DarkroomScreen({ id }: { id: string }) {
       <div class="dr-controls">
         {camera && (
           <p class="dr-camera muted small">
-            {t('dr.camera')} · <strong>{camera.name}</strong>
+            {t('dr.camera')} · <strong><bdi>{camera.name}</bdi></strong>
           </p>
         )}
         {films.length > 1 && (
@@ -337,7 +337,7 @@ export function DarkroomScreen({ id }: { id: string }) {
               {fixedFilm && (
                 <>
                   {' '}
-                  · <span class="muted">{stock.name}</span>
+                  · <bdi class="muted">{stock.name}</bdi>
                 </>
               )}
             </h2>
@@ -359,7 +359,7 @@ export function DarkroomScreen({ id }: { id: string }) {
           max={2}
           step={1 / 3}
           onInput={(v) => set({ ev: Math.round(v * 3) / 3 })}
-          format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} EV`}
+          format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)} EV`)}
           testId="sl-dr-ev"
         />
         {!isDigital && (

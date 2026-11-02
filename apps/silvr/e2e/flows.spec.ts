@@ -107,7 +107,7 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
   await page.getByTestId('btn-rush').click();
   await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('lab-item')).toHaveCount(0);
-  await expect(page.getByText('Your Mono 400 roll is developed')).toBeVisible();
+  await expect(page.getByText(/Mono 400 roll is developed/)).toBeVisible();
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await expect(page.getByTestId('roll-card')).toContainText('NEW');

@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { cleanNumber, Empty, formatDate, Header, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
 import { getStock } from '../film/stocks';
-import { t } from '../i18n';
+import { isolate, isRtl, ltr, t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { announce, confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent, route } from '../state/router';
 import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
 import { deletePhoto, getPhoto, listPhotos, restorePhoto, subscribe, viewable, type Photo } from '../store/rolls';
+import { arrowStep } from '../platform/dir';
 
 const INSTANT_DEV_S = 45;
 
@@ -16,7 +17,7 @@ const INSTANT_DEV_S = 45;
 function pushLabel(push: number): string {
   const v = cleanNumber(push);
   if (v === 0) return t('view.pushNormal');
-  return `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} EV`;
+  return ltr(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} EV`);
 }
 
 /** Same scale as the darkroom's expiry slider (0–1 → 0–30 years). */
@@ -62,8 +63,8 @@ export function PhotoScreen({ id }: { id: string }) {
     const onKey = (e: KeyboardEvent) => {
       // A sheet (Info, a confirm) has the keys: arrows must not move the photo behind it, and its Escape closes it.
       if (e.defaultPrevented || sheetOpen() || e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === 'ArrowRight') goSibling(1);
-      else if (e.key === 'ArrowLeft') goSibling(-1);
+      // Reading order: in a right-to-left UI the next photo is to the left.
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') goSibling(arrowStep(e.key));
       else if (e.key === 'Escape') {
         e.preventDefault();
         back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' });
@@ -145,7 +146,7 @@ export function PhotoScreen({ id }: { id: string }) {
       <Header
         // Same "camera · film" naming as the roll and the album.
         title={camera && stock ? `${camera.name} · ${stock.name}` : (stock?.name ?? '')}
-        sub={photo && idx >= 0 ? `${idx + 1} / ${siblings.length}` : undefined}
+        sub={photo && idx >= 0 ? ltr(`${idx + 1} / ${siblings.length}`) : undefined}
         onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
         right={
           <button class="icon-btn" onClick={() => setInfo(true)} aria-label={t('view.info')}>
@@ -162,13 +163,13 @@ export function PhotoScreen({ id }: { id: string }) {
           if (!s) return;
           const dx = e.changedTouches[0].clientX - s.x;
           const dy = e.changedTouches[0].clientY - s.y;
-          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goSibling(dx < 0 ? 1 : -1);
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goSibling(dx < 0 !== isRtl() ? 1 : -1); // RTL: next comes from the left
         }}
       >
         {url ? (
           <img
             src={url}
-            alt={photo && stock ? `${stock.name} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
+            alt={photo && stock ? `${isolate(stock.name)} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
             class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
             style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
             data-testid="print"
@@ -212,7 +213,7 @@ export function PhotoScreen({ id }: { id: string }) {
           <dl class="info">
             <dt>{t('view.film')}</dt>
             <dd>
-              {stock.name} · ISO {stock.iso}
+              <bdi>{stock.name}</bdi> · <bdi>ISO {stock.iso}</bdi>
             </dd>
             {camera && (
               <>

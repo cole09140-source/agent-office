@@ -43,13 +43,15 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(async () => (await caches.match(req, { ignoreSearch: true })) || (await caches.match('./'))),
+        .catch(async () => (await caches.match(req, { ignoreSearch: true, ignoreVary: true })) || (await caches.match('./'))),
     );
     return;
   }
 
+  // ignoreVary: a server's "Vary: Origin" must not hide precached files from module requests
+  // (dynamic import() of a locale chunk sends Origin; the precache request did not).
   event.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(
+    caches.match(req, { ignoreSearch: true, ignoreVary: true }).then(
       (hit) =>
         hit ||
         fetch(req).then((res) => {

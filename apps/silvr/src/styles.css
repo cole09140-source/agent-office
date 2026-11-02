@@ -177,7 +177,7 @@ a {
   display: none;
 }
 .hdr-spacer + .hdr-title {
-  padding-left: 4px;
+  padding-inline-start: 4px;
 }
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -251,7 +251,7 @@ a {
 
 .badge {
   display: inline-block;
-  margin-left: 6px;
+  margin-inline-start: 6px;
   padding: 1px 6px;
   border-radius: 6px;
   font-size: 0.6875rem;
@@ -309,7 +309,7 @@ a {
 .tabbar .dot {
   position: absolute;
   top: 10px;
-  left: calc(50% + 8px);
+  inset-inline-start: calc(50% + 8px);
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -524,7 +524,7 @@ a {
   background: rgba(255, 255, 255, 0.06);
   font-size: 0.75rem;
   color: var(--fg-2);
-  text-align: left;
+  text-align: start;
   word-break: keep-all;
 }
 .roll-btn > svg,
@@ -626,7 +626,7 @@ a {
 .stock-card .badge {
   position: absolute;
   top: 4px;
-  right: 4px;
+  inset-inline-end: 4px;
   margin: 0;
 }
 .stock-name {
@@ -673,6 +673,34 @@ a {
   background: var(--fg);
   color: var(--bg);
 }
+/* Language picker: a wrapping radio list (endonyms run long in some scripts; text may be enlarged). */
+.seg.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+  gap: 3px;
+  border-radius: 16px;
+}
+.seg.list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 13px;
+  text-align: start;
+  white-space: normal;
+  overflow: visible;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+.seg.list .seg-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.seg.list button svg {
+  flex: none;
+}
 
 .card {
   background: var(--bg-2);
@@ -703,7 +731,7 @@ a {
   min-height: 48px;
   width: 100%;
   border-bottom: 1px solid var(--line);
-  text-align: left;
+  text-align: start;
 }
 .card .row:last-child {
   border-bottom: 0;
@@ -763,7 +791,7 @@ a {
   content: '';
   position: absolute;
   top: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -811,12 +839,12 @@ input[type='range'] {
 input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 4px;
-  background: linear-gradient(to right, var(--accent) var(--p, 50%), var(--bg-3) var(--p, 50%));
+  background: linear-gradient(to var(--range-fill, right), var(--accent) var(--p, 50%), var(--bg-3) var(--p, 50%));
 }
 input[type='range']::-moz-range-track {
   height: 4px;
   border-radius: 4px;
-  background: linear-gradient(to right, var(--accent) var(--p, 50%), var(--bg-3) var(--p, 50%));
+  background: linear-gradient(to var(--range-fill, right), var(--accent) var(--p, 50%), var(--bg-3) var(--p, 50%));
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -911,7 +939,7 @@ input[type='range']::-moz-range-thumb {
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-left: auto;
+  margin-inline-start: auto;
   border-radius: 50%;
   color: var(--fg-2);
 }
@@ -960,7 +988,7 @@ input[type='range']::-moz-range-thumb {
   padding: 14px;
   border-radius: 14px;
   background: var(--bg-3);
-  text-align: left;
+  text-align: start;
   border: 1px solid transparent;
 }
 .speed.def {
@@ -1160,7 +1188,7 @@ input[type='range']::-moz-range-thumb {
   font-size: 0.875rem;
 }
 .banner svg:last-child {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .roll-grid {
   display: grid;
@@ -1175,7 +1203,7 @@ input[type='range']::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  text-align: left;
+  text-align: start;
   padding: 6px 2px 0;
   width: 100%;
 }
@@ -1224,7 +1252,7 @@ input[type='range']::-moz-range-thumb {
 }
 .frame-no {
   position: absolute;
-  left: 4px;
+  inset-inline-start: 4px;
   bottom: 4px;
   padding: 0 4px;
   font-size: 10px;
@@ -1407,10 +1435,10 @@ input[type='range']::-moz-range-thumb {
   place-items: center;
 }
 .nav.prev {
-  left: 0;
+  inset-inline-start: 0;
 }
 .nav.next {
-  right: 0;
+  inset-inline-end: 0;
 }
 .viewer-actions {
   display: grid;
@@ -1525,7 +1553,7 @@ input[type='range']::-moz-range-thumb {
 .dr-badge {
   position: absolute;
   top: 12px;
-  left: 12px;
+  inset-inline-start: 12px;
   padding: 2px 8px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.6);
@@ -1603,7 +1631,7 @@ input[type='range']::-moz-range-thumb {
   align-items: center;
   gap: 6px 12px;
   width: 100%;
-  text-align: left;
+  text-align: start;
   color: var(--fg);
 }
 .log-active-txt,
@@ -1693,7 +1721,7 @@ input[type='range']::-moz-range-thumb {
   gap: 12px;
   min-width: 0;
   min-height: 44px;
-  text-align: left;
+  text-align: start;
   color: inherit;
 }
 .page.log {
@@ -1803,7 +1831,7 @@ input[type='range']::-moz-range-thumb {
   justify-content: space-between;
   width: 100%;
   min-height: 56px;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid var(--line);
 }
 .list-row span {
@@ -1838,7 +1866,7 @@ input[type='range']::-moz-range-thumb {
 }
 .fab {
   position: fixed;
-  right: max(16px, calc(50% - 344px));
+  inset-inline-end: max(16px, calc(50% - 344px));
   bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
   width: 56px;
   height: 56px;
@@ -2055,7 +2083,7 @@ html.tap-guard * {
   color: var(--accent-2);
   font-size: 0.875rem;
   font-weight: 600;
-  text-align: left;
+  text-align: start;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -2114,7 +2142,7 @@ html.tap-guard * {
   border-radius: 12px;
   background: var(--bg-3);
   border: 1px solid transparent;
-  text-align: left;
+  text-align: start;
 }
 .all-cam strong {
   font-size: 0.875rem;
@@ -2214,7 +2242,7 @@ html.tap-guard * {
 }
 .hdr.wrap > .hdr-right {
   flex: none;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .hdr.wrap h1 {
   display: block;
@@ -2342,7 +2370,7 @@ html.tap-guard * {
   }
   html .switch::after {
     top: 1px;
-    left: 1px;
+    inset-inline-start: 1px;
     background: ButtonText;
   }
   html .toggle input:checked + .switch {
@@ -2361,12 +2389,12 @@ html.tap-guard * {
     forced-color-adjust: none;
   }
   html input[type='range']::-webkit-slider-runnable-track {
-    background: linear-gradient(to right, Highlight var(--p, 50%), Canvas var(--p, 50%));
+    background: linear-gradient(to var(--range-fill, right), Highlight var(--p, 50%), Canvas var(--p, 50%));
     border: 1px solid CanvasText;
     height: 6px;
   }
   html input[type='range']::-moz-range-track {
-    background: linear-gradient(to right, Highlight var(--p, 50%), Canvas var(--p, 50%));
+    background: linear-gradient(to var(--range-fill, right), Highlight var(--p, 50%), Canvas var(--p, 50%));
     border: 1px solid CanvasText;
     height: 6px;
   }
@@ -2446,14 +2474,14 @@ html.tap-guard * {
 .camera-card .badge {
   position: absolute;
   top: 4px;
-  right: 4px;
+  inset-inline-end: 4px;
   margin: 0;
 }
 /* Pin toggle: a 44px tap target in the card's top-left corner (PRO badge sits top-right). */
 .camera-pin {
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   /* 44×44, only as tall as the card's top row: a tap on the camera art selects, never pins */
   width: 48px;
   height: 44px;
@@ -2541,7 +2569,7 @@ html.tap-guard * {
   flex: 1;
   font-size: 0.8125rem;
   color: var(--fg-2);
-  padding-left: 4px;
+  padding-inline-start: 4px;
 }
 .ev-row {
   padding: 0 20px;
@@ -2795,7 +2823,7 @@ html.tap-guard * {
 .cam-more {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
+  inset-inline-end: 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -2817,14 +2845,14 @@ html.tap-guard * {
   border-radius: 10px;
   color: var(--fg);
   font-size: 0.9375rem;
-  text-align: left;
+  text-align: start;
   white-space: nowrap;
 }
 .more-item:active {
   background: var(--bg-3);
 }
 .more-item small {
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--fg-3);
   font-size: 0.8125rem;
 }
@@ -2844,7 +2872,7 @@ html.tap-guard * {
 .timer-badge {
   position: absolute;
   top: 0;
-  right: -2px;
+  inset-inline-end: -2px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
@@ -2881,7 +2909,7 @@ html.tap-guard * {
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--fg-2);
-  margin-right: 2px;
+  margin-inline-end: 2px;
 }
 .quick-chip {
   flex: 0 0 auto;
@@ -3262,7 +3290,7 @@ html.tap-guard * {
 /* ---------- round-2 fixes: lab, album, settings, analog ---------- */
 /* Album: "+ Import photos" is a labelled button, not a bare arrow that read as "save". */
 .hdr-import {
-  margin-left: auto;
+  margin-inline-start: auto;
   min-height: 44px;
   gap: 6px;
   padding: 0 12px;
@@ -3326,6 +3354,7 @@ button[aria-disabled='true'] {
   justify-self: start;
 }
 .lab-name span,
+.lab-name bdi,
 .lab-eta span {
   display: inline-block;
   max-width: 100%;
@@ -3348,4 +3377,32 @@ button[aria-disabled='true'] {
 }
 .persist-refused {
   font-size: 14px;
+}
+
+/* ---------- right-to-left (Arabic) and tall scripts ----------
+   Layout uses logical properties (inline-start/end), so rows, toolbars and strips already flow
+   right to left. Here: what has to mirror explicitly, and what must never mirror (guide §7.1). */
+[dir='rtl'] .icon-chevron,
+[dir='rtl'] .icon-back {
+  transform: scaleX(-1);
+}
+[dir='rtl'] .toggle input:checked + .switch::after {
+  transform: translateX(-18px);
+}
+/* A range input runs right to left in RTL; its filled part starts at the right too. */
+[dir='rtl'] input[type='range'] {
+  --range-fill: left;
+}
+/* Never mirrored: the lens view and its overlays, the camera art, prints, negatives, contact sheets.
+   (Physical left/right inside them stays physical; this keeps their text runs left to right too.) */
+.viewfinder,
+.camera-body,
+.print,
+.contact-preview {
+  direction: ltr;
+}
+/* Arabic and Devanagari need more line height than Latin (guide §7.5). */
+:root:lang(ar) body,
+:root:lang(hi) body {
+  line-height: 1.6;
 }

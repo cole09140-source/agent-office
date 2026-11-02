@@ -61,7 +61,7 @@ test('R2 lab clock: tomorrow 9 AM and 3 days develop on their own', async ({ pag
   await page.getByTestId('speed-morning').click();
   await expect(page.getByTestId('lab-item')).toContainText(/Ready in 11h 30m|Ready in 11h 29m/);
   await page.clock.fastForward(11.5 * 3600_000 + 60_000);
-  await expect(page.getByText('Your Sunny 200 roll is developed')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(/Sunny 200 roll is developed/)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByTestId('lab-item')).toHaveCount(0);
 
   await page.getByTestId('tab-camera').click();

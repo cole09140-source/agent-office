@@ -10,6 +10,7 @@ import { get } from '../store/db';
 import { CameraBody } from './Body';
 import { CAMERAS, ejectsPrints, filmsFor, getCamera, type CameraModel } from './models';
 import { orderByPins } from './pins';
+import { arrowStep, centerInStrip } from '../platform/dir';
 
 export function capacityLabel(camera: CameraModel, n: number): string {
   if (camera.capture === 'half') return t('cam.halves', { n });
@@ -65,7 +66,7 @@ function AllCameras({ open, onClose, items, selected, onPick }: { open: boolean;
                 {list.map((c) => (
                   <li key={c.id}>
                     <button type="button" class={`all-cam ${c.id === selected ? 'on' : ''}`} aria-pressed={c.id === selected} onClick={() => onPick(c.id)} data-testid={`allcam-${c.id}`}>
-                      <strong>{c.name}</strong>
+                      <strong><bdi>{c.name}</bdi></strong>
                       <span>{cameraEra(c.era)}</span>
                     </button>
                   </li>
@@ -105,7 +106,7 @@ function CameraCard({
     const el = ref.current;
     const strip = el?.parentElement;
     if (!el || !strip || !selected) return;
-    strip.scrollLeft = el.offsetLeft - strip.offsetLeft - (strip.clientWidth - el.clientWidth) / 2;
+    centerInStrip(strip, el);
   }, []);
   // Pinning moves the card. Focus stays on its toggle. A tap keeps the strip where it was (browsing
   // goes on from there); from the keyboard the card glides into view so the focus stays visible.
@@ -133,7 +134,7 @@ function CameraCard({
         data-testid={`camera-${camera.id}`}
       >
         <CameraBody camera={camera} width={72} />
-        <span class="camera-name">{camera.name}</span>
+        <span class="camera-name"><bdi>{camera.name}</bdi></span>
         <span class="camera-era">{cameraEra(camera.era)}</span>
         {PAYMENTS_ENABLED && camera.pro && <span class="badge">{t('common.pro')}</span>}
         {pinned && <span class="sr-only">{t('cam.pinned')}</span>}
@@ -186,7 +187,7 @@ export function LoadPanel(props: {
     if (!keys.includes(e.key)) return;
     const ids = ordered.items.map((c) => c.id);
     const at = Math.max(0, ids.indexOf(current));
-    const next = e.key === 'Home' ? 0 : e.key === 'End' ? ids.length - 1 : Math.min(ids.length - 1, Math.max(0, at + (e.key === 'ArrowRight' ? 1 : -1)));
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? ids.length - 1 : Math.min(ids.length - 1, Math.max(0, at + arrowStep(e.key)));
     e.preventDefault();
     e.stopPropagation();
     const id = ids[next];
@@ -238,7 +239,7 @@ export function LoadPanel(props: {
     reveal.current = null;
     const card = stripRef.current?.querySelector<HTMLElement>(`[data-camera="${CSS.escape(camera.id)}"]`);
     const strip = stripRef.current;
-    if (card && strip) strip.scrollLeft = card.offsetLeft - strip.offsetLeft - (strip.clientWidth - card.clientWidth) / 2;
+    if (card && strip) centerInStrip(strip, card);
   }, [camera.id]);
   return (
     <div class="load-panel" data-testid="load-panel">
@@ -321,7 +322,7 @@ export function LoadPanel(props: {
         <div class="load-sub">
           <span>{t('cam.fixedFilm')}</span>
           <span class="muted small">
-            {stock.name} · {stockDescription(stock.id)}
+            <bdi>{stock.name}</bdi> · {stockDescription(stock.id)}
           </span>
         </div>
       )}

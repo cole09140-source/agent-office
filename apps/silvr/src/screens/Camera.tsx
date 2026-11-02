@@ -17,7 +17,7 @@ import { randomSeed } from '../film/random';
 import { defaultBorderFor, defaultDevelop, resolveLook } from '../film/resolve';
 import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
-import { cameraDescription, t, type MsgKey } from '../i18n';
+import { cameraDescription, isolate, ltr, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
 import { holdCapture } from '../platform/pwa';
@@ -81,8 +81,17 @@ export function shotsText(r: Roll): string {
     const frames = (r.negatives ?? 0) + (r.pending ? 1 : 0);
     return t('cam.nHalves', { n: r.shots, f: frames });
   }
+  return t('cam.nShots', { n: shotCount(r) });
+}
+
+/**
+ * The number behind shotsText, passed to messages as `n` next to `{shots}` so languages that agree
+ * the sentence with the count (ru, ar, fr…) can choose a plural form (ko.ts pluralCounts).
+ */
+export function shotCount(r: Roll): number {
+  if (getCamera(r.cameraId).capture === 'half') return r.shots;
   // A pending first exposure (double) becomes a frame of its own when the roll is finished.
-  return t('cam.nShots', { n: r.shots + (r.pending?.kind === 'double' ? 1 : 0) });
+  return r.shots + (r.pending?.kind === 'double' ? 1 : 0);
 }
 
 export function CameraScreen({ onImport }: { onImport: () => void }) {
@@ -867,7 +876,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (r.shots < r.capacity) {
       const left = framesLeft(r);
       const leftText = camera.capture === 'half' ? t('cam.nHalfShots', { n: left }) : t('cam.nShots', { n: left });
-      const text = t(kind === 'film' ? 'cam.rewindConfirm' : kind === 'pack' ? 'cam.finishPackConfirm' : 'cam.finishCardConfirm', { shots: shotsText(r), left: leftText });
+      const text = t(kind === 'film' ? 'cam.rewindConfirm' : kind === 'pack' ? 'cam.finishPackConfirm' : 'cam.finishCardConfirm', { shots: shotsText(r), left: leftText, n: shotCount(r), m: left });
       const ok = kind === 'film' ? t('cam.sendToLab') : kind === 'pack' ? t('cam.finishPack') : t('cam.finishCard');
       if (!(await confirm(text, ok))) return;
     }
@@ -953,10 +962,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             shots: shotsText(r),
             left: leftText,
             // English verbs agree with the counts ("1 shot gets developed").
-            n: r.shots + (r.pending?.kind === 'double' ? 1 : 0),
+            n: shotCount(r),
             m: unused,
           })
-        : t(kind === 'film' ? 'cam.switchConfirm' : kind === 'pack' ? 'cam.switchConfirmPack' : 'cam.switchConfirmCard', { shots: shotsText(r) });
+        : t(kind === 'film' ? 'cam.switchConfirm' : kind === 'pack' ? 'cam.switchConfirmPack' : 'cam.switchConfirmCard', { shots: shotsText(r), n: shotCount(r) });
     if (!(await confirm(text, kind === 'film' ? t('cam.switchOkFilm') : t('cam.switchOkDone')))) return;
     switchingRef.current = true;
     if (camera.instant) await finishWithPending(r, 'instant');
@@ -997,8 +1006,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const pillCount = roll ? (camera.capture === 'half' ? t('cam.nHalfShots', { n: roll.shots }) : t('cam.nShots', { n: roll.shots + (roll.pending?.kind === 'double' ? 1 : 0) })) : '';
   // Accessible name starts with the visible text (WCAG 2.5.3), the film name follows.
   const rollBtnLabel = shot
-    ? `${pillCount} ${t(kind === 'film' ? 'cam.develop' : kind === 'pack' ? 'cam.finishPack' : 'cam.finishCard')} · ${stock.name}`
-    : `${t('cam.left', { n: left })} · ${stock.name}`;
+    ? `${pillCount} ${t(kind === 'film' ? 'cam.develop' : kind === 'pack' ? 'cam.finishPack' : 'cam.finishCard')} · ${isolate(stock.name)}`
+    : `${t('cam.left', { n: left })} · ${isolate(stock.name)}`;
   const flashLabel =
     camera.flash === 'charge' ? (charge === 'ready' ? t('cam.flashReady') : charge === 'charging' ? t('cam.flashCharging') : t('cam.flashCharge')) : t('cam.flash');
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
@@ -1059,7 +1068,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         )}
         {camera.ev && (
           <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${ev > 0 ? '+' : ''}${ev.toFixed(1)}`} data-testid="btn-ev">
-            <span class="chip-txt mono">
+            <span class="chip-txt mono" dir="ltr">
               {ev > 0 ? '+' : ev < 0 ? '−' : '±'}
               {Math.abs(ev).toFixed(1)}
             </span>
@@ -1103,7 +1112,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       </div>
       {camera.ev && evOpen && (
         <div class="ev-row">
-          <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} EV`} testId="sl-ev" />
+          <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)} EV`)} testId="sl-ev" />
         </div>
       )}
 
