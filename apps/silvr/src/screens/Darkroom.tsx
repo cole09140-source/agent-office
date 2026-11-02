@@ -7,6 +7,7 @@ import { filmsFor, getCamera, hasCamera, PALETTE_IDS } from '../cameras/models';
 import { getStock, STOCKS } from '../film/stocks';
 import { DIGITAL_TONES, type BorderStyle, type DevelopSettings, type DigitalTone } from '../film/types';
 import { ltr, stockDescription, t, type MsgKey } from '../i18n';
+import { formatNumber } from '../intl/format';
 import { confirm, confirmReq, settings, toast } from '../state/app';
 import { pushBackHandler } from '../platform/back';
 import { back, depth, go, goTab, isCurrent, route, routeToHash, type Route } from '../state/router';
@@ -372,7 +373,7 @@ export function DarkroomScreen({ id }: { id: string }) {
               max={2}
               step={0.5}
               onInput={(v) => set({ push: v })}
-              format={(v) => (v === 0 ? t('dr.normal') : t('dr.stops', { v: `${v > 0 ? '+' : '−'}${Math.abs(v)}`, n: Math.abs(v) }))}
+              format={(v) => (v === 0 ? t('dr.normal') : t('dr.stops', { v: `${v > 0 ? '+' : '−'}${formatNumber(Math.abs(v), undefined, { maximumFractionDigits: 1 })}`, n: Math.abs(v) }))}
               testId="sl-push"
             />
             <Slider label={t('dr.expired')} value={dev.expired} min={0} max={1} step={0.05} onInput={(v) => set({ expired: v })} format={(v) => { const n = Math.round(v * 30); return n ? t('view.expiredYears', { n }) : t('view.expiredNone'); }} testId="sl-expired" />

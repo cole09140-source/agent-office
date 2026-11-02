@@ -26,448 +26,452 @@
  *    placeholders, plural syntax errors) and  npx tsc --noEmit .
  *
  * cameraText.era and the tab labels are pre-filled from the guide's tables (§3.3, §8.3); review them.
+ *
+ * ru notes: «кадр» is the shot/frame noun everywhere ({shots}/{left} are masculine: кадр, полукадр),
+ * so outer sentences agree in the masculine. «фото» is indeclinable and used where a count would
+ * otherwise need a plural block. Pack = «кассета», card = «карта» (both feminine).
  */
 import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types';
 
 export const messages: LocaleMessages = {
-  // 'app.tagline': '', // ko: 원본이 남는 필름 카메라 · en: The film camera that keeps your originals
-  'tab.camera': 'Камера', // from guide §8.3 · en: Camera
-  'tab.lab': 'Проявка', // from guide §8.3 · en: Lab
-  'tab.gallery': 'Альбом', // from guide §8.3 · en: Album
-  'tab.analog': 'Аналог', // from guide §8.3 · en: Analog
-  'tab.settings': 'Настройки', // from guide §8.3 · en: Settings
-  // 'common.cancel': '', // ko: 취소 · en: Cancel
-  // 'common.close': '', // ko: 닫기 · en: Close
-  // 'common.save': '', // ko: 저장 · en: Save
-  // 'common.delete': '', // ko: 삭제 · en: Delete
-  // 'common.done': '', // ko: 완료 · en: Done
-  // 'common.retry': '', // ko: 다시 시도 · en: Retry
-  // 'common.back': '', // ko: 뒤로 · en: Back
-  // 'common.next': '', // ko: 다음 · en: Next
-  // 'common.start': '', // ko: 시작하기 · en: Get started
-  // 'common.on': '', // ko: 켜짐 · en: On
-  // 'common.off': '', // ko: 꺼짐 · en: Off
-  // 'common.pro': '', // ko: PRO · en: PRO
-  // 'common.loading': '', // ko: 불러오는 중… · en: Loading…
-  // 'common.error': '', // ko: 문제가 발생했어요. 다시 시도해 주세요. · en: Something went wrong. Please try again.
-  // 'toast.close': '', // ko: 알림 닫기 · en: Dismiss
-  // 'lab.developedMany': '', // ko: 롤 {n}개 현상이 끝났어요 · en: {n} rolls developed
-  // 'cam.loadCard': '', // ko: 메모리 카드 넣기 · en: Insert card
-  // 'cam.loadPack': '', // ko: 필름 팩 넣기 · en: Load film pack
-  // 'cam.useCamera': '', // ko: 이 카메라로 찍기 · en: Use this camera
-  // 'cam.allCameras': '', // ko: 모두 보기 · en: All cameras
-  // 'cam.allCamerasTitle': '', // ko: 카메라 모두 보기 · en: All cameras
-  // 'cam.group.film': '', // ko: 필름 카메라 · en: Film cameras
-  // 'cam.group.instant': '', // ko: 즉석 카메라 · en: Instant cameras
-  // 'cam.group.digital': '', // ko: 디지털 · en: Digital
-  // 'cam.group.toy': '', // ko: 토이·특수 카메라 · en: Toy & special
-  // 'a11y.stockKeys': '', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
-  // 'gal.importHint': '', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Photos are developed with this film. You can change it in the darkroom any time.
-  // 'onb.restore': '', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
-  // 'onb.1.title': '', // ko: 필름처럼 찍고 · en: Shoot like film
-  // 'onb.1.body': '', // ko: 카메라를 고르고 롤을 넣으세요. 남은 장수를 세며 신중하게 한 장씩. · en: Pick a camera, load a roll and make every frame count.
-  // 'onb.2.title': '', // ko: 현상소에서 기다리고 · en: Wait for the lab
-  // 'onb.2.body': '', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중 기다림을 직접 고르세요. · en: Send finished rolls to the lab. Instant, 1 hour, next 9 AM or 3 days: you choose the wait.
-  // 'onb.3.title': '', // ko: 다크룸에서 다시 현상 · en: Re-develop in the darkroom
-  // 'onb.3.body': '', // ko: 찍은 원본은 그대로 남아요. 필름 종류, 밝기, 오래된 필름 느낌, 빛 번짐을 언제든 다시 바꿔보세요. · en: Your original shot is always kept. Change the film, brightness, aged-film look or light glow any time.
-  // 'onb.privacy': '', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기에만 저장돼요. · en: Free. No account, no server. Every photo stays on this device.
-  // 'cam.loadFilm': '', // ko: 필름 넣기 · en: Load film
-  // 'cam.chooseFilm': '', // ko: 필름을 고르세요 · en: Choose your film
-  // 'cam.exposures': '', // ko: {n}장 · en: {n} exp
-  // 'cam.load': '', // ko: 이 필름 넣기 · en: Load this film
-  // 'cam.left': '', // ko: {n}장 남음 · en: {n} left
-  // 'cam.rewind': '', // ko: 현상소로 보내기 · en: Send to lab
-  // 'cam.rollFull': '', // ko: 롤을 다 찍었어요! · en: Roll finished!
-  // 'cam.sendToLab': '', // ko: 현상소로 보내기 · en: Send to lab
-  // 'cam.flash': '', // ko: 플래시 · en: Flash
-  // 'cam.timer': '', // ko: 타이머 · en: Timer
-  // 'cam.grid': '', // ko: 격자 · en: Grid
-  // 'cam.date': '', // ko: 날짜 · en: Date
-  // 'cam.flip': '', // ko: 카메라 전환 · en: Switch camera
-  // 'cam.zoom': '', // ko: 줌 · en: Zoom
-  // 'cam.aspect': '', // ko: 비율 · en: Format
-  // 'cam.shutter': '', // ko: 촬영 · en: Take photo
-  // 'cam.noCamera.title': '', // ko: 카메라를 사용할 수 없어요 · en: Camera unavailable
-  // 'cam.noCamera.body': '', // ko: 브라우저/기기 설정에서 카메라 권한을 허용해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Allow camera access in your browser or device settings. Meanwhile you can import photos and develop them.
-  // 'cam.noCamera.import': '', // ko: 사진 불러와 현상하기 · en: Import & develop photos
-  // 'cam.starting': '', // ko: 카메라 준비 중… · en: Starting camera…
-  // 'cam.saved': '', // ko: {n}번째 컷 · en: Frame {n}
-  // 'cam.rewindConfirm': '', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: {shots} taken. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
-  // 'cam.emptyRewind': '', // ko: 아직 찍은 사진이 없어요. 필름을 빼면 이 롤은 사라져요. · en: No frames yet. Unloading discards this roll.
-  // 'cam.unload': '', // ko: 필름 빼기 · en: Unload film
-  // 'cam.rollSize': '', // ko: 롤 장수 · en: Roll size
-  // 'cam.rollInfo': '', // ko: 롤 정보 · en: roll info
-  // 'cam.sec': '', // ko: {n}초 · en: {n}s
-  // 'cam.err.insecure': '', // ko: 카메라는 보안 연결(HTTPS)에서만 쓸 수 있어요. https 주소로 열어 주세요. · en: The camera only works over a secure (HTTPS) connection. Open the https address.
-  // 'cam.err.unsupported': '', // ko: 이 브라우저는 카메라를 지원하지 않아요. 최신 Safari나 Chrome에서 열어 주세요. · en: This browser doesn't support the camera. Try the latest Safari or Chrome.
-  // 'cam.err.busy': '', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. Meanwhile you can import photos and develop them.
-  // 'cam.err.notfound': '', // ko: 이 기기에서 카메라를 찾지 못했어요. 대신 기기의 사진을 불러와 현상할 수 있어요. · en: No camera was found on this device. You can import photos and develop them instead.
-  // 'cam.quadProgress': '', // ko: 렌즈 {n}/4 · en: Lens {n}/4
-  // 'common.skip': '', // ko: 건너뛰기 · en: Skip
-  // 'view.savedToast': '', // ko: 이미지를 저장했어요 · en: Image saved
-  // 'view.prev': '', // ko: 이전 사진 · en: Previous photo
-  // 'view.next': '', // ko: 다음 사진 · en: Next photo
-  // 'view.photoN': '', // ko: {n}번째 사진 · en: Photo {n}
-  // 'dr.applyRollConfirm': '', // ko: 이 설정을 롤의 모든 사진에 적용할까요? · en: Apply these settings to every photo in the roll?
-  // 'dr.original': '', // ko: 원본 · en: Original
-  // 'dr.showOriginal': '', // ko: 원본 보기 · en: Show original
-  // 'dr.years': '', // ko: {n}년 · en: {n, plural, one {# year} other {# years}}
-  // 'an.log.deleteFrame': '', // ko: {n}번 컷 기록 삭제 · en: Delete frame {n} log
-  // 'lab.rushFor': '', // ko: 지금 바로 현상 · {stock} · en: Develop now · {stock}
-  // 'speed.default': '', // ko: 기본 · en: default
-  // 'palette.moss': '', // ko: 이끼 · en: Moss
-  // 'palette.mono': '', // ko: 흑백 · en: Mono
-  // 'palette.sepia': '', // ko: 세피아 · en: Sepia
-  // 'palette.ice': '', // ko: 얼음 · en: Ice
-  // 'palette.berry': '', // ko: 베리 · en: Berry
-  // 'cam.chooseCamera': '', // ko: 카메라를 고르세요 · en: Choose your camera
-  // 'cam.film': '', // ko: 필름 · en: Film
-  // 'cam.fixedFilm': '', // ko: 전용 필름 · en: Built-in film
-  // 'cam.pin': '', // ko: {name} 고정 · en: Pin {name}
-  // 'cam.pinHint': '', // ko: 맨 앞에 고정 · en: Pin to the front
-  // 'cam.pinned': '', // ko: 고정됨 · en: Pinned
-  // 'cam.pinnedSay': '', // ko: {name} 고정했어요 · 맨 앞에 보여요 · en: {name} pinned to the front
-  // 'cam.unpinnedSay': '', // ko: {name} 고정을 풀었어요 · en: {name} unpinned
-  // 'cam.pinnedToast': '', // ko: {name} 고정 · 맨 앞으로 옮겼어요 · en: {name} pinned · moved to the front
-  // 'cam.pinShow': '', // ko: 보기 · en: Show
-  // 'cam.otherWindow': '', // ko: 다른 창에서 이미 찍었어요 · en: Already taken in another window
-  // 'cam.pressesDropped': '', // ko: {n}번 누른 건 취소됐어요 · en: {n, plural, one {# press was} other {# presses were}} cancelled
-  // 'cam.quickStart': '', // ko: 빠른 시작 · en: Quick start
-  // 'cam.quick.film': '', // ko: 일반 필름 · en: Film camera
-  // 'cam.quick.instant': '', // ko: 즉석 사진 · en: Instant photo
-  // 'cam.quick.disposable': '', // ko: 일회용 · en: Disposable
-  // 'cam.pack': '', // ko: {n}장 팩 · en: {n}-shot pack
-  // 'cam.card': '', // ko: {n}장 메모리 · en: {n}-shot card
-  // 'cam.halves': '', // ko: 하프 {n}장 · en: {n} half-frames
-  // 'cam.flashCharge': '', // ko: 탭해서 플래시 충전 · en: Tap to charge the flash
-  // 'cam.flashCharging': '', // ko: 충전 중… · en: Charging…
-  // 'cam.flashReady': '', // ko: 플래시 준비됨 · en: Flash ready
-  // 'cam.ev': '', // ko: 노출 · en: Exposure
-  // 'cam.palette': '', // ko: 팔레트 · en: Palette
-  // 'cam.halfNext': '', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
-  // 'cam.double1': '', // ko: 첫 번째 노출 완료 · 겹쳐 찍을 장면을 찾으세요 · en: First exposure done · frame the second one
-  // 'cam.quadHint': '', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
-  // 'cam.inCamera': '', // ko: 카메라 안 · en: In camera
-  // 'cam.lastShot': '', // ko: 마지막 사진 · en: Last shot
-  // 'cam.packDone': '', // ko: 팩을 다 썼어요! 사진은 앨범에 있어요. · en: Pack finished! Your photos are in the album.
-  // 'cam.nShots': '', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
-  // 'cam.nHalves': '', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
-  // 'cam.nHalfShots': '', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
-  // 'cam.develop': '', // ko: 현상소로 · en: Send to lab
-  // 'cam.finishPack': '', // ko: 팩 꺼내기 · en: Finish pack
-  // 'cam.finishCard': '', // ko: 카드 정리 · en: Finish card
-  // 'cam.rewindSub': '', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
-  // 'cam.finishSubViewable': '', // ko: 사진은 이미 앨범에 있어요. 정리하면 새로 넣을 수 있어요. · en: Your photos are already in the album. Finish to start a fresh one.
-  // 'cam.finishPackConfirm': '', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
-  // 'cam.finishCardConfirm': '', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
-  // 'cam.switchBody': '', // ko: 다른 카메라로 바꾸기 · en: Switch camera body
-  // 'cam.switchSub': '', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
-  // 'cam.switchSubViewable': '', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
-  // 'cam.switchSubEmpty': '', // ko: 아직 찍은 사진이 없어서 바로 바꿀 수 있어요. · en: Nothing shot yet, so you can switch right away.
-  // 'cam.switchConfirm': '', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
-  // 'cam.switchConfirmPack': '', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
-  // 'cam.switchConfirmCard': '', // ko: 카메라를 바꾸려면 지금 카드({shots})를 먼저 정리해요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this card ({shots}) is finished first. Your photos stay in the album. [+ counts: n]
-  // 'cam.switchOkFilm': '', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
-  // 'cam.switchOkDone': '', // ko: 정리하고 바꾸기 · en: Finish & switch
-  // 'cam.switchedLab': '', // ko: 롤을 현상소에 보냈어요. 새 카메라를 고르세요. · en: Roll sent to the lab. Pick your next camera.
-  // 'cam.switchedAlbum': '', // ko: 사진을 앨범에 넣었어요. 새 카메라를 고르세요. · en: Photos are in your album. Pick your next camera.
-  // 'cam.more': '', // ko: 더보기 · en: More
-  // 'cam.flashOnSay': '', // ko: 플래시 켬 · en: Flash on
-  // 'cam.flashOffSay': '', // ko: 플래시 끔 · en: Flash off
-  // 'cam.flashOnScreen': '', // ko: 플래시 켬 · 전면 카메라는 화면이 하얗게 빛나요 · en: Flash on · the front camera lights up the screen instead
-  // 'cam.flipToFront': '', // ko: 전면 카메라로 전환 · en: Flip to front camera
-  // 'cam.flipToBack': '', // ko: 후면 카메라로 전환 · en: Flip to back camera
-  // 'gal.emptyHintCamera': '', // ko: 카메라에 찍은 사진 {shots}이 있어요. 현상소로 보내면 현상이 끝난 뒤 여기에 보여요. · en: You have {shots} in the camera. Send them to the lab and they show up here once developed. [+ counts: n]
-  // 'gal.developNow': '', // ko: 현상소로 보내기 · en: Send to lab
-  // 'gal.inCameraBanner': '', // ko: 카메라 안 {shots} · 현상소로 보내기 · en: {shots} in the camera · Send to lab [+ counts: n]
-  // 'lab.emptyCamera': '', // ko: 카메라에 찍은 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상돼요. · en: You have {shots} in the camera. Send the roll here to develop it. [+ counts: n]
-  // 'speed.title': '', // ko: 언제 받아볼까요? · en: When do you want your prints?
-  // 'speed.instant': '', // ko: 즉시 · en: Instant
-  // 'speed.why': '', // ko: 잊을 즈음 도착하는 설렘, 필름의 재미예요. 바로 보려면 즉시. · en: Forget the roll, then rediscover it. Instant shows them now.
-  // 'speed.at.now': '', // ko: 지금 바로 앨범에 도착 · en: In your album right away
-  // 'speed.at.today': '', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
-  // 'speed.at.tomorrow': '', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
-  // 'speed.at.date': '', // ko: {date} 도착 · en: Arrives {date}
-  // 'speed.instant.d': '', // ko: 기다림 없이 바로 보기 · en: No wait, see them now
-  // 'speed.1h': '', // ko: 1시간 · en: 1 hour
-  // 'speed.1h.d': '', // ko: 커피 한 잔의 기다림 · en: A coffee break
-  // 'speed.morning': '', // ko: 아침 9시 · en: Next 9 AM
-  // 'speed.morning.d': '', // ko: 자고 일어나면 도착 · en: Wake up to your photos
-  // 'speed.3d': '', // ko: 3일 · en: 3 days
-  // 'speed.3d.d': '', // ko: 진짜 필름처럼 · en: Like real film
-  // 'lab.title': '', // ko: 현상소 · en: Film Lab
-  // 'lab.empty': '', // ko: 현상소가 비어 있어요. · en: The lab is empty.
-  // 'lab.emptyHint': '', // ko: 현상소로 보낸 롤이 여기로 와요. · en: Rolls you send to the lab show up here.
-  // 'lab.emptyWhat': '', // ko: 다 찍었거나 현상소로 보낸 롤이 현상을 기다리는 곳이에요. · en: Rolls you finish and send to the lab wait here to develop.
-  // 'lab.emptyHow': '', // ko: 고른 속도대로 도착해요. 즉시면 바로 앨범으로. · en: They arrive at the speed you pick. Instant skips the wait.
-  // 'lab.intro': '', // ko: 현상이 끝나면 앨범으로 옮겨져요. · en: Developed rolls move to your album.
-  // 'lab.introRush': '', // ko: 못 기다리겠으면 ‘지금 바로 현상’을 눌러요. · en: Can’t wait? Tap Develop now.
-  // 'lab.readyIn': '', // ko: {t} 남음 · en: Ready in {t}
-  // 'lab.ready': '', // ko: 현상 완료! · en: Developed!
-  // 'lab.rush': '', // ko: 지금 바로 현상 · en: Develop now
-  // 'lab.rushConfirm': '', // ko: 기다림을 건너뛰고 바로 앨범에서 볼 수 있어요. · en: Skip the wait and see the photos in the album right away.
-  // 'lab.developedToast': '', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
-  // 'lab.open': '', // ko: 사진 보기 · en: View photos
-  // 'gal.title': '', // ko: 앨범 · en: Album
-  // 'gal.empty': '', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
-  // 'gal.emptyHint': '', // ko: 카메라에서 첫 롤을 찍어보세요. · en: Shoot your first roll in the camera.
-  // 'gal.emptyHintLab': '', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
-  // 'gal.openLab': '', // ko: 현상소 보기 · en: Open the lab
-  // 'gal.import': '', // ko: 사진 불러오기 · en: Import photos
-  // 'gal.restore': '', // ko: 이전 폰 백업 불러오기 · en: Restore a backup
-  // 'gal.importing': '', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
-  // 'gal.imported': '', // ko: 불러온 사진 · en: Imported
-  // 'gal.new': '', // ko: 새 롤 · en: NEW
-  // 'gal.frames': '', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
-  // 'gal.contact': '', // ko: 밀착 인화 · en: Contact sheet
-  // 'gal.deleteRoll': '', // ko: 롤 삭제 · en: Delete roll
-  // 'gal.deleteRollConfirm': '', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
-  // 'gal.developing': '', // ko: 현상 중 · en: Developing
-  // 'view.share': '', // ko: 공유 · en: Share
-  // 'view.saveImage': '', // ko: 저장 · en: Save
-  // 'view.darkroom': '', // ko: 다크룸 · en: Darkroom
-  // 'view.info': '', // ko: 정보 · en: Info
-  // 'view.deleteConfirm': '', // ko: 이 사진을 삭제할까요? 원본도 함께 삭제돼요. · en: Delete this photo? The original is deleted too.
-  // 'view.developing': '', // ko: 현상 중… · en: Developing…
-  // 'view.taken': '', // ko: 촬영 · en: Taken
-  // 'view.film': '', // ko: 필름 · en: Film
-  // 'view.frame': '', // ko: 컷 · en: Frame
-  // 'view.size': '', // ko: 크기 · en: Size
-  // 'dr.title': '', // ko: 다크룸 · en: Darkroom
-  // 'dr.film': '', // ko: 필름 · en: Film
-  // 'dr.push': '', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
-  // 'dr.push.hint': '', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
-  // 'dr.stops': '', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
-  // 'dr.normal': '', // ko: 노멀 · en: Normal
-  // 'dr.redevelop': '', // ko: 다시 현상 · en: Re-develop
-  // 'dr.expired': '', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
-  // 'dr.grain': '', // ko: 입자 · en: Grain
-  // 'dr.halation': '', // ko: 빛 번짐 (할레이션) · en: Glow (halation)
-  // 'dr.leak': '', // ko: 빛샘 · en: Light leak
-  // 'dr.leak.reroll': '', // ko: 다른 빛샘 · en: Another leak
-  // 'dr.flash': '', // ko: 플래시 룩 · en: Flash look
-  // 'dr.date': '', // ko: 날짜 각인 · en: Date stamp
-  // 'dr.border': '', // ko: 테두리 · en: Border
-  // 'dr.border.none': '', // ko: 없음 · en: None
-  // 'dr.border.film35': '', // ko: 35mm · en: 35mm
-  // 'dr.border.instant': '', // ko: 인스턴트 · en: Instant
-  // 'dr.border.print': '', // ko: 인화지 · en: Print
-  // 'dr.border.slide': '', // ko: 슬라이드 · en: Slide
-  // 'dr.border.gate': '', // ko: 시네 · en: Cine
-  // 'dr.border.sprocket': '', // ko: 스프로킷 · en: Sprocket
-  // 'dr.compare': '', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
-  // 'dr.reset': '', // ko: 초기화 · en: Reset
-  // 'dr.saved': '', // ko: 다시 현상했어요 · en: Re-developed
-  // 'dr.applyRoll': '', // ko: 롤 전체에 적용 · en: Apply to roll
-  // 'dr.rotate': '', // ko: 회전 · en: Rotate
-  // 'dr.ev': '', // ko: 노출 보정 · en: Exposure
-  // 'dr.palette': '', // ko: 팔레트 · en: Palette
-  // 'dr.camera': '', // ko: 카메라 · en: Camera
-  // 'hint.ios': '', // ko: 홈 화면에 추가하면 사진이 더 안전하게 보관돼요 (공유 → 홈 화면에 추가) · en: Add Film Camela to your Home Screen to keep photos safe (Share → Add to Home Screen).
-  // 'dr.applyRollDone': '', // ko: 롤 전체에 적용했어요 · en: Applied to the whole roll
-  // 'dr.applyRollUndone': '', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
-  // 'dr.discardConfirm': '', // ko: 변경 사항을 버릴까요? · en: Discard changes?
-  // 'dr.discard': '', // ko: 버리기 · en: Discard
-  // 'dr.saveNew': '', // ko: 새 사진으로 저장 · en: Save as new photo
-  // 'dr.savedNew': '', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
-  // 'dr.tone': '', // ko: 디지털 룩 · en: Digital look
-  // 'dr.look': '', // ko: 룩 · en: Look
-  // 'dr.tone.none': '', // ko: 기본 · en: Default
-  // 'dr.tone.cool': '', // ko: 쿨 · en: Cool
-  // 'dr.tone.warm': '', // ko: 웜 · en: Warm
-  // 'dr.tone.washed': '', // ko: 바랜 · en: Washed
-  // 'dr.tone.night': '', // ko: 야간 · en: Night
-  // 'view.noDate': '', // ko: 날짜 정보 없음 · en: No date info
-  // 'roll.select': '', // ko: 선택 · en: Select
-  // 'roll.selectHint': '', // ko: 사진을 눌러 선택하세요 · en: Tap photos to select them
-  // 'roll.selectedN': '', // ko: {n}장 선택됨 · en: {n} selected
-  // 'roll.shareN': '', // ko: 공유 {n}장 · en: Share {n}
-  // 'roll.saveN': '', // ko: 저장 {n}장 · en: Save {n}
-  // 'roll.selectPhoto': '', // ko: 사진 {n} 선택 · en: Select photo {n}
-  // 'roll.ready': '', // ko: 사진 {n}장이 준비됐어요 · en: {n, plural, one {# photo} other {# photos}} ready
-  // 'an.title': '', // ko: 아날로그 · en: Analog
-  // 'an.subtitle': '', // ko: 실제 필름 카메라를 위한 도구 · en: Tools for your real film camera
-  // 'an.meter': '', // ko: Sunny 16 노출 계산기 · en: Sunny 16 exposure calculator
-  // 'an.iso': '', // ko: ISO · en: ISO
-  // 'an.light': '', // ko: 빛 · en: Light
-  // 'an.aperture': '', // ko: 조리개 · en: Aperture
-  // 'an.shutter': '', // ko: 셔터 속도 · en: Shutter speed
-  // 'an.comp': '', // ko: 노출 보정 · en: Compensation
-  // 'an.tripod': '', // ko: 삼각대를 권장해요 · en: Use a tripod
-  // 'an.outOfRange': '', // ko: 셔터 범위를 벗어났어요. 조리개나 ISO를 바꿔보세요. · en: Outside the shutter range. Try another aperture or ISO.
-  // 'an.light.snow': '', // ko: 맑은 날 눈밭·해변 · en: Snow / sand, sunny
-  // 'an.light.sunny': '', // ko: 맑음 (선명한 그림자) · en: Sunny (sharp shadows)
-  // 'an.light.slightOvercast': '', // ko: 약간 흐림 · en: Slightly overcast
-  // 'an.light.overcast': '', // ko: 흐림 · en: Overcast
-  // 'an.light.heavyOvercast': '', // ko: 매우 흐림 · en: Heavy overcast
-  // 'an.light.shade': '', // ko: 그늘 · en: Open shade
-  // 'an.light.sunset': '', // ko: 일몰 직전 · en: Just before sunset
-  // 'an.light.indoorBright': '', // ko: 밝은 실내 · en: Bright interior
-  // 'an.light.indoor': '', // ko: 실내 · en: Interior
-  // 'an.light.night': '', // ko: 밤거리 · en: Night street
-  // 'an.log': '', // ko: 필름 촬영 노트 · en: Film shooting log
-  // 'an.log.empty': '', // ko: 기록 중인 롤이 없어요. · en: No logged rolls yet.
-  // 'an.log.new': '', // ko: 새 롤 기록 · en: Log a new roll
-  // 'an.log.camera': '', // ko: 카메라 · en: Camera
-  // 'an.log.film': '', // ko: 필름 · en: Film
-  // 'an.log.exposures': '', // ko: 장수 · en: Exposures
-  // 'an.log.note': '', // ko: 메모 · en: Note
-  // 'an.log.addFrame': '', // ko: 컷 기록 · en: Log frame
-  // 'an.log.lens': '', // ko: 렌즈 · en: Lens
-  // 'an.log.export': '', // ko: CSV 내보내기 · en: Export CSV
-  // 'an.log.deleteRoll': '', // ko: 기록 삭제 · en: Delete log
-  // 'an.log.deleteConfirm': '', // ko: 이 롤 기록을 삭제할까요? · en: Delete this roll log?
-  // 'an.log.useMeter': '', // ko: 계산기 값 사용 · en: Use calculator values
-  // 'an.log.frames': '', // ko: {n}/{m}장 · en: {n}/{m} frames
-  // 'an.log.location': '', // ko: 위치 함께 저장 · en: Save location
-  // 'an.active': '', // ko: 지금 기록 중인 롤 · en: Roll in progress
-  // 'an.active.go': '', // ko: 컷 기록하기 · en: Log a frame
-  // 'an.log.repeat': '', // ko: 같은 설정으로 +1컷 · en: Same settings +1
-  // 'an.log.otherSettings': '', // ko: 다른 설정 · en: New settings
-  // 'an.log.frameN': '', // ko: {n}번 컷 기록 · en: Log frame {n}
-  // 'an.log.editFrame': '', // ko: {n}번 컷 고치기 · en: Edit frame {n}
-  // 'an.log.saveFrame': '', // ko: 이 컷 기록 · en: Log this frame
-  // 'an.log.saveEdit': '', // ko: 고친 내용 저장 · en: Save changes
-  // 'an.log.manual': '', // ko: 직접 입력 · en: Type it in
-  // 'an.log.pickStops': '', // ko: 눈금에서 고르기 · en: Pick from the dial
-  // 'an.log.logged': '', // ko: {n}번 컷을 기록했어요 · en: Frame {n} logged
-  // 'an.log.deleted': '', // ko: {n}번 컷 기록을 지웠어요 · en: Frame {n} log deleted
-  // 'an.log.undo': '', // ko: 되돌리기 · en: Undo
-  // 'an.log.undoFailed': '', // ko: 그 사이 같은 번호가 기록돼서 되돌리지 못했어요 · en: Couldn't undo: that frame number is taken now
-  // 'an.log.full': '', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
-  // 'an.log.firstHint': '', // ko: 한 컷 찍고 여기에 기록하세요. 나중에 줄을 누르면 고칠 수 있어요. · en: Shoot a frame, then log it here. Tap a row later to fix it.
-  // 'set.title': '', // ko: 설정 · en: Settings
-  // 'set.lang': '', // ko: 언어 · en: Language
-  // 'set.lang.auto': '', // ko: 시스템 · en: System
-  // 'set.sound': '', // ko: 셔터 소리 · en: Shutter sound
-  // 'set.haptics': '', // ko: 진동 · en: Haptics
-  // 'set.dateStamp': '', // ko: 사진에 날짜 넣기 · en: Add the date to photos
-  // 'set.dateFormat': '', // ko: 날짜 형식 · en: Date format
-  // 'set.grid': '', // ko: 격자 표시 · en: Show grid
-  // 'set.mirror': '', // ko: 전면 카메라 좌우 반전 저장 · en: Mirror front camera photos
-  // 'set.rollSize': '', // ko: 기본 롤 장수 · en: Default roll size
-  // 'set.speed': '', // ko: 기본 현상 속도 · en: Default lab speed
-  // 'set.speed.hint': '', // ko: 필름 롤을 현상소로 보낼 때 ‘기본’으로 표시돼요. 인스턴트·디카 사진은 현상소 없이 바로 앨범에 들어가요. · en: Marked as default when you send a film roll to the lab. Instant and digital cameras skip the lab: their photos go straight to the album.
-  // 'set.storage': '', // ko: 저장 공간 · en: Storage
-  // 'set.storage.used': '', // ko: {used} 사용 중 · en: {used} used
-  // 'set.storage.persist': '', // ko: 사진 지워지지 않게 보호 · en: Keep photos from being cleared
-  // 'set.storage.persistHint': '', // ko: 기기 저장 공간이 부족해져도 브라우저가 이 앱의 사진을 자동으로 지우지 않도록 요청해요. · en: Asks the browser not to clear this app’s photos automatically when the device runs low on space.
-  // 'set.storage.persistAsk': '', // ko: 보호 켜기 · en: Turn on
-  // 'set.storage.persisted': '', // ko: 보호됨 · en: Protected
-  // 'set.storage.refusedShort': '', // ko: 허락 안 됨 · en: Not allowed
-  // 'set.storage.refused': '', // ko: 이 브라우저가 보호를 허락하지 않았어요. 홈 화면에 추가하면 더 오래 보관돼요. 백업도 함께 해 두세요. · en: This browser declined. Adding Film Camela to your home screen keeps photos longer — and keep a backup too.
-  // 'set.install': '', // ko: 홈 화면에 앱 설치 · en: Install app to home screen
-  // 'set.privacy': '', // ko: 개인정보 처리방침 · en: Privacy policy
-  // 'set.terms': '', // ko: 이용약관 · en: Terms of use
-  // 'set.support': '', // ko: 고객지원 · 문의 · en: Support & contact
-  // 'set.licenses': '', // ko: 오픈소스 라이선스 · en: Open-source licenses
-  // 'set.backup': '', // ko: 백업 · en: Backup
-  // 'set.backup.hint': '', // ko: 사진과 기록은 이 기기에만 저장돼요. 기기를 바꾸거나 브라우저 데이터가 지워지기 전에 백업 파일(.zip)로 보관해 두세요. · en: Photos and logs live only on this device. Save a backup file (.zip) before switching phones or clearing browser data.
-  // 'set.backup.export': '', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
-  // 'set.backup.saveAgain': '', // ko: 한 번 더 저장 · en: Save another copy
-  // 'set.backup.send': '', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
-  // 'set.backup.savedWeb': '', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
-  // 'set.backup.savedShared': '', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
-  // 'set.backup.restoreHint': '', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
-  // 'set.credit': '', // ko: © 2026 아티움그룹 주식회사 (ATIUM GROUP Co., Ltd.) · en: © 2026 ATIUM GROUP Co., Ltd.
-  // 'set.backup.import': '', // ko: 백업에서 복원 · en: Restore from backup
-  // 'set.backup.working': '', // ko: 백업 중… {done}/{total} · en: Backing up… {done}/{total}
-  // 'set.backup.restoring': '', // ko: 복원 중… · en: Restoring…
-  // 'set.backup.done': '', // ko: 백업 준비 완료 · 롤 {rolls}개, 사진 {photos}장 · en: Backup ready · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}}
-  // 'set.backup.save': '', // ko: 준비 완료 · 저장하기 · en: Ready · Save it
-  // 'set.backup.saved': '', // ko: 백업 파일을 저장했어요 · en: Backup file saved
-  // 'set.backup.saveFailed': '', // ko: 저장하지 못했어요. 다시 눌러 주세요 · en: Couldn't save it. Tap again
-  // 'set.backup.tooLarge': '', // ko: 4GB가 넘어 파일 하나에 담을 수 없어요. 오래된 롤을 정리한 뒤 다시 시도해 주세요 · en: Over 4 GB, too large for one file. Clear out some old rolls and try again
-  // 'set.backup.newer': '', // ko: 더 새로운 버전의 앱에서 만든 백업이에요. 앱을 업데이트해 주세요 · en: This backup is from a newer version of the app. Please update
-  // 'set.backup.partial': '', // ko: 롤 {rolls}개까지 복원하고 멈췄어요. 저장 공간을 확보한 뒤 다시 복원하면 이어서 진행돼요 · en: Stopped after restoring {rolls, plural, one {# roll} other {# rolls}}. Free up storage and restore again to continue
-  // 'set.backup.empty': '', // ko: 아직 백업할 사진이나 기록이 없어요 · en: Nothing to back up yet
-  // 'set.backup.restored': '', // ko: 복원 완료 · 롤 {rolls}개, 사진 {photos}장 추가 · en: Restored · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}} added
-  // 'set.backup.skipped': '', // ko: 이미 있는 항목 {n}개는 그대로 두었어요 · en: Skipped {n, plural, one {# item} other {# items}} you already have
-  // 'set.backup.damaged': '', // ko: 손상된 항목 {n}개는 건너뛰었어요 · en: Skipped {n} damaged {n, plural, one {item} other {items}}
-  // 'set.backup.invalid': '', // ko: Film Camela 백업 파일이 아니거나 손상된 파일이에요 · en: Not a Film Camela backup, or the file is damaged
-  // 'set.backup.failed': '', // ko: 백업을 만들지 못했어요. 저장 공간을 확인해 주세요 · en: Couldn't create the backup. Check free storage
-  // 'set.reset': '', // ko: 모든 데이터 삭제 · en: Delete all data
-  // 'set.resetConfirm': '', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
-  // 'set.version': '', // ko: 버전 · en: Version
-  // 'set.replayOnb': '', // ko: 소개 다시 보기 · en: Replay intro
-  // 'share.title': '', // ko: Film Camela로 찍은 필름 · en: Shot on Film Camela
-  // 'err.storage': '', // ko: 저장 공간이 부족해요. 사진 몇 장을 지우고 다시 시도해 주세요. · en: Storage is full. Delete a few photos and try again.
-  // 'common.notFound': '', // ko: 찾을 수 없어요. 삭제되었을 수 있어요. · en: Couldn't find this. It may have been deleted.
-  // 'an.log.noLocation': '', // ko: 위치를 못 받아서 위치 없이 저장했어요 · en: No location fix, so it was saved without one
-  // 'err.storagePermission': '', // ko: 저장 권한이 꺼져 있어요. 설정 > 앱 > Film Camela > 권한에서 저장공간을 허용해 주세요. · en: Storage permission is off. Allow it in Settings > Apps > Film Camela > Permissions.
-  // 'err.noStorage': '', // ko: 이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요. · en: This browser won't let Film Camela save photos. Turn off private browsing or allow site data, then reopen the app.
-  // 'err.import': '', // ko: 이 파일은 불러올 수 없어요. · en: This file could not be imported.
-  // 'update.ready': '', // ko: 새 버전이 준비됐어요 · en: A new version is ready
-  // 'update.reload': '', // ko: 새로고침 · en: Reload
-  // 'offline.ready': '', // ko: 오프라인에서도 사용할 수 있어요 · en: Ready to work offline
-  // 'a11y.cameraTitle': '', // ko: 카메라 · en: Camera
-  // 'a11y.rollLoaded': '', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
-  // 'a11y.sentToLab': '', // ko: 현상소로 보냈어요 · {wait} 뒤 도착 · en: Sent to the lab · ready in {wait}
-  // 'a11y.cameraKeys': '', // ko: ← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요 · en: Use the arrow keys to choose a camera; Tab reaches its pin button
-  // 'cam.timerSay': '', // ko: {n}초 뒤 촬영 · 셔터를 다시 누르면 취소 · en: Taking the photo in {n} seconds · press the shutter again to cancel
-  // 'cam.timerCancelled': '', // ko: 타이머를 취소했어요 · en: Timer cancelled
-  // 'cam.tapToCancel': '', // ko: 탭하면 취소 · en: Tap to cancel
-  // 'cam.cancelTimer': '', // ko: 타이머 취소 · en: Cancel timer
-  // 'cam.doubleHint': '', // ko: 두 번 눌러 한 장에 겹쳐요 · en: Two presses, one frame
-  // 'cam.double2': '', // ko: 한 번 더 누르면 첫 장면 위에 겹쳐 찍혀요 · en: Press again to expose over the first shot
-  // 'cam.pressBusy': '', // ko: 앞 사진을 저장하는 중이에요 · en: Still saving the previous shots
-  // 'cam.pressFull': '', // ko: 남은 컷이 없어요 · en: No frames left
-  // 'cam.startingQueued': '', // ko: 카메라가 준비되면 바로 찍어요 · en: Taking the photo as soon as the camera is ready
-  // 'cam.switchConfirmFilm2': '', // ko: 카메라를 바꾸면 지금 롤은 현상소로 가요. 찍은 {shots}은 현상하고, 남은 {left}은 쓰지 않아요. · en: Switching sends this roll to the lab. The {shots} you took {n, plural, one {gets} other {get}} developed; the {left} left {m, plural, one {stays} other {stay}} unused. [+ counts: n, m]
-  // 'cam.switchConfirmPack2': '', // ko: 카메라를 바꾸면 지금 팩을 꺼내요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching takes this pack out. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
-  // 'cam.switchConfirmCard2': '', // ko: 카메라를 바꾸면 지금 카드를 정리해요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching finishes this card. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
-  // 'common.undo': '', // ko: 되돌리기 · en: Undo
-  // 'view.deleteUndoConfirm': '', // ko: 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: You can undo it for a few seconds afterwards.
-  // 'view.deleted': '', // ko: 사진을 삭제했어요 · en: Photo deleted
-  // 'view.restored': '', // ko: 사진을 되돌렸어요 · en: Photo restored
-  // 'view.deleteTitle': '', // ko: 사진을 삭제할까요? · en: Delete this photo?
-  // 'view.savedWeb': '', // ko: 다운로드 폴더에 저장했어요 · en: Saved to your Downloads folder
-  // 'view.savedAndroid': '', // ko: 갤러리 › Film Camela 앨범에 저장했어요 · en: Saved to Gallery › Film Camela album
-  // 'gal.deleteRollTitle': '', // ko: 이 롤을 삭제할까요? · en: Delete this roll?
-  // 'gal.rollDeleted': '', // ko: 롤을 삭제했어요 · en: Roll deleted
-  // 'gal.rollRestored': '', // ko: 롤을 되돌렸어요 · en: Roll restored
-  // 'gal.rollRestoreBlocked': '', // ko: 카메라에 다른 롤이 들어 있어서 되돌릴 수 없어요 · en: Can't restore it: another roll is in the camera now
-  // 'gal.framesHalf': '', // ko: {f}프레임 ({n}컷) · en: {f, plural, one {# frame} other {# frames}} ({n, plural, one {# shot} other {# shots}})
-  // 'gal.help': '', // ko: 도움말 · en: Help
-  // 'lab.rushTitle': '', // ko: 지금 바로 현상할까요? · en: Develop now?
-  // 'view.pushNormal': '', // ko: 노멀 · en: Normal
-  // 'view.expiredNone': '', // ko: 새 필름 · en: Fresh film
-  // 'view.expiredYears': '', // ko: {n}년 지난 필름 · en: Expired {n, plural, one {# year} other {# years}}
-  // 'dur.days': '', // ko: {n}일 · en: {n}d
-  // 'dur.hours': '', // ko: {n}시간 · en: {n}h
-  // 'dur.minutes': '', // ko: {n}분 · en: {n}m
-  // 'dur.seconds': '', // ko: {n}초 · en: {n}s
-  // 'dur.pair': '', // ko: {a} {b} · en: {a} {b}
-  // 'wait.days': '', // ko: {n}일 · en: {n} d
-  // 'wait.hours': '', // ko: {n}시간 · en: {n} h
-  // 'wait.minutes': '', // ko: {n}분 · en: {n} min
+  'app.tagline': 'Плёночная камера, которая бережёт каждый оригинал',
+  'tab.camera': 'Камера',
+  'tab.lab': 'Проявка',
+  'tab.gallery': 'Альбом',
+  'tab.analog': 'Аналог',
+  'tab.settings': 'Настройки',
+  'common.cancel': 'Отменить',
+  'common.close': 'Закрыть',
+  'common.save': 'Сохранить',
+  'common.delete': 'Удалить',
+  'common.done': 'Готово',
+  'common.retry': 'Повторить',
+  'common.back': 'Назад',
+  'common.next': 'Далее',
+  'common.start': 'Начать',
+  'common.on': 'Вкл.',
+  'common.off': 'Выкл.',
+  'common.pro': 'PRO',
+  'common.loading': 'Загрузка…',
+  'common.error': 'Что-то пошло не так. Попробуйте ещё раз.',
+  'toast.close': 'Закрыть уведомление',
+  'lab.developedMany': '{n, plural, one {Проявлена # плёнка} few {Проявлены # плёнки} many {Проявлено # плёнок} other {Проявлено # плёнки}}',
+  'cam.loadCard': 'Вставить карту',
+  'cam.loadPack': 'Зарядить кассету',
+  'cam.useCamera': 'Снимать этой камерой',
+  'cam.allCameras': 'Все камеры',
+  'cam.allCamerasTitle': 'Все камеры',
+  'cam.group.film': 'Плёночные камеры',
+  'cam.group.instant': 'Моментальная печать',
+  'cam.group.digital': 'Цифровые',
+  'cam.group.toy': 'Игрушечные и особые',
+  'a11y.stockKeys': 'Листайте плёнки клавишами ← →, выбирайте клавишей Enter',
+  'gal.importHint': 'Снимки проявятся на этой плёнке. Сменить её можно в тёмной комнате в любой момент.',
+  'onb.restore': 'Переходите с другого телефона? Восстановите резервную копию',
+  'onb.1.title': 'Кадр за кадром, как на плёнку',
+  'onb.1.body': 'Выберите камеру и зарядите плёнку. Кадров немного — каждый на счету.',
+  'onb.2.title': 'Предвкушение проявки',
+  'onb.2.body': 'Отснятую плёнку отдайте в проявку. Сразу, через час, к 9 утра или через 3 дня — сколько ждать, решаете вы.',
+  'onb.3.title': 'Проявляйте заново в тёмной комнате',
+  'onb.3.body': 'Оригинал всегда остаётся нетронутым. Пробуйте другую плёнку, яркость, эффект старой плёнки или свечение — сколько угодно раз.',
+  'onb.privacy': 'Бесплатно. Ни аккаунта, ни серверов. Все фото остаются только на этом устройстве.',
+  'cam.loadFilm': 'Зарядить плёнку',
+  'cam.chooseFilm': 'Выберите плёнку',
+  'cam.exposures': '{n, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
+  'cam.load': 'Зарядить эту плёнку',
+  'cam.left': '{n, plural, one {Остался #} few {Осталось #} many {Осталось #} other {Осталось #}}',
+  'cam.rewind': 'Отдать в проявку',
+  'cam.rollFull': 'Плёнка отснята',
+  'cam.sendToLab': 'Отдать в проявку',
+  'cam.flash': 'Вспышка',
+  'cam.timer': 'Таймер',
+  'cam.grid': 'Сетка',
+  'cam.date': 'Дата',
+  'cam.flip': 'Сменить камеру',
+  'cam.zoom': 'Зум',
+  'cam.aspect': 'Формат',
+  'cam.shutter': 'Снять',
+  'cam.noCamera.title': 'Камера недоступна',
+  'cam.noCamera.body': 'Разрешите доступ к камере в настройках браузера или устройства. А пока можно импортировать фото и проявить их.',
+  'cam.noCamera.import': 'Импорт и проявка',
+  'cam.starting': 'Запуск камеры…',
+  'cam.saved': 'Кадр {n}',
+  'cam.rewindConfirm': '{n, plural, one {Отснят} few {Отснято} many {Отснято} other {Отснято}} {shots}. Отдать плёнку в проявку? {m, plural, one {Неотснятый} few {Неотснятые} many {Неотснятые} other {Неотснятые}} {left} {m, plural, one {останется пустым} few {останутся пустыми} many {останутся пустыми} other {останутся пустыми}}.',
+  'cam.emptyRewind': 'Вы ещё ничего не сняли. Если извлечь плёнку сейчас, она пропадёт.',
+  'cam.unload': 'Извлечь плёнку',
+  'cam.rollSize': 'Кадров на плёнке',
+  'cam.rollInfo': 'сведения о плёнке',
+  'cam.sec': '{n} с',
+  'cam.err.insecure': 'Камера работает только через защищённое соединение (HTTPS). Откройте адрес, начинающийся с https.',
+  'cam.err.unsupported': 'Этот браузер не поддерживает камеру. Откройте приложение в последней версии Safari или Chrome.',
+  'cam.err.busy': 'Камера занята другим приложением. Закройте его и попробуйте ещё раз. А пока можно импортировать фото и проявить их.',
+  'cam.err.notfound': 'Камера на этом устройстве не найдена. Вместо этого можно импортировать фото и проявить их.',
+  'cam.quadProgress': 'Объектив {n}/4',
+  'common.skip': 'Пропустить',
+  'view.savedToast': 'Изображение сохранено',
+  'view.prev': 'Предыдущее фото',
+  'view.next': 'Следующее фото',
+  'view.photoN': 'Фото {n}',
+  'dr.applyRollConfirm': 'Применить эти настройки ко всем снимкам на плёнке?',
+  'dr.original': 'Оригинал',
+  'dr.showOriginal': 'Показать оригинал',
+  'dr.years': '{n, plural, one {# год} few {# года} many {# лет} other {# года}}',
+  'an.log.deleteFrame': 'Удалить запись кадра {n}',
+  'lab.rushFor': 'Проявить сейчас · {stock}',
+  'speed.default': 'по умолчанию',
+  'palette.moss': 'Мох',
+  'palette.mono': 'Ч/б',
+  'palette.sepia': 'Сепия',
+  'palette.ice': 'Лёд',
+  'palette.berry': 'Ягода',
+  'cam.chooseCamera': 'Выберите камеру',
+  'cam.film': 'Плёнка',
+  'cam.fixedFilm': 'Встроенная плёнка',
+  'cam.pin': 'Закрепить {name}',
+  'cam.pinHint': 'Закрепить в начале',
+  'cam.pinned': 'Закреплена',
+  'cam.pinnedSay': 'Камера {name} закреплена · теперь она в начале списка',
+  'cam.unpinnedSay': 'Камера {name} откреплена',
+  'cam.pinnedToast': 'Камера {name} закреплена · перенесена в начало',
+  'cam.pinShow': 'Показать',
+  'cam.otherWindow': 'Уже снято в другом окне',
+  'cam.pressesDropped': '{n, plural, one {# нажатие отменено} few {# нажатия отменены} many {# нажатий отменено} other {# нажатия отменено}}',
+  'cam.quickStart': 'Быстрый старт',
+  'cam.quick.film': 'Плёночная камера',
+  'cam.quick.instant': 'Моментальное фото',
+  'cam.quick.disposable': 'Одноразовая',
+  'cam.pack': '{n, plural, one {Кассета на # кадр} few {Кассета на # кадра} many {Кассета на # кадров} other {Кассета на # кадра}}',
+  'cam.card': '{n, plural, one {Карта на # кадр} few {Карта на # кадра} many {Карта на # кадров} other {Карта на # кадра}}',
+  'cam.halves': '{n, plural, one {# полукадр} few {# полукадра} many {# полукадров} other {# полукадра}}',
+  'cam.flashCharge': 'Нажмите, чтобы зарядить вспышку',
+  'cam.flashCharging': 'Зарядка…',
+  'cam.flashReady': 'Вспышка готова',
+  'cam.ev': 'Экспозиция',
+  'cam.palette': 'Палитра',
+  'cam.halfNext': 'Следующий кадр — в правой половине',
+  'cam.double1': 'Первая экспозиция готова · найдите сюжет для второй',
+  'cam.quadHint': 'Одно нажатие — четыре объектива по очереди',
+  'cam.inCamera': 'В камере',
+  'cam.lastShot': 'Последний кадр',
+  'cam.packDone': 'Кассета закончилась. Снимки уже ждут в альбоме.',
+  'cam.nShots': '{n, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
+  'cam.nHalves': '{n, plural, one {# полукадр} few {# полукадра} many {# полукадров} other {# полукадра}} ({f, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}})',
+  'cam.nHalfShots': '{n, plural, one {# полукадр} few {# полукадра} many {# полукадров} other {# полукадра}}',
+  'cam.develop': 'Отдать в проявку',
+  'cam.finishPack': 'Извлечь кассету',
+  'cam.finishCard': 'Извлечь карту',
+  'cam.rewindSub': 'Плёнка перемотается и уйдёт в проявку. Когда она будет готова, снимки появятся в альбоме.',
+  'cam.finishSubViewable': 'Снимки уже в альбоме. Освободите камеру, чтобы начать заново.',
+  'cam.finishPackConfirm': '{n, plural, one {Отснят} few {Отснято} many {Отснято} other {Отснято}} {shots}. Извлечь кассету? {m, plural, one {Оставшийся} few {Оставшиеся} many {Оставшиеся} other {Оставшиеся}} {left} {m, plural, one {пропадёт} few {пропадут} many {пропадут} other {пропадут}}.',
+  'cam.finishCardConfirm': '{n, plural, one {Отснят} few {Отснято} many {Отснято} other {Отснято}} {shots}. Извлечь карту? {m, plural, one {Неотснятый} few {Неотснятые} many {Неотснятые} other {Неотснятые}} {left} {m, plural, one {останется пустым} few {останутся пустыми} many {останутся пустыми} other {останутся пустыми}}, а снимки сохранятся в альбоме.',
+  'cam.switchBody': 'Выбрать другую камеру',
+  'cam.switchSub': 'Сначала текущая плёнка уйдёт в проявку, затем вы выберете новую камеру.',
+  'cam.switchSubViewable': 'Снимки останутся в альбоме, а вы выберете новую камеру.',
+  'cam.switchSubEmpty': 'Вы ещё ничего не сняли, так что камеру можно сменить сразу.',
+  'cam.switchConfirm': 'Чтобы сменить камеру, сначала отдайте текущую плёнку ({shots}) в проявку. Все снятые кадры будут проявлены.',
+  'cam.switchConfirmPack': 'Чтобы сменить камеру, сначала извлеките текущую кассету ({shots}). Снимки останутся в альбоме.',
+  'cam.switchConfirmCard': 'Чтобы сменить камеру, сначала извлеките текущую карту ({shots}). Снимки останутся в альбоме.',
+  'cam.switchOkFilm': 'В проявку и сменить',
+  'cam.switchOkDone': 'Извлечь и сменить',
+  'cam.switchedLab': 'Плёнка отдана в проявку. Выберите следующую камеру.',
+  'cam.switchedAlbum': 'Снимки в альбоме. Выберите следующую камеру.',
+  'cam.more': 'Ещё',
+  'cam.flashOnSay': 'Вспышка включена',
+  'cam.flashOffSay': 'Вспышка выключена',
+  'cam.flashOnScreen': 'Вспышка включена · у фронтальной камеры вместо неё светится экран',
+  'cam.flipToFront': 'Переключить на фронтальную камеру',
+  'cam.flipToBack': 'Переключить на основную камеру',
+  'gal.emptyHintCamera': 'В камере {shots}. Отдайте плёнку в проявку — снимки появятся здесь, когда будут готовы.',
+  'gal.developNow': 'Отдать в проявку',
+  'gal.inCameraBanner': 'В камере {shots} · Отдать в проявку',
+  'lab.emptyCamera': 'В камере {shots}. Отдайте плёнку в проявку — здесь она и проявится.',
+  'speed.title': 'Когда хотите получить снимки?',
+  'speed.instant': 'Сразу',
+  'speed.why': 'Вся прелесть — в ожидании: забыть о плёнке и вдруг получить снимки. Не хотите ждать? Выберите «Сразу».',
+  'speed.at.now': 'Сразу в альбоме',
+  'speed.at.today': 'В альбоме сегодня в {time}',
+  'speed.at.tomorrow': 'В альбоме завтра в {time}',
+  'speed.at.date': 'В альбоме {date}',
+  'speed.instant.d': 'Без ожидания, прямо сейчас',
+  'speed.1h': '1 час',
+  'speed.1h.d': 'Как раз на чашку кофе',
+  'speed.morning': 'В 9 утра',
+  'speed.morning.d': 'Проснётесь — снимки уже ждут',
+  'speed.3d': '3 дня',
+  'speed.3d.d': 'Неспешно, как раньше',
+  'lab.title': 'Лаборатория',
+  'lab.empty': 'В лаборатории сейчас тихо.',
+  'lab.emptyHint': 'Плёнки, отданные в проявку, ждут здесь.',
+  'lab.emptyWhat': 'Здесь плёнки ждут, пока идёт проявка.',
+  'lab.emptyHow': 'Снимки придут в выбранный срок. С вариантом «Сразу» — без ожидания.',
+  'lab.intro': 'Проявленные плёнки переходят в альбом.',
+  'lab.introRush': 'Не терпится? Нажмите «Проявить сейчас».',
+  'lab.readyIn': 'Ещё {t}',
+  'lab.ready': 'Проявлено',
+  'lab.rush': 'Проявить сейчас',
+  'lab.rushConfirm': 'Без ожидания — снимки сразу появятся в альбоме.',
+  'lab.developedToast': 'Плёнка {stock} проявлена',
+  'lab.open': 'Смотреть снимки',
+  'gal.title': 'Альбом',
+  'gal.empty': 'Проявленных снимков пока нет.',
+  'gal.emptyHint': 'Ваша первая плёнка ждёт в камере.',
+  'gal.emptyHintLab': '{n, plural, one {# плёнка проявляется} few {# плёнки проявляются} many {# плёнок проявляется} other {# плёнки проявляется}} в лаборатории.',
+  'gal.openLab': 'В лабораторию',
+  'gal.import': 'Импортировать фото',
+  'gal.restore': 'Восстановить из копии',
+  'gal.importing': 'Проявка… {n}/{total}',
+  'gal.imported': 'Импортированные',
+  'gal.new': 'НОВОЕ',
+  'gal.frames': '{n, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
+  'gal.contact': 'Контактный лист',
+  'gal.deleteRoll': 'Удалить плёнку',
+  'gal.deleteRollConfirm': '{n, plural, =1 {Фото с этой плёнки будет удалено} =2 {Оба фото с этой плёнки будут удалены} one {Все # фото с этой плёнки будут удалены} few {Все # фото с этой плёнки будут удалены} many {Все # фото с этой плёнки будут удалены} other {Все # фото с этой плёнки будут удалены}}. Отменить удаление можно в течение нескольких секунд.',
+  'gal.developing': 'Проявляется',
+  'view.share': 'Поделиться',
+  'view.saveImage': 'Сохранить',
+  'view.darkroom': 'Тёмная комната',
+  'view.info': 'Сведения',
+  'view.deleteConfirm': 'Удалить это фото? Оригинал тоже будет удалён.',
+  'view.developing': 'Проявляется…',
+  'view.taken': 'Снято',
+  'view.film': 'Плёнка',
+  'view.frame': 'Кадр',
+  'view.size': 'Размер',
+  'dr.title': 'Тёмная комната',
+  'dr.film': 'Плёнка',
+  'dr.push': 'Пуш/пулл (контраст и зерно)',
+  'dr.push.hint': '+ контраст и зерно / − мягче',
+  'dr.stops': '{v} {n, plural, one {ступень} few {ступени} many {ступеней} other {ступени}}',
+  'dr.normal': 'Норма',
+  'dr.redevelop': 'Проявить заново',
+  'dr.expired': 'Эффект старой плёнки',
+  'dr.grain': 'Зерно',
+  'dr.halation': 'Свечение (ореол)',
+  'dr.leak': 'Засветка',
+  'dr.leak.reroll': 'Другая засветка',
+  'dr.flash': 'Эффект вспышки',
+  'dr.date': 'Дата на снимке',
+  'dr.border': 'Рамка',
+  'dr.border.none': 'Нет',
+  'dr.border.film35': '35mm',
+  'dr.border.instant': 'Моментальная',
+  'dr.border.print': 'Отпечаток',
+  'dr.border.slide': 'Слайд',
+  'dr.border.gate': 'Кино',
+  'dr.border.sprocket': 'Перфорация',
+  'dr.compare': 'Удерживайте, чтобы увидеть оригинал',
+  'dr.reset': 'Сбросить',
+  'dr.saved': 'Проявлено заново',
+  'dr.applyRoll': 'Применить ко всей плёнке',
+  'dr.rotate': 'Повернуть',
+  'dr.ev': 'Экспокоррекция',
+  'dr.palette': 'Палитра',
+  'dr.camera': 'Камера',
+  'hint.ios': 'Добавьте Film Camela на экран «Домой», чтобы снимки хранились надёжнее («Поделиться» → «На экран „Домой“»).',
+  'dr.applyRollDone': 'Применено ко всей плёнке',
+  'dr.applyRollUndone': 'Изменения для всей плёнки отменены',
+  'dr.discardConfirm': 'Отменить изменения?',
+  'dr.discard': 'Не сохранять',
+  'dr.saveNew': 'Сохранить как новое фото',
+  'dr.savedNew': 'Сохранено как новое фото (№ {n})',
+  'dr.tone': 'Цифровой стиль',
+  'dr.look': 'Стиль',
+  'dr.tone.none': 'Обычный',
+  'dr.tone.cool': 'Холодный',
+  'dr.tone.warm': 'Тёплый',
+  'dr.tone.washed': 'Выцветший',
+  'dr.tone.night': 'Ночной',
+  'view.noDate': 'Нет даты',
+  'roll.select': 'Выбрать',
+  'roll.selectHint': 'Нажмите на снимки, чтобы выбрать их',
+  'roll.selectedN': 'Выбрано {n} фото',
+  'roll.shareN': 'Поделиться ({n})',
+  'roll.saveN': 'Сохранить ({n})',
+  'roll.selectPhoto': 'Выбрать фото {n}',
+  'roll.ready': '{n, plural, one {# фото готово} few {# фото готовы} many {# фото готовы} other {# фото готовы}}',
+  'an.title': 'Аналог',
+  'an.subtitle': 'Инструменты для вашей плёночной камеры',
+  'an.meter': 'Калькулятор экспозиции по правилу Sunny 16',
+  'an.iso': 'ISO',
+  'an.light': 'Свет',
+  'an.aperture': 'Диафрагма',
+  'an.shutter': 'Выдержка',
+  'an.comp': 'Экспокоррекция',
+  'an.tripod': 'Лучше со штативом',
+  'an.outOfRange': 'Выдержка вне диапазона. Попробуйте другую диафрагму или ISO.',
+  'an.light.snow': 'Снег или песок, солнце',
+  'an.light.sunny': 'Солнечно (чёткие тени)',
+  'an.light.slightOvercast': 'Лёгкая облачность',
+  'an.light.overcast': 'Облачно',
+  'an.light.heavyOvercast': 'Пасмурно',
+  'an.light.shade': 'Тень',
+  'an.light.sunset': 'Перед закатом',
+  'an.light.indoorBright': 'Светлое помещение',
+  'an.light.indoor': 'В помещении',
+  'an.light.night': 'Ночная улица',
+  'an.log': 'Журнал плёночной съёмки',
+  'an.log.empty': 'Записанных плёнок пока нет.',
+  'an.log.new': 'Добавить плёнку',
+  'an.log.camera': 'Камера',
+  'an.log.film': 'Плёнка',
+  'an.log.exposures': 'Кадров',
+  'an.log.note': 'Заметка',
+  'an.log.addFrame': 'Записать кадр',
+  'an.log.lens': 'Объектив',
+  'an.log.export': 'Экспорт CSV',
+  'an.log.deleteRoll': 'Удалить запись',
+  'an.log.deleteConfirm': 'Удалить запись этой плёнки?',
+  'an.log.useMeter': 'Взять из калькулятора',
+  'an.log.frames': '{n}/{m, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
+  'an.log.location': 'Сохранять геопозицию',
+  'an.active': 'Текущая плёнка',
+  'an.active.go': 'Записать кадр',
+  'an.log.repeat': 'Те же настройки +1',
+  'an.log.otherSettings': 'Другие настройки',
+  'an.log.frameN': 'Записать кадр {n}',
+  'an.log.editFrame': 'Изменить кадр {n}',
+  'an.log.saveFrame': 'Записать этот кадр',
+  'an.log.saveEdit': 'Сохранить изменения',
+  'an.log.manual': 'Ввести вручную',
+  'an.log.pickStops': 'Выбрать на шкале',
+  'an.log.logged': 'Кадр {n} записан',
+  'an.log.deleted': 'Запись кадра {n} удалена',
+  'an.log.undo': 'Отменить',
+  'an.log.undoFailed': 'Не удалось отменить: кадр с этим номером уже записан',
+  'an.log.full': 'Все кадры этой плёнки записаны',
+  'an.log.firstHint': 'Записывайте здесь каждый кадр по ходу съёмки. Чтобы исправить запись, нажмите на строку.',
+  'set.title': 'Настройки',
+  'set.lang': 'Язык',
+  'set.lang.auto': 'Системный',
+  'set.sound': 'Звук затвора',
+  'set.haptics': 'Вибрация',
+  'set.dateStamp': 'Дата на снимках',
+  'set.dateFormat': 'Формат даты',
+  'set.grid': 'Показывать сетку',
+  'set.mirror': 'Зеркалить снимки с фронтальной камеры',
+  'set.rollSize': 'Кадров на плёнке по умолчанию',
+  'set.speed': 'Срок проявки по умолчанию',
+  'set.speed.hint': 'При отправке плёнки в проявку этот срок будет отмечен как «по умолчанию». Снимки моментальных и цифровых камер попадают сразу в альбом, без проявки.',
+  'set.storage': 'Хранилище',
+  'set.storage.used': 'Занято {used}',
+  'set.storage.persist': 'Защитить фото от удаления',
+  'set.storage.persistHint': 'Браузер получит просьбу не удалять фото этого приложения автоматически, когда на устройстве заканчивается место.',
+  'set.storage.persistAsk': 'Включить',
+  'set.storage.persisted': 'Защищено',
+  'set.storage.refusedShort': 'Не разрешено',
+  'set.storage.refused': 'Браузер отклонил запрос. Если добавить Film Camela на экран «Домой», фото будут храниться дольше. И не забудьте о резервной копии.',
+  'set.install': 'Установить на экран «Домой»',
+  'set.privacy': 'Политика конфиденциальности',
+  'set.terms': 'Условия использования',
+  'set.support': 'Поддержка и связь',
+  'set.licenses': 'Лицензии открытого ПО',
+  'set.backup': 'Резервная копия',
+  'set.backup.hint': 'Фото и записи хранятся только на этом устройстве. Перед сменой телефона или очисткой данных браузера сохраните резервную копию (.zip) в надёжном месте.',
+  'set.backup.export': 'Сохранить копию (.zip)',
+  'set.backup.saveAgain': 'Сохранить ещё раз',
+  'set.backup.send': 'Отправить в мессенджер или облако',
+  'set.backup.savedWeb': 'Сохранено в папку «Загрузки» · {name}',
+  'set.backup.savedShared': 'Сохранено туда, куда вы выбрали в меню «Поделиться» (Файлы, облако…) · {name}',
+  'set.backup.restoreHint': 'Чтобы перейти на новый телефон, отправьте этот файл себе — в мессенджер, по почте или в облако. Затем откройте его на новом телефоне: Настройки Film Camela → «Восстановить из копии».',
+  'set.credit': '© 2026 ATIUM GROUP Co., Ltd.',
+  'set.backup.import': 'Восстановить из копии',
+  'set.backup.working': 'Копирование… {done}/{total}',
+  'set.backup.restoring': 'Восстановление…',
+  'set.backup.done': 'Копия готова · {rolls, plural, one {# плёнка} few {# плёнки} many {# плёнок} other {# плёнки}}, {photos} фото',
+  'set.backup.save': 'Готово · Сохранить',
+  'set.backup.saved': 'Резервная копия сохранена',
+  'set.backup.saveFailed': 'Не удалось сохранить. Нажмите ещё раз',
+  'set.backup.tooLarge': 'Больше 4 ГБ — в один файл не поместится. Удалите старые плёнки и попробуйте снова',
+  'set.backup.newer': 'Копия создана в более новой версии приложения. Обновите приложение',
+  'set.backup.partial': '{rolls, plural, one {Восстановлена # плёнка} few {Восстановлены # плёнки} many {Восстановлено # плёнок} other {Восстановлено # плёнки}}, затем процесс прервался. Освободите место и запустите восстановление снова — оно продолжится',
+  'set.backup.empty': 'Пока нечего копировать',
+  'set.backup.restored': 'Восстановлено · {rolls, plural, one {# плёнка} few {# плёнки} many {# плёнок} other {# плёнки}}, {photos} фото',
+  'set.backup.skipped': '{n, plural, one {Пропущен # элемент, который у вас уже есть} few {Пропущено # элемента, которые у вас уже есть} many {Пропущено # элементов, которые у вас уже есть} other {Пропущено # элемента, которые у вас уже есть}}',
+  'set.backup.damaged': '{n, plural, one {Пропущен # повреждённый элемент} few {Пропущено # повреждённых элемента} many {Пропущено # повреждённых элементов} other {Пропущено # повреждённого элемента}}',
+  'set.backup.invalid': 'Это не резервная копия Film Camela, или файл повреждён',
+  'set.backup.failed': 'Не удалось создать копию. Проверьте свободное место',
+  'set.reset': 'Удалить все данные',
+  'set.resetConfirm': 'Все плёнки, снимки, записи и настройки будут удалены без возможности восстановления. Сначала сохраните копию кнопкой «Сохранить копию (.zip)» выше. Всё равно удалить?',
+  'set.version': 'Версия',
+  'set.replayOnb': 'Показать вступление',
+  'share.title': 'Снято на Film Camela',
+  'err.storage': 'Хранилище заполнено. Удалите несколько фото и попробуйте ещё раз.',
+  'common.notFound': 'Ничего не найдено. Возможно, это уже удалено.',
+  'an.log.noLocation': 'Не удалось определить местоположение — запись сохранена без него',
+  'err.storagePermission': 'Доступ к хранилищу выключен. Разрешите его: Настройки > Приложения > Film Camela > Разрешения.',
+  'err.noStorage': 'Этот браузер не даёт Film Camela сохранять фото. Выключите режим инкогнито или разрешите сохранение данных сайтов, затем откройте приложение снова.',
+  'err.import': 'Не удалось импортировать этот файл.',
+  'update.ready': 'Доступна новая версия',
+  'update.reload': 'Обновить',
+  'offline.ready': 'Готово к работе офлайн',
+  'a11y.cameraTitle': 'Камера',
+  'a11y.rollLoaded': 'Плёнка {stock} заряжена · {n, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
+  'a11y.sentToLab': 'Плёнка отдана в проявку · будет готова через {wait}',
+  'a11y.cameraKeys': 'Выбирайте камеру клавишами ← →, клавиша Tab переводит к кнопке закрепления',
+  'cam.timerSay': 'Снимок через {n, plural, one {# секунду} few {# секунды} many {# секунд} other {# секунды}} · нажмите на затвор ещё раз, чтобы отменить',
+  'cam.timerCancelled': 'Таймер отменён',
+  'cam.tapToCancel': 'Нажмите для отмены',
+  'cam.cancelTimer': 'Отменить таймер',
+  'cam.doubleHint': 'Два нажатия — один кадр',
+  'cam.double2': 'Нажмите ещё раз, чтобы снять поверх первого кадра',
+  'cam.pressBusy': 'Предыдущие снимки ещё сохраняются',
+  'cam.pressFull': 'Кадры закончились',
+  'cam.startingQueued': 'Снимок будет сделан, как только камера будет готова',
+  'cam.switchConfirmFilm2': 'При смене камеры плёнка уйдёт в проявку. {n, plural, one {Отснятый} few {Отснятые} many {Отснятые} other {Отснятые}} {shots} {n, plural, one {будет проявлен} few {будут проявлены} many {будут проявлены} other {будут проявлены}}, а {m, plural, one {неотснятый} few {неотснятые} many {неотснятые} other {неотснятые}} {left} {m, plural, one {останется пустым} few {останутся пустыми} many {останутся пустыми} other {останутся пустыми}}.',
+  'cam.switchConfirmPack2': 'При смене камеры кассета будет извлечена. {n, plural, one {Отснятый} few {Отснятые} many {Отснятые} other {Отснятые}} {shots} {n, plural, one {сохранится} few {сохранятся} many {сохранятся} other {сохранятся}} в альбоме, а {m, plural, one {оставшийся} few {оставшиеся} many {оставшиеся} other {оставшиеся}} {left} {m, plural, one {пропадёт} few {пропадут} many {пропадут} other {пропадут}}.',
+  'cam.switchConfirmCard2': 'При смене камеры карта будет извлечена. {n, plural, one {Отснятый} few {Отснятые} many {Отснятые} other {Отснятые}} {shots} {n, plural, one {сохранится} few {сохранятся} many {сохранятся} other {сохранятся}} в альбоме, а {m, plural, one {оставшийся} few {оставшиеся} many {оставшиеся} other {оставшиеся}} {left} {m, plural, one {не будет использован} few {не будут использованы} many {не будут использованы} other {не будут использованы}}.',
+  'common.undo': 'Отменить',
+  'view.deleteUndoConfirm': 'Отменить удаление можно в течение нескольких секунд.',
+  'view.deleted': 'Фото удалено',
+  'view.restored': 'Фото восстановлено',
+  'view.deleteTitle': 'Удалить это фото?',
+  'view.savedWeb': 'Сохранено в папку «Загрузки»',
+  'view.savedAndroid': 'Сохранено в Галерею › альбом Film Camela',
+  'gal.deleteRollTitle': 'Удалить эту плёнку?',
+  'gal.rollDeleted': 'Плёнка удалена',
+  'gal.rollRestored': 'Плёнка восстановлена',
+  'gal.rollRestoreBlocked': 'Не удалось восстановить: в камере уже другая плёнка',
+  'gal.framesHalf': '{f, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}} ({n, plural, one {# полукадр} few {# полукадра} many {# полукадров} other {# полукадра}})',
+  'gal.help': 'Справка',
+  'lab.rushTitle': 'Проявить сейчас?',
+  'view.pushNormal': 'Норма',
+  'view.expiredNone': 'Свежая плёнка',
+  'view.expiredYears': 'Просрочена на {n, plural, one {# год} few {# года} many {# лет} other {# года}}',
+  'dur.days': '{n} д',
+  'dur.hours': '{n} ч',
+  'dur.minutes': '{n} мин',
+  'dur.seconds': '{n} с',
+  'dur.pair': '{a} {b}',
+  'wait.days': '{n, plural, one {# день} few {# дня} many {# дней} other {# дня}}',
+  'wait.hours': '{n, plural, one {# час} few {# часа} many {# часов} other {# часа}}',
+  'wait.minutes': '{n, plural, one {# минуту} few {# минуты} many {# минут} other {# минуты}}',
 };
 
 export const cameraText: LocaleCameraText = {
   /** Camera body descriptions (expressive register, guide §1.1). */
   desc: {
-    // pro35: '', // ko: 기본기 탄탄한 35mm SLR. 35mm 필름 전부, 3가지 비율, 줌, 노출 보정. · en: A dependable 35mm SLR. Every 35mm film, three formats, zoom and exposure dial.
-    // snap27: '', // ko: 27장 일회용 카메라. 플래시는 매번 충전해야 하고, 렌즈는 살짝 뭉개져요. · en: A 27-shot disposable with a soft plastic lens. Charge the flash before each shot.
-    // instasq: '', // ko: 10장 팩 정사각 인스턴트. 찍자마자 사진이 나와 서서히 떠올라요. · en: Square instant camera, 10-shot packs. Prints eject and slowly appear.
-    // half72: '', // ko: 35mm 한 컷에 두 장씩 나란히 찍는 하프프레임. 한 롤에 72장. · en: Two shots per frame: 72 half-frames that pair up side by side.
-    // zonelc: '', // ko: 터널 같은 비네팅과 진한 색. 거리 스냅용 컴팩트. · en: Tunnel vignetting and saturated color. A street-shooting compact.
-    // toy120: '', // ko: 플라스틱 렌즈의 중판 토이 카메라. 흐린 가장자리, 짙은 비네팅, 잦은 빛샘. · en: Plastic-lens medium-format toy: soft edges, heavy vignette, frequent leaks.
-    // quad4: '', // ko: 렌즈 4개가 0.2초 간격으로 연속 촬영. 한 장에 움직임 4컷. · en: Four lenses fire 0.2 s apart: four moments in one frame.
-    // doublex: '', // ko: 같은 컷에 두 번 노출. 첫 장 위에 두 번째 장면을 겹쳐요. · en: Two exposures on one frame: layer a second scene over the first.
-    // panox: '', // ko: 65:24 와이드 파노라마. 한 롤 21장. · en: Wide 65:24 panoramas. 21 frames per roll.
-    // fish180: '', // ko: 180° 원형 어안. 동그란 세상. · en: A 180° circular fisheye. The world in a circle.
-    // cine: '', // ko: 2.39:1 시네마스코프. 강한 빛에 푸른 수평 플레어. · en: 2.39:1 anamorphic scope with blue streak flares on bright lights.
-    // ccd03: '', // ko: 2003년 감성 디카. 99장 메모리, 디지털 날짜, 바로 확인. · en: A 2003 digicam: 99-shot card, digital date imprint, instant review.
-    // pixel: '', // ko: 128×112 포켓 픽셀 카메라. 4색 팔레트, 30장. · en: A 128×112 pocket pixel camera. Four-color palettes, 30 shots.
-    // range: '', // ko: 조용한 레인지파인더. 선명한 렌즈, 브라이트 프레임, 흑백이 기본. · en: A quiet rangefinder: crisp lens, bright frame lines, black & white by default.
-    // aqua27: '', // ko: 방수 하우징을 씌운 27장 일회용. 물빛 청록 톤, 뭉개진 렌즈, 플래시는 매번 충전해요. · en: A 27-shot disposable in a waterproof housing: blue-green cast, soft lens, charge the flash each shot.
-    // instaw: '', // ko: 가로로 넓은 와이드 인스턴트. 10장 팩, 찍으면 사진이 나와 서서히 떠올라요. · en: Wide-format instant camera, 10-shot packs. Landscape prints eject and slowly appear.
-    // twin66: '', // ko: 위에서 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 좌우가 뒤집혀 보여요. · en: A twin-lens reflex you look down into: 12 square 6×6 frames, mirror-reversed finder.
-    // super8: '', // ko: 8mm 홈무비 카메라의 한 프레임. 둥근 게이트, 따뜻한 색, 굵은 입자. · en: One frame from an 8mm home movie: rounded gate, warm color, heavy grain.
-    // slide35: '', // ko: 슬라이드 필름 전용 컴팩트. 쨍한 색을 하얀 마운트에 끼워 돌려줘요. · en: A compact for slide film: punchy color, returned in white slide mounts.
-    // party: '', // ko: 큼직한 플래시가 기본으로 켜진 파티용 컴팩트. 강한 정면 플래시와 날짜 각인. · en: A party compact with a big flash that is always on: harsh direct flash and a date imprint.
-    // kidcam: '', // ko: 0.3메가 어린이 디카. 640픽셀, 과한 채도, 디지털 날짜, 바로 확인. · en: A 0.3 MP kids' camera: 640 px, oversaturated, digital date, instant review.
-    // sprocket: '', // ko: 퍼포레이션까지 찍히는 파노라마. 사진 위아래로 필름 구멍이 남아요. · en: A panorama that exposes over the sprocket holes, leaving film perforations in the frame.
+    pro35: 'Надёжная зеркальная камера 35mm. Любая плёнка 35mm, три формата, зум и экспокоррекция.',
+    snap27: 'Одноразовая камера на 27 кадров. Мягкий пластиковый объектив и вспышка, которую заряжают перед каждым кадром.',
+    instasq: 'Квадратная камера моментальной печати, кассеты на 10 кадров. Каждый снимок выезжает из камеры и медленно проявляется.',
+    half72: 'Два снимка бок о бок в каждом кадре. 72 полукадра — вдвое больше мгновений.',
+    zonelc: 'Туннельная виньетка и сочный цвет. Компакт для неспешных прогулок по улочкам.',
+    toy120: 'Среднеформатная игрушка с пластиковым объективом. Мягкие края, густая виньетка, частые засветки.',
+    quad4: 'Четыре объектива срабатывают с интервалом 0,2 с. Четыре мгновения движения в одном кадре.',
+    doublex: 'Две экспозиции — один кадр. Второй сюжет ложится поверх первого.',
+    panox: 'Широкие панорамы 65:24. 21 кадр на плёнке.',
+    fish180: 'Круговой «рыбий глаз» на 180°. Весь мир в круге.',
+    cine: 'Анаморфотный широкий экран 2.39:1. Синие полосы бликов поперёк ярких огней.',
+    ccd03: 'Цифровая мыльница прямиком из 2003-го. Карта на 99 кадров, цифровая дата, мгновенный просмотр.',
+    pixel: 'Карманная пиксельная камера 128×112. 30 кадров в четырёхцветных палитрах.',
+    range: 'Тихий дальномер. Резкий объектив, светлые рамки в видоискателе и чёрно-белая плёнка по умолчанию.',
+    aqua27: 'Одноразовая камера на 27 кадров в водонепроницаемом боксе. Сине-зелёные оттенки воды, мягкий объектив, вспышка, которую заряжают перед каждым кадром.',
+    instaw: 'Широкоформатная камера моментальной печати, кассеты на 10 кадров. Горизонтальные снимки выезжают и медленно проявляются.',
+    twin66: 'Двухобъективная зеркальная камера, в которую смотрят сверху. 12 квадратных кадров 6×6 и зеркально перевёрнутая картинка в видоискателе.',
+    super8: 'Один кадр из домашнего кино на 8-мм плёнку. Скруглённая рамка, тёплый цвет, крупное зерно.',
+    slide35: 'Компакт для слайдовой плёнки. Сочный цвет в белых рамках для слайдов.',
+    party: 'Компакт для вечеринок: мощная вспышка включена по умолчанию. Жёсткий фронтальный свет и дата на снимке.',
+    kidcam: 'Детская цифровая камера на 0,3 Мп. 640 пикселей, перенасыщенный цвет, цифровая дата, мгновенный просмотр.',
+    sprocket: 'Панорама, которая захватывает перфорацию: отверстия плёнки обрамляют каждый кадр.',
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -498,24 +502,24 @@ export const cameraText: LocaleCameraText = {
 
 /** Film stock / sensor descriptions (expressive register). Film names stay in Latin letters. */
 export const stockText: LocaleStockText = {
-  // sunny200: '', // ko: 햇살 가득한 따뜻한 노랑. 여행과 일상 스냅의 정석. · en: Warm, sunny yellows. The classic travel & everyday snapshot.
-  // muse400: '', // ko: 부드러운 피부톤과 파스텔 하이라이트. 인물용. · en: Gentle skin tones and pastel highlights. Made for portraits.
-  // mint400: '', // ko: 그늘에 살짝 도는 초록빛. 도시와 거리의 공기. · en: A hint of green in the shadows. City air in a frame.
-  // snap800: '', // ko: 일회용 카메라 그대로. 플래시, 진한 비네팅, 우연한 빛샘. · en: Straight out of a disposable: flash, heavy vignette, happy-accident leaks.
-  // mono400: '', // ko: 깊은 검정과 거친 입자의 흑백. 다큐멘터리 감성. · en: Deep blacks and gritty grain. Documentary black & white.
-  // insta600: '', // ko: 바랜 듯한 색과 하얀 테두리의 즉석 사진. · en: Faded colors and a white frame. Instant photo charm.
-  // neon800t: '', // ko: 텅스텐 시네마 필름. 네온 아래 붉은 할레이션. · en: Tungsten cinema film with red halation around neon lights.
-  // velvet50: '', // ko: 쨍한 채도와 높은 대비의 슬라이드 필름. 풍경용. · en: Punchy saturation and contrast. A landscape slide film.
-  // chrome100: '', // ko: 맑고 차가운 슬라이드 톤. 선명한 하늘. · en: Clean, cool slide tones and crisp skies.
-  // silver100: '', // ko: 고운 입자와 넓은 계조의 흑백. · en: Fine-grained black & white with a long tonal range.
-  // dream160: '', // ko: 낮은 대비, 공기처럼 가벼운 파스텔. · en: Low contrast, airy pastels.
-  // expired98: '', // ko: 1998년에 만료된 필름. 마젠타 포그와 먼지, 예측 불가. · en: Expired in 1998. Magenta fog, dust and surprises.
-  // xpro200: '', // ko: 슬라이드 필름을 네거티브(C-41)로 교차현상. 강한 대비, 연두빛 하이라이트, 청록 그림자. · en: Slide film cross-processed as negative: hard contrast, lime highlights, teal shadows.
-  // instamini: '', // ko: 밝고 산뜻한 미니 인스턴트. 깨끗한 화이트와 살짝 차가운 톤. · en: Bright, crisp mini instant film with clean whites and a cool touch.
-  // ccd: '', // ko: 2000년대 초 디카 CCD. 날아가는 하이라이트, 푸른 기, 보라색 번짐. · en: Early-2000s digicam CCD: clipped highlights, blue cast, purple fringing.
-  // pixel: '', // ko: 128픽셀 2비트 센서. 4가지 색과 디더링. · en: A 128-pixel, 2-bit sensor. Four colors and dithering.
-  // aqua400: '', // ko: 물속 일회용 필름. 붉은빛이 빠진 청록 톤과 뿌연 입자. · en: Underwater disposable film: reds wash out into a blue-green cast, soft grain.
-  // instawide: '', // ko: 와이드 인스턴트 필름. 자연스러운 색, 살짝 따뜻한 하이라이트. · en: Wide instant film: natural color with gently warm highlights.
-  // reel40: '', // ko: 홈무비 리버설 필름. 따뜻하고 진한 색, 굵은 입자, 먼지 낀 게이트. · en: Home-movie reversal film: warm, saturated color, big grain, a dusty gate.
-  // toycmos: '', // ko: 0.3메가 장난감 센서. 사탕 같은 색, 날아간 하이라이트, 얼룩덜룩한 색 노이즈. · en: A 0.3 MP toy sensor: candy colors, blown highlights, blotchy color noise.
+  sunny200: 'Тёплые солнечные жёлтые. Классика для путешествий и повседневных снимков.',
+  muse400: 'Нежные тона кожи и пастельные света. Создана для портретов.',
+  mint400: 'Лёгкая зелень в тенях. Воздух города в кадре.',
+  snap800: 'Прямо как из одноразовой камеры. Вспышка, густая виньетка и засветки — по счастливой случайности.',
+  mono400: 'Глубокий чёрный и жёсткое зерно. Честное чёрно-белое, без прикрас.',
+  insta600: 'Мягко выцветший цвет в белой рамке. Тепло моментального снимка.',
+  neon800t: 'Киноплёнка для ламп накаливания. Красный ореол расплывается вокруг неоновых огней.',
+  velvet50: 'Сочная насыщенность и высокий контраст. Слайдовая плёнка для пейзажей.',
+  chrome100: 'Чистые холодные слайдовые тона. Небо, прозрачное как стекло.',
+  silver100: 'Мелкое зерно и широкий тональный диапазон. Чёрно-белое в тихих, тонких полутонах.',
+  dream160: 'Низкий контраст, воздушная пастель.',
+  expired98: 'Просрочена в 1998-м. Пурпурная вуаль, пыль и сюрприз в каждом кадре.',
+  xpro200: 'Слайдовая плёнка, проявленная как негатив (C-41): жёсткий контраст, салатовые света, бирюзовые тени.',
+  instamini: 'Яркая, свежая мини-плёнка моментальной печати: чистый белый и лёгкая прохлада.',
+  ccd: 'CCD цифровых мыльниц начала 2000-х. Выбитые света, синеватый оттенок, фиолетовая кайма.',
+  pixel: '128-пиксельный 2-битный сенсор. Всего четыре цвета и дизеринг.',
+  aqua400: 'Одноразовая плёнка для подводной съёмки. Красные тона тают в сине-зелёной дымке, мягкое зерно.',
+  instawide: 'Широкая плёнка моментальной печати: естественный цвет и мягко-тёплые света.',
+  reel40: 'Обращаемая плёнка для домашнего кино: тёплый насыщенный цвет, крупное зерно, пыльная рамка.',
+  toycmos: 'Игрушечный сенсор на 0,3 Мп: конфетные цвета, выбитые света, пятнистый цветовой шум.',
 };

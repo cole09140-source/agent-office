@@ -31,7 +31,7 @@ test('Korean locale: auto-detected, no clipped labels on any screen', async ({ p
     problems.push(...(await clipped(page)).map((p) => `${name}: ${p}`));
   };
   await page.goto('./');
-  await expect(page.getByText('필름처럼 찍고')).toBeVisible();
+  await expect(page.getByText('필름처럼, 한 장씩')).toBeVisible();
   await snap('onboarding');
   await page.getByTestId('onb-skip').click();
   await expect(page.getByText('카메라를 고르세요')).toBeVisible();
