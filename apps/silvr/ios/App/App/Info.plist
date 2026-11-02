@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>SILVR</string>
+        <string>Film Camela</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -56,7 +56,7 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>필름 사진을 찍기 위해 카메라를 사용합니다. 영상은 기기 밖으로 전송되지 않습니다. (SILVR uses the camera to take photos; nothing leaves your device.)</string>
+	<string>필름 사진을 찍기 위해 카메라를 사용합니다. 영상은 기기 밖으로 전송되지 않습니다. (Film Camela uses the camera to take photos; nothing leaves your device.)</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>현상한 사진을 사진 앱에 저장합니다. (Saves your developed photos to Photos.)</string>
 	<key>NSPhotoLibraryUsageDescription</key>

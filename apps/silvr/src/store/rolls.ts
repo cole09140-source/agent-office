@@ -425,59 +425,202 @@ export async function updateDevelop(photoId: string, dev: DevelopSettings): Prom
 
 /** Re-develops several frames atomically (darkroom "apply to roll"). Missing photos are skipped, never recreated. */
 export async function updateDevelopMany(changes: [string, DevelopSettings][], roll?: { id: string; stockId: string }): Promise<(Photo | undefined)[]> {
+  return (await writeDevelops(changes, roll)).photos;
+}
+
+/** Enough to put a roll's develop settings back as they were before applyDevelops (undo). Held in memory only. */
+export interface DevelopUndo {
+  /** Each changed frame's settings before the change. */
+  frames: [string, DevelopSettings][];
+  /** The roll's film before a whole-roll re-develop relabelled it. */
+  roll?: { id: string; stockId: string };
+}
+
+/** Like updateDevelopMany, but returns what it replaced so restoreDevelops can undo it. */
+export async function applyDevelops(changes: [string, DevelopSettings][], roll?: { id: string; stockId: string }): Promise<DevelopUndo> {
+  return (await writeDevelops(changes, roll)).undo;
+}
+
+/** Undoes applyDevelops in one transaction. Frames deleted meanwhile stay deleted. Returns how many were restored. */
+export async function restoreDevelops(undo: DevelopUndo): Promise<number> {
+  return (await writeDevelops(undo.frames, undo.roll)).photos.filter(Boolean).length;
+}
+
+async function writeDevelops(changes: [string, DevelopSettings][], roll?: { id: string; stockId: string }): Promise<{ photos: (Photo | undefined)[]; undo: DevelopUndo }> {
   const out = await atomic(['photos', 'rolls'], async (t) => {
+    const undo: DevelopUndo = { frames: [] };
     // Re-developing a whole roll on another film relabels the roll too (header, album, contact sheet).
     if (roll) {
       const r = await readRoll(t, roll.id);
-      if (r && r.status !== 'loaded' && r.stockId !== roll.stockId) await rq(t.objectStore('rolls').put({ ...r, stockId: roll.stockId }));
+      if (r && r.status !== 'loaded' && r.stockId !== roll.stockId) {
+        undo.roll = { id: r.id, stockId: r.stockId };
+        await rq(t.objectStore('rolls').put({ ...r, stockId: roll.stockId }));
+      }
     }
-    const res: (Photo | undefined)[] = [];
+    const photos: (Photo | undefined)[] = [];
     for (const [id, dev] of changes) {
       const photo = (await rq(t.objectStore('photos').get(id))) as Photo | undefined;
       if (photo) {
+        undo.frames.push([id, photo.develop]);
         photo.develop = dev;
         await rq(t.objectStore('photos').put(photo));
       }
-      res.push(photo);
+      photos.push(photo);
     }
-    return res;
+    return { photos, undo };
   });
   notify();
   return out;
 }
 
-export async function deletePhoto(photoId: string): Promise<void> {
-  await atomic(['photos', 'blobs', 'rolls'], async (t) => {
+/**
+ * "Save as new photo": a copy of the frame with its own develop settings, sharing the same
+ * negative (stored again under the copy's key, so deleting either never touches the other).
+ * It joins the roll as the next frame number. Returns the new photo, or undefined if the
+ * original is gone.
+ */
+export async function duplicatePhoto(photoId: string, dev: DevelopSettings): Promise<Photo | undefined> {
+  const out = await atomic(['photos', 'blobs', 'rolls'], async (t): Promise<Photo | undefined> => {
+    const src = (await rq(t.objectStore('photos').get(photoId))) as Photo | undefined;
+    if (!src) return undefined;
+    const neg = (await rq(t.objectStore('blobs').get(blobKey.neg(photoId)))) as Blob | undefined;
+    if (!neg) return undefined;
+    const roll = await readRoll(t, src.rollId);
+    const siblings = (await rq(t.objectStore('photos').index('rollId').getAll(src.rollId))) as Photo[];
+    const last = Math.max(0, roll?.negatives ?? 0, ...siblings.map((p) => p.frame));
+    const copy: Photo = { id: uid(), rollId: src.rollId, frame: last + 1, takenAt: src.takenAt, width: src.width, height: src.height, develop: { ...dev }, ...(src.undated ? { undated: true } : {}) };
+    await rq(t.objectStore('photos').put(copy));
+    await rq(t.objectStore('blobs').put(neg, blobKey.neg(copy.id)));
+    if (roll) {
+      // A loaded (in-camera) roll keeps its exposure counter; the next shot just numbers after the copy.
+      if (roll.status === 'loaded') roll.negatives = copy.frame;
+      else {
+        // Finished rolls count what they hold (as after a delete).
+        roll.shots = roll.negatives = siblings.length + 1;
+        roll.capacity = Math.max(roll.capacity, roll.shots);
+      }
+      await rq(t.objectStore('rolls').put(roll));
+    }
+    return copy;
+  });
+  if (out) notify();
+  return out;
+}
+
+/** What deletePhoto removed, enough for restorePhoto to put it back (undo). Held in memory only. */
+export interface DeletedPhoto {
+  photo: Photo;
+  blobs: [string, Blob][];
+  /** The roll as it was before the delete. */
+  roll?: Roll;
+  /** The delete removed the roll too (it was the last photo of a finished roll). */
+  rollRemoved: boolean;
+}
+
+export async function deletePhoto(photoId: string): Promise<DeletedPhoto | undefined> {
+  const snap = await atomic(['photos', 'blobs', 'rolls'], async (t): Promise<DeletedPhoto | undefined> => {
     const photo = (await rq(t.objectStore('photos').get(photoId))) as Photo | undefined;
-    if (!photo) return;
+    if (!photo) return undefined;
+    const blobs: [string, Blob][] = [];
+    for (const k of Object.values(blobKey)) {
+      const b = (await rq(t.objectStore('blobs').get(k(photoId)))) as Blob | undefined;
+      if (b) blobs.push([k(photoId), b]);
+    }
     await rq(t.objectStore('photos').delete(photoId));
     for (const k of Object.values(blobKey)) await rq(t.objectStore('blobs').delete(k(photoId)));
     const roll = await readRoll(t, photo.rollId);
-    if (!roll) return;
+    if (!roll) return { photo, blobs, rollRemoved: false };
+    const before = { ...roll };
     const remaining = ((await rq(t.objectStore('photos').index('rollId').getAll(photo.rollId))) as Photo[]).sort((a, b) => a.frame - b.frame);
     if (remaining.length === 0 && roll.status !== 'loaded') {
       await rq(t.objectStore('rolls').delete(roll.id));
-      return;
+      return { photo, blobs, roll: before, rollRemoved: true };
     }
     if (roll.coverPhotoId === photoId) roll.coverPhotoId = remaining[0]?.id;
     // Frames on a loaded roll stay consumed; finished rolls show what is left.
     if (roll.status !== 'loaded') roll.shots = roll.negatives = remaining.length;
     await rq(t.objectStore('rolls').put(roll));
+    return { photo, blobs, roll: before, rollRemoved: false };
   });
   notify();
+  return snap;
 }
 
-export async function deleteRoll(rollId: string): Promise<void> {
-  await atomic(['photos', 'blobs', 'rolls'], async (t) => {
+/**
+ * Undoes deletePhoto: puts the photo and its negative back on its roll (recreating the roll only
+ * if that delete removed it). Returns false when there is nothing to restore it into.
+ */
+export async function restorePhoto(snap: DeletedPhoto): Promise<boolean> {
+  const ok = await atomic(['photos', 'blobs', 'rolls'], async (t) => {
+    if (await rq(t.objectStore('photos').get(snap.photo.id))) return false; // already back
+    let roll = await readRoll(t, snap.photo.rollId);
+    if (!roll) {
+      // The roll went away for another reason (deleted as a whole): don't bring it back for one photo.
+      if (!snap.rollRemoved || !snap.roll) return false;
+      roll = { ...snap.roll };
+    }
+    await rq(t.objectStore('photos').put(snap.photo));
+    for (const [key, blob] of snap.blobs) await rq(t.objectStore('blobs').put(blob, key));
+    if (roll.status !== 'loaded') {
+      const count = ((await rq(t.objectStore('photos').index('rollId').getAll(roll.id))) as Photo[]).length;
+      roll.shots = roll.negatives = count;
+    }
+    if (snap.roll?.coverPhotoId === snap.photo.id) roll.coverPhotoId = snap.photo.id;
+    await rq(t.objectStore('rolls').put(roll));
+    return true;
+  });
+  if (ok) notify();
+  return ok;
+}
+
+/** What deleteRoll removed, enough for restoreRoll to put it back (undo). Held in memory only. */
+export interface DeletedRoll {
+  roll: Roll;
+  photos: Photo[];
+  blobs: [string, Blob][];
+}
+
+/** Deletes a roll with all its photos; returns what was removed (for an undo), or undefined if it was gone. */
+export async function deleteRoll(rollId: string): Promise<DeletedRoll | undefined> {
+  const snap = await atomic(['photos', 'blobs', 'rolls'], async (t): Promise<DeletedRoll | undefined> => {
+    const roll = await readRoll(t, rollId);
     const photos = (await rq(t.objectStore('photos').index('rollId').getAll(rollId))) as Photo[];
+    const blobs: [string, Blob][] = [];
+    // Blob handles only: the browser keeps the bytes on disk, not in memory, while the undo is offered.
+    for (const key of [...photos.flatMap((p) => Object.values(blobKey).map((k) => k(p.id))), pendingKey(rollId)]) {
+      const b = (await rq(t.objectStore('blobs').get(key))) as Blob | undefined;
+      if (b) blobs.push([key, b]);
+    }
     for (const p of photos) {
       await rq(t.objectStore('photos').delete(p.id));
       for (const k of Object.values(blobKey)) await rq(t.objectStore('blobs').delete(k(p.id)));
     }
     await rq(t.objectStore('rolls').delete(rollId));
     await rq(t.objectStore('blobs').delete(pendingKey(rollId)));
+    return roll ? { roll, photos, blobs } : undefined;
   });
   notify();
+  return snap;
+}
+
+/**
+ * Undoes deleteRoll. Returns false when it is already back, or when it was the camera's loaded roll
+ * and another roll has been loaded since (a camera holds one roll).
+ */
+export async function restoreRoll(snap: DeletedRoll): Promise<boolean> {
+  const ok = await atomic(['photos', 'blobs', 'rolls'], async (t) => {
+    if (await readRoll(t, snap.roll.id)) return false;
+    if (snap.roll.kind === 'camera' && snap.roll.status === 'loaded') {
+      const all = (await rq(t.objectStore('rolls').getAll())) as Roll[];
+      if (all.some((r) => r.kind === 'camera' && r.status === 'loaded')) return false;
+    }
+    await rq(t.objectStore('rolls').put(snap.roll));
+    for (const p of snap.photos) await rq(t.objectStore('photos').put(p));
+    for (const [key, blob] of snap.blobs) await rq(t.objectStore('blobs').put(blob, key));
+    return true;
+  });
+  if (ok) notify();
+  return ok;
 }
 
 export interface ImportItem {

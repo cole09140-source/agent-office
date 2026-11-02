@@ -48,6 +48,8 @@ test('no WebGL context or object-URL leaks while navigating', async ({ page }) =
     await expect(page.getByTestId('dr-canvas')).toBeVisible();
     await page.getByTestId('sl-grain').fill(String(Math.round((0.5 + i * 0.1) * 10) / 10));
     await page.getByTestId('tab-camera').click();
+    // Leaving the darkroom with an unsaved edit asks first.
+    await page.getByTestId('confirm-ok').click();
     await expect(page.getByTestId('preview')).toBeVisible();
     await page.goto(rollUrl);
     await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3);

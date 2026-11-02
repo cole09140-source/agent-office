@@ -1,5 +1,7 @@
 # QA 보고서 — SILVR (v1.0 10라운드 · v1.1 카메라 15라운드 · v1.2 심화 50라운드)
 
+> 2026-11-01: 앱 이름이 SILVR → **Film Camela**로 바뀌었어요(내보낸 파일 `FilmCamela_*`, 갤러리 폴더 `Pictures/Film Camela`). 아래 기록은 당시 이름 그대로 둡니다.
+
 > 환경: Linux 컨테이너, Chromium(Playwright 1.63, SwiftShader 소프트웨어 GPU), 가상 카메라(합성 Y4M 장면: 가로 1280×720, 세로 720×1280), 기기 프로필 Pixel 7.
 > 실제 iPhone/Android 기기 테스트는 이 환경에서 불가능합니다. 출시 전 실기기 QA를 `04_LAUNCH_GUIDE.md`에 필수 항목으로 남겼습니다.
 

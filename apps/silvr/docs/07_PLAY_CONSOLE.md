@@ -1,9 +1,9 @@
 # Google Play Console 입력 자료
 
-Play Console에서 앱을 만들 때 그대로 옮겨 적으면 되는 값입니다. 스토어 문안 원문은 `docs/03_STORE_LISTING.md`, 빌드·서명은 `docs/04_LAUNCH_GUIDE.md`의 C.
+Play Console에서 앱을 만들 때 그대로 옮겨 적으면 되는 값입니다. 스토어 문안 원문은 `docs/03b_STORE_LISTING_FILM_CAMELA.md`, 빌드·서명은 `docs/04_LAUNCH_GUIDE.md`의 C.
 
 ## 0. 개발자 계정 — 아티움그룹 주식회사 조직 계정
-SILVR는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**으로 올립니다. 회사 정보 출처: 사업자등록증명원·법인등기부(2026-08-31 확인).
+Film Camela는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**으로 올립니다. 회사 정보 출처: 사업자등록증명원·법인등기부(2026-08-31 확인).
 
 | 항목 | 값 |
 |------|----|
@@ -18,12 +18,12 @@ SILVR는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**�
 | 개발자 연락처 이메일(공개) | play@muzig.ai |
 | 등록비 | US$25 (1회) |
 
-> ⚠ **이전 계정 주의**: 회사 이름의 예전 개발자 계정 **ATIUM COMPANY(ID 8548759895671356974)는 2024-03-21 해지**됐습니다. Google은 해지된 개발자와 연결된 새 계정도 해지할 수 있으므로, 새 조직 계정을 만들기 전에 (1) 해지 사유 메일을 확인하고 (2) Muzig 앱을 올린 **활성 상태의 회사 계정이 있으면 그 계정에 SILVR를 추가**하는 것이 가장 안전합니다. 새로 만들어야 한다면 계정 생성 때 예전 계정 관련 질문에 사실대로 답하세요.
+> ⚠ **이전 계정 주의**: 회사 이름의 예전 개발자 계정 **ATIUM COMPANY(ID 8548759895671356974)는 2024-03-21 해지**됐습니다. Google은 해지된 개발자와 연결된 새 계정도 해지할 수 있으므로, 새 조직 계정을 만들기 전에 (1) 해지 사유 메일을 확인하고 (2) Muzig 앱을 올린 **활성 상태의 회사 계정이 있으면 그 계정에 Film Camela를 추가**하는 것이 가장 안전합니다. 새로 만들어야 한다면 계정 생성 때 예전 계정 관련 질문에 사실대로 답하세요.
 
 ## 1. 앱 만들기
 | 항목 | 값 |
 |------|----|
-| 앱 이름 | SILVR – 필름 카메라 (영어: SILVR – Film Camera) |
+| 앱 이름 | Film Camela – 필름 카메라 (영어: Film Camela – Analog Camera) |
 | 기본 언어 | 한국어(ko-KR), 영어(en-US) 번역 추가 |
 | 앱 / 게임 | 앱 |
 | 무료 / 유료 | 무료 |
@@ -48,7 +48,7 @@ SILVR는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**�
 | 태그 | 카메라·사진 관련 태그에서 최대 5개 (Play Console 목록에서 선택) |
 | 이메일 | play@muzig.ai |
 | 전화(선택) | 비워 두기 권장 (공개됨) |
-| 웹사이트 | https://muzig.ai (SILVR 웹 배포 후에는 그 주소로 바꿔도 됨) |
+| 웹사이트 | https://muzig.ai (Film Camela 웹 배포 후에는 그 주소로 바꿔도 됨) |
 | 개인정보처리방침 URL | **필수.** `https://silvr.muzig.ai/privacy.html` — 웹(PWA) 배포 후 유효(같은 곳에 `terms.html`·`support.html`도 올라감) |
 
 ## 3. 앱 콘텐츠
@@ -104,12 +104,12 @@ SILVR는 **아티움그룹 주식회사 명의의 조직(Organization) 계정**�
 **한국어**
 ```
 첫 출시! 카메라 14대와 필름 16종으로 찍고, 현상소에서 기다리고, 다크룸에서 다시 현상하세요.
-· 저장하면 갤러리 SILVR 앨범에 바로 들어가요
+· 저장하면 갤러리 Film Camela 앨범에 바로 들어가요
 · 계정·광고·추적 없이 사진은 기기에만 저장돼요
 ```
 **English**
 ```
 First release! Shoot with 14 cameras and 16 film stocks, wait for the lab, and re-develop in the darkroom.
-· Save puts prints straight into your gallery's SILVR album
+· Save puts prints straight into your gallery's Film Camela album
 · No account, ads or tracking — photos stay on your device
 ```

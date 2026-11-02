@@ -8,7 +8,7 @@ test('no CSP violations during a full session', async ({ page }) => {
     document.addEventListener('securitypolicyviolation', (e) => (window as unknown as { __csp: string[] }).__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
   });
   await start(page);
-  await loadRoll(page, 'insta600', '12');
+  await loadRoll(page, 'sunny200', '12');
   await shoot(page, 1);
   await page.getByTestId('roll-btn').click();
   await page.getByTestId('btn-rewind').click();

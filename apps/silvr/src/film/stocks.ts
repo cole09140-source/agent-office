@@ -165,7 +165,7 @@ export const STOCKS: FilmStock[] = [
   },
   {
     id: 'insta600',
-    name: 'Insta 600',
+    name: 'Pop 600',
     iso: 600,
     kind: 'instant',
     pro: false,
@@ -358,7 +358,7 @@ export const STOCKS: FilmStock[] = [
   },
   {
     id: 'xpro200',
-    name: 'X-Pro 200',
+    name: 'Cross 200',
     iso: 200,
     kind: 'slide',
     pro: true,
@@ -385,7 +385,7 @@ export const STOCKS: FilmStock[] = [
   },
   {
     id: 'instamini',
-    name: 'Insta Mini',
+    name: 'Pop Mini',
     iso: 800,
     kind: 'instant',
     pro: false,
@@ -506,7 +506,7 @@ export const STOCKS: FilmStock[] = [
   },
   {
     id: 'instawide',
-    name: 'Insta Wide',
+    name: 'Pop Wide',
     iso: 800,
     kind: 'instant',
     pro: false,

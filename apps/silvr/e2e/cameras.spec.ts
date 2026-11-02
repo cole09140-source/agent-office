@@ -171,7 +171,8 @@ test('wide instant: the print ejects wide and keeps developing in the photo view
   await start(page);
   await loadCamera(page, 'instaw');
   await shoot(page, 1);
-  await expect(page.locator('.eject')).toBeVisible();
+  // The print slides out over the viewfinder (saved first), then lands in the thumbnail.
+  await expect(page.locator('.eject-print')).toBeVisible();
   await expect(page.getByTestId('last-shot')).toHaveClass(/instant/);
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('last-shot').getByTestId('thumb').click();
@@ -182,7 +183,8 @@ test('instant camera: print ejects, develops, and is viewable in the camera', as
   await start(page);
   await loadCamera(page, 'instasq');
   await shoot(page, 1);
-  await expect(page.locator('.eject')).toBeVisible();
+  // The print slides out over the viewfinder (saved first), then lands in the thumbnail.
+  await expect(page.locator('.eject-print')).toBeVisible();
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toContainText('In camera');

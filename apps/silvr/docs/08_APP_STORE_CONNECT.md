@@ -18,10 +18,10 @@ iPhone 앱을 아티움그룹 주식회사 명의로 올릴 때 입력할 값입
 | 항목 | 값 |
 |------|----|
 | 플랫폼 | iOS |
-| 이름 | SILVR – 필름 카메라 (영어 현지화: SILVR – Film Camera) |
+| 이름 | Film Camela – 필름 카메라 (영어 현지화: Film Camela – Analog Camera) |
 | 기본 언어 | 한국어 |
 | 번들 ID | `app.silvr.camera` (Certificates, Identifiers & Profiles에서 먼저 등록) |
-| SKU | `SILVR-IOS-001` |
+| SKU | `SILVR-IOS-001` (내부용, 사용자에게 안 보임 · 앱을 만든 뒤에는 못 바꿔요) |
 | 사용자 액세스 | 전체 액세스 |
 
 ## 2. 앱 정보

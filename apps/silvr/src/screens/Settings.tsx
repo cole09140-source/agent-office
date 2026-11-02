@@ -1,9 +1,11 @@
 import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
+import { HelpLink } from './Gallery';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
 import { t } from '../i18n';
+import { signalLang } from '../state/lang';
 import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
 import { BackupError, createBackup, restoreBackup } from '../store/backup';
 import { clearAll } from '../store/db';
@@ -17,30 +19,66 @@ declare const __APP_VERSION__: string;
 // Module level: a long backup / restore keeps its progress and result when you leave Settings.
 const backupStatusSig = signal('');
 const backupBusySig = signal(false);
-const backupFileSig = signal<{ blob: Blob; name: string } | null>(null);
+const backupFileSig = signal<{ blob: Blob; name: string; saved?: boolean } | null>(null);
+const backupWhereSig = signal('');
+
+/** Set by "Restore a backup" (onboarding, album): Settings opens on the restore button, shown as the main action. */
+export const restoreRequest = signal(false);
+
+/** The share sheet can carry a .zip here (native app, iOS Safari); Android Chrome cannot share one. */
+function canSendFile(file: { blob: Blob; name: string }): boolean {
+  if (isNative()) return true;
+  try {
+    const f = new File([file.blob], file.name, { type: 'application/zip' });
+    return typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] });
+  } catch {
+    return false;
+  }
+}
 
 export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
   const s = settings.value;
   const [usage, setUsage] = useState<number | null>(null);
-  const [persisted, setPersisted] = useState(false);
+  // 'refused' stays visible: the toast alone left the button looking untouched.
+  const [persisted, setPersisted] = useState<boolean | 'refused'>(false);
+  const restoreRef = useRef<HTMLButtonElement>(null);
+  // Came here to restore: for this visit "Restore from backup" is the primary button, not "Save backup".
+  const [restoreFirst, setRestoreFirst] = useState(() => restoreRequest.value);
+  const wantRestore = restoreRequest.value;
 
   useEffect(() => {
     navigator.storage?.estimate?.().then((e) => setUsage(e.usage ?? 0)).catch(() => undefined);
     navigator.storage?.persisted?.().then(setPersisted).catch(() => undefined);
   }, []);
 
+  // Also when Settings is already open (onboarding replayed from here, then "restore a backup").
+  useEffect(() => {
+    if (!wantRestore) return;
+    restoreRequest.value = false;
+    setRestoreFirst(true);
+    // After the screen-change focus (the heading) has run.
+    const id = setTimeout(() => {
+      restoreRef.current?.scrollIntoView({ block: 'center' });
+      restoreRef.current?.focus({ preventScroll: true });
+    }, 120);
+    return () => clearTimeout(id);
+  }, [wantRestore]);
+
   const backupStatus = backupStatusSig.value;
   const backupBusy = backupBusySig.value;
   const backupFile = backupFileSig.value;
   const setBackupStatus = (v: string) => (backupStatusSig.value = v);
   const setBackupBusy = (v: boolean) => (backupBusySig.value = v);
-  const setBackupFile = (v: { blob: Blob; name: string } | null) => (backupFileSig.value = v);
+  const setBackupFile = (v: { blob: Blob; name: string; saved?: boolean } | null) => (backupFileSig.value = v);
+  const backupWhere = backupWhereSig.value;
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportBackup = async () => {
     if (backupBusySig.value) return;
     setBackupBusy(true);
     setBackupFile(null);
+    backupWhereSig.value = '';
+    let built: { blob: Blob; name: string } | null = null;
     const release = holdCapture(); // an update reload waits for long backup / restore work
     try {
       const now = Date.now();
@@ -50,9 +88,8 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         setBackupStatus(t('set.backup.empty'));
         return;
       }
-      // Building takes a while, so the tap no longer counts as a user gesture for the
-      // share sheet (iOS refuses it): saving happens from a fresh tap.
-      setBackupFile({ blob, name: fileName('SILVR_backup', now, 'zip') });
+      built = { blob, name: fileName('FilmCamela_backup', now, 'zip') };
+      setBackupFile(built);
       setBackupStatus(t('set.backup.done', { rolls: summary.rolls, photos: summary.photos }));
     } catch (err) {
       console.error('[silvr] backup failed', err);
@@ -61,24 +98,29 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       release();
       setBackupBusy(false);
     }
+    // One tap: save straight away. Only iOS Safari needs a fresh tap for its share sheet
+    // (building took too long to still count as the user's gesture): it gets the "Ready · Save" step.
+    if (built && !(isIos() && !isNative())) await saveBackup(built);
   };
 
-  const saveBackup = async () => {
+  const saveBackup = async (file = backupFileSig.value) => {
     // Busy while writing: on native a big backup is written in chunks for seconds, and a second
     // tap would interleave its chunks into the same file or delete it under the share sheet.
-    if (!backupFile || backupBusy) return;
+    if (!file || backupBusySig.value) return;
     setBackupBusy(true);
     const release = holdCapture();
     try {
-      const res = await saveFile(backupFile.blob, backupFile.name);
+      const res = await saveFile(file.blob, file.name);
       if (res === 'cancelled') return;
       // On iOS web a plain download goes nowhere: only the share sheet counts as saved.
       if (res === 'downloaded' && isIos() && !isNative()) {
         setBackupStatus(t('set.backup.saveFailed'));
         return;
       }
-      setBackupStatus(t('set.backup.saved'));
-      setBackupFile(null);
+      // Say where it went, and how it comes back.
+      setBackupStatus(res === 'downloaded' && !isNative() ? t('set.backup.savedWeb', { name: file.name }) : t('set.backup.savedShared', { name: file.name }));
+      backupWhereSig.value = t('set.backup.restoreHint');
+      setBackupFile({ ...file, saved: true });
     } catch (err) {
       console.error('[silvr] backup save failed', err);
       setBackupStatus(t('set.backup.saveFailed'));
@@ -88,10 +130,28 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     }
   };
 
+  /** After saving: hand the same .zip to the share sheet (KakaoTalk, Drive…) to move it to the new phone. */
+  const sendBackup = async () => {
+    const file = backupFileSig.value;
+    if (!file || backupBusySig.value) return;
+    // Native: saveFile is the share sheet already (it writes the file in chunks, so it stays busy-guarded).
+    if (isNative()) return saveBackup(file);
+    try {
+      await navigator.share({ files: [new File([file.blob], file.name, { type: 'application/zip' })], title: file.name });
+      setBackupStatus(t('set.backup.savedShared', { name: file.name }));
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('[silvr] backup share failed', err);
+        setBackupStatus(t('set.backup.saveFailed'));
+      }
+    }
+  };
+
   const importBackup = async (file: File | undefined) => {
     if (!file || backupBusySig.value) return;
     setBackupBusy(true);
     setBackupStatus(t('set.backup.restoring'));
+    backupWhereSig.value = '';
     const release = holdCapture();
     try {
       const r = await restoreBackup(file);
@@ -110,10 +170,14 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       release();
       setBackupBusy(false);
       if (fileRef.current) fileRef.current.value = '';
+      // Keyboard / screen-reader users stay on the button they pressed (focus may have dropped to the page).
+      const active = document.activeElement;
+      if (restoreRef.current?.isConnected && (!active || active === document.body)) restoreRef.current.focus({ preventScroll: true });
     }
   };
 
   const reset = async () => {
+    // The confirm text points to the backup first: this cannot be undone.
     if (!(await confirm(t('set.resetConfirm'), t('set.reset'), true))) return;
     await clearAll();
     await clearShareCache();
@@ -127,7 +191,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
   const legalLink = isNative() ? {} : { target: '_blank', rel: 'noopener' };
 
   return (
-    <div class="page" data-testid="settings-screen">
+    <div class="page settings" data-testid="settings-screen">
       <Header title={t('set.title')} />
       <section class="card">
         <div class="field">
@@ -147,6 +211,56 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         <Toggle label={t('set.haptics')} checked={s.haptics} onChange={(haptics) => updateSettings({ haptics })} />
         <Toggle label={t('set.grid')} checked={s.grid} onChange={(grid) => updateSettings({ grid })} />
         <Toggle label={t('set.mirror')} checked={s.mirrorFront} onChange={(mirrorFront) => updateSettings({ mirrorFront })} />
+      </section>
+      {/* Backup right after the basics: photos live only on this device. */}
+      <section class="card" aria-labelledby="backup-h">
+        <div class="field">
+          <span id="backup-h">{t('set.backup')}</span>
+          <p class="muted small backup-hint">{t('set.backup.hint')}</p>
+          <HelpLink class="small" />
+        </div>
+        {backupFile && !backupFile.saved ? (
+          // Built but not saved yet (iOS Safari, or the share sheet was dismissed): one clear next step.
+          <button class="btn primary wide backup-save" onClick={() => void saveBackup()} disabled={backupBusy} data-testid="btn-backup-save">
+            <Icon name="download" size={18} /> {t('set.backup.save')}
+          </button>
+        ) : (
+          <button class={`btn ${restoreFirst ? 'ghost' : 'primary'} wide backup-save`} onClick={() => void exportBackup()} disabled={backupBusy} data-testid="btn-backup">
+            <Icon name="download" size={18} /> {t('set.backup.export')}
+          </button>
+        )}
+        <p class="muted small backup-status" role="status" aria-live="polite" data-testid="backup-status">
+          {backupStatus}
+          {backupWhere && <span class="backup-where">{backupWhere}</span>}
+        </p>
+        {backupFile?.saved && canSendFile(backupFile) && (
+          <button class="btn ghost wide backup-send" onClick={() => void sendBackup()} disabled={backupBusy} data-testid="btn-backup-send">
+            <Icon name="share" size={18} /> {t('set.backup.send')}
+          </button>
+        )}
+        {/* Native: saving is the share sheet, so "send" above is the same thing. */}
+        {backupFile?.saved && !isNative() && (
+          <button class="link-btn backup-again" onClick={() => void saveBackup()} disabled={backupBusy} data-testid="btn-backup-save">
+            {t('set.backup.saveAgain')}
+          </button>
+        )}
+        {/* aria-disabled, not disabled: a disabled button drops keyboard focus to the page mid-restore. */}
+        <button
+          ref={restoreRef}
+          class={`btn ${restoreFirst ? 'primary' : 'ghost'} wide backup-restore`}
+          onClick={() => !backupBusySig.value && fileRef.current?.click()}
+          aria-disabled={backupBusy || undefined}
+          data-testid="btn-restore"
+        >
+          {t('set.backup.import')}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          hidden
+          data-testid="restore-input"
+          onChange={(e) => void importBackup((e.currentTarget as HTMLInputElement).files?.[0])}
+        />
       </section>
       <section class="card">
         <Toggle label={t('set.dateStamp')} checked={s.dateStamp} onChange={(dateStamp) => updateSettings({ dateStamp })} testId="set-date" />
@@ -174,6 +288,9 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         </div>
         <div class="field">
           <span>{t('set.speed')}</span>
+          <p class="muted small field-hint">
+            {t('set.speed.hint')}
+          </p>
           <Segmented<DevelopSpeed>
             grid
             label={t('set.speed')}
@@ -190,18 +307,37 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         </div>
         {/* App storage is already durable in the native apps. */}
         {!isNative() && navigator.storage?.persist && (
-          <button
-            class="row link"
-            disabled={persisted}
-            onClick={async () => {
-              const ok = await navigator.storage.persist().catch(() => false);
-              setPersisted(ok);
-              if (!ok) toast(t('set.storage.refused'));
-            }}
-          >
-            <span>{t('set.storage.persist')}</span>
-            <span class="muted">{persisted ? t('set.storage.persisted') : <Icon name="chevron" size={18} />}</span>
-          </button>
+          <div class="row persist-row">
+            <span class="persist-txt">
+              <span>{t('set.storage.persist')}</span>
+              <small class="muted">{t('set.storage.persistHint')}</small>
+              {persisted === 'refused' && (
+                <small class="persist-why" role="status">
+                  {t('set.storage.refused')}
+                </small>
+              )}
+            </span>
+            {persisted === true ? (
+              <span class="muted persist-on" data-testid="persist-state" data-state="on">
+                <Icon name="check" size={16} /> {t('set.storage.persisted')}
+              </span>
+            ) : persisted === 'refused' ? (
+              <span class="muted persist-on persist-refused" data-testid="persist-state" data-state="refused">
+                {t('set.storage.refusedShort')}
+              </span>
+            ) : (
+              <button
+                class="btn ghost small"
+                data-testid="btn-persist"
+                onClick={async () => {
+                  const ok = await navigator.storage.persist().catch(() => false);
+                  setPersisted(ok || 'refused');
+                }}
+              >
+                {t('set.storage.persistAsk')}
+              </button>
+            )}
+          </div>
         )}
         {installPrompt.value && (
           <button class="row link" onClick={promptInstall}>
@@ -210,49 +346,20 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           </button>
         )}
       </section>
-      <section class="card" aria-labelledby="backup-h">
-        <div class="field">
-          <span id="backup-h">{t('set.backup')}</span>
-          <p class="muted small backup-hint">{t('set.backup.hint')}</p>
-        </div>
-        <button class="row link" onClick={exportBackup} disabled={backupBusy} data-testid="btn-backup">
-          <span>{t('set.backup.export')}</span>
-          <Icon name="chevron" size={18} />
-        </button>
-        {backupFile && (
-          <button class="btn primary wide backup-save" onClick={saveBackup} disabled={backupBusy} data-testid="btn-backup-save">
-            <Icon name="download" size={18} /> {t('set.backup.save')}
-          </button>
-        )}
-        <button class="row link" onClick={() => fileRef.current?.click()} disabled={backupBusy} data-testid="btn-restore">
-          <span>{t('set.backup.import')}</span>
-          <Icon name="chevron" size={18} />
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          hidden
-          data-testid="restore-input"
-          onChange={(e) => void importBackup((e.currentTarget as HTMLInputElement).files?.[0])}
-        />
-        <p class="muted small backup-status" role="status" aria-live="polite" data-testid="backup-status">
-          {backupStatus}
-        </p>
-      </section>
       <section class="card">
-        <a class="row link" href="./privacy.html" {...legalLink}>
+        <a class="row link" href={`./privacy.html?lang=${signalLang.value}`} {...legalLink}>
           <span>{t('set.privacy')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./terms.html" {...legalLink}>
+        <a class="row link" href={`./terms.html?lang=${signalLang.value}`} {...legalLink}>
           <span>{t('set.terms')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./support.html" {...legalLink}>
+        <a class="row link" href={`./support.html?lang=${signalLang.value}`} {...legalLink}>
           <span>{t('set.support')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href="./licenses.html" {...legalLink}>
+        <a class="row link" href={`./licenses.html?lang=${signalLang.value}`} {...legalLink}>
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
         </a>
@@ -268,7 +375,8 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <button class="btn danger wide" onClick={reset} data-testid="btn-reset">
         {t('set.reset')}
       </button>
-      <p class="muted small app-credit">© 2026 ATIUM GROUP Co., Ltd.</p>
+      {/* Same operator name as terms.html: 아티움그룹 주식회사 / ATIUM GROUP Co., Ltd. */}
+      <p class="muted small app-credit">{t('set.credit')}</p>
     </div>
   );
 }

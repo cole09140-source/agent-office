@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { importFile } from './camera/capture';
 import { Icon, type IconName } from './components/Icon';
-import { ConfirmDialog, Sheet, StockCard, Toasts } from './components/ui';
+import { Announcer, Canister, ConfirmDialog, Sheet, StockStrip, Toasts } from './components/ui';
+import { DEFAULT_CAMERA_ID, getCamera, hasCamera, stockFits } from './cameras/models';
 import { randomSeed } from './film/random';
 import { defaultDevelop } from './film/resolve';
 import { DEFAULT_STOCK_ID, getStock, STOCKS } from './film/stocks';
@@ -17,10 +18,11 @@ import { LabScreen } from './screens/Lab';
 import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
-import { SettingsScreen } from './screens/Settings';
-import { confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
-import { go, goTab, route, type Route } from './state/router';
-import { addImportBatch, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem } from './store/rolls';
+import { restoreRequest, SettingsScreen } from './screens/Settings';
+import { activeRoll, announce, confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
+import { signalLang } from './state/lang';
+import { go, goTab, route, routeToHash, type Route } from './state/router';
+import { addImportBatch, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem, type RollStatus } from './store/rolls';
 
 const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
   { name: 'camera', icon: 'camera', label: 'tab.camera' },
@@ -45,8 +47,29 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
 function TabBar() {
   const current = TAB_OF[route.value.name];
   const badges: Partial<Record<Route['name'], number>> = { lab: developingRolls.value.length, gallery: newRollCount.value };
+  // Large text makes the bar taller: publish its real height (without the safe area) as --tab-h,
+  // which the page padding, the camera layout and the floating bars below use.
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const root = document.documentElement;
+    const measure = () => {
+      const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+      const h = Math.round(el.getBoundingClientRect().height - pad);
+      if (h > 64) root.style.setProperty('--tab-h', `${h}px`);
+      else root.style.removeProperty('--tab-h');
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty('--tab-h');
+    };
+  }, []);
   return (
-    <nav class="tabbar" aria-label="SILVR">
+    <nav class="tabbar" aria-label="Film Camela" ref={ref}>
       {TABS.map((tab) => (
         <button
           key={tab.name}
@@ -66,6 +89,18 @@ function TabBar() {
     </nav>
   );
 }
+
+/**
+ * Films offered for imported photos, by the same format rules as the cameras: ordinary roll films
+ * (as a 35mm body takes them, so no Snap 800 that only comes inside a disposable), then the instant
+ * packs — an imported photo can still be printed with an instant frame, a look people ask for.
+ * The CCD / pixel / toy sensors and other body-exclusive stocks belong to their cameras.
+ */
+export const IMPORT_STOCKS = (() => {
+  const roll = getCamera(DEFAULT_CAMERA_ID);
+  const ok = STOCKS.filter((st) => !st.exclusive && (st.kind === 'instant' || stockFits(roll, st)));
+  return [...ok.filter((st) => st.kind !== 'instant'), ...ok.filter((st) => st.kind === 'instant')];
+})();
 
 function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [stockId, setStockId] = useState(DEFAULT_STOCK_ID);
@@ -142,13 +177,15 @@ function ImportSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
 
   return (
     <Sheet open={open} onClose={() => progress === null && onClose()} title={t('gal.import')} testId="import-sheet">
-      <p class="muted small">{stockDescription(stockId)}</p>
-      <div class="stock-strip">
-        {/* The CCD / pixel sensors belong to their cameras (the darkroom offers imports the same list). */}
-        {STOCKS.filter((st) => !st.exclusive).map((st) => (
-          <StockCard key={st.id} stock={st} selected={st.id === stockId} onClick={() => setStockId(st.id)} />
-        ))}
+      <p class="muted small import-hint">{t('gal.importHint')}</p>
+      <div class="import-pick" data-testid="import-stock-preview">
+        <Canister stock={getStock(stockId)} size={30} />
+        <p>
+          <strong>{getStock(stockId).name}</strong>
+          <span class="muted small">{stockDescription(stockId)}</span>
+        </p>
       </div>
+      <StockStrip stocks={IMPORT_STOCKS} value={stockId} onChange={setStockId} />
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.currentTarget.files)} data-testid="import-input" />
       <button class="btn primary wide" disabled={progress !== null} onClick={() => input.current?.click()} data-testid="btn-pick-files">
         {progress !== null ? t('gal.importing', { n: progress, total }) : t('gal.import')}
@@ -182,10 +219,185 @@ function useLabClock() {
       if (known.current.has(r.id)) continue;
       known.current.add(r.id);
       if (r.kind === 'camera' && inLab.current.has(r.id) && r.readyAt !== r.finishedAt && !r.seenAt) {
-        toast(t('lab.developedToast', { stock: getStock(r.stockId).name }), { label: t('lab.open'), run: () => go({ name: 'roll', id: r.id }) }, 6000);
+        // Several rolls back at once (a rush, the app reopened after 9 AM): one "3 rolls developed · View".
+        // Named like the lab and the album: "camera · film".
+        const name = hasCamera(r.cameraId) ? `${getCamera(r.cameraId).name} · ${getStock(r.stockId).name}` : getStock(r.stockId).name;
+        toast(t('lab.developedToast', { stock: name }), { label: t('lab.open'), run: () => go({ name: 'roll', id: r.id }) }, 6000, undefined, {
+          group: 'developed',
+          many: (n) => ({ text: t('lab.developedMany', { n }), action: { label: t('lab.open'), run: () => goTab({ name: 'gallery' }) } }),
+        });
       }
     }
   }, [rolls.value, ready.value]);
+}
+
+/** "1시간", "2일 3시간", "45분" / "1 h", "2 d 3 h", "45 min": how long until a roll is back. */
+export function formatWait(ms: number, lang: 'ko' | 'en'): string {
+  const min = Math.max(1, Math.round(ms / 60_000));
+  const d = Math.floor(min / 1440);
+  const h = Math.floor((min % 1440) / 60);
+  const m = min % 60;
+  const u = lang === 'ko' ? { d: '일', h: '시간', m: '분' } : { d: ' d', h: ' h', m: ' min' };
+  const parts = d > 0 ? [d && `${d}${u.d}`, h && `${h}${u.h}`] : [h && `${h}${u.h}`, m && `${m}${u.m}`];
+  return parts.filter(Boolean).join(' ');
+}
+
+/**
+ * Tells screen readers about roll changes that happen without a screen change:
+ * a roll loaded ("Sunny 200 · 24장 넣었어요") and a roll sent off ("현상소로 보냈어요 · 1시간 뒤 도착").
+ * Lives here (not in the camera screen) so every way of loading/sending is covered.
+ */
+function useRollAnnouncements() {
+  const prev = useRef<{ active?: string; status: Map<string, RollStatus> } | null>(null);
+  useEffect(() => {
+    if (!ready.value) return;
+    const status = new Map(rolls.value.map((x) => [x.id, x.status]));
+    const before = prev.current;
+    const active = activeRoll.value;
+    prev.current = { active: active?.id, status };
+    if (!before) return; // first read after start: nothing changed in front of the user
+    if (active && active.id !== before.active && !before.status.has(active.id)) {
+      announce(t('a11y.rollLoaded', { stock: getStock(active.stockId).name, n: active.capacity }));
+      return;
+    }
+    for (const x of rolls.value) {
+      // Sent to the lab with a wait (instant development opens the roll, which speaks for itself).
+      if (before.status.get(x.id) === 'loaded' && x.status === 'developing' && x.readyAt && x.readyAt - Date.now() > 30_000) {
+        announce(t('a11y.sentToLab', { wait: formatWait(x.readyAt - Date.now(), signalLang.value) }));
+        return;
+      }
+    }
+  }, [rolls.value, activeRoll.value, ready.value]);
+}
+
+/** What to put focus back on when the same kind of screen replaces itself (photo → next photo). */
+function focusKey(el: Element | null): string | null {
+  if (!(el instanceof HTMLElement) || el === document.body) return null;
+  const id = el.getAttribute('data-testid');
+  if (id) return `[data-testid="${CSS.escape(id)}"]`;
+  const label = el.getAttribute('aria-label');
+  return label ? `[aria-label="${CSS.escape(label)}"]` : null;
+}
+
+/**
+ * After a screen change, move focus to the new screen's heading (screen readers read where they are,
+ * Tab starts at the top) without scrolling. Not on first load, not under onboarding or an open dialog.
+ */
+function useRouteFocus(r: Route, enabled: boolean) {
+  const key = routeToHash(r);
+  const last = useRef<{ key: string; name: string } | null>(null);
+  const lastFocus = useRef<string | null>(null);
+  // Remember the focused control while still on the old screen (updated on every focus move).
+  useEffect(() => {
+    const onFocus = (e: FocusEvent) => (lastFocus.current = focusKey(e.target as Element));
+    document.addEventListener('focusin', onFocus);
+    return () => document.removeEventListener('focusin', onFocus);
+  }, []);
+  useEffect(() => {
+    const prev = last.current;
+    last.current = { key, name: r.name };
+    if (!prev || prev.key === key || !enabled) return;
+    const sameKind = prev.name === r.name;
+    const keep = sameKind ? lastFocus.current : null;
+    let tries = 0;
+    let handle: ReturnType<typeof setTimeout> | undefined;
+    const attempt = () => {
+      const active = document.activeElement;
+      // Something on the new screen already took focus on purpose (a dialog, an input): leave it.
+      if (active && active !== document.body && active.closest('[role=dialog], .onboarding')) return;
+      const main = document.querySelector<HTMLElement>('main.screen');
+      const again = keep ? main?.querySelector<HTMLElement>(keep) : null;
+      if (again && !again.hasAttribute('disabled')) {
+        again.focus({ preventScroll: true });
+        return;
+      }
+      const h1 = main?.querySelector<HTMLElement>('h1');
+      if (h1) {
+        if (!h1.hasAttribute('tabindex')) h1.tabIndex = -1;
+        h1.focus({ preventScroll: true });
+        // Screens that swap their header once loaded (darkroom: loading → photo) drop the focused heading:
+        // check again once the screen has settled and focus the new one.
+        const settle = (wait: number) =>
+          (handle = setTimeout(() => {
+            const lost = !h1.isConnected && (!document.activeElement || document.activeElement === document.body);
+            if (lost) attempt();
+            else if (wait < 1000) settle(wait * 3);
+          }, wait));
+        if (settles++ < 3) settle(250);
+      } else if (++tries < 20) handle = setTimeout(attempt, 50); // screens that render their heading after loading
+    };
+    let settles = 0;
+    attempt();
+    return () => handle && clearTimeout(handle);
+  }, [key, enabled]);
+}
+
+/**
+ * Where focus goes when the focused control disappears without a screen change. On the camera after
+ * Load: the shutter (the next thing to press). Otherwise the screen's heading.
+ */
+function focusScreenStart(preferShutter: boolean): void {
+  const main = document.querySelector<HTMLElement>('main.screen');
+  if (!main) return;
+  if (preferShutter && route.value.name === 'camera') {
+    const shutter = main.querySelector<HTMLElement>('[data-testid="shutter"]');
+    if (shutter && !shutter.hasAttribute('disabled')) {
+      shutter.focus({ preventScroll: true });
+      return;
+    }
+  }
+  const h1 = main.querySelector<HTMLElement>('h1');
+  if (!h1) return;
+  if (!h1.hasAttribute('tabindex')) h1.tabIndex = -1;
+  h1.focus({ preventScroll: true });
+}
+
+/**
+ * Focus rescue: when the focused control is removed (the Load button once the roll is in, a rushed roll's
+ * button, a toast's ×, Skip on the onboarding, the darkroom's loading header), browsers drop focus to
+ * <body> and keyboard / screen-reader users start over from the top. Put it on the screen instead.
+ */
+function useFocusRescue() {
+  useEffect(() => {
+    let last: HTMLElement | null = null;
+    let wasLoad = false;
+    let queued = false;
+    const onFocus = (e: FocusEvent) => {
+      if (!(e.target instanceof HTMLElement)) return;
+      last = e.target;
+      wasLoad = e.target.getAttribute('data-testid') === 'btn-load';
+    };
+    const check = () => {
+      queued = false;
+      const active = document.activeElement;
+      if ((active && active !== document.body) || !last || last.isConnected) return;
+      // Open sheets and the onboarding put focus where it belongs themselves.
+      if (document.querySelector('[role=dialog]')) return;
+      last = null;
+      focusScreenStart(wasLoad);
+    };
+    const mo = new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      setTimeout(check, 0);
+    });
+    document.addEventListener('focusin', onFocus);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      document.removeEventListener('focusin', onFocus);
+      mo.disconnect();
+    };
+  }, []);
+}
+
+/**
+ * From the onboarding's "restore a backup" link: Settings with Restore as the main action, in view and
+ * focused (Settings reads restoreRequest, as for the album's restore link).
+ */
+function openRestore(): void {
+  restoreRequest.value = true;
+  void updateSettings({ onboarded: true });
+  goTab({ name: 'settings' });
 }
 
 export function App() {
@@ -198,12 +410,16 @@ export function App() {
   const cameraShown = useRef(false);
   const r = route.value;
   useLabClock();
+  useRollAnnouncements();
+  useRouteFocus(r, settings.value.onboarded);
+  useFocusRescue();
 
   // Safari tabs lose storage after 7 idle days; nudge iOS users to install once.
   const onboarded = settings.value.onboarded;
   useEffect(() => {
     // The App Store app is not a Safari tab: no "add to home screen" hint there.
-    if (!ready.value || !onboarded || isNative() || !isIos() || isStandalone()) return;
+    // Not on the camera: the hint would sit over the viewfinder. It shows on the next other screen.
+    if (!ready.value || !onboarded || isNative() || !isIos() || isStandalone() || r.name === 'camera') return;
     get<boolean>('kv', 'iosHint')
       .then((seen) => {
         if (seen) return;
@@ -211,7 +427,7 @@ export function App() {
         return put('kv', true, 'iosHint');
       })
       .catch(() => undefined);
-  }, [ready.value, onboarded]);
+  }, [ready.value, onboarded, r.name]);
 
   // A confirm left open by a route change (system back) must not act on the next screen.
   useEffect(() => {
@@ -226,7 +442,7 @@ export function App() {
     window.scrollTo(0, 0);
   }, [r.name, 'id' in r ? r.id : '']);
 
-  if (!ready.value) return <div class="splash logo">SILVR</div>;
+  if (!ready.value) return <div class="splash logo">FILM CAMELA</div>;
 
   const openImport = () => setImportOpen(true);
   let screen;
@@ -266,6 +482,13 @@ export function App() {
   return (
     <div class={`app route-${r.name}${updateReady.value ? ' has-update' : ''}`}>
       <main class="screen">
+        {/* The camera screen has no visible title: name it for screen readers and focus moves.
+            position: fixed keeps it out of layout measurements (offsetParent null). */}
+        {r.name === 'camera' && (
+          <h1 class="sr-only" style={{ position: 'fixed' }} tabIndex={-1}>
+            {t('a11y.cameraTitle')}
+          </h1>
+        )}
         {storageError.value && (
           <p class="storage-banner" role="alert" data-testid="storage-banner">
             {t('err.noStorage')}
@@ -277,13 +500,14 @@ export function App() {
       <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
       <ConfirmDialog />
       <Toasts />
+      <Announcer />
       {updateReady.value && (
         <div class="update-bar" role="status">
           <span>{t('update.ready')}</span>
           <button onClick={() => updateReady.value?.()}>{t('update.reload')}</button>
         </div>
       )}
-      {!settings.value.onboarded && <Onboarding onDone={() => updateSettings({ onboarded: true })} />}
+      {!settings.value.onboarded && <Onboarding onDone={() => updateSettings({ onboarded: true })} onRestore={openRestore} />}
     </div>
   );
 }

@@ -17,7 +17,7 @@ describe('English plurals', () => {
     expect(translate('en', 'gal.frames', { n: 1 })).toBe('1 frame');
     expect(translate('en', 'gal.frames', { n: 3 })).toBe('3 frames');
     expect(translate('en', 'set.backup.restored', { rolls: 1, photos: 2 })).toBe('Restored · 1 roll, 2 photos added');
-    expect(translate('en', 'set.backup.skipped', { n: 1 })).toBe('1 item already here was left as it was');
+    expect(translate('en', 'set.backup.skipped', { n: 1 })).toBe('Skipped 1 item you already have');
     expect(translate('ko', 'gal.frames', { n: 1 })).toBe('1장');
   });
 });

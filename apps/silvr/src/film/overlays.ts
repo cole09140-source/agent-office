@@ -190,6 +190,19 @@ export function borderLayout(style: BorderStyle, w: number, h: number): BorderLa
   return { width: w, height: h, img: { x: 0, y: 0, w, h } };
 }
 
+/**
+ * Where the picture sits inside a print with this border, as fractions of the print
+ * (`imgW`×`imgH` = the picture's shape). Lets a finished print be shown without its border.
+ */
+export function borderImageRect(style: BorderStyle, imgW: number, imgH: number): { x: number; y: number; w: number; h: number } {
+  // Same maths at a fixed size: every border scales with the picture.
+  const k = 1000 / Math.max(1, imgW, imgH);
+  const w = Math.max(1, Math.round(imgW * k));
+  const h = Math.max(1, Math.round(imgH * k));
+  const L = borderLayout(style, w, h);
+  return { x: L.img.x / L.width, y: L.img.y / L.height, w: L.img.w / L.width, h: L.img.h / L.height };
+}
+
 function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -198,6 +211,15 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+const edgeFont = (fs: number) => `600 ${fs}px ui-monospace, "SF Mono", Menlo, monospace`;
+
+/** Sets the edge-print font at `fs`, shrunk if needed so `label` is at most `maxW` wide. */
+function fitEdgeFont(ctx: Ctx, label: string, fs: number, maxW: number) {
+  ctx.font = edgeFont(fs);
+  const w = ctx.measureText(label).width;
+  if (w > maxW && w > 0) ctx.font = edgeFont(fs * (maxW / w));
 }
 
 /** Draws a horizontal 35mm strip band (sprockets + edge print) in landscape coordinates. */
@@ -213,8 +235,9 @@ function drawFilmBand(ctx: Ctx, x: number, y: number, len: number, band: number,
     ctx.fill();
   }
   ctx.fillStyle = 'rgba(232, 134, 42, 0.85)';
-  const fs = band * 0.2;
-  ctx.font = `600 ${fs}px ui-monospace, "SF Mono", Menlo, monospace`;
+  // Two labels share the strip (at 8% and 58%), so each must fit in ~40% of it.
+  if (top) fitEdgeFont(ctx, label, band * 0.2, len * 0.4);
+  else ctx.font = edgeFont(band * 0.2);
   ctx.textBaseline = 'middle';
   const ty = top ? y + band * 0.8 : y + band * 0.2;
   if (top) {
@@ -248,9 +271,9 @@ function drawSprockets(ctx: Ctx, len: number, s: number, label: string, frame: n
     }
   }
   // Latent edge print between the holes and the film edge.
-  const fs = s * 0.032;
   ctx.fillStyle = 'rgba(255, 168, 70, 0.7)';
-  ctx.font = `600 ${fs}px ui-monospace, "SF Mono", Menlo, monospace`;
+  // Labels at 6% and 68% with the frame number at 52%: the last slot is ~30% of the strip.
+  fitEdgeFont(ctx, label, s * 0.032, len * 0.3);
   ctx.textBaseline = 'middle';
   const ty = s - inset / 2;
   ctx.fillText(label, len * 0.06, ty);

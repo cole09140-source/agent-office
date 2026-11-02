@@ -93,7 +93,7 @@ export async function tx(stores: StoreName[], fn: (t: IDBTransaction) => void): 
   await withDb(
     (db) =>
       new Promise<void>((resolve, reject) => {
-        const t = db.transaction(stores, 'readwrite');
+        const t = db.transaction(stores, 'readwrite', { durability: 'strict' });
         t.oncomplete = () => resolve();
         t.onerror = (e) => reject((e.target as IDBRequest | null)?.error ?? t.error);
         t.onabort = () => reject(t.error ?? new Error('transaction aborted'));
@@ -128,7 +128,7 @@ export async function atomic<T>(stores: StoreName[], fn: (t: IDBTransaction) => 
   return withDb(
     (db) =>
       new Promise<T>((resolve, reject) => {
-        const t = db.transaction(stores, 'readwrite');
+        const t = db.transaction(stores, 'readwrite', { durability: 'strict' });
         let result: T;
         let failure: unknown = null;
         t.oncomplete = () => (failure ? reject(failure) : resolve(result));

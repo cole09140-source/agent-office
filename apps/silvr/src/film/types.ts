@@ -88,7 +88,13 @@ export interface DevelopSettings {
   ev?: number;
   /** Pixel camera palette id. */
   palette?: string;
+  /** Digital-camera look preset (CCD / toy sensors); missing = the sensor's own look. */
+  tone?: DigitalTone;
 }
+
+/** Looks a digicam frame can be re-developed with (presets over the sensor's own look). */
+export type DigitalTone = 'cool' | 'warm' | 'washed' | 'night';
+export const DIGITAL_TONES: DigitalTone[] = ['cool', 'warm', 'washed', 'night'];
 
 /** Optical character of a camera's lens, applied on top of the film look. */
 export interface Lens {

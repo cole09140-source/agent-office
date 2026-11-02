@@ -1,4 +1,4 @@
-/* SILVR service worker — generated at build time. */
+/* Film Camela service worker — generated at build time. */
 const VERSION = '__VERSION__';
 const CACHE = `silvr-${VERSION}`;
 const PRECACHE = __PRECACHE__;

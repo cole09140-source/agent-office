@@ -12,7 +12,7 @@ describe('lab arrival wording', () => {
 
   it('1 hour arrives today with the clock time', () => {
     expect(formatArrival(readyAtFor('1h', t0), t0, 'ko')).toMatch(/^오늘 오후 3:20 도착$/);
-    expect(formatArrival(readyAtFor('1h', t0), t0, 'en')).toMatch(/^Arrives today 3:20\sPM$/);
+    expect(formatArrival(readyAtFor('1h', t0), t0, 'en')).toMatch(/^Arrives today at 3:20\sPM$/);
   });
 
   it('1 hour late at night rolls over to tomorrow', () => {
@@ -24,7 +24,7 @@ describe('lab arrival wording', () => {
     expect(formatArrival(readyAtFor('morning', t0), t0, 'ko')).toMatch(/^내일 오전 9:00 도착$/);
     const dawn = new Date(2026, 10, 2, 2, 0).getTime();
     expect(formatArrival(readyAtFor('morning', dawn), dawn, 'ko')).toMatch(/^오늘 오전 9:00 도착$/);
-    expect(formatArrival(readyAtFor('morning', t0), t0, 'en')).toMatch(/^Arrives tomorrow 9:00\sAM$/);
+    expect(formatArrival(readyAtFor('morning', t0), t0, 'en')).toMatch(/^Arrives tomorrow at 9:00\sAM$/);
   });
 
   it('3 days shows the date', () => {

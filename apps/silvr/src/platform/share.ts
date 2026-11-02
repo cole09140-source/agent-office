@@ -23,7 +23,7 @@ interface SilvrGalleryPlugin {
   saveImage(opts: { data: string; name: string; mime: string }): Promise<{ uri: string }>;
 }
 
-/** Android app: Save goes straight to Pictures/SILVR (app-local plugin, see GalleryPlugin.java). */
+/** Android app: Save goes straight to Pictures/Film Camela (app-local plugin, see GalleryPlugin.java). */
 async function saveToGallery(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
   const { registerPlugin } = await import('@capacitor/core');
   const gallery = registerPlugin<SilvrGalleryPlugin>('SilvrGallery');
@@ -198,8 +198,13 @@ export async function clearShareCache(): Promise<void> {
   }
 }
 
-export function fileName(prefix: string, ts: number, ext = 'jpg'): string {
+/**
+ * FilmCamela_20261102_000713.jpg; with `frame`, FilmCamela_20261102_000713_03.jpg — photos of one
+ * import share the import time, so the frame number keeps their names apart.
+ */
+export function fileName(prefix: string, ts: number, ext = 'jpg', frame?: number): string {
   const d = new Date(ts);
   const p = (n: number) => String(n).padStart(2, '0');
-  return `${prefix}_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${ext}`;
+  const seq = frame === undefined ? '' : `_${p(Math.max(0, Math.round(frame)))}`;
+  return `${prefix}_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}${seq}.${ext}`;
 }

@@ -1,5 +1,7 @@
 # 스토어 등록 문안 (App Store / Google Play)
 
+> ⚠️ **옛 이름(SILVR) 시절 문안입니다.** 앱 이름이 2026-11-01에 **Film Camela**로 바뀌었어요. 스토어에 올릴 문안은 `03b_STORE_LISTING_FILM_CAMELA.md`를 쓰세요. 이 문서는 기록으로 남겨 둡니다.
+
 ## 기본 정보
 | 항목 | 값 |
 |------|----|

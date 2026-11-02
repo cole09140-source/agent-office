@@ -25,7 +25,8 @@ for (const [id, ratio, tol] of CASES) {
     await loadCamera(page, id);
     for (let i = 0; i < (id === 'half72' ? 2 : 1); i++) {
       await page.getByTestId('shutter').click();
-      await expect(page.getByTestId('shutter')).toBeEnabled({ timeout: 15_000 });
+      // The shutter stays tappable while saving (taps queue), so wait for the save itself.
+      await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
     }
     await rewindAndDevelop(page);
     await page.getByTestId('thumb').first().click();

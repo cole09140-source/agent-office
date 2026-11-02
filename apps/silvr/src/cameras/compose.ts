@@ -1,4 +1,4 @@
-import { canvasToBlob, makeCanvas, MAX_CANVAS_PIXELS } from '../film/develop';
+import { canvasToBlob, makeCanvas, MAX_CANVAS_PIXELS, rotateCanvas } from '../film/develop';
 import { cropForAspect, outputSize, type Orientation } from '../film/geometry';
 import type { Aspect } from '../film/types';
 import type { CameraModel } from './models';
@@ -157,4 +157,17 @@ export async function blobToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
   } finally {
     bmp.close?.();
   }
+}
+
+/**
+ * A small, quickly encoded copy of an exposure (turned upright) for the camera's last-shot
+ * preview and instant eject, shown while the real print is still developing.
+ */
+export async function previewBlob(c: HTMLCanvasElement, quarterTurns = 0, maxLong = 360): Promise<Blob> {
+  const k = Math.min(1, maxLong / Math.max(c.width, c.height));
+  const small = makeCanvas(Math.max(1, Math.round(c.width * k)), Math.max(1, Math.round(c.height * k)));
+  const ctx = small.getContext('2d')!;
+  ctx.imageSmoothingQuality = 'medium';
+  ctx.drawImage(c, 0, 0, small.width, small.height);
+  return canvasToBlob(rotateCanvas(small, quarterTurns), 'image/jpeg', 0.8);
 }

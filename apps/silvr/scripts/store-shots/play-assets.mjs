@@ -34,7 +34,7 @@ for (const lang of ['ko', 'en']) {
     .a{left:600px;top:52px;transform:rotate(-6deg);}
     .b{left:790px;top:20px;transform:rotate(5deg);}
   </style></head><body>
-    <div class="copy"><div class="brand">${icon}<span class="word">SILVR</span></div><h1>${TAGLINE[lang]}</h1><p>${SUB[lang]}</p></div>
+    <div class="copy"><div class="brand">${icon}<span class="word">FILM CAMELA</span></div><h1>${TAGLINE[lang]}</h1><p>${SUB[lang]}</p></div>
     <div class="phone a"><img src="${png(join(shots, '2-shooting.png'))}"></div>
     <div class="phone b"><img src="${png(join(shots, '5-contact.png'))}"></div>
   </body></html>`);

@@ -1,7 +1,7 @@
 import { mulberry32 } from './random';
-import { getCamera, hasCamera, PIXEL_PALETTES } from '../cameras/models';
+import { getCamera, hasCamera, PIXEL_PALETTES, type CameraModel } from '../cameras/models';
 import { getStock } from './stocks';
-import type { DevelopSettings, FilmLook, FilmStock, LightLeak, ResolvedLook, RGB } from './types';
+import type { BorderStyle, DevelopSettings, DigitalTone, FilmLook, FilmStock, LightLeak, ResolvedLook, RGB } from './types';
 
 const clamp = (v: number, lo = 0, hi = 1) => (v < lo ? lo : v > hi ? hi : v);
 
@@ -21,6 +21,24 @@ export function defaultDevelop(stock: FilmStock, seed: number, opts: Partial<Dev
     seed,
     ...opts,
   };
+}
+
+/** Bodies that do not take 35mm film: 120 roll film (toy, TLR), instant packs, sensors. */
+const NOT_35MM = new Set(['toy', 'tlr', 'instant', 'wide', 'digicam', 'pixel', 'kid']);
+
+/** Whether a body's frames sit on 35mm film (imports and old frames without a body count as 35mm). */
+export function shoots35mm(camera: CameraModel | null | undefined): boolean {
+  return !camera || (!camera.instant && !NOT_35MM.has(camera.body));
+}
+
+/**
+ * The border a new frame gets: the body's own (instant, cine gate…), else the film's, except that
+ * a 35mm sprocket rebate never lands on a 120, instant or digital frame.
+ */
+export function defaultBorderFor(camera: CameraModel | null | undefined, stock: FilmStock): BorderStyle {
+  if (camera?.border) return camera.border;
+  if (stock.defaultBorder === 'film35' && !shoots35mm(camera)) return 'none';
+  return stock.defaultBorder;
 }
 
 /** Film-like highlight shoulder: linear up to `knee`, then a soft roll-off approaching 1. */
@@ -104,6 +122,8 @@ export function effectiveLook(stock: FilmStock, dev: DevelopSettings, flashPower
     l.vignette += 0.25 * flashPower;
   }
 
+  if (dev.tone) applyTone(l, dev.tone);
+
   l.grain *= clamp(dev.grain, 0, 2);
   l.halation *= clamp(dev.halation, 0, 2);
   l.bloom *= clamp(0.5 + dev.halation / 2, 0, 1.5);
@@ -112,6 +132,41 @@ export function effectiveLook(stock: FilmStock, dev: DevelopSettings, flashPower
   l.vignette = clamp(l.vignette, 0, 1);
   l.dust = clamp(l.dust, 0, 1);
   return l;
+}
+
+/**
+ * Digicam looks as presets over the sensor's own look. Only the LUT inputs, saturation and tints
+ * change, so the GPU and CPU renderers stay identical.
+ */
+function applyTone(l: FilmLook, tone: DigitalTone): void {
+  switch (tone) {
+    case 'cool': // white balance left on "daylight" under shade: blue cast
+      l.gain = mul(l.gain, [0.93, 0.99, 1.07]);
+      l.shadowTint = add(l.shadowTint, [-0.01, 0, 0.025]);
+      l.highlightTint = add(l.highlightTint, [-0.02, 0.005, 0.03]);
+      break;
+    case 'warm': // indoor tungsten / sunset auto-WB
+      l.gain = mul(l.gain, [1.06, 1, 0.88]);
+      l.shadowTint = add(l.shadowTint, [0.015, 0.005, -0.015]);
+      l.highlightTint = add(l.highlightTint, [0.03, 0.015, -0.03]);
+      break;
+    case 'washed': // faded, low-contrast blog look
+      l.exposure += 0.12;
+      l.contrast *= 0.78;
+      l.saturation *= 0.68;
+      l.lift = add(l.lift, [0.07, 0.065, 0.07]);
+      l.gain = mul(l.gain, [0.97, 0.97, 0.96]);
+      break;
+    case 'night': // high ISO after dark: crushed, noisy, green-blue shadows
+      l.exposure -= 0.3;
+      l.contrast *= 1.15;
+      l.saturation *= 0.82;
+      l.gain = mul(l.gain, [0.92, 0.96, 1.04]);
+      l.shadowTint = add(l.shadowTint, [0, 0.01, 0.03]);
+      l.grain *= 2.2;
+      l.grainChroma = Math.max(l.grainChroma, 0.8);
+      break;
+  }
 }
 
 const LEAK_COLORS: RGB[] = [
@@ -198,6 +253,8 @@ export function developKey(dev: DevelopSettings): string {
     (dev.ev ?? 0).toFixed(2),
     dev.palette ?? '-',
     RENDER_VERSION,
+    // Appended only when set, so prints cached before digital looks existed stay valid.
+    ...(dev.tone ? [dev.tone] : []),
   ].join('|');
 }
 

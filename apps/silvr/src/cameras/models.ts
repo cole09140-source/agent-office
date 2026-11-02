@@ -65,8 +65,10 @@ export interface CameraModel {
   /** Allowed stock ids; 'any' = every non-exclusive stock. */
   films: string[] | 'any';
   defaultStock: string;
-  /** Exposures per roll/pack/card; the first one is the default. */
+  /** Exposures per roll/pack/card, largest first (the order the picker shows them). */
   capacities: number[];
+  /** The roll size picked by default when it is not the first (largest) one. */
+  defaultCapacity?: number;
   /** Selectable frame formats; the first one is the default. */
   formats: Aspect[];
   capture: CaptureMode;
@@ -190,11 +192,11 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'instasq',
-    name: 'Insta SQ',
+    name: 'Pop SQ',
     era: '1982 · Instant',
     body: 'instant',
     colors: ['#f2efe8', '#e8452c', '#2b2b2b'],
-    films: ['insta600', 'instamini'],
+    films: ['insta600'],
     defaultStock: 'insta600',
     capacities: [10],
     formats: ['1:1'],
@@ -290,7 +292,8 @@ export const CAMERAS: CameraModel[] = [
     colors: ['#2457d6', '#ffd23f', '#111111'],
     films: 'any',
     defaultStock: 'sunny200',
-    capacities: [24, 36],
+    capacities: [36, 24],
+    defaultCapacity: 24,
     formats: ['3:2'],
     capture: 'quad',
     lens: lens({ soft: 0.15, chroma: 0.6 }),
@@ -313,7 +316,8 @@ export const CAMERAS: CameraModel[] = [
     colors: ['#3a2f2a', '#d9b26b', '#151515'],
     films: 'any',
     defaultStock: 'muse400',
-    capacities: [24, 36],
+    capacities: [36, 24],
+    defaultCapacity: 24,
     formats: ['3:2'],
     capture: 'double',
     lens: lens({ vignette: 0.1 }),
@@ -359,7 +363,8 @@ export const CAMERAS: CameraModel[] = [
     colors: ['#0b7a75', '#f2f2f2', '#111111'],
     films: 'any',
     defaultStock: 'mint400',
-    capacities: [24, 36],
+    capacities: [36, 24],
+    defaultCapacity: 24,
     formats: ['1:1'],
     capture: 'single',
     lens: lens({ fisheye: true, chroma: 1.2, soft: 0.2 }),
@@ -382,7 +387,8 @@ export const CAMERAS: CameraModel[] = [
     colors: ['#202124', '#c8102e', '#9aa0a6'],
     films: ['neon800t', 'chrome100', 'muse400', 'mono400', 'velvet50'],
     defaultStock: 'neon800t',
-    capacities: [24, 36],
+    capacities: [36, 24],
+    defaultCapacity: 24,
     formats: ['2.39:1'],
     capture: 'single',
     lens: lens({ streak: 0.7, distort: -0.025, soft: 0.1, vignette: 0.15 }),
@@ -422,7 +428,7 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'pixel',
-    name: 'Pixel Pocket',
+    name: 'Bit Pocket',
     era: '1998 · 2-bit',
     body: 'pixel',
     colors: ['#c6c3bd', '#7a1fa2', '#2b2b2b'],
@@ -493,11 +499,11 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'instaw',
-    name: 'Insta W',
+    name: 'Pop W',
     era: '1999 · Wide',
     body: 'wide',
     colors: ['#2e2e30', '#f2b705', '#d6d6d6'],
-    films: ['instawide', 'insta600'],
+    films: ['instawide'],
     defaultStock: 'instawide',
     capacities: [10],
     formats: ['3:2'],
@@ -542,8 +548,8 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'super8',
-    name: 'Super 8',
-    era: '1972 · Super 8',
+    name: 'Reel 8',
+    era: '1972 · Home movie',
     body: 'super8',
     colors: ['#2b2b2b', '#e0a526', '#bdbdbd'],
     films: ['reel40', 'neon800t', 'mono400'],
@@ -596,8 +602,10 @@ export const CAMERAS: CameraModel[] = [
     body: 'flash',
     colors: ['#ece8df', '#e63946', '#2b2b2b'],
     films: 'any',
-    defaultStock: 'snap800',
-    capacities: [24, 36],
+    // Snap 800 only comes inside the disposables; a portrait stock flatters faces under flash.
+    defaultStock: 'muse400',
+    capacities: [36, 24],
+    defaultCapacity: 24,
     formats: ['3:2'],
     capture: 'single',
     lens: lens({ soft: 0.1, vignette: 0.1, chroma: 0.3 }),
@@ -667,6 +675,12 @@ export const CAMERAS: CameraModel[] = [
 const BY_ID = new Map(CAMERAS.map((c) => [c.id, c]));
 export const DEFAULT_CAMERA_ID = 'pro35';
 
+/** The roll size a body starts on (its explicit default, else its first capacity). */
+export function defaultCapacity(camera: CameraModel): number {
+  const d = camera.defaultCapacity;
+  return d !== undefined && camera.capacities.includes(d) ? d : camera.capacities[0];
+}
+
 export function getCamera(id: string | undefined): CameraModel {
   return (id && BY_ID.get(id)) || BY_ID.get(DEFAULT_CAMERA_ID)!;
 }
@@ -676,9 +690,33 @@ export function hasCamera(id: string | undefined): boolean {
   return !!id && BY_ID.has(id);
 }
 
+/** Stocks that only ever come pre-loaded inside a single-use camera. */
+const DISPOSABLE_ONLY = new Set(['snap800']);
+
+/** What a body physically takes: instant packs, a sealed single-use roll, or ordinary roll film (35mm / 120). */
+export type FilmFormat = 'instant' | 'disposable' | 'roll';
+
+export function cameraFormat(camera: CameraModel): FilmFormat {
+  if (ejectsPrints(camera)) return 'instant';
+  if (camera.body === 'disposable' || camera.body === 'aqua') return 'disposable';
+  return 'roll';
+}
+
+/** Whether a stock fits a body's format (an instant pack never goes into a 35mm SLR, and vice versa). */
+export function stockFits(camera: CameraModel, stock: FilmStock): boolean {
+  const fmt = cameraFormat(camera);
+  if ((stock.kind === 'instant') !== (fmt === 'instant')) return false;
+  if (DISPOSABLE_ONLY.has(stock.id) && fmt !== 'disposable') return false;
+  return true;
+}
+
+/**
+ * Films a body can load: its own list ('any' = every non-exclusive stock), limited to its format.
+ * Only new rolls are checked — frames already shot with an older combination still render.
+ */
 export function filmsFor(camera: CameraModel): FilmStock[] {
-  if (camera.films === 'any') return STOCKS.filter((s) => !s.exclusive);
-  return camera.films.map((id) => getStock(id));
+  const pool = camera.films === 'any' ? STOCKS.filter((s) => !s.exclusive) : camera.films.map((id) => getStock(id));
+  return pool.filter((s) => stockFits(camera, s));
 }
 
 export function canLoad(camera: CameraModel, stockId: string): boolean {

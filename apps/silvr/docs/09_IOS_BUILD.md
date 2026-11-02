@@ -63,7 +63,7 @@ GitHub → Actions → "iOS build" → Run workflow 클릭 (매번)
 
 1. https://developer.apple.com/account/resources/identifiers/list
 2. **+** → **App IDs** → **App** → 계속
-3. Description: `SILVR` / Bundle ID: **Explicit** → `app.silvr.camera`
+3. Description: `Film Camela` / Bundle ID: **Explicit** → `app.silvr.camera`
 4. Capabilities는 아무것도 체크하지 않아도 돼요 → **Register**
 
 > 이미 등록돼 있으면 건너뛰세요.
@@ -106,7 +106,7 @@ Set-Location "$HOME\ios-signing"
 2. **Distribution** 아래 **App Store Connect** 선택 → 계속
 3. App ID: `app.silvr.camera` → 계속
 4. 인증서: 방금 만든 **Apple Distribution** 선택 → 계속
-5. 프로필 이름: `SILVR App Store` (아무 이름이나 돼요) → **Generate** → **Download**
+5. 프로필 이름: `SILVR App Store` (아무 이름이나 돼요 · 사용자에게 안 보임) → **Generate** → **Download**
 6. 받은 `SILVR_App_Store.mobileprovision`을 `ios-signing` 폴더에 넣어요
 
 > "Development"나 "Ad Hoc" 프로필을 넣으면 워크플로가 일부러 멈추고 알려줘요.
@@ -158,7 +158,7 @@ GitHub 비밀값에는 파일을 그대로 못 넣어서, 글자로 바꿔 붙�
 
 ### A-9. 빌드 실행
 
-> ⚠️ 처음 한 번: GitHub은 **기본 브랜치(main)에 워크플로 파일이 있어야** "Run workflow" 버튼을 보여 줘요. 지금 SILVR 코드는 `ccr-59119389-f3n3qc` 브랜치(PR #1)에 있어요. PR을 main에 합치거나, Claude에게 "**배포**"라고 말씀해 주시면 워크플로 파일을 올리는 작업부터 해 드려요.
+> ⚠️ 처음 한 번: GitHub은 **기본 브랜치(main)에 워크플로 파일이 있어야** "Run workflow" 버튼을 보여 줘요. 지금 Film Camela 코드는 `ccr-59119389-f3n3qc` 브랜치(PR #1)에 있어요. PR을 main에 합치거나, Claude에게 "**배포**"라고 말씀해 주시면 워크플로 파일을 올리는 작업부터 해 드려요.
 
 1. 저장소 → 위쪽 **Actions** 탭 → 왼쪽 목록에서 **iOS build**
 2. 오른쪽 **Run workflow** 버튼

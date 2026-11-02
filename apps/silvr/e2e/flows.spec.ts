@@ -52,7 +52,7 @@ test('full roll: shoot 12 → instant develop → view → darkroom → contact 
   // Save downloads the print
   const dl = page.waitForEvent('download');
   await page.getByTestId('btn-save').click();
-  expect((await dl).suggestedFilename()).toMatch(/^SILVR_\d{8}_\d{6}\.jpg$/);
+  expect((await dl).suggestedFilename()).toMatch(/^FilmCamela_\d{8}_\d{6}_\d{2,}\.jpg$/);
 
   // swipe to next via button, then delete
   await page.getByTestId('btn-next').click();
@@ -70,7 +70,7 @@ test('full roll: shoot 12 → instant develop → view → darkroom → contact 
   const dl2 = page.waitForEvent('download');
   await page.getByTestId('btn-contact-save').click();
   const file = await dl2;
-  expect(file.suggestedFilename()).toMatch(/^SILVR_contact_/);
+  expect(file.suggestedFilename()).toMatch(/^FilmCamela_contact_/);
   await file.saveAs('e2e/.shots/08-contact-sheet.jpg');
   expect(errors).toEqual([]);
 });
@@ -85,14 +85,14 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
   // the sheet says why you'd wait and when each speed arrives
   await expect(page.getByTestId('speed-sheet')).toContainText('Instant shows them now');
   await expect(page.getByTestId('speed-at-instant')).toHaveText('In your album right away');
-  await expect(page.getByTestId('speed-at-1h')).toHaveText(/^Arrives (today|tomorrow) \d{1,2}:\d{2}\s[AP]M$/);
-  await expect(page.getByTestId('speed-at-morning')).toHaveText(/^Arrives (today|tomorrow) 9:00\sAM$/);
+  await expect(page.getByTestId('speed-at-1h')).toHaveText(/^Arrives (today|tomorrow) at \d{1,2}:\d{2}\s[AP]M$/);
+  await expect(page.getByTestId('speed-at-morning')).toHaveText(/^Arrives (today|tomorrow) at 9:00\sAM$/);
   await expect(page.getByTestId('speed-at-3d')).toHaveText(/^Arrives [A-Z][a-z]{2} \d{1,2}$/);
   await page.getByTestId('speed-1h').click();
   await expect(page.getByTestId('lab-screen')).toBeVisible();
   await expect(page.getByTestId('lab-item')).toHaveCount(1);
   await expect(page.getByTestId('lab-item')).toContainText(/Ready in (59m|1h)/);
-  await expect(page.getByTestId('lab-eta')).toContainText(/Arrives (today|tomorrow)/);
+  await expect(page.getByTestId('lab-eta')).toContainText(/Arrives (today|tomorrow) at /);
   await expect(page.getByTestId('lab-intro')).toContainText('Develop now');
   // an empty album points to the lab while a roll develops
   await page.getByTestId('tab-gallery').click();
@@ -120,7 +120,7 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
 
 test('data persists across reloads and the empty roll is discarded on unload', async ({ page }) => {
   const errors = await start(page);
-  await loadRoll(page, 'insta600', '12');
+  await loadRoll(page, 'sunny200', '12');
   await shoot(page, 2);
   await page.reload();
   await expect(page.getByTestId('counter')).toContainText('02');
@@ -129,11 +129,11 @@ test('data persists across reloads and the empty roll is discarded on unload', a
   await page.getByTestId('confirm-ok').click();
   await page.getByTestId('speed-instant').click();
   await expect(page.getByTestId('roll-screen')).toBeVisible();
-  // instant film defaults to 1:1 + white frame
+  // a 3:2 frame from the landscape test sensor comes back landscape
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
   const [w, h] = await page.getByTestId('print').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
-  expect(h).toBeGreaterThan(w);
+  expect(w).toBeGreaterThan(h);
   await page.waitForTimeout(1300);
   await page.screenshot({ path: 'e2e/.shots/10-instant.png' });
   // unloading an empty roll

@@ -1,6 +1,7 @@
+import { DIGITAL_TONES, type DigitalTone } from '../film/types';
 /**
  * Whole-library backup as a single .zip (manifest.json + original negatives).
- * Everything SILVR keeps lives only on this device, so this is the user's way
+ * Everything Film Camela keeps lives only on this device, so this is the user's way
  * to move phones or survive a browser clearing its storage. Prints and thumbs
  * are left out: they re-develop from the negatives on demand.
  */
@@ -148,6 +149,7 @@ export function sanitizeDevelop(d: Partial<DevelopSettings>, fallbackStock: stri
     border: BORDERS.includes(d.border as BorderStyle) ? (d.border as BorderStyle) : base.border,
   };
   if (isNum(d.rotate)) out.rotate = ((Math.round(d.rotate) % 4) + 4) % 4;
+  if (DIGITAL_TONES.includes(d.tone as DigitalTone)) out.tone = d.tone;
   if (typeof d.cameraId === 'string' && hasCamera(d.cameraId)) out.cameraId = d.cameraId;
   if (isNum(d.ev)) out.ev = clamp(d.ev, -2, 2, 0);
   if (typeof d.palette === 'string' && PALETTE_IDS.includes(d.palette)) out.palette = d.palette;
@@ -236,7 +238,7 @@ export async function restoreBackup(file: Blob, now = Date.now(), onProgress?: (
   } catch {
     throw new BackupError('manifest.json unreadable');
   }
-  if (!manifest || manifest.format !== BACKUP_FORMAT || !Array.isArray(manifest.rolls) || !Array.isArray(manifest.photos)) throw new BackupError('Not a SILVR backup');
+  if (!manifest || manifest.format !== BACKUP_FORMAT || !Array.isArray(manifest.rolls) || !Array.isArray(manifest.photos)) throw new BackupError('Not a Film Camela backup');
   if (!isNum(manifest.version) || manifest.version > BACKUP_VERSION) throw new BackupError('Backup made by a newer version', 'newer');
 
   const blobRefs = new Map(arr<BlobRef>(manifest.blobs).filter((b) => isStr(b.key) && isStr(b.file)).map((b) => [b.key, b]));

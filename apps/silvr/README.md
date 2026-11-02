@@ -1,4 +1,6 @@
-# SILVR — Film Camera
+# Film Camela – 필름 카메라
+
+> 2026-11-01 SILVR에서 이름을 바꿨어요. 패키지/번들 ID `app.silvr.camera`, 폴더 `apps/silvr`, 웹 주소 `silvr.muzig.ai`, 저장소 이름은 데이터 호환을 위해 그대로예요.
 
 네거티브가 남는 필름 카메라. PWA + iOS/Android(Capacitor).
 
@@ -13,10 +15,11 @@
 |------|------|
 | [docs/01_COMPETITIVE_ANALYSIS.md](docs/01_COMPETITIVE_ANALYSIS.md) | 국내외 상위 10개 앱 분석과 차별화 전략 |
 | [docs/02_PRODUCT_SPEC.md](docs/02_PRODUCT_SPEC.md) | 기능 명세, 카메라 14종, 필름 16종, 데이터 모델, 결제 연동 지점 |
-| [docs/03_STORE_LISTING.md](docs/03_STORE_LISTING.md) | App Store / Google Play 문안(KR/EN) |
+| [docs/03b_STORE_LISTING_FILM_CAMELA.md](docs/03b_STORE_LISTING_FILM_CAMELA.md) | App Store / Google Play 문안(KR/EN), Film Camela |
+| [docs/03_STORE_LISTING.md](docs/03_STORE_LISTING.md) | 옛 이름(SILVR) 시절 문안(기록) |
 | [docs/04_LAUNCH_GUIDE.md](docs/04_LAUNCH_GUIDE.md) | 웹, iOS, Android 배포 절차와 출시 체크리스트 |
 | [docs/05_QA_REPORT.md](docs/05_QA_REPORT.md) | QA 결과: 1차 10라운드, 카메라 15라운드, 심화 50라운드, 출시 준비 점검 |
-| [docs/06_TRADEMARK_SEARCH.md](docs/06_TRADEMARK_SEARCH.md) | "SILVR" 상표 1차 조사(KR·US·EU)와 대체 이름 후보 |
+| [docs/06_TRADEMARK_SEARCH.md](docs/06_TRADEMARK_SEARCH.md) | 옛 이름 "SILVR" 상표 1차 조사(KR·US·EU)와 대체 이름 후보 |
 | [docs/07_PLAY_CONSOLE.md](docs/07_PLAY_CONSOLE.md) | Google Play Console 입력값(아티움그룹 조직 계정): 개발자 계정, 등록정보, 데이터 보안, 콘텐츠 등급, 출시 노트 |
 | [docs/08_APP_STORE_CONNECT.md](docs/08_APP_STORE_CONNECT.md) | App Store Connect 입력값(아티움그룹 조직 등록): 앱 정보, 개인정보 라벨, 연령 등급, 심사 정보 |
 

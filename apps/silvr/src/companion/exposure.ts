@@ -19,7 +19,12 @@ export const LIGHT_EV100: Record<Light, number> = {
 export const LIGHTS = Object.keys(LIGHT_EV100) as Light[];
 
 export const APERTURES = [1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22];
-export const ISOS = [50, 100, 160, 200, 400, 800, 1600, 3200];
+export const ISOS = [25, 50, 64, 100, 125, 160, 200, 400, 800, 1600, 3200];
+
+/** Aperture marks found on real lenses (full stops plus the common 1.8 / 3.5 maximums), for the shooting log. */
+export const LOG_APERTURES = ['f/1.2', 'f/1.4', 'f/1.8', 'f/2', 'f/2.8', 'f/3.5', 'f/4', 'f/5.6', 'f/8', 'f/11', 'f/16', 'f/22'];
+/** Shutter dial marks for the shooting log, slow → fast (B = bulb). */
+export const LOG_SHUTTERS = ['B', '1"', '1/2', '1/4', '1/8', '1/15', '1/30', '1/60', '1/125', '1/250', '1/500', '1/1000', '1/2000', '1/4000'];
 
 /** Standard marked shutter speeds in seconds, slow → fast. */
 export const SHUTTERS = [30, 15, 8, 4, 2, 1, 1 / 2, 1 / 4, 1 / 8, 1 / 15, 1 / 30, 1 / 60, 1 / 125, 1 / 250, 1 / 500, 1 / 1000, 1 / 2000, 1 / 4000];

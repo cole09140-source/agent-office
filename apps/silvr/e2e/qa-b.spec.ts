@@ -10,7 +10,8 @@ const presses = (id: string) => (id === 'half72' || id === 'doublex' ? 2 : 1);
 async function shootFrame(page: Page, id: string) {
   for (let i = 0; i < presses(id); i++) {
     await page.getByTestId('shutter').click();
-    await expect(page.getByTestId('shutter')).toBeEnabled({ timeout: 15_000 });
+    // Taps queue while saving, so wait until the shot is actually done.
+    await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
   }
 }
 
@@ -46,13 +47,15 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
     await page.getByTestId('shutter').click();
     await expect(page.locator('.countdown')).toHaveText('3');
     await expect(page.locator('.cam-top')).toHaveClass(/locked/);
-    await expect(page.getByTestId('shutter')).toBeEnabled({ timeout: 10_000 });
+    // The shutter stays operable during the countdown (it cancels), so wait for the shot itself.
+    await expect(page.locator('.countdown')).toBeHidden({ timeout: 10_000 });
+    await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
     expect(Date.now() - t0).toBeGreaterThan(2900);
     await expect(page.locator('.cam-top')).not.toHaveClass(/locked/);
     await page.getByTestId('btn-timer').click(); // 10 s
     await page.getByTestId('btn-timer').click(); // off
     if (presses(id) === 2) await page.getByTestId('shutter').click();
-    await expect(page.getByTestId('shutter')).toBeEnabled({ timeout: 10_000 });
+    await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
     await page.getByTestId(id === 'instasq' || id === 'ccd03' ? 'roll-btn' : 'roll-btn').click();
     await page.getByTestId('btn-rewind').click();
     await page.getByTestId('confirm-ok').click();
@@ -115,7 +118,7 @@ test('R17 quad lenses fire in sequence (~0.6 s) and announce progress', async ({
   const t0 = Date.now();
   await page.getByTestId('shutter').click();
   await expect(page.locator('.vf-cell.on')).toHaveCount(1);
-  await expect(page.getByTestId('shutter')).toBeEnabled({ timeout: 10_000 });
+  await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
   expect(Date.now() - t0).toBeGreaterThan(550);
   await expect(page.getByTestId('announcer')).toContainText(/Frame 1|Lens 4\/4/);
 });

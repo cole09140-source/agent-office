@@ -54,7 +54,7 @@ async function tap(re, opts = {}) {
 }
 const galleryCount = () => {
   try {
-    return sh('ls /sdcard/Pictures/SILVR').split(/\s+/).filter((f) => /\.(jpg|png)$/.test(f)).length;
+    return sh("ls '/sdcard/Pictures/Film Camela'").split(/\s+/).filter((f) => /\.(jpg|png)$/.test(f)).length;
   } catch {
     return 0;
   }
@@ -80,10 +80,10 @@ try {
 }
 adb('install', apk);
 sh(`pm grant ${PKG} android.permission.CAMERA`);
-sh('rm -rf /sdcard/Pictures/SILVR');
+sh("rm -rf '/sdcard/Pictures/Film Camela'");
 sh(`am start -n ${PKG}/.MainActivity`);
 await sleep(6000);
-console.log(`SILVR release smoke on ${serial}`);
+console.log(`Film Camela release smoke on ${serial}`);
 
 await step('app starts (onboarding)', async () => {
   await tap(/^Skip$/);

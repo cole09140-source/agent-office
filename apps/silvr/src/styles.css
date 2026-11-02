@@ -32,7 +32,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
@@ -66,6 +66,17 @@ button:disabled {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+/* Headings get focus only so screen readers start there after a screen change: they are not controls. */
+h1[tabindex='-1']:focus,
+h2[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Korean: wrap between words, never inside one (남/음, 넣/기); very long tokens still wrap instead of overflowing. */
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 
 a {
   color: inherit;
@@ -84,7 +95,7 @@ a {
   text-align: center;
 }
 .small {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .center {
   text-align: center;
@@ -106,7 +117,7 @@ a {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 
 /* ---------- layout ---------- */
@@ -145,7 +156,7 @@ a {
 }
 .hdr h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 750;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -155,7 +166,7 @@ a {
 .hdr p {
   margin: 0;
   color: var(--fg-2);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .hdr-right {
   display: flex;
@@ -217,9 +228,10 @@ a {
   color: var(--danger);
 }
 .btn.small {
-  min-height: 36px;
+  /* still a full 44px touch target */
+  min-height: 44px;
   padding: 0 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .btn.wide {
   width: 100%;
@@ -242,7 +254,7 @@ a {
   margin-left: 6px;
   padding: 1px 6px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 0.6875rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   background: rgba(255, 138, 43, 0.16);
@@ -263,8 +275,9 @@ a {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  height: calc(var(--tab-h) + var(--safe-b));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* Grows with large text; TabBar writes its real height to --tab-h so the page padding follows. */
+  min-height: calc(64px + var(--safe-b));
   padding-bottom: var(--safe-b);
   background: rgba(14, 13, 12, 0.92);
   backdrop-filter: blur(14px);
@@ -278,9 +291,17 @@ a {
   align-items: center;
   justify-content: center;
   gap: 3px;
+  min-width: 0;
+  padding: 8px 2px;
   color: var(--fg-3);
-  font-size: 11px;
+  /* follows text size, capped so five labels still fit side by side (two lines when a label needs it) */
+  font-size: min(0.6875rem, 16.5px);
   font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .tabbar button.on {
   color: var(--accent);
@@ -310,13 +331,16 @@ a {
 .camera.unloaded {
   overflow-y: auto;
 }
+/* Wraps instead of scrolling: a clipped, scroll-only bar hid Grid/Date at 390px.
+   Low-priority toggles sit in the "more" popover, so one row fits most bodies. */
 .cam-top {
+  position: relative;
+  z-index: 6;
   display: flex;
-  justify-content: safe center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
   padding: calc(8px + var(--safe-t)) 12px 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 .cam-top::-webkit-scrollbar {
   display: none;
@@ -326,8 +350,8 @@ a {
 }
 .chip {
   position: relative;
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 10px;
   display: inline-flex;
   align-items: center;
@@ -358,7 +382,7 @@ a {
   background: rgba(255, 138, 43, 0.16);
 }
 .chip-txt {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .cam-stage {
@@ -400,7 +424,7 @@ a {
   display: grid;
   place-items: center;
   color: var(--fg-2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .vf-date {
   position: absolute;
@@ -414,17 +438,18 @@ a {
 .counter {
   position: absolute;
   left: 10px;
-  top: 10px;
+  /* Bottom corner: clear of toasts, the quad lens numbers and the double / half tags at the top. */
+  bottom: 10px;
   padding: 4px 8px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.55);
   color: var(--accent);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
 }
 .counter small {
   color: var(--fg-3);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .countdown {
   position: absolute;
@@ -441,7 +466,7 @@ a {
   position: absolute;
   inset: 0;
   background: #000;
-  animation: blink 0.14s ease-out;
+  animation: blink 0.22s ease-out;
 }
 @keyframes blink {
   from {
@@ -479,9 +504,10 @@ a {
 }
 .cam-bottom {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  column-gap: 10px; /* the roll pill never touches the shutter */
   align-items: center;
-  padding: 14px 20px 16px;
+  padding: 14px 16px 16px;
 }
 .cam-bottom > :last-child {
   justify-self: end;
@@ -490,12 +516,35 @@ a {
   justify-self: start;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 48px;
   padding: 6px 12px 6px 6px;
-  border-radius: 999px;
+  border-radius: 24px;
   background: rgba(255, 255, 255, 0.06);
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--fg-2);
+  text-align: left;
+  word-break: keep-all;
+}
+.roll-btn > svg,
+.roll-btn > :first-child {
+  flex: none;
+}
+.roll-btn-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+.roll-btn-txt b {
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 750;
+}
+.roll-btn.has-shots {
+  background: rgba(255, 138, 43, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 138, 43, 0.35);
 }
 .shutter {
   width: 76px;
@@ -528,7 +577,7 @@ a {
   gap: 2px;
 }
 .load-head .muted {
-  font-size: 13px;
+  font-size: 0.8125rem;
   min-height: 2.6em;
 }
 .load-row {
@@ -581,7 +630,7 @@ a {
   margin: 0;
 }
 .stock-name {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   text-align: center;
   line-height: 1.2;
@@ -600,10 +649,10 @@ a {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 6px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
   color: var(--fg-2);
   white-space: nowrap;
@@ -632,7 +681,7 @@ a {
   margin: 0 0 14px;
 }
 .card h2 {
-  font-size: 16px;
+  font-size: 1rem;
   margin: 0 0 10px;
 }
 .card-head {
@@ -669,7 +718,7 @@ a {
   padding: 8px 0;
 }
 .field > span {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--fg-2);
 }
 .field input,
@@ -740,7 +789,7 @@ a {
 .slider-head {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 0.875rem;
   margin-bottom: 6px;
 }
 .slider output {
@@ -798,7 +847,7 @@ input[type='range']::-moz-range-thumb {
   border-radius: 10px;
   background: var(--bg-3);
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .pills button.on {
   background: var(--accent);
@@ -837,7 +886,43 @@ input[type='range']::-moz-range-thumb {
 }
 .sheet-title {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 1.125rem;
+}
+/* Title row with a Close (×) button: a 44px target, same place in every sheet. */
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  /* room for the Close button's focus ring inside the scrolling sheet */
+  margin: -4px -4px 0 0;
+}
+.sheet-head .sheet-title {
+  flex: 1;
+  min-width: 0;
+  margin-top: 10px;
+}
+.sheet-head.untitled {
+  justify-content: flex-end;
+  margin-bottom: -8px;
+}
+.sheet-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  border-radius: 50%;
+  color: var(--fg-2);
+}
+.sheet-close:active {
+  background: var(--bg-3);
+}
+@media (hover: hover) {
+  .sheet-close:hover {
+    color: var(--fg);
+    background: var(--bg-3);
+  }
 }
 @keyframes up {
   from {
@@ -851,11 +936,11 @@ input[type='range']::-moz-range-thumb {
   }
 }
 .confirm-text {
-  font-size: 16px;
+  font-size: 1rem;
   margin: 8px 0 0;
 }
 .big-num {
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   color: var(--accent);
   margin: 8px 0;
@@ -882,11 +967,11 @@ input[type='range']::-moz-range-thumb {
   border-color: rgba(255, 138, 43, 0.5);
 }
 .speed span {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--fg-2);
 }
 .speed span.speed-at {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--accent);
 }
@@ -897,11 +982,29 @@ input[type='range']::-moz-range-thumb {
   margin: 0 0 12px;
 }
 
+/* Toasts sit at the bottom, in thumb reach and clear of headers / back buttons: just above the tab bar,
+   lifted by --toast-lift over whatever bar floats on it (viewer actions, selection bar, darkroom buttons). */
+.app {
+  --toast-lift: 0px;
+}
+.route-photo {
+  --toast-lift: 88px;
+}
+.route-darkroom {
+  --toast-lift: 124px;
+}
+.app:has(.sel-bar),
+.app:has(.log-actions) {
+  --toast-lift: 72px;
+}
+.app:has(.fab) {
+  --toast-lift: 84px;
+}
 .toasts {
   position: fixed;
   left: 0;
   right: 0;
-  top: calc(64px + var(--safe-t));
+  bottom: calc(var(--tab-h) + var(--safe-b) + var(--toast-lift) + 12px);
   z-index: 60;
   display: flex;
   flex-direction: column;
@@ -910,23 +1013,36 @@ input[type='range']::-moz-range-thumb {
   pointer-events: none;
   padding: 0 16px;
 }
+/* A sheet covers the bottom: messages shown meanwhile go to the top instead of over its buttons. */
+.app:has(.sheet-backdrop) .toasts {
+  top: calc(12px + var(--safe-t));
+  bottom: auto;
+}
 .toast {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: 520px;
-  padding: 12px 16px;
+  gap: 4px;
+  max-width: min(520px, 100%);
+  min-height: 52px;
+  /* the buttons bring their own 44px hit area: no negative margins, so nothing pokes out of the box */
+  padding: 4px 4px 4px 16px;
   border-radius: 12px;
   background: #2a2622;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  font-size: 14px;
+  font-size: 0.875rem;
   animation: up 0.2s ease;
 }
 .toast button {
+  flex: none;
   color: var(--accent);
   font-weight: 700;
   white-space: nowrap;
+  /* a real 44px target for Undo / Open */
+  min-height: 44px;
+  margin: 0;
+  padding: 0 10px;
+  border-radius: 8px;
 }
 .update-bar {
   position: fixed;
@@ -945,7 +1061,7 @@ input[type='range']::-moz-range-thumb {
   background: var(--accent);
   color: #1a0f05;
   font-weight: 650;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 /* Below the camera's flash / timer / format / zoom row, like the toasts. */
 .route-camera .update-bar {
@@ -1041,7 +1157,7 @@ input[type='range']::-moz-range-thumb {
   background: rgba(255, 138, 43, 0.12);
   color: var(--accent);
   font-weight: 650;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .banner svg:last-child {
   margin-left: auto;
@@ -1117,6 +1233,82 @@ input[type='range']::-moz-range-thumb {
   color: var(--accent);
   pointer-events: none;
 }
+/* Four-lens frames: show the whole 2×2 grid, not a square centre crop. */
+.photo-grid li.quad .thumb img {
+  object-fit: contain;
+}
+/* Long-press selects: no image callout / text selection on the way. */
+.photo-grid li {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.sel-toggle {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 6px;
+}
+.sel-toggle[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 3px var(--accent);
+  background: rgba(255, 138, 43, 0.14);
+}
+.sel-toggle:focus-visible {
+  outline: 3px solid var(--fg);
+  outline-offset: 2px;
+}
+.sel-mark {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: rgba(0, 0, 0, 0.45);
+  color: #1a0f05;
+}
+.sel-toggle[aria-pressed='true'] .sel-mark {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.page.selecting {
+  padding-bottom: 96px;
+}
+.page.selecting .hdr {
+  grid-template-columns: 1fr auto;
+}
+.sel-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-h) + var(--safe-b));
+  z-index: 15;
+  display: flex;
+  gap: 10px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  background: rgba(14, 13, 12, 0.94);
+  border-top: 1px solid var(--line);
+}
+.sel-bar .btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+@media (forced-colors: active) {
+  .sel-toggle[aria-pressed='true'] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+  .sel-toggle[aria-pressed='true'] .sel-mark {
+    background: Highlight;
+  }
+}
 .working {
   position: fixed;
   left: 50%;
@@ -1126,7 +1318,7 @@ input[type='range']::-moz-range-thumb {
   border-radius: 999px;
   background: var(--bg-3);
   color: var(--accent);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .empty {
@@ -1159,7 +1351,7 @@ input[type='range']::-moz-range-thumb {
 .empty-hint {
   margin: 0 0 12px;
   color: var(--fg-2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ---------- viewer ---------- */
@@ -1230,7 +1422,7 @@ input[type='range']::-moz-range-thumb {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--fg-2);
   min-height: 56px;
   justify-content: center;
@@ -1255,6 +1447,59 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ---------- darkroom ---------- */
+
+/* Header + print stay in view while the controls scroll underneath (390×844 and 360×640). */
+.dr-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -16px;
+  padding: 0 16px 6px;
+  background: var(--bg);
+  box-shadow: 0 10px 12px -10px rgba(0, 0, 0, 0.7);
+}
+.dr-top .hdr {
+  position: static;
+  background: none;
+}
+.dr-top .dr-stage {
+  min-height: 150px;
+  height: clamp(150px, 36dvh, 460px);
+  max-height: none;
+}
+.dr-top .dr-stage canvas {
+  max-height: calc(clamp(150px, 36dvh, 460px) - 16px);
+}
+.dr-top .dr-hint {
+  margin: 4px 0 0;
+}
+@media (max-height: 700px) {
+  .dr-top .dr-stage {
+    height: clamp(140px, 31dvh, 460px);
+  }
+  .dr-top .dr-stage canvas {
+    max-height: calc(clamp(140px, 31dvh, 460px) - 16px);
+  }
+}
+/* Value sits on the label's baseline even when the label wraps or mixes Hangul and digits. */
+.darkroom .slider-head {
+  align-items: baseline;
+  gap: 12px;
+}
+.darkroom .slider-head output {
+  flex: none;
+  white-space: nowrap;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+/* Korean labels break between words, never inside one. */
+.darkroom,
+.page.analog,
+.page.log,
+.page.settings {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
 
 .darkroom {
   padding: 0 16px 32px;
@@ -1285,26 +1530,249 @@ input[type='range']::-moz-range-thumb {
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.6);
   color: var(--accent);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .dr-hint {
   text-align: center;
   margin: 6px 0 4px;
 }
-.dr-controls h3 {
-  font-size: 14px;
+.dr-controls h2 {
+  font-size: 0.875rem;
   margin: 14px 0 8px;
   font-weight: 650;
 }
-.dr-controls h3 .muted {
+.dr-controls h2 .muted {
   font-weight: 400;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .dr-toggles .btn {
   margin: 6px 0;
 }
+.tone-seg .seg.grid {
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+}
+/* Four darkroom actions: a tidy 2×2 instead of ragged wrapping. */
+.dr-controls > .btn-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.dr-controls > .btn-row .btn {
+  min-width: 0;
+  padding: 0 12px;
+}
+
+/* Desktop: the print on the left (stays in view), the controls on the right. */
+@media (min-width: 1024px) {
+  .route-darkroom .screen {
+    max-width: 1240px;
+  }
+  .darkroom {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(340px, 1fr);
+    gap: 0 32px;
+    align-items: start;
+    padding: 0 24px 32px;
+  }
+  .dr-top {
+    margin: 0;
+    padding: 0 0 8px;
+    box-shadow: none;
+  }
+  .dr-top .dr-stage {
+    height: calc(100dvh - var(--tab-h) - var(--safe-b) - 130px);
+    min-height: 320px;
+  }
+  .dr-top .dr-stage canvas {
+    max-height: calc(100dvh - var(--tab-h) - var(--safe-b) - 146px);
+  }
+  .dr-controls {
+    padding-top: calc(16px + var(--safe-t));
+  }
+  .dr-controls .stock-strip {
+    margin: 0;
+    padding: 4px 0;
+  }
+}
 
 /* ---------- analog ---------- */
+
+/* Active log roll, above the meter: one tap back to logging. */
+.log-active {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  width: 100%;
+  text-align: left;
+  color: var(--fg);
+}
+.log-active-txt,
+.log-active-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.log-active-txt strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-active-side {
+  align-items: flex-end;
+}
+.log-active-side strong {
+  font-size: 1.375rem;
+  color: var(--accent);
+}
+.log-active-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.8125rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.log-active-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.log-active-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.list-row .list-row-end {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+/* Shooting log: stops as one tappable row each (a radio group: arrows move the pick). */
+.stop-picker {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -16px;
+  padding: 2px 16px 4px;
+  scroll-padding-inline: 16px;
+}
+.stop-picker::-webkit-scrollbar {
+  display: none;
+}
+.stop-picker button {
+  flex: none;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: var(--bg-3);
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+}
+.stop-picker button.on {
+  background: var(--accent);
+  color: #1a0f05;
+  font-weight: 700;
+}
+.log-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 2px 0 4px;
+}
+.frame-row .frame-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 44px;
+  text-align: left;
+  color: inherit;
+}
+.page.log {
+  padding-bottom: 104px; /* clear of the fixed log buttons */
+}
+/* The log sheet's save button stays reachable on short phones (360×640). */
+.sheet .log-sheet-save {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -10px 16px 4px var(--bg-2);
+}
+.log-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-h) + var(--safe-b));
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px 10px;
+  background: linear-gradient(transparent, var(--bg) 35%);
+}
+.log-actions .btn {
+  flex: 1;
+  min-height: 56px;
+  padding: 0 12px;
+  word-break: keep-all;
+}
+.log-actions .log-repeat {
+  flex: 1.5;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.2;
+}
+.log-repeat small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+.log-actions .btn.ghost {
+  background: var(--bg);
+}
+/* Settings: storage protection explained, backup as one clear flow. */
+.persist-row {
+  padding: 10px 0;
+}
+.persist-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.persist-txt small {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.persist-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.persist-row .btn {
+  flex: none;
+}
+.backup-where {
+  display: block;
+  margin-top: 4px;
+  color: var(--fg);
+}
+.backup-again {
+  display: block;
+  margin: 0 0 4px;
+}
+.backup-restore {
+  margin-top: 4px;
+}
 
 .meter-result {
   display: grid;
@@ -1321,12 +1789,12 @@ input[type='range']::-moz-range-thumb {
   flex-direction: column;
 }
 .meter-result strong {
-  font-size: 28px;
+  font-size: 1.75rem;
   color: var(--accent);
   line-height: 1.1;
 }
 .meter-result div + div strong {
-  font-size: 20px;
+  font-size: 1.25rem;
   color: var(--fg);
 }
 .list-row {
@@ -1391,24 +1859,46 @@ input[type='range']::-moz-range-thumb {
   z-index: 90;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: calc(24px + var(--safe-t)) 28px calc(28px + var(--safe-b));
+  /* centred by the brand's and buttons' auto margins; flex-start keeps the top reachable when it overflows */
+  justify-content: flex-start;
+  padding: calc(24px + var(--safe-t)) 28px 0;
   background: radial-gradient(circle at 50% 30%, #2a1a10, var(--bg) 70%);
   animation: fade 0.3s ease;
+  /* Large text (130–160%) makes a slide taller than the screen: the words scroll, the buttons stay pinned. */
+  overflow-y: auto;
 }
 .onb-brand {
-  position: absolute;
-  top: calc(28px + var(--safe-t));
-  left: 28px;
+  /* In the flow (not absolute) so the art and title can never slide under it. */
   display: flex;
   flex-direction: column;
   gap: 2px;
+  margin-bottom: auto;
+  padding: 4px 0 16px;
+}
+/* Start / Next / Skip and the restore link: pinned to the bottom of the screen, always in reach. */
+.onb-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  margin: auto -28px 0;
+  padding: 12px 28px calc(16px + var(--safe-b));
+  background: linear-gradient(transparent, var(--bg) 14px);
+}
+.onb-actions > .btn-row {
+  margin-top: 0;
+}
+@media (max-height: 700px) {
+  .onboarding h1 {
+    margin-top: 12px;
+  }
 }
 .onb-brand .logo {
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .onboarding h1 {
-  font-size: 30px;
+  font-size: 1.875rem;
   margin: 24px 0 8px;
   letter-spacing: -0.02em;
 }
@@ -1424,15 +1914,21 @@ input[type='range']::-moz-range-thumb {
   background: rgba(111, 208, 140, 0.1);
   color: var(--ok) !important;
 }
+/* Decoration, sized by the room left over: smaller on short screens, gone when large text needs the space
+   (the rem term grows with the text size). */
 .onb-art {
   display: flex;
   gap: 6px;
-  height: 120px;
+  height: clamp(0px, calc(100dvh - 31rem), 120px);
   align-items: center;
+  flex: none;
+  overflow: hidden;
+  padding-left: 6px;
 }
 .onb-art span {
-  width: 64px;
-  height: 88px;
+  height: min(88px, calc(100% - 14px));
+  aspect-ratio: 64 / 88;
+  width: auto;
   border-radius: 4px;
   background: linear-gradient(160deg, #ffb36b, #c2410c);
   box-shadow: 0 0 0 6px #120d09;
@@ -1475,7 +1971,7 @@ input[type='range']::-moz-range-thumb {
 
 @media (max-width: 360px) {
   .seg button {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 }
 
@@ -1491,6 +1987,413 @@ input[type='range']::-moz-range-thumb {
   *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- tap guard (components/ui.tsx guardTaps) ---------- */
+
+/* For a moment after a sheet closes, taps go nowhere: the 2nd tap of a double-tap must not hit the tab bar. */
+html.tap-guard * {
+  pointer-events: none !important;
+}
+
+/* ---------- toasts: close button ---------- */
+
+/* The message wraps (large text, long film names); the action and × keep their size beside it. */
+.toast > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.toast .toast-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  color: var(--fg-2);
+  border-radius: 10px;
+}
+
+/* ---------- import sheet ---------- */
+
+.import-hint {
+  margin: 0 0 10px;
+}
+.import-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: var(--bg-3);
+}
+.import-pick .canister {
+  flex: none;
+}
+.import-pick p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* ---------- onboarding: restore link ---------- */
+
+/* Sits right under the buttons, inside the pinned action area. */
+.onb-restore {
+  align-self: flex-start;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0;
+  color: var(--accent-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Settings' restore button when reached from that link. */
+.attention {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 3px;
+  animation: attention 0.8s ease 3;
+}
+@keyframes attention {
+  50% {
+    outline-offset: 7px;
+  }
+}
+
+/* ---------- all cameras sheet ---------- */
+
+.load-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.all-cams-btn {
+  min-height: 44px;
+  margin: -12px 0 -8px;
+  padding: 0 4px;
+  color: var(--accent-2);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.all-cams h3 {
+  margin: 14px 0 8px;
+  font-size: 0.875rem;
+  color: var(--fg-2);
+}
+.all-cams ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.all-cam {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--bg-3);
+  border: 1px solid transparent;
+  text-align: left;
+}
+.all-cam strong {
+  font-size: 0.875rem;
+}
+.all-cam span {
+  font-size: 0.75rem;
+  color: var(--fg-2);
+}
+.all-cam.on {
+  border-color: var(--accent);
+  background: rgba(255, 138, 43, 0.1);
+}
+
+/* ---------- large text (OS / browser text size scales the rem sizes) ---------- */
+
+/* Load row: the button moves under the roll sizes and goes full width instead of squeezing to a letter column. */
+.load-row {
+  flex-wrap: wrap;
+}
+.load-row .seg {
+  flex: 1 1 10em;
+}
+/* The picker: the viewfinder gets the space left after the controls (never its own content size, which
+   made it grow with every camera change), keeps a usable minimum and a cap; the screen scrolls instead. */
+.camera.unloaded .cam-stage {
+  flex: 1 1 0;
+  min-height: min(28dvh, 200px);
+  max-height: min(52dvh, 560px);
+  overflow: hidden;
+}
+/* Roll size + load button stay just above the tab bar while the picker scrolls. */
+.camera.unloaded .load-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding-bottom: 10px;
+  background: #000;
+  box-shadow: 0 -14px 14px -2px #000;
+}
+.load-row .btn {
+  flex: 1 0 auto;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+/* Cards grow a little with the text and wrap to two lines instead of cutting words
+   (camera cards: see .camera-card / .camera-era below). */
+.stock-card {
+  width: clamp(84px, 5.25rem, 124px);
+}
+.stock-name {
+  overflow-wrap: normal;
+}
+/* Segmented options wrap onto two lines (between words) rather than ending in "…". */
+.seg {
+  flex-wrap: wrap;
+}
+.seg button {
+  min-width: auto;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  line-height: 1.15;
+  padding: 4px 8px;
+  overflow-wrap: normal;
+  hyphens: auto;
+}
+.seg.grid button {
+  min-width: 0;
+}
+.border-seg .seg.grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
+}
+/* Screen titles: two lines before an ellipsis. */
+.hdr h1 {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: normal;
+}
+/* <Header wrap>: when the title needs the room (large text, long camera · film names), the actions move to
+   a row of their own under it instead of squeezing it, and the title shows in full (no clamp). */
+.hdr.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 2px;
+}
+.hdr.wrap > .icon-btn,
+.hdr.wrap > .hdr-spacer {
+  flex: none;
+}
+.hdr.wrap > .hdr-title {
+  flex: 1 1 6.5em;
+}
+.hdr.wrap > .hdr-right {
+  flex: none;
+  margin-left: auto;
+}
+.hdr.wrap h1 {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+  overflow: visible;
+  overflow-wrap: break-word;
+}
+/* Tight camera / viewer chrome: grows with text up to a cap; words break with a hyphen, never mid-word. */
+.roll-btn {
+  font-size: min(0.75rem, 16px);
+}
+.roll-btn-txt b {
+  font-size: min(0.8125rem, 17px);
+  overflow-wrap: normal;
+  hyphens: auto;
+}
+.viewer-actions button {
+  font-size: min(0.75rem, 16px);
+  text-align: center;
+  line-height: 1.15;
+  overflow-wrap: normal;
+  hyphens: auto;
+}
+.btn {
+  text-align: center;
+}
+.btn-row .btn {
+  white-space: normal;
+  min-width: min(100%, max-content);
+}
+
+/* ---------- Windows high contrast / forced colors ---------- */
+
+/* Selection and on/off states are drawn with brand colours that forced colours replace:
+   redraw them with system colours (Highlight = selected, ButtonText = control edges). */
+/* `html` prefix: these must beat the component rules that come later in this file. */
+@media (forced-colors: active) {
+  html .btn,
+  html .chip,
+  html .pills button,
+  html .speed,
+  html .roll-btn,
+  html .icon-btn.big,
+  html .stock-card,
+  html .camera-card,
+  html .all-cam,
+  html .seg,
+  html .toast,
+  html .sheet,
+  html .more-item {
+    border: 1px solid ButtonText;
+  }
+  /* forced-color-adjust: none on Highlight-filled controls: otherwise the text gets a Canvas
+     "backplate" and HighlightText disappears on it. */
+  html .btn.primary {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border: 2px solid Highlight;
+  }
+  html .btn.primary:disabled {
+    background: Canvas;
+    color: GrayText;
+    border-color: GrayText;
+  }
+  html .btn.danger {
+    border: 2px solid ButtonText;
+  }
+  html .btn:disabled,
+  html button:disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
+  html .seg button.on,
+  html .pills button.on,
+  html .chip.on,
+  html .stop-picker button.on {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  html .stock-card.on,
+  html .camera-card.on,
+  html .all-cam.on,
+  html .speed.def {
+    border: 3px solid Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+  html .camera-pin.on .camera-pin-dot {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  html .tabbar {
+    border-top: 1px solid CanvasText;
+  }
+  html .tabbar button {
+    color: CanvasText;
+  }
+  html .tabbar button.on {
+    color: Highlight;
+  }
+  html .tabbar button.on::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 18%;
+    right: 18%;
+    height: 4px;
+    background: Highlight;
+  }
+  html .tabbar button.on span:not(.sr-only) {
+    text-decoration: underline 2px;
+    text-underline-offset: 3px;
+  }
+  html .tabbar .dot {
+    background: Highlight;
+  }
+  /* Switches: a framed track; on = Highlight track with a knob on the right. */
+  html .switch {
+    border: 2px solid ButtonText;
+    background: Canvas;
+  }
+  html .switch::after {
+    top: 1px;
+    left: 1px;
+    background: ButtonText;
+  }
+  html .toggle input:checked + .switch {
+    background: Highlight;
+    border-color: Highlight;
+  }
+  html .toggle input:checked + .switch::after {
+    background: HighlightText;
+  }
+  html .toggle input:focus-visible + .switch,
+  html :focus-visible {
+    outline: 2px solid Highlight;
+  }
+  /* Sliders: the gradient track disappears in forced colours; draw track, fill and thumb explicitly. */
+  html input[type='range'] {
+    forced-color-adjust: none;
+  }
+  html input[type='range']::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, Highlight var(--p, 50%), Canvas var(--p, 50%));
+    border: 1px solid CanvasText;
+    height: 6px;
+  }
+  html input[type='range']::-moz-range-track {
+    background: linear-gradient(to right, Highlight var(--p, 50%), Canvas var(--p, 50%));
+    border: 1px solid CanvasText;
+    height: 6px;
+  }
+  html input[type='range']::-webkit-slider-thumb {
+    background: ButtonText;
+    border: 2px solid Canvas;
+    outline: 1px solid ButtonText;
+    margin-top: -10px;
+  }
+  html input[type='range']::-moz-range-thumb {
+    background: ButtonText;
+    border: 2px solid Canvas;
+  }
+  html .shutter {
+    border-color: ButtonText;
+  }
+  html .shutter span {
+    background: ButtonText;
+  }
+  html .badge {
+    border: 1px solid CanvasText;
+  }
+  html .progress {
+    border: 1px solid CanvasText;
+  }
+  html .progress span {
+    background: Highlight;
   }
 }
 
@@ -1524,13 +2427,14 @@ input[type='range']::-moz-range-thumb {
 .camera-card {
   position: relative;
   flex: 0 0 auto;
-  /* fits the longest era label ("1954 · 레인지파인더") with headroom for wider CJK fonts */
-  width: 104px;
+  /* fits the longest era label ("1954 · 레인지파인더") with headroom for wider CJK fonts; grows a little with large text */
+  width: clamp(112px, 7rem, 160px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 4px;
+  /* top row is the pin toggle's own space (44px target): the camera art starts below it instead of under it */
+  padding: 40px 4px 8px;
   border-radius: 12px;
   background: var(--bg-2);
   border: 1px solid transparent;
@@ -1550,16 +2454,17 @@ input[type='range']::-moz-range-thumb {
   position: absolute;
   top: 0;
   left: 0;
-  width: 44px;
+  /* 44×44, only as tall as the card's top row: a tap on the camera art selects, never pins */
+  width: 48px;
   height: 44px;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 5px;
+  padding: 6px;
   border: 0;
   border-radius: 12px 0 12px 0;
   background: none;
-  color: var(--fg-2);
+  color: var(--fg);
   -webkit-tap-highlight-color: transparent;
 }
 .camera-pin-dot {
@@ -1568,8 +2473,9 @@ input[type='range']::-moz-range-thumb {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--bg-3);
-  border: 1px solid var(--line);
+  background: #2c2824;
+  /* clearly visible against the card when not pinned (ring and icon well above 3:1) */
+  border: 1.5px solid var(--fg-2);
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .camera-pin:active .camera-pin-dot {
@@ -1597,17 +2503,23 @@ input[type='range']::-moz-range-thumb {
   background: var(--line);
 }
 .camera-name {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.2;
 }
+/* Large text: name and era wrap onto two lines (between words) instead of "…". */
+.camera-name {
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: normal;
+}
 .camera-era {
   max-width: 100%;
-  font-size: 10px;
+  font-size: 0.6875rem;
   color: var(--fg-2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
+  line-height: 1.2;
+  overflow-wrap: normal;
 }
 .camera-body {
   display: block;
@@ -1618,16 +2530,16 @@ input[type='range']::-moz-range-thumb {
   flex-direction: column;
   gap: 1px;
   padding: 6px 16px 2px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 650;
 }
 .load-sub .muted {
   font-weight: 400;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .fixed-cap {
   flex: 1;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--fg-2);
   padding-left: 4px;
 }
@@ -1666,8 +2578,10 @@ input[type='range']::-moz-range-thumb {
 .cam-top.locked {
   opacity: 0.55;
 }
+/* Camera: the bottom belongs to the shutter row, so messages stay just under the flash / timer / format row. */
 .route-camera .toasts {
   top: calc(124px + var(--safe-t));
+  bottom: auto;
 }
 .route-camera.has-update .toasts {
   top: calc(184px + var(--safe-t));
@@ -1718,8 +2632,312 @@ input[type='range']::-moz-range-thumb {
 .cam-hint {
   margin: -8px 0 8px;
   text-align: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--fg-2);
+}
+/* ---- shutter states: starting, queued presses, timer cancel ---- */
+.shutter {
+  position: relative;
+}
+.shutter.starting {
+  border-style: dashed;
+  border-color: var(--fg-3);
+  animation: shutter-spin 2.4s linear infinite;
+  cursor: progress;
+}
+.shutter.starting span {
+  transform: scale(0.7);
+  background: var(--fg-3);
+  opacity: 0.5;
+}
+@keyframes shutter-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+.shutter.cancel {
+  border-color: #ff6b5e;
+}
+.shutter.cancel span {
+  display: grid;
+  place-items: center;
+  transform: scale(0.86);
+  background: #3a1d1a;
+  color: #ff8a7f;
+}
+.shutter-queue {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 28px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1a0f05;
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-style: normal;
+  line-height: 1.3;
+  pointer-events: none;
+}
+.cam-top.locked.counting {
+  opacity: 1;
+}
+.chip.cancel {
+  color: #ff8a7f;
+  background: rgba(255, 107, 94, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 107, 94, 0.5);
+}
+.countdown-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.countdown-wrap .countdown {
+  position: static;
+  display: block;
+  line-height: 1;
+}
+.countdown-hint {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+/* Front / back before a roll is loaded (top-right of the viewfinder). */
+.vf-flip {
+  position: absolute;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+/* ---- last shot: quick preview until the developed thumbnail is ready ---- */
+.last-shot {
+  position: relative;
+}
+.last-shot-quick {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+.last-shot.instant .last-shot-quick {
+  inset: 4px 4px 12px;
+  width: calc(100% - 8px);
+  height: calc(100% - 16px);
+  border-radius: 0;
+  animation: instant-dev 45s ease-out both;
+}
+.last-shot:has(.thumb img) .last-shot-quick {
+  display: none;
+}
+.last-shot .thumb-wait {
+  background: linear-gradient(100deg, #3a352f 30%, #5a534a 50%, #3a352f 70%);
+  background-size: 300% 100%;
+}
+.last-shot.instant .thumb-wait {
+  background: linear-gradient(100deg, #cfc9bb 30%, #e8e3d6 50%, #cfc9bb 70%);
+  background-size: 300% 100%;
+}
+.last-shot .thumb {
+  transition: opacity 0.2s ease;
+}
+.last-shot.landing .thumb,
+.last-shot.landing .last-shot-quick {
+  opacity: 0;
+}
+/* ---- instant print ejecting over the viewfinder, then dropping into the thumbnail ---- */
+.eject-print {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  aspect-ratio: 0.82;
+  padding: 5% 5% 18%;
+  background: #f3f0e8;
+  border-radius: 2px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+  transform-origin: 0 0;
+  pointer-events: none;
+  opacity: 0; /* the animation shows it once it is placed */
+}
+.eject-print.wide {
+  aspect-ratio: 1.23;
+  padding: 4% 4% 14%;
+}
+.eject-print img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* ---- camera "more" popover (date imprint, grid) ---- */
+.cam-more-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+.more-dots {
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.cam-more {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 168px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #1f1b18;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.cam-more[hidden] {
+  display: none;
+}
+.more-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--fg);
+  font-size: 0.9375rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.more-item:active {
+  background: var(--bg-3);
+}
+.more-item small {
+  margin-left: auto;
+  color: var(--fg-3);
+  font-size: 0.8125rem;
+}
+.more-item.on small,
+.more-item.on svg {
+  color: var(--accent);
+}
+.cam-name .chip-txt {
+  white-space: nowrap;
+}
+/* Timer: a fixed 44px chip, the seconds in a corner badge, so turning it on never wraps the bar. */
+.cam-top .chip.timer-chip {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.timer-badge {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #1a0f05;
+  font-size: min(0.6875rem, 13px);
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+}
+.chip.cancel .timer-badge {
+  background: #ff8a7f;
+}
+.roll-btn-can {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+/* First run: three plain shortcuts above the camera strip (they pick the body, they do not load). */
+.quick-start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.quick-start::-webkit-scrollbar {
+  display: none;
+}
+.quick-start-label {
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--fg-2);
+  margin-right: 2px;
+}
+.quick-chip {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--fg);
+  font-size: 0.875rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.quick-chip.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 138, 43, 0.1);
+}
+/* 360px phones: the fullest bar (Pro 35: 6 controls + more) still fits one row. */
+@media (max-width: 374px) {
+  .cam-top {
+    gap: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .cam-top .chip {
+    padding: 0 8px;
+  }
+}
+/* Frame advance: the counter ticks with each shot. */
+.counter-tick {
+  display: inline-block;
+  animation: counter-tick 0.32s ease-out;
+}
+@keyframes counter-tick {
+  from {
+    transform: translateY(-40%);
+    opacity: 0.2;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.sheet-sub {
+  margin: 6px 4px 4px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+.empty-hint,
+.empty-title,
+.banner,
+.confirm-text,
+.speed,
+.lab-body {
+  word-break: keep-all;
 }
 .eject {
   position: absolute;
@@ -1847,7 +3065,7 @@ input[type='range']::-moz-range-thumb {
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.55);
   color: var(--accent);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 .vf-cine-tag {
@@ -1890,7 +3108,7 @@ input[type='range']::-moz-range-thumb {
   mix-blend-mode: screen;
 }
 .vf-lcd {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #fff;
   text-shadow: 0 1px 2px #000;
 }
@@ -2013,7 +3231,7 @@ input[type='range']::-moz-range-thumb {
   padding: 1px 6px;
   background: #0f380f;
   color: #9bbc0f;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
@@ -2037,6 +3255,97 @@ input[type='range']::-moz-range-thumb {
   border-radius: 12px;
   background: #5a1d14;
   color: #ffe2d8;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
+}
+
+/* ---------- round-2 fixes: lab, album, settings, analog ---------- */
+/* Album: "+ Import photos" is a labelled button, not a bare arrow that read as "save". */
+.hdr-import {
+  margin-left: auto;
+  min-height: 44px;
+  gap: 6px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.gal-restore {
+  margin-top: 6px;
+}
+/* Album "Help" link (FAQ / contact page): quiet, but a full touch target. */
+.help-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  color: var(--fg-2);
+  font-size: 0.875rem;
+  text-underline-offset: 3px;
+}
+.gal-help {
+  margin: 16px 0 0;
+  text-align: center;
+}
+/* Settings scrolls long cards under its sticky title: a solid bar so the two never overlap. */
+.page.settings > .hdr {
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--line);
+  margin-bottom: 10px;
+}
+/* Analog / log titles carry a subtitle that wraps at large text: the same solid bar, grown to fit. */
+.page.analog > .hdr,
+.page.log > .hdr {
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--line);
+}
+/* Busy but still focusable (Settings restore): looks like :disabled. */
+button[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: default;
+}
+.field-hint {
+  margin: 0 0 2px;
+  line-height: 1.45;
+}
+.persist-why {
+  margin-top: 4px;
+  color: var(--fg);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.backup-send {
+  margin: 4px 0 8px;
+}
+/* Lab: "camera · film" names can be long; wrap instead of pushing the rush button out. */
+/* Each half stays whole ("Pro 35" · "Sunny 200") and breaks at the dot, unless it alone is too long. */
+/* The rush button sits under the text, so the name and arrival time get the full width. */
+.lab-item {
+  grid-template-columns: auto 1fr;
+}
+.lab-item > .btn {
+  grid-column: 2;
+  justify-self: start;
+}
+.lab-name span,
+.lab-eta span {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* Analog: the meter readout wraps at large text instead of overflowing the card. */
+.meter-result {
+  display: flex;
+  flex-wrap: wrap;
+}
+.meter-result > div {
+  flex: 1 1 5.5em;
+  min-width: 0;
+}
+.meter-result > div:first-child {
+  flex-grow: 1.4;
+}
+.meter-result strong {
+  overflow-wrap: anywhere;
+}
+.persist-refused {
+  font-size: 14px;
 }

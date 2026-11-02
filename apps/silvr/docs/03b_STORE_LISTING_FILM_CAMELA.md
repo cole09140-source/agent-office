@@ -1,7 +1,7 @@
 # Film Camela 스토어 등록 문안 (SILVR → Film Camela 이름 변경판)
 
 > 새 이름 **Film Camela**용 문안입니다. 기존 `03_STORE_LISTING.md`(SILVR)는 그대로 두고, 이름 변경을 확정하면 이 문서 기준으로 Play Console·App Store Connect에 옮겨 적으세요.
-> 근거: `src/i18n.ts`, `src/cameras/models.ts`, `src/cameras/pins.ts`, `src/film/stocks.ts`, `src/entitlements.ts`(v1.0 결제 없음, 전 기능 무료), `public/privacy.html` v1.2.
+> 근거: `src/i18n.ts`, `src/cameras/models.ts`, `src/cameras/pins.ts`, `src/film/stocks.ts`, `src/entitlements.ts`(v1.0 결제 없음, 전 기능 무료), `public/privacy.html` v1.3.
 
 ## 0. 채워 넣을 값 (토큰)
 
@@ -41,7 +41,7 @@ Film Camela – 필름 카메라
 롤로 아껴 찍고, 현상소에서 기다리고, 다크룸에서 다시 현상하는 필름 카메라예요.
 ```
 
-**자세한 설명** — 1387/4000자
+**자세한 설명** — 1384/4000자
 ```
 Film Camela는 필름처럼 찍고, 현상소에서 기다리고, 암실처럼 다시 현상하는 카메라예요.
 
@@ -49,7 +49,7 @@ Film Camela는 필름처럼 찍고, 현상소에서 기다리고, 암실처럼 �
 카메라를 고르고 필름을 넣으면 남은 장수가 하나씩 줄어요. 카메라마다 10~99장. 마구 찍고 지우는 대신, 한 장을 고르는 즐거움을 되찾아 보세요.
 
 ■ 현상소는 왜 있나요?
-다 찍은 롤은 현상소에 맡겨요. 받아볼 시간은 직접 골라요: 즉시 · 1시간 · 내일 아침 9시 · 3일.
+다 찍은 롤은 현상소로 보내요. 받아볼 시간은 직접 골라요: 즉시 · 1시간 · 아침 9시 · 3일.
 · 어떤 사진이 나올지 기다리는 동안 설레요. 진짜 필름처럼요.
 · 결과를 바로 못 보니, 찍을 때는 화면보다 눈앞의 순간에 집중하게 돼요.
 · 기다리기 싫다면 '즉시'를 고르거나, 현상 중에도 '지금 바로 현상'을 누르면 돼요.
@@ -114,7 +114,7 @@ Film Camela – 필름 카메라
 한 장씩 아껴 찍고, 현상소에서 설레며 기다려요. 기다리기 싫으면 즉시 현상도 돼요. 원본 네거티브가 남아 언제든 다른 필름으로 다시 현상할 수 있어요.
 ```
 
-**설명** — Google Play "자세한 설명"과 같은 글을 그대로 씁니다 (1387/4000자).
+**설명** — Google Play "자세한 설명"과 같은 글을 그대로 씁니다 (1384/4000자).
 
 **키워드** — 87/100자 · 22개 · UTF-8 211바이트
 ```
@@ -155,7 +155,7 @@ Film Camela – Analog Camera
 Shoot a roll, wait for the lab, re-develop anytime. Your negatives are kept.
 ```
 
-**Full description** — 2557/4000
+**Full description** — 2553/4000
 ```
 Film Camela shoots like film, makes you wait for the lab, and develops like a darkroom.
 
@@ -163,7 +163,7 @@ ONE ROLL AT A TIME
 Pick a camera, load a roll and watch the counter go down: 10 to 99 shots depending on the camera. No spraying and deleting. Every frame counts again.
 
 WHAT'S THE LAB FOR?
-When a roll is finished, you drop it at the lab and pick when it comes back: instant, 1 hour, tomorrow 9 AM or 3 days.
+When a roll is finished, you send it to the lab and pick when it comes back: instant, 1 hour, next 9 AM or 3 days.
 • The wait is the fun part. You don't know exactly what you got until the roll comes back, just like real film.
 • Since you can't check every shot, you look at the moment instead of the screen.
 • In a hurry? Pick Instant, or tap "Develop now" while a roll is still in the lab.
@@ -227,7 +227,7 @@ Shoot a roll, wait for prints
 Make every frame count, then wait for the lab like it's real film, or skip the wait with Instant. Your negatives are kept, so you can re-develop any shot later.
 ```
 
-**Description** — same text as the Google Play full description (2557/4000).
+**Description** — same text as the Google Play full description (2553/4000).
 
 **Keywords** — 100/100 · 12 terms
 ```
@@ -256,20 +256,20 @@ disposable,instant,vintage,retro,35mm,darkroom,grain,fisheye,double exposure,lig
 
 설명 본문에 이미 들어 있는 블록입니다. 그래픽 이미지·FAQ·지원 페이지에 따로 써도 됩니다.
 
-**한국어** (239자)
+**한국어** (236자)
 ```
 ■ 현상소는 왜 있나요?
-다 찍은 롤은 현상소에 맡겨요. 받아볼 시간은 직접 골라요: 즉시 · 1시간 · 내일 아침 9시 · 3일.
+다 찍은 롤은 현상소로 보내요. 받아볼 시간은 직접 골라요: 즉시 · 1시간 · 아침 9시 · 3일.
 · 어떤 사진이 나올지 기다리는 동안 설레요. 진짜 필름처럼요.
 · 결과를 바로 못 보니, 찍을 때는 화면보다 눈앞의 순간에 집중하게 돼요.
 · 기다리기 싫다면 '즉시'를 고르거나, 현상 중에도 '지금 바로 현상'을 누르면 돼요.
 · 인스턴트 카메라와 디지털 카메라는 현상소 없이 바로 확인해요.
 ```
 
-**English** (493)
+**English** (489)
 ```
 WHAT'S THE LAB FOR?
-When a roll is finished, you drop it at the lab and pick when it comes back: instant, 1 hour, tomorrow 9 AM or 3 days.
+When a roll is finished, you send it to the lab and pick when it comes back: instant, 1 hour, next 9 AM or 3 days.
 • The wait is the fun part. You don't know exactly what you got until the roll comes back, just like real film.
 • Since you can't check every shot, you look at the moment instead of the screen.
 • In a hurry? Pick Instant, or tap "Develop now" while a roll is still in the lab.
@@ -278,7 +278,7 @@ When a roll is finished, you drop it at the lab and pick when it comes back: ins
 
 사장님 질문("현상소는 왜 있어?")에 대한 한 줄 답: **찍은 결과를 바로 못 보게 해서 진짜 필름의 설렘과 '한 장의 무게'를 살리는 장치예요. 원치 않으면 '즉시'로 건너뛰고, 인스턴트·디지털 카메라는 처음부터 현상소를 거치지 않아요.**
 
-- 근거: 롤을 다 찍거나 되감으면 현상소로 감(`lab.emptyHint`), 속도 4가지(`speed.*`), 현상 중 "지금 바로 현상"(`lab.rush`), `instant: true` 바디(정사각·와이드 인스턴트, CCD 2003, Pixel Pocket, KidCam 0.3)는 바로 확인.
+- 근거: 롤 시트의 "현상소로 보내기"로 현상소에 감(`cam.rewind`·`lab.emptyHint`), 속도 4가지(`speed.*`), 현상 중 "지금 바로 현상"(`lab.rush`), `instant: true` 바디(정사각·와이드 인스턴트, CCD 2003, Bit Pocket, KidCam 0.3)는 바로 확인.
 - 푸시 알림 기능은 없어요(앱 안 토스트만). 그래서 문안에 "알림이 와요"는 쓰지 않았습니다.
 
 ---
@@ -292,13 +292,13 @@ When a roll is finished, you drop it at the lab and pick when it comes back: ins
 | 앱 이름·간단한 설명에 가격/할인 문구 | 없음 ("무료"는 쓰지 않음) |
 | 키워드 나열식 문장 | 없음 — 기능 설명 속에서만 단어가 나옴 |
 | 사실 확인 | 장수 10~99(`capacities`), 증감현상 ±2스톱, 플래시 충전(`flash: 'charge'`), 6×6 12장(Twin 66), 0.3메가·640px(KidCam), 4색 팔레트(Pixel) — 모두 코드 기준 |
-| 일부러 뺀 이름 | 앱 속 이름 중 남의 상표를 떠올리게 할 수 있는 **Insta SQ / Insta W / Insta Mini / Insta Wide**(Instax), **X-Pro 200**(후지필름 X-Pro), **Super 8**(형식 이름이지만 원래 코닥 규격), **Pixel Pocket**(Google Pixel)은 스토어 문안에서 일반 명칭으로 바꿔 썼어요. 앱 화면에는 그대로 있어 스크린샷에 보일 수 있으니, 출시 전 이름 검토를 권합니다. |
+| 일부러 뺀 이름 | 앱 속 이름 중 남의 상표를 떠올리게 할 수 있는 **Insta SQ / Insta W / Insta Mini / Insta Wide**(Instax), **X-Pro 200**(후지필름 X-Pro), **Super 8**(형식 이름이지만 원래 코닥 규격), **Pixel Pocket**(Google Pixel)은 스토어 문안에서 일반 명칭으로 바꿔 썼어요. 앱 화면 이름도 2026-11-01에 **Pop SQ / Pop W / Pop 600 / Pop Mini / Pop Wide / Cross 200 / Reel 8 / Bit Pocket**으로 바꿨어요(내부 id는 그대로). |
 
 ---
 
 ## 6. 데이터 보안 (Play) / 앱 개인정보 보호 (App Store)
 
-**답은 그대로 "수집하지 않음 / Data Not Collected"** 입니다. `public/privacy.html` v1.2(시행 2026-10-31)와 코드로 확인했어요.
+**답은 그대로 "수집하지 않음 / Data Not Collected"** 입니다. `public/privacy.html` v1.3(시행 2026-11-01)와 코드로 확인했어요.
 
 | 확인한 것 | 결과 |
 |-----------|------|
@@ -314,8 +314,8 @@ When a roll is finished, you drop it at the lab and pick when it comes back: ins
 Play 데이터 보안 설문: "필수 사용자 데이터 유형을 수집하거나 공유하나요?" → **아니요**. 데이터 삭제: 설정 → 모든 데이터 삭제 또는 앱 삭제.
 App Store: **Data Not Collected**, 추적 없음 (`PrivacyInfo.xcprivacy`와 일치).
 
-### 이름 변경 때 함께 고쳐야 할 것 (이 문서 범위 밖 — 고치지 않았음)
-- `public/privacy.html`·`terms.html`·`support.html` 본문의 "SILVR" → "Film Camela" (방침 버전도 1.3으로). 내용(수집 안 함)은 바뀌지 않아요.
-- 앱 안 "SILVR" 문자열: 스플래시·온보딩 로고(`app.tsx`, `Onboarding.tsx`), 공유 제목(`share.title`), 오류 문구(`err.storagePermission` 등), 갤러리 저장 폴더 `Pictures/SILVR`(`platform/share.ts`), 파일 이름(`SILVR_…`), 밀착 인화·필름 테두리 라벨(`Roll.tsx`, `develop.ts`). 스크린샷에 "SILVR"가 찍히면 이름이 다른 앱으로 보여 심사에서 지적받을 수 있어요.
-- 개인정보 처리방침 URL `silvr.muzig.ai`는 동작만 하면 그대로 써도 되지만, 새 이름에 맞는 주소를 쓸지 결정이 필요해요.
-- 출시 노트에서는 갤러리 앨범 이름을 일부러 적지 않았어요(폴더 이름이 아직 SILVR).
+### 이름 변경 반영 현황 (2026-11-01 앱에 반영됨)
+- `public/privacy.html`·`terms.html`·`support.html`·`licenses.html` 본문의 앱 이름 → "Film Camela". 개인정보 처리방침은 v1.3(시행 2026-11-01, 변경 내용: 앱 이름 변경, 처리 내용은 그대로).
+- 앱 안 문자열: 스플래시·온보딩 로고("FILM CAMELA"), 공유 제목(`share.title`), 오류 문구, 갤러리 저장 폴더 `Pictures/Film Camela`(`GalleryPlugin.java`), 파일 이름(`FilmCamela_…`), 밀착 인화·필름 테두리 라벨("FILM CAMELA …"), 런처 이름(Android `app_name`, iOS `CFBundleDisplayName`, PWA `short_name`).
+- 그대로 둔 것: 패키지/번들 ID `app.silvr.camera`, 웹 주소 `silvr.muzig.ai`, 저장소(IndexedDB) 이름, 백업 형식 id `silvr-backup` — 사용자에게 보이지 않고, 바꾸면 기존 데이터·업데이트가 끊겨요.
+- 개인정보 처리방침 URL `silvr.muzig.ai`는 동작만 하면 그대로 써도 되지만, 새 이름에 맞는 주소를 쓸지는 결정이 필요해요.

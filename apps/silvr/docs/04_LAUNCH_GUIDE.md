@@ -1,5 +1,7 @@
 # 출시 가이드
 
+> 앱 이름: **Film Camela** (2026-11-01 SILVR에서 변경). 패키지/번들 ID `app.silvr.camera`, 웹 주소 `silvr.muzig.ai`, 폴더 `apps/silvr`, 키스토어 파일 이름, 이미 만들어 둔 결과물 폴더(`SILVR_안드로이드` 등)는 옛 이름 그대로예요.
+
 ## A. 웹(PWA) 즉시 배포 — 10분
 
 ```bash
@@ -75,7 +77,7 @@ cd android
 2. 릴리스는 R8 코드 축소·리소스 축소가 켜져 있습니다(앱 전용 플러그인은 Capacitor 규칙으로 보존). 출시 전 `scripts/android-release-smoke.mjs`로 서명본을 기기에서 확인
 3. 버전: `android/app/build.gradle`의 `versionCode`(올릴 때마다 +1)·`versionName`
 4. Play Console: 입력할 값은 `docs/07_PLAY_CONSOLE.md`(등록정보·그래픽·데이터 보안·콘텐츠 등급·출시 노트). 개인정보처리방침 URL이 필수라 웹 배포(도메인)가 먼저 필요
-5. 앱 전용 네이티브 코드: `GalleryPlugin.java`(사진을 `Pictures/SILVR`에 저장, Android 10+ MediaStore·7~9 저장소 권한). 매니페스트: 카메라·위치(선택)·진동·저장소(28 이하), 자동 백업 끔(`allowBackup=false`), 세로 고정
+5. 앱 전용 네이티브 코드: `GalleryPlugin.java`(사진을 `Pictures/Film Camela`에 저장, Android 10+ MediaStore·7~9 저장소 권한). 매니페스트: 카메라·위치(선택)·진동·저장소(28 이하), 자동 백업 끔(`allowBackup=false`), 세로 고정
 
 ## D. 출시 전 체크리스트
 
@@ -93,7 +95,7 @@ cd android
 - [x] 개인정보 처리방침·이용약관에 운영자(아티움그룹 주식회사)와 보호책임자·연락처(play@muzig.ai) 기재 (2026-10-28)
 - [x] 고객지원 페이지(`public/support.html`, 지원 URL용)와 설정 화면 저작권 표기(© 2026 ATIUM GROUP Co., Ltd.)
 - [ ] 스토어 개발자 계정: 아티움그룹 주식회사 **조직** 계정(D-U-N-S 필요). 예전 Play 계정 ATIUM COMPANY는 2024-03 해지 → `docs/07_PLAY_CONSOLE.md` 0절 주의 사항
-- [x] 상표 1차 조사: `docs/06_TRADEMARK_SEARCH.md`. 한국·미국 낮음~중간, EU·호주 중간~높음(Silvr Group 등 9류 등록). 출원 전 변리사 검토 권장, 이름 유지 여부는 결정 필요
+- [x] 상표 1차 조사: `docs/06_TRADEMARK_SEARCH.md`. 한국·미국 낮음~중간, EU·호주 중간~높음(Silvr Group 등 9류 등록) → 2026-11-01 앱 이름을 **Film Camela**로 변경(`docs/06b_TRADEMARK_FILM_CAMELA.md`). 출원 전 변리사 검토 권장
 - [x] 스토어 스크린샷: 6컷 × (iPhone 6.7" 1290×2796 · Android 1080×1920) × (한·영), 문구 프레임 포함(`scripts/store-shots/`, 아래 F). 장면 사진은 AI로 만든 이미지 → 실제 사진으로 바꾸려면 사진만 바꿔 다시 실행
 - [x] Android 에뮬레이터 검수(Android 15): 디버그 21항목, 서명된 릴리스 6단계 통과
 - [x] Android 릴리스: 업로드 키 서명 APK·AAB(`Desktop\클로드코드\_결과물\SILVR_안드로이드`)

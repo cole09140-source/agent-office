@@ -22,7 +22,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * Saves a print straight into the gallery (Pictures/SILVR). Android's share
+ * Saves a print straight into the gallery (Pictures/Film Camela). Android's share
  * sheet has no "Save image" target, so Save must not go through it.
  * Android 10+ uses MediaStore (no permission); 7–9 needs WRITE_EXTERNAL_STORAGE.
  */
@@ -32,7 +32,7 @@ import java.io.OutputStream;
 )
 public class GalleryPlugin extends Plugin {
 
-    private static final String ALBUM = "SILVR";
+    private static final String ALBUM = "Film Camela";
 
     @PluginMethod
     public void saveImage(PluginCall call) {
@@ -57,7 +57,7 @@ public class GalleryPlugin extends Plugin {
             call.reject("data and name are required");
             return;
         }
-        // A bare file name only (no "../" out of Pictures/SILVR), and only image types.
+        // A bare file name only (no "../" out of Pictures/Film Camela), and only image types.
         name = new java.io.File(name).getName();
         if (name.isEmpty() || name.startsWith(".")) {
             call.reject("invalid file name");
@@ -114,7 +114,7 @@ public class GalleryPlugin extends Plugin {
             out.write(bytes);
         } catch (Exception e) {
             //noinspection ResultOfMethodCallIgnored
-            file.delete(); // no half-written image left in Pictures/SILVR
+            file.delete(); // no half-written image left in Pictures/Film Camela
             throw e;
         }
         MediaScannerConnection.scanFile(getContext(), new String[] { file.getAbsolutePath() }, new String[] { mime }, null);

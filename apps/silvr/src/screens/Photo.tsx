@@ -1,22 +1,37 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
-import { Empty, formatDate, Header, Sheet, useObjectUrl, usePrint } from '../components/ui';
+import { cleanNumber, Empty, formatDate, Header, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
 import { getStock } from '../film/stocks';
 import { t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
-import { confirm, rolls, toast } from '../state/app';
+import { announce, confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
-import { back, go, goTab, isCurrent } from '../state/router';
+import { back, go, goTab, isCurrent, route } from '../state/router';
 import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
-import { deletePhoto, getPhoto, listPhotos, subscribe, viewable, type Photo } from '../store/rolls';
+import { deletePhoto, getPhoto, listPhotos, restorePhoto, subscribe, viewable, type Photo } from '../store/rolls';
 
 const INSTANT_DEV_S = 45;
+
+/** "노멀" for no push/pull, else "+1.0 EV" / "−0.5 EV" (rounded: never float noise). */
+function pushLabel(push: number): string {
+  const v = cleanNumber(push);
+  if (v === 0) return t('view.pushNormal');
+  return `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} EV`;
+}
+
+/** Same scale as the darkroom's expiry slider (0–1 → 0–30 years). */
+const expiredYears = (e: number | undefined) => Math.round((e ?? 0) * 30);
 
 export function PhotoScreen({ id }: { id: string }) {
   const [photo, setPhoto] = useState<Photo | null | undefined>(undefined);
   const [siblings, setSiblings] = useState<Photo[]>([]);
   const [info, setInfo] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
+  // One share/save at a time: a double tap saved the print twice, or the second share
+  // was refused and its cleanup deleted the file the first share sheet was still reading.
+  // (Declared before the early returns below: hooks must run in the same order every render.)
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
 
   useEffect(() => {
     let alive = true;
@@ -45,8 +60,14 @@ export function PhotoScreen({ id }: { id: string }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // A sheet (Info, a confirm) has the keys: arrows must not move the photo behind it, and its Escape closes it.
+      if (e.defaultPrevented || sheetOpen() || e.altKey || e.ctrlKey || e.metaKey) return;
       if (e.key === 'ArrowRight') goSibling(1);
-      if (e.key === 'ArrowLeft') goSibling(-1);
+      else if (e.key === 'ArrowLeft') goSibling(-1);
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' });
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -71,17 +92,13 @@ export function PhotoScreen({ id }: { id: string }) {
   // Instant prints keep developing for a while after they eject.
   const instantDev = photo && camera && ejectsPrints(camera) ? Math.min(INSTANT_DEV_S, Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000)) : 0;
 
-  // One share/save at a time: a double tap saved the print twice, or the second share
-  // was refused and its cleanup deleted the file the first share sheet was still reading.
-  const [sharing, setSharing] = useState(false);
-  const sharingRef = useRef(false);
   const share = async (download: boolean) => {
     if (!blob || !photo || sharingRef.current) return;
     sharingRef.current = true;
     setSharing(true);
     try {
-      const res = await shareImages([{ blob, name: fileName('SILVR', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg') }], download);
-      if (res === 'downloaded') toast(t('view.savedToast'));
+      const res = await shareImages([{ blob, name: fileName('FilmCamela', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg', photo.frame) }], download);
+      if (res === 'downloaded') toast(savedToastText());
     } catch (err) {
       console.error('[silvr] share failed', err);
       toast((err as { code?: string })?.code === 'DENIED' ? t('err.storagePermission') : t('common.error'));
@@ -93,9 +110,31 @@ export function PhotoScreen({ id }: { id: string }) {
 
   const remove = async () => {
     if (!photo) return;
-    if (!(await confirm(t('view.deleteConfirm'), t('common.delete'), true))) return;
+    if (!(await confirm(t('view.deleteUndoConfirm'), t('common.delete'), true, t('view.deleteTitle')))) return;
     const next = siblings[idx + 1] ?? siblings[idx - 1];
-    await deletePhoto(photo.id);
+    const snap = await deletePhoto(photo.id);
+    if (snap) {
+      // Soft delete: the record and negative stay in memory while the toast offers an undo (≥ 10 s).
+      const undo = async () => {
+        try {
+          if (!(await restorePhoto(snap))) {
+            toast(t('common.notFound'));
+            return;
+          }
+        } catch (err) {
+          console.error('[silvr] undo delete failed', err);
+          toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
+          return;
+        }
+        announce(t('view.restored'));
+        const at = route.value;
+        const target = { name: 'photo' as const, id: snap.photo.id };
+        // Back to the restored photo: replace the neighbour it moved to, or open it from wherever the user is.
+        if (at.name === 'photo') go(target, true);
+        else go(target);
+      };
+      toast(t('view.deleted'), { label: t('common.undo'), run: () => void undo() }, 10_000);
+    }
     if (!isCurrent({ name: 'photo', id: photo.id })) return;
     if (next) go({ name: 'photo', id: next.id }, true);
     else goTab({ name: 'gallery' }); // the emptied roll is gone too: unwind so back can't reach it
@@ -104,7 +143,8 @@ export function PhotoScreen({ id }: { id: string }) {
   return (
     <div class="viewer" data-testid="photo-screen">
       <Header
-        title={stock?.name ?? ''}
+        // Same "camera · film" naming as the roll and the album.
+        title={camera && stock ? `${camera.name} · ${stock.name}` : (stock?.name ?? '')}
         sub={photo && idx >= 0 ? `${idx + 1} / ${siblings.length}` : undefined}
         onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
         right={
@@ -181,16 +221,21 @@ export function PhotoScreen({ id }: { id: string }) {
               </>
             )}
             <dt>{t('view.taken')}</dt>
-            <dd>{photo.undated ? '—' : formatDate(photo.takenAt, signalLang.value, true)}</dd>
+            <dd>{photo.undated ? t('view.noDate') : formatDate(photo.takenAt, signalLang.value, true)}</dd>
             <dt>{t('view.frame')}</dt>
             <dd>#{photo.frame}</dd>
             <dt>{t('view.size')}</dt>
             <dd class="mono">{photo.printW ? `${photo.printW}×${photo.printH}` : `${photo.width}×${photo.height}`}</dd>
+            {roll && (
+              <>
+                <dt>{t('cam.aspect')}</dt>
+                <dd class="mono">{roll.aspect}</dd>
+              </>
+            )}
             <dt>{t('dr.push')}</dt>
-            <dd class="mono">
-              {photo.develop.push > 0 ? '+' : ''}
-              {photo.develop.push}
-            </dd>
+            <dd>{pushLabel(photo.develop.push)}</dd>
+            <dt>{t('dr.expired')}</dt>
+            <dd>{expiredYears(photo.develop.expired) ? t('view.expiredYears', { n: expiredYears(photo.develop.expired) }) : t('view.expiredNone')}</dd>
           </dl>
         )}
       </Sheet>

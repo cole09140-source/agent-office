@@ -220,7 +220,7 @@ test('R38 offline: shoot, develop and back up with no network', async ({ page, c
   await page.getByTestId('btn-backup').click();
   const dl = page.waitForEvent('download');
   await page.getByTestId('btn-backup-save').click();
-  expect((await dl).suggestedFilename()).toMatch(/^SILVR_backup_\d{8}_\d{6}\.zip$/);
+  expect((await dl).suggestedFilename()).toMatch(/^FilmCamela_backup_\d{8}_\d{6}\.zip$/);
   await context.setOffline(false);
 });
 
@@ -315,12 +315,11 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('log-film').fill('HP5+');
   await page.getByTestId('log-create').click();
   await page.getByTestId('tab-settings').click();
-  await page.getByTestId('btn-backup').click();
-  await expect(page.getByTestId('backup-status')).toContainText(/1.*3|3.*1/);
+  // One tap builds the backup and saves it right away.
   const dl = page.waitForEvent('download');
-  await page.getByTestId('btn-backup-save').click();
+  await page.getByTestId('btn-backup').click();
+  await expect(page.getByTestId('backup-status')).toContainText(/FilmCamela_backup_/);
   const file = await (await dl).path();
-  await expect(page.getByTestId('btn-backup-save')).toBeHidden();
   const bytes = readFileSync(file!);
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();

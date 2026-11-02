@@ -75,6 +75,36 @@ export async function deleteLogFrame(id: string): Promise<void> {
   await del('logFrames', id);
 }
 
+/** Fields of a logged frame the user can correct afterwards (number, time and place are facts). */
+export type LogFrameEdit = Partial<Pick<LogFrame, 'aperture' | 'shutter' | 'lens' | 'note'>>;
+
+/** Edits a logged frame in place. Returns the updated frame, or null when it is gone. */
+export async function updateLogFrame(id: string, patch: LogFrameEdit): Promise<LogFrame | null> {
+  return atomic(['logFrames'], async (t) => {
+    const cur = (await rq(t.objectStore('logFrames').get(id))) as LogFrame | undefined;
+    if (!cur) return null;
+    const next: LogFrame = { ...cur };
+    for (const k of ['aperture', 'shutter', 'lens', 'note'] as const) if (typeof patch[k] === 'string') next[k] = patch[k]!;
+    await rq(t.objectStore('logFrames').put(next));
+    return next;
+  });
+}
+
+/**
+ * Undo for a deleted frame: puts it back with its number, unless the roll is gone, its number
+ * was reused meanwhile, or the roll filled up. Returns whether it came back.
+ */
+export async function restoreLogFrame(frame: LogFrame): Promise<boolean> {
+  return atomic(['logRolls', 'logFrames'], async (t) => {
+    const roll = (await rq(t.objectStore('logRolls').get(frame.rollId))) as LogRoll | undefined;
+    if (!roll) return false;
+    const frames = (await rq(t.objectStore('logFrames').index('rollId').getAll(frame.rollId))) as LogFrame[];
+    if (frames.length >= roll.exposures || frames.some((f) => f.frame === frame.frame || f.id === frame.id)) return false;
+    await rq(t.objectStore('logFrames').put(frame));
+    return true;
+  });
+}
+
 const csvCell = (v: string | number | undefined) => {
   let s = v === undefined ? '' : String(v);
   // Spreadsheet formula injection: text starting with = + - @ (or tab/CR) is neutralised with a leading quote.

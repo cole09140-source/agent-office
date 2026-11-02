@@ -24,7 +24,7 @@ test('pinned cameras move to the front, persist across reloads and can be unpinn
   await pinLast.click();
   await expect(pinLast).toHaveAttribute('aria-pressed', 'true');
   await expect(pinLast).toBeFocused();
-  await expect(page.getByTestId('pin-announcer')).not.toBeEmpty();
+  await expect(page.getByTestId('toast').first()).toContainText(/pinned|고정/i);
   await expect.poll(() => order(page)).toEqual([last, ...original.slice(0, -1)]);
   await expect(page.locator('.camera-divider')).toHaveCount(1);
 

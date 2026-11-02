@@ -103,16 +103,131 @@ export interface Toast {
   id: number;
   text: string;
   action?: { label: string; run: () => void };
+  /** Same-kind toasts merge into one (e.g. "3 rolls developed · View"). */
+  group?: string;
+  count?: number;
 }
 export const toasts = signal<Toast[]>([]);
 let toastId = 0;
+/** A toast with a button stays at least this long: time to read it and reach the button. */
+export const ACTION_TOAST_MS = 10_000;
+/** At most this many toasts on screen: a third pushes the oldest (plain ones first) out. */
+export const MAX_TOASTS = 2;
 
-export function toast(text: string, action?: Toast['action'], ms = 3200): void {
+export interface ToastOptions {
+  /** Toasts with the same group merge: the visible one is updated instead of stacking another. */
+  group?: string;
+  /** Text and action for a merged group of `n` (n ≥ 2). Without it the newest text replaces the old. */
+  many?: (n: number) => { text: string; action?: Toast['action'] };
+}
+
+interface ToastTimer {
+  handle?: ReturnType<typeof setTimeout>;
+  /** Time left while paused; when running, the time it ends. */
+  left: number;
+  endsAt: number;
+  pauses: number;
+  onExpire?: () => void;
+}
+const toastTimers = new Map<number, ToastTimer>();
+
+function runToastTimer(id: number, tm: ToastTimer): void {
+  tm.endsAt = Date.now() + tm.left;
+  tm.handle = setTimeout(() => dismissToast(id, true), tm.left);
+}
+
+/**
+ * Shows a toast. One with an action stays ≥ 10 s and pauses while hovered or focused.
+ * `onExpire` runs when it goes away without its action being used (e.g. finalize a delete).
+ * Returns the toast's id.
+ */
+export function toast(text: string, action?: Toast['action'], ms = 3200, onExpire?: () => void, opts: ToastOptions = {}): number {
+  const life = (a?: Toast['action']) => (a ? Math.max(ms, ACTION_TOAST_MS) : ms);
+  const restart = (id: number, left: number) => {
+    const tm = toastTimers.get(id);
+    if (!tm) return;
+    tm.left = Math.max(left, tm.pauses ? tm.left : 0);
+    if (tm.pauses) return; // held by hover/focus: it restarts with the new time on resume
+    if (tm.handle) clearTimeout(tm.handle);
+    runToastTimer(id, tm);
+  };
+  // Same kind already showing: update it in place (one "3 rolls developed" instead of three toasts).
+  const same = opts.group ? toasts.value.find((x) => x.group === opts.group) : undefined;
+  if (same && !onExpire && !toastTimers.get(same.id)?.onExpire) {
+    const count = (same.count ?? 1) + 1;
+    const next = opts.many ? opts.many(count) : { text, action };
+    toasts.value = toasts.value.map((x) => (x.id === same.id ? { ...x, text: next.text, action: next.action, count } : x));
+    restart(same.id, life(next.action));
+    return same.id;
+  }
+  // Exact repeat of a visible plain toast: keep one and give it its time again.
+  // Not for toasts with a button (each delete's Undo undoes its own photo) or an expiry action.
+  const dup = !action && !onExpire && toasts.value.find((x) => x.text === text && !x.action && !toastTimers.get(x.id)?.onExpire);
+  if (dup) {
+    restart(dup.id, life());
+    return dup.id;
+  }
+  // Room for the new one: drop the oldest plain toast first, then the oldest of any kind.
+  while (toasts.value.length >= MAX_TOASTS) {
+    const victim = toasts.value.find((x) => !x.action) ?? toasts.value[0];
+    dismissToast(victim.id, true);
+  }
   const id = ++toastId;
-  toasts.value = [...toasts.value, { id, text, action }];
-  setTimeout(() => {
-    toasts.value = toasts.value.filter((x) => x.id !== id);
-  }, ms);
+  toasts.value = [...toasts.value, { id, text, action, group: opts.group, count: 1 }];
+  const tm: ToastTimer = { left: life(action), endsAt: 0, pauses: 0, onExpire };
+  toastTimers.set(id, tm);
+  runToastTimer(id, tm);
+  return id;
+}
+
+/** Removes a toast; `expired` runs its onExpire (not when its action was used). */
+export function dismissToast(id: number, expired = false): void {
+  const tm = toastTimers.get(id);
+  if (tm?.handle) clearTimeout(tm.handle);
+  toastTimers.delete(id);
+  toasts.value = toasts.value.filter((x) => x.id !== id);
+  if (expired) tm?.onExpire?.();
+}
+
+/** Hover / focus holds the toast; each pause needs a matching resume. */
+export function pauseToast(id: number): void {
+  const tm = toastTimers.get(id);
+  if (!tm) return;
+  if (tm.pauses++ === 0 && tm.handle) {
+    clearTimeout(tm.handle);
+    tm.handle = undefined;
+    tm.left = Math.max(0, tm.endsAt - Date.now());
+  }
+}
+
+export function resumeToast(id: number): void {
+  const tm = toastTimers.get(id);
+  if (!tm || tm.pauses === 0) return;
+  if (--tm.pauses === 0) {
+    // Leave a moment to come back to it after the pointer or focus moves away.
+    tm.left = Math.max(tm.left, 3000);
+    runToastTimer(id, tm);
+  }
+}
+
+// ---------- screen-reader announcements ----------
+
+/** Text of the app-wide polite live region (rendered by <Announcer/> in ui.tsx). */
+export const announcement = signal('');
+let announceHandle: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Says something to screen readers once, without showing it (e.g. "Sunny 200 · 24 exposures loaded").
+ * Repeating the same text announces it again.
+ */
+export function announce(text: string): void {
+  if (announceHandle) clearTimeout(announceHandle);
+  announcement.value = '';
+  // A new text node after a tick makes screen readers read it even when the text is unchanged.
+  announceHandle = setTimeout(() => {
+    announcement.value = text;
+    announceHandle = undefined;
+  }, 60);
 }
 
 // ---------- confirm dialog ----------
@@ -121,12 +236,18 @@ export interface ConfirmReq {
   text: string;
   ok: string;
   danger?: boolean;
+  /** Dialog title, ideally a question ("사진을 삭제할까요?"); defaults to the OK label. */
+  title?: string;
   resolve: (v: boolean) => void;
 }
 export const confirmReq = signal<ConfirmReq | null>(null);
 
-export function confirm(text: string, ok: string, danger = false): Promise<boolean> {
+/**
+ * Asks before doing something. Destructive confirms (`danger`) start on Cancel;
+ * others start on the OK button so Enter goes ahead.
+ */
+export function confirm(text: string, ok: string, danger = false, title?: string): Promise<boolean> {
   return new Promise((resolve) => {
-    confirmReq.value = { text, ok, danger, resolve };
+    confirmReq.value = { text, ok, danger, title, resolve };
   });
 }

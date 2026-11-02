@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 const [serial = 'emulator-5554', outDir = 'android-qa'] = process.argv.slice(2);
 const PKG = 'app.silvr.camera';
-const GALLERY = '/sdcard/Pictures/SILVR';
+const GALLERY = "'/sdcard/Pictures/Film Camela'"; // quoted for adb shell (space in the album name)
 const adb = (...a) => execFileSync('adb', ['-s', serial, ...a], { encoding: 'utf8', maxBuffer: 64 << 20 });
 const adbBin = (...a) => execFileSync('adb', ['-s', serial, ...a], { maxBuffer: 64 << 20 });
 const sh = (cmd) => adb('shell', cmd);
@@ -88,7 +88,7 @@ sh(`rm -rf ${GALLERY}`);
 await launch({ clear: true });
 sh(`pm grant ${PKG} android.permission.CAMERA`);
 await launch();
-console.log(`SILVR Android QA on ${serial} (Android ${sh('getprop ro.build.version.release').trim()}, WebView ${(await page.evaluate(() => navigator.userAgent)).match(/Chrome\/([\d.]+)/)?.[1]})`);
+console.log(`Film Camela Android QA on ${serial} (Android ${sh('getprop ro.build.version.release').trim()}, WebView ${(await page.evaluate(() => navigator.userAgent)).match(/Chrome\/([\d.]+)/)?.[1]})`);
 
 await check('onboarding shows and skips', async () => {
   await visible('onboarding');
@@ -160,7 +160,7 @@ await check('photo opens with a full-size print', async () => {
   return `${w}×${h}`;
 });
 
-await check('Save puts the print in the gallery (Pictures/SILVR), no share sheet', async () => {
+await check('Save puts the print in the gallery (Pictures/Film Camela), no share sheet', async () => {
   const before = galleryCount();
   await tid('btn-save').click();
   const msg = await toastText();
@@ -169,8 +169,8 @@ await check('Save puts the print in the gallery (Pictures/SILVR), no share sheet
   const after = galleryCount();
   shot('06-save');
   if (after !== before + 1) throw new Error(`gallery ${before} → ${after}`);
-  const media = sh(`content query --uri content://media/external/images/media --projection _display_name:relative_path --where "relative_path LIKE 'Pictures/SILVR%'"`);
-  if (!/SILVR_\d{8}_\d{6}\.(jpg|png)/.test(media)) throw new Error('not indexed in MediaStore');
+  const media = sh(`content query --uri content://media/external/images/media --projection _display_name:relative_path --where "relative_path LIKE 'Pictures/Film Camela%'"`);
+  if (!/FilmCamela_\d{8}_\d{6}\.(jpg|png)/.test(media)) throw new Error('not indexed in MediaStore');
   return `"${msg}", gallery ${before} → ${after}, in MediaStore`;
 });
 

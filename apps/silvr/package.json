@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "SILVR — analog film camera with a real darkroom",
+  "description": "Film Camela — analog film camera with a real darkroom",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

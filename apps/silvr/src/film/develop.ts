@@ -153,7 +153,7 @@ export function composePrint(negative: HTMLCanvasElement, dev: DevelopSettings, 
   if (dev.border === 'none') return film;
   const out = makeCanvas(layout.width, layout.height);
   drawWithBorder(out.getContext('2d')!, film, dev.border, layout, {
-    label: `SILVR ${stock.name.toUpperCase()}`,
+    label: `FILM CAMELA ${stock.name.toUpperCase()}`,
     frame: meta.frame,
   });
   return out;
