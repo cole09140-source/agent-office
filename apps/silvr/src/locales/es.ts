@@ -475,6 +475,7 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': 'Se renueva cada 3 meses',
   'my.plan.lifetime.d': 'Un solo pago, para siempre',
   'my.plan.best': 'Más ahorro',
+  'my.price.note': 'Los precios se muestran en dólares estadounidenses. Al pagar, se cobra en tu moneda local.',
   'my.buy': 'Hazte Pro',
   'my.restore': 'Restaurar compras',
   'my.manage': 'Gestionar suscripción',

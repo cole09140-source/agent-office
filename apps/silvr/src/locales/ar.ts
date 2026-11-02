@@ -472,6 +472,7 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': 'يتجدد تلقائيًا كل 3 أشهر',
   'my.plan.lifetime.d': 'ادفع مرة واحدة واحتفظ به للأبد',
   'my.plan.best': 'الأوفر',
+  'my.price.note': 'الأسعار معروضة بالدولار الأمريكي. عند الدفع، يُخصم المبلغ بعملتك المحلية.',
   'my.buy': 'الحصول على Pro',
   'my.restore': 'استعادة المشتريات',
   'my.manage': 'إدارة الاشتراك',

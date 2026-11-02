@@ -476,6 +476,7 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': '每 3 个月自动续订',
   'my.plan.lifetime.d': '一次购买，永久使用',
   'my.plan.best': '最划算',
+  'my.price.note': '价格以美元显示。结账时将按你所在地区的货币收费。',
   'my.buy': '开通 Pro',
   'my.restore': '恢复购买',
   'my.manage': '管理订阅',

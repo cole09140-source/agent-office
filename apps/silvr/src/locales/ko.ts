@@ -461,6 +461,7 @@ export const messages = {
   'my.plan.3month.d': '3개월마다 자동 갱신',
   'my.plan.lifetime.d': '한 번 결제로 계속 써요',
   'my.plan.best': '가장 알뜰해요',
+  'my.price.note': '가격은 미국 달러 기준이에요. 결제창에서는 사는 나라의 통화로 청구돼요.',
   'my.buy': 'Pro 시작하기',
   'my.restore': '구매 복원',
   'my.manage': '구독 관리',

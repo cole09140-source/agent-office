@@ -457,6 +457,7 @@ export const messages: Messages = {
   'my.plan.3month.d': 'Renews every 3 months',
   'my.plan.lifetime.d': 'Pay once, keep it forever',
   'my.plan.best': 'Best value',
+  'my.price.note': 'Prices are shown in US dollars. At checkout you’ll be charged in your local currency.',
   'my.buy': 'Get Pro',
   'my.restore': 'Restore purchases',
   'my.manage': 'Manage subscription',

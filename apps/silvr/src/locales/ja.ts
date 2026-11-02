@@ -469,6 +469,7 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': '3か月ごとに自動更新',
   'my.plan.lifetime.d': '1回の購入で、ずっと使えます',
   'my.plan.best': 'いちばんお得',
+  'my.price.note': '価格は米ドル表示です。お支払い画面では、お住まいの国の通貨で請求されます。',
   'my.buy': 'Proをはじめる',
   'my.restore': '購入を復元',
   'my.manage': 'サブスクリプションを管理',

@@ -2,6 +2,29 @@
 
 Play Console에서 앱을 만들 때 그대로 옮겨 적으면 되는 값입니다. 스토어 문안 원문은 `docs/03b_STORE_LISTING_FILM_CAMELA.md`, 빌드·서명은 `docs/04_LAUNCH_GUIDE.md`의 C.
 
+## 현재 상태 (2026-11-03 확인)
+| 항목 | 상태 |
+|------|------|
+| 앱 | `com.filmcamela.app` · versionName **1.1.0** · Play 앱 ID `4974786066979399323` (계정 `atiumcompany@gmail.com`, 개발자 "Muzig AI" `5890194990164154086`) |
+| 빌드 2 | ✅ **내부 테스트** 트랙에 출시(테스터 목록 "Muzig 내부 테스터") |
+| 빌드 3 | ⏳ 프로덕션 제출용으로 빌드 중 — MY 탭 정가를 USD로만 표시(US$4.99 / 9.99 / 19.99) + 안내 "결제창에서는 현지 통화" |
+| 스토어 등록정보 | ✅ 11개 언어(en-US 기본, ko-KR, ja-JP, zh-CN, es-419, es-ES, fr-FR, pt-BR, ru-RU, hi-IN, ar), 앱 이름 "<현지어 필름 카메라> - Film Camela" |
+| 앱 콘텐츠 | ✅ 광고 있음 · 로그인 없음 · 타깃 13세 이상 · IARC 3+/Everyone · 광고 ID(분석·광고·사기 방지) · 데이터 보안(대략적 위치·앱 상호작용·진단·기기 ID — 수집+공유, 선택, 임시 처리 아님) · 정부·금융·건강 해당 없음 |
+| 개인정보처리방침 URL | 지금은 `https://silvr-three.vercel.app/privacy.html` (가비아 A 레코드 `silvr` → `76.76.21.21` 11/3 추가, HTTPS 되면 `https://silvr.muzig.ai/privacy.html`로 교체) |
+| 인앱 상품 | ✅ 모두 **활성**: `filmcamela_pro_week`(기본 요금제 `p1w`, 1주 자동 갱신, US$4.99 → 178개 지역 자동 변환), `filmcamela_pro_3month`(`p3m`, 3개월, US$9.99), `filmcamela_pro_lifetime`(일회성, 구매 옵션 ID `lifetime`, US$19.99) |
+| AdMob | ✅ `pub-6568578451894077` · Android `~3582572576`/보상형 `/6676086887` · iOS `~3646151750`/보상형 `/6933613890` · GDPR 메시지 "Film Camela GDPR" 게시(영·스·프·포(pt-PT), "동의 안 함" 버튼 표시) · 지급은 기존 AdSense(대한민국) 결제 프로필(YouTube AdSense와 공유) |
+| 법적 페이지 | ✅ 한국어+8개 언어(처리방침 v1.4·약관·고객지원) Vercel 배포(11/2, 커밋 `4370af5`/`4603fc8`, 브랜치 `ccr-59119389-f3n3qc`) |
+| QA (빌드 2, 에뮬레이터) | 디버그 31/32, 릴리스 9/10(실패 2건은 부하 중 타이밍 문제). 보상형 테스트 광고 +10장 확인 |
+
+**AAB 업로드 요령**: AAB 안의 R8 매핑 때문에 11.8MB라 브라우저 도구 한도(10MB)를 넘어요. 그래서 `BUNDLE-METADATA/…/proguard.map`을 빼고 **같은 업로드 키**로 jarsigner 재서명해서 올려요(업로드 키 SHA-256 `F7:AD:D1:6C:…`, 아래 4장). 빠진 `mapping.txt`는 Play → App Bundle 탐색기 → **난독화 해제 파일**에 따로 올려야 해요.
+
+**남은 일**
+- [ ] 빌드 3 프로덕션 제출
+- [ ] 스크린샷·그래픽 이미지 업로드(언어별)
+- [ ] `mapping.txt` 업로드(빌드 2·3)
+- [ ] 설정 → 라이선스 테스트에 테스터 추가 → 시험 구매(성공·실패·대기·복원·환불)
+- [ ] 개인정보처리방침 URL을 `https://silvr.muzig.ai/privacy.html`로 교체(HTTPS 확인 후)
+
 ## 0. 개발자 계정 — 기존 "Muzig AI" 계정에 추가 (2026-11-02 사장님 확정)
 Film Camela는 새 계정을 만들지 않고, **이미 쓰고 있는 Google 계정 `atiumcompany@gmail.com`의 Play Console 개발자 계정 "Muzig AI"(개발자 ID 5890194990164154086)** 에 앱으로 추가합니다. 같은 Google 계정에 **결제 프로필(판매자 계정, 인앱 상품 정산)** 과 **AdMob 계정**도 있습니다. 회사 정보 출처: 사업자등록증명원·법인등기부(2026-08-31 확인).
 

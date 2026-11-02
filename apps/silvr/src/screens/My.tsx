@@ -215,6 +215,9 @@ export function GetAppCard({ compact = false }: { compact?: boolean }) {
 
 // ---------------------------------------------------------------- Pro
 
+/** List prices are shown in US dollars only (owner's call); the store sheet shows the local currency. */
+const usdPrice = (usd: number) => `US$${usd.toFixed(2)}`;
+
 const PLAN_KEYS: Record<ProductKind, { name: 'my.plan.week' | 'my.plan.3month' | 'my.plan.lifetime'; d: 'my.plan.week.d' | 'my.plan.3month.d' | 'my.plan.lifetime.d' }> = {
   week: { name: 'my.plan.week', d: 'my.plan.week.d' },
   '3month': { name: 'my.plan.3month', d: 'my.plan.3month.d' },
@@ -292,7 +295,6 @@ function ProCard() {
             <legend class="sr-only">{t('my.plans')}</legend>
             {PRODUCTS.map((def) => {
               const k = PLAN_KEYS[def.kind];
-              const p = price(def.kind);
               const best = def.kind === '3month';
               return (
                 <label key={def.id} class={`my-plan${plan === def.kind ? ' on' : ''}${best ? ' best' : ''}`} data-testid={`plan-${def.kind}`}>
@@ -305,12 +307,13 @@ function ProCard() {
                     <small class="muted">{t(k.d)}</small>
                   </span>
                   <bdi class="my-plan-price" data-testid={`price-${def.kind}`}>
-                    {p ?? '—'}
+                    {usdPrice(def.usd)}
                   </bdi>
                 </label>
               );
             })}
           </fieldset>
+          <p class="muted small my-price-note">{t('my.price.note')}</p>
           {purchasePending.value && (
             <p class="small my-pro-pending" role="status">
               {t('my.pro.pending')}

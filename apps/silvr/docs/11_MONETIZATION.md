@@ -202,10 +202,16 @@ AdMob 게시자 `pub-6568578451894077` (계정 `atiumcompany@gmail.com`)
 ---
 
 ## 8. 출시 전 확인 목록
-- [ ] Play: 구독 2개(기본 요금제 `p1w`·`p3m` 활성) + 일회성 1개 활성, 라이선스 테스터에 `atiumcompany@gmail.com`
-- [ ] App Store: 유료 앱 계약 활성, 구독 그룹 + 구독 2개 + 비소모성 1개, In-App Purchase capability
-- [ ] AdMob(`atiumcompany@gmail.com`): Play/App Store 연결, GDPR 메시지 게시, app-ads.txt "확인됨"(웹 배포 후)
+(2026-11-03 기준)
+- [x] Play: 구독 2개(기본 요금제 `p1w`·`p3m`) + 일회성 1개(구매 옵션 `lifetime`) 모두 활성(11/3)
+- [x] Play: 빌드 2 내부 테스트 출시("Muzig 내부 테스터")
+- [ ] Play: 라이선스 테스터에 `atiumcompany@gmail.com` 등 추가 → 시험 구매
+- [ ] App Store: 유료 앱 계약 활성, 구독 그룹 + 구독 2개 + 비소모성 1개, In-App Purchase capability (Apple 계정 아직 없음)
+- [x] AdMob: GDPR 메시지 "Film Camela GDPR" 게시, 지급 프로필 연결(기존 AdSense 대한민국)
+- [ ] AdMob: Play/App Store 앱 연결(스토어 공개 후), app-ads.txt "확인됨"(`silvr.muzig.ai` HTTPS 후)
 - [x] `config.ts`·`strings.xml`·`Info.plist` 실제 AdMob ID 반영(11/2) → `npx vitest run` 통과
 - [ ] 출시용 웹 자산은 `VITE_ADS_TEST` 없이 `npm run build` 로 만들기(QA용 빌드와 섞지 않기)
-- [ ] 개인정보처리방침·데이터 보안·App Privacy에 AdMob/결제 반영
+- [x] 개인정보처리방침 v1.4(+8개 언어) 배포(11/2), Play 데이터 보안·광고 ID 신고(11/3)
+- [ ] App Store App Privacy 신고
+- [x] 에뮬레이터: 보상형 테스트 광고 → +10장 확인(빌드 2)
 - [ ] 실제 기기: 10장 → 거절 → 광고 → +10장 → 자정 후 무료 10장 + 남은 광고 장수 / 구매·복원·환불
