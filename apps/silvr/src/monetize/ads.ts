@@ -142,7 +142,13 @@ async function ensureReady(): Promise<boolean> {
   try {
     markAdsUsed();
     const { AdMob } = await admob();
-    let c = await readConsent();
+    // A failed consent lookup (UMP misconfigured on the AdMob side, flaky network) must not
+    // block ads for good: start the SDK anyway — without a stored consent Google serves only
+    // limited ads where consent is required.
+    let c = await readConsent().catch((err) => {
+      console.warn('[silvr] ad consent lookup failed; continuing without a consent form', err);
+      return { canRequestAds: true, formNeeded: false };
+    });
     if (c.formNeeded) {
       await AdMob.showConsentForm();
       c = await readConsent();
