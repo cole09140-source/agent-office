@@ -85,6 +85,7 @@ export function isRtl(lang: Locale = signalLang.value): boolean {
 const FSI = '⁨';
 const LRI = '⁦';
 const PDI = '⁩';
+const RLI = '⁧';
 
 /** Isolates Latin text (names, sizes, times) inside a right-to-left sentence; unchanged in LTR UIs. */
 export function isolate(s: string, lang: Locale = signalLang.value): string {
@@ -123,7 +124,7 @@ export function bidi(s: string, lang: Locale = signalLang.value): string {
  */
 export function rollName(camera: string | undefined, film: string, lang: Locale = signalLang.value): string {
   const one = (name: string) => isolate(modelName(name), lang);
-  return camera ? `${one(camera)} · ${one(film)}` : one(film);
+  return camera ? `${one(camera)} · ${one(film)}` : one(film); // "·" never ends a line
 }
 
 /** A camera / film model name that never breaks at its inner space ("Pro 35", "Sunny 200"): lines wrap at " · ". */
@@ -163,7 +164,9 @@ export function translate(lang: ResolvedLang, key: MsgKey, vars?: Vars): string 
     src,
     vars,
     // Guide §7: Latin placeholders get first-strong isolation; signed numbers ({v}) stay LTR.
-    RTL_LOCALES.has(lang) ? { wrapString: (name, v) => (name === 'v' ? LRI : FSI) + v + PDI } : undefined,
+    // A value that already holds isolated parts ("camera · film") gets an RTL isolate: an outer FSI would
+    // find no strong letter outside the inner isolates and fall back to LTR, flipping the pair.
+    RTL_LOCALES.has(lang) ? { wrapString: (name, v) => (name === 'v' ? LRI : /[⁦-⁨]/.test(v) ? RLI : FSI) + v + PDI } : undefined,
   );
 }
 

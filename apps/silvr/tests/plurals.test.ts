@@ -204,6 +204,6 @@ describe('Intl formatting follows the language', () => {
     expect(formatArrival(in1h, t0, 'ru')).toContain('15:20');
     expect(formatArrival(in1h, t0, 'ar')).toMatch(/3:20/);
     expect(formatArrival(t0 + 3 * 86400_000, t0, 'ja')).toContain('11月4日');
-    expect(formatArrival(t0 + 3 * 86400_000, t0, 'ko')).toBe('11월 4일 도착');
+    expect(formatArrival(t0 + 3 * 86400_000, t0, 'ko').replace(/ /g, ' ')).toBe('11월 4일 도착');
   });
 });

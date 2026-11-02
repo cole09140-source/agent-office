@@ -64,7 +64,7 @@ export const messages: LocaleMessages = {
   'a11y.stockKeys': 'Use as setas para ver os filmes e Enter para escolher', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': 'Suas fotos são reveladas com este filme. Você pode trocá-lo no quarto escuro quando quiser.', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': 'Veio de outro celular? Restaurar backup', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
-  'onb.1.title': 'Como no filme, uma foto por vez', // ko: 필름처럼, 한 장씩 · en: Shoot like film
+  'onb.1.title': 'Como no analógico, uma foto por vez', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': 'Escolha uma câmera e coloque um filme. Com as poses contadas, faça cada clique valer a pena.', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': 'A expectativa da revelação', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
   'onb.2.body': 'Terminou o filme? Mande revelar e escolha quanto quer esperar: na hora, 1\u00a0hora, às 9h ou 3\u00a0dias.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
@@ -161,8 +161,8 @@ export const messages: LocaleMessages = {
   'cam.finishPackConfirm': 'Você tirou {shots}. Tirar o cartucho? {m, plural, one {A foto restante fica sem uso.} other {As {left} restantes ficam sem uso.}}', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
   'cam.finishCardConfirm': 'Você tirou {shots}. Finalizar o cartão? {m, plural, one {A foto restante fica em branco.} other {As {left} restantes ficam em branco.}} Suas fotos continuam no álbum.', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
   'cam.switchBody': 'Trocar de câmera', // ko: 다른 카메라로 바꾸기 · en: Switch camera body
-  'cam.switchSub': 'Primeiro este filme vai para a revelação, depois você escolhe outra câmera.', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
-  'cam.switchSubViewable': 'Suas fotos ficam no álbum, depois você escolhe outra câmera.', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
+  'cam.switchSub': 'Este filme vai primeiro para a revelação. Depois, é só escolher outra câmera.', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
+  'cam.switchSubViewable': 'Suas fotos ficam no álbum. Depois, é só escolher outra câmera.', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
   'cam.switchSubEmpty': 'Nenhuma foto ainda, então dá para trocar agora mesmo.', // ko: 아직 찍은 사진이 없어서 바로 바꿀 수 있어요. · en: Nothing shot yet, so you can switch right away.
   'cam.switchConfirm': 'Para trocar de câmera, este filme ({shots}) vai primeiro para a revelação. Todas as fotos serão reveladas.', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
   'cam.switchConfirmPack': 'Para trocar de câmera, este cartucho ({shots}) é retirado primeiro. Suas fotos continuam no álbum.', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
@@ -177,10 +177,10 @@ export const messages: LocaleMessages = {
   'cam.flashOnScreen': 'Flash ativado · na câmera frontal, a tela acende no lugar dele', // ko: 플래시 켬 · 전면 카메라는 화면이 하얗게 빛나요 · en: Flash on · the front camera lights up the screen instead
   'cam.flipToFront': 'Mudar para a câmera frontal', // ko: 전면 카메라로 전환 · en: Flip to front camera
   'cam.flipToBack': 'Mudar para a câmera traseira', // ko: 후면 카메라로 전환 · en: Flip to back camera
-  'gal.emptyHintCamera': 'Há {shots} esperando na câmera. {n, plural, one {Mande revelar e ela aparece aqui depois de revelada.} other {Mande revelar e elas aparecem aqui depois de reveladas.}}', // ko: 카메라 안에 사진 {shots}이 기다리고 있어요. 현상소로 보내면 현상을 마친 뒤 여기에 나타나요. · en: You have {shots} in the camera. Send them to the lab and they show up here once developed. [+ counts: n]
+  'gal.emptyHintCamera': 'Há {shots} esperando na câmera. {n, plural, one {Mande revelar e ela aparece aqui quando ficar pronta.} other {Mande revelar e elas aparecem aqui quando ficarem prontas.}}', // ko: 카메라 안에 사진 {shots}이 기다리고 있어요. 현상소로 보내면 현상을 마친 뒤 여기에 나타나요. · en: You have {shots} in the camera. Send them to the lab and they show up here once developed. [+ counts: n]
   'gal.developNow': 'Mandar revelar', // ko: 현상소로 보내기 · en: Send to lab
   'gal.inCameraBanner': '{shots} na câmera · Mandar revelar', // ko: 카메라 안 {shots} · 현상소로 보내기 · en: {shots} in the camera · Send to lab [+ counts: n]
-  'lab.emptyCamera': 'Há {shots} na câmera. Mande revelar o filme, e a revelação começa aqui.', // ko: 카메라 안에 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상이 시작돼요. · en: You have {shots} in the camera. Send the roll to the lab and it develops here. [+ counts: n]
+  'lab.emptyCamera': 'Há {shots} na câmera. Mande revelar o filme e acompanhe a revelação aqui.', // ko: 카메라 안에 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상이 시작돼요. · en: You have {shots} in the camera. Send the roll to the lab and it develops here. [+ counts: n]
   'speed.title': 'Quando quer receber as fotos?', // ko: 언제 받아볼까요? · en: When do you want your prints?
   'speed.instant': 'Na hora', // ko: 즉시 · en: Instant
   'speed.why': 'Esquecer o filme e reencontrar as fotos: essa é a graça. Para ver agora, escolha “Na hora”.', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
@@ -188,17 +188,17 @@ export const messages: LocaleMessages = {
   'speed.at.today': 'Chega hoje às {time}', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
   'speed.at.tomorrow': 'Chega amanhã às {time}', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
   'speed.at.date': 'Chega em {date}', // ko: {date} 도착 · en: Arrives {date}
-  'speed.instant.d': 'Sem espera, agora mesmo', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
+  'speed.instant.d': 'Veja sem esperar', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': '1 hora', // ko: 1시간 · en: 1 hour
   'speed.1h.d': 'O tempo de um cafezinho', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
   'speed.morning': 'Às 9h', // ko: 아침 9시 · en: Next 9 AM
   'speed.morning.d': 'Prontas quando você acordar', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
   'speed.3d': '3 dias', // ko: 3일 · en: 3 days
-  'speed.3d.d': 'Sem pressa, como no filme', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
+  'speed.3d.d': 'Sem pressa, como antigamente', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
   'lab.title': 'Laboratório', // ko: 현상소 · en: Film Lab
-  'lab.empty': 'Por enquanto, o laboratório está tranquilo.', // ko: 지금은 현상소가 조용해요. · en: The lab is quiet right now.
+  'lab.empty': 'Tudo calmo no laboratório por enquanto.', // ko: 지금은 현상소가 조용해요. · en: The lab is quiet right now.
   'lab.emptyHint': 'Os filmes que você mandar revelar esperam aqui.', // ko: 현상소로 보낸 롤은 여기서 기다려요. · en: Rolls you send to the lab wait here.
-  'lab.emptyWhat': 'Os filmes que você manda revelar ficam aqui durante a revelação.', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
+  'lab.emptyWhat': 'Os filmes que você manda revelar descansam aqui até ficarem prontos.', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
   'lab.emptyHow': 'Eles chegam no horário que você escolher. Com “Na hora”, vão direto para o álbum.', // ko: 고른 시간에 맞춰 도착해요. ‘즉시’라면 바로 앨범으로. · en: They arrive on the schedule you choose. Instant skips the wait.
   'lab.intro': 'Depois de revelados, os filmes vão para o álbum.', // ko: 현상을 마친 롤은 앨범으로 옮겨져요. · en: Developed rolls move to your album.
   'lab.introRush': 'Não dá para esperar? Toque em “Revelar agora”.', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
@@ -221,9 +221,9 @@ export const messages: LocaleMessages = {
   'gal.frames': '{n, plural, =0 {#\u00a0fotos} one {#\u00a0foto} other {#\u00a0fotos}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
   'gal.contact': 'Folha de contato', // ko: 밀착 인화 · en: Contact sheet
   'gal.deleteRoll': 'Apagar filme', // ko: 롤 삭제 · en: Delete roll
-  'gal.deleteRollConfirm': '{n, plural, one {A foto deste filme vai ser apagada.} other {Todas as # fotos deste filme vão ser apagadas.}} Você pode desfazer por alguns segundos.', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
+  'gal.deleteRollConfirm': '{n, plural, one {A foto deste filme será apagada.} other {Todas as # fotos deste filme serão apagadas.}} Você pode desfazer por alguns segundos.', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
   'gal.developing': 'Revelando', // ko: 현상 중 · en: Developing
-  'view.share': 'Enviar', // ko: 공유 · en: Share
+  'view.share': 'Compartilhar', // ko: 공유 · en: Share
   'view.saveImage': 'Salvar', // ko: 저장 · en: Save
   'view.darkroom': 'Quarto escuro', // ko: 다크룸 · en: Darkroom
   'view.info': 'Informações', // ko: 정보 · en: Info
@@ -235,7 +235,7 @@ export const messages: LocaleMessages = {
   'view.size': 'Tamanho', // ko: 크기 · en: Size
   'dr.title': 'Quarto escuro', // ko: 다크룸 · en: Darkroom
   'dr.film': 'Filme', // ko: 필름 · en: Film
-  'dr.push': 'Brilho (puxar/segurar)', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
+  'dr.push': 'Puxar / segurar', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
   'dr.push.hint': '+ contraste e granulação / − mais suave', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
   'dr.stops': '{v} {n, plural, one {ponto} other {pontos}}', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
   'dr.normal': 'Normal', // ko: 노멀 · en: Normal
@@ -275,18 +275,18 @@ export const messages: LocaleMessages = {
   'dr.tone.none': 'Padrão', // ko: 기본 · en: Default
   'dr.tone.cool': 'Frio', // ko: 쿨 · en: Cool
   'dr.tone.warm': 'Quente', // ko: 웜 · en: Warm
-  'dr.tone.washed': 'Pálido', // ko: 바랜 · en: Washed
+  'dr.tone.washed': 'Desbotado', // ko: 바랜 · en: Washed
   'dr.tone.night': 'Noite', // ko: 야간 · en: Night
   'view.noDate': 'Sem data', // ko: 날짜 정보 없음 · en: No date info
   'roll.select': 'Selecionar', // ko: 선택 · en: Select
   'roll.selectHint': 'Toque nas fotos para selecionar', // ko: 사진을 눌러 선택하세요 · en: Tap photos to select them
   'roll.selectedN': '{n, plural, =0 {Nenhuma selecionada} one {# selecionada} other {# selecionadas}}', // ko: {n}장 선택됨 · en: {n} selected
-  'roll.shareN': 'Enviar {n}', // ko: 공유 {n}장 · en: Share {n}
+  'roll.shareN': 'Compartilhar {n}', // ko: 공유 {n}장 · en: Share {n}
   'roll.saveN': 'Salvar {n}', // ko: 저장 {n}장 · en: Save {n}
   'roll.selectPhoto': 'Selecionar foto {n}', // ko: 사진 {n} 선택 · en: Select photo {n}
   'roll.ready': '{n, plural, one {# foto pronta} other {# fotos prontas}}', // ko: 사진 {n}장이 준비됐어요 · en: {n, plural, one {# photo} other {# photos}} ready
   'an.title': 'Analógico', // ko: 아날로그 · en: Analog
-  'an.subtitle': 'Ferramentas para sua câmera de filme de verdade', // ko: 실제 필름 카메라를 위한 도구 · en: Tools for your real film camera
+  'an.subtitle': 'Ferramentas para sua câmera analógica de verdade', // ko: 실제 필름 카메라를 위한 도구 · en: Tools for your real film camera
   'an.meter': 'Calculadora de exposição Sunny 16', // ko: Sunny 16 노출 계산기 · en: Sunny 16 exposure calculator
   'an.iso': 'ISO', // ko: ISO · en: ISO
   'an.light': 'Luz', // ko: 빛 · en: Light
@@ -302,8 +302,8 @@ export const messages: LocaleMessages = {
   'an.light.heavyOvercast': 'Muito nublado', // ko: 매우 흐림 · en: Heavy overcast
   'an.light.shade': 'Sombra aberta', // ko: 그늘 · en: Open shade
   'an.light.sunset': 'Pouco antes do pôr do sol', // ko: 일몰 직전 · en: Just before sunset
-  'an.light.indoorBright': 'Interior bem iluminado', // ko: 밝은 실내 · en: Bright interior
-  'an.light.indoor': 'Interior', // ko: 실내 · en: Interior
+  'an.light.indoorBright': 'Ambiente interno claro', // ko: 밝은 실내 · en: Bright interior
+  'an.light.indoor': 'Ambiente interno', // ko: 실내 · en: Interior
   'an.light.night': 'Rua à noite', // ko: 밤거리 · en: Night street
   'an.log': 'Caderno de fotos', // ko: 필름 촬영 노트 · en: Film shooting log
   'an.log.empty': 'Nenhum filme registrado ainda.', // ko: 아직 기록 중인 롤이 없어요. · en: No logged rolls yet.
@@ -457,16 +457,16 @@ export const cameraText: LocaleCameraText = {
     panox: 'Panorâmicas amplas em 65:24. São 21 poses por filme.', // ko: 65:24의 넓은 파노라마. 시야 가득, 한 롤에 21장. · en: Sweeping 65:24 panoramas. 21 frames per roll.
     fish180: 'Olho de peixe circular de 180°. O mundo inteiro num círculo.', // ko: 180° 원형 어안. 세상을 동그랗게 담아요. · en: A 180° circular fisheye. The whole world in a circle.
     cine: 'Tela larga anamórfica 2.39:1. Rastros azuis de flare cruzando as luzes fortes.', // ko: 2.39:1 시네마스코프. 밝은 빛을 가로지르는 푸른 플레어. · en: 2.39:1 anamorphic widescreen. Blue streaks of flare across bright lights.
-    ccd03: 'Uma digital saída direto de 2003. Cartão de 99 fotos, data digital impressa e revisão na hora.', // ko: 2003년 그 시절의 디카. 99장 메모리, 디지털 날짜, 찍고 바로 확인. · en: A digicam straight from 2003. 99-shot card, digital date imprint, instant review.
+    ccd03: 'Uma digital saída direto de 2003. Cartão de 99 fotos, data digital impressa e visualização na hora.', // ko: 2003년 그 시절의 디카. 99장 메모리, 디지털 날짜, 찍고 바로 확인. · en: A digicam straight from 2003. 99-shot card, digital date imprint, instant review.
     pixel: 'Uma câmera de bolso de pixels, 128×112. São 30 fotos em paletas de quatro cores.', // ko: 128×112 픽셀의 포켓 카메라. 4색 팔레트에 담는 30장. · en: A 128×112 pocket pixel camera. 30 shots in four-color palettes.
     range: 'Uma telemétrica silenciosa. Lente nítida, linhas de enquadramento luminosas e preto e branco por padrão.', // ko: 조용한 레인지파인더. 선명한 렌즈, 밝은 프레임 라인, 기본은 흑백. · en: A quiet rangefinder. Crisp lens, bright frame lines, black and white by default.
     aqua27: 'Uma descartável de 27 poses numa caixa à prova d’água. Tons verde-azulados de água, lente suave e um flash que você carrega a cada foto.', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
     instaw: 'Uma instantânea de formato largo, com cartuchos de 10 fotos. As fotos saem na horizontal e ganham vida aos poucos.', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
-    twin66: 'Uma reflex de duas lentes, para olhar de cima. São 12 poses quadradas 6×6, vistas num visor que espelha a imagem.', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
+    twin66: 'Uma reflex de duas lentes, para fotografar olhando o visor de cima. São 12 poses quadradas 6×6, com a imagem espelhada.', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
     super8: 'Um quadro tirado de um filme caseiro em 8mm. Janela arredondada, cor quente e granulação forte.', // ko: 8mm 홈무비에서 꺼낸 한 프레임. 둥근 게이트, 따뜻한 색, 굵은 입자. · en: A single frame from an 8mm home movie. Rounded gate, warm color, heavy grain.
     slide35: 'Uma compacta feita para filme slide. Cores vibrantes, devolvidas em molduras brancas de slide.', // ko: 슬라이드 필름 전용 컴팩트. 쨍한 색을 하얀 마운트에 담아 돌려줘요. · en: A compact made for slide film. Vivid color, returned in white slide mounts.
     party: 'Uma compacta de festa com um flash grande ligado por padrão. Luz direta e forte, e data impressa.', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
-    kidcam: 'Uma câmera infantil de 0,3 MP. 640 px, cores no máximo, data digital e revisão na hora.', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
+    kidcam: 'Uma câmera infantil de 0,3 MP. 640 px, cores no máximo, data digital e visualização na hora.', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
     sprocket: 'Uma panorâmica que avança sobre as perfurações, e os furos do filme emolduram cada foto.', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */

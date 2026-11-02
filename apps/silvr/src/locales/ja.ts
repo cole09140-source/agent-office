@@ -130,13 +130,13 @@ export const messages: LocaleMessages = {
   'cam.pinnedToast': '{name}をピン留めして、先頭に移動しました', // ko: {name} 고정 · 맨 앞으로 옮겼어요 · en: {name} pinned · moved to the front
   'cam.pinShow': '表示', // ko: 보기 · en: Show
   'cam.otherWindow': '別のウインドウですでに撮影しました', // ko: 다른 창에서 이미 찍었어요 · en: Already taken in another window
-  'cam.pressesDropped': '押した{n}回分は取り消されました', // ko: {n}번 누른 건 취소됐어요 · en: {n, plural, one {# press was} other {# presses were}} cancelled
+  'cam.pressesDropped': 'シャッター{n}回分は取り消されました', // ko: {n}번 누른 건 취소됐어요 · en: {n, plural, one {# press was} other {# presses were}} cancelled
   'cam.quickStart': 'クイックスタート', // ko: 빠른 시작 · en: Quick start
   'cam.quick.film': 'フィルムカメラ', // ko: 일반 필름 · en: Film camera
   'cam.quick.instant': 'インスタント写真', // ko: 즉석 사진 · en: Instant photo
   'cam.quick.disposable': '使い捨て', // ko: 일회용 · en: Disposable
   'cam.pack': '{n}枚パック', // ko: {n}장 팩 · en: {n}-shot pack
-  'cam.card': '{n}枚カード', // ko: {n}장 메모리 · en: {n}-shot card
+  'cam.card': 'メモリー{n}枚', // ko: {n}장 메모리 · en: {n}-shot card
   'cam.halves': 'ハーフ{n}枚', // ko: 하프 {n}장 · en: {n} half-frames
   'cam.flashCharge': 'タップしてフラッシュを充電', // ko: 탭해서 플래시 충전 · en: Tap to charge the flash
   'cam.flashCharging': '充電中…', // ko: 충전 중… · en: Charging…
@@ -163,11 +163,11 @@ export const messages: LocaleMessages = {
   'cam.switchSub': 'いまのフィルムを先に現像に出してから、新しいカメラを選びます。', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
   'cam.switchSubViewable': 'いまの写真はアルバムに残したまま、新しいカメラを選びます。', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
   'cam.switchSubEmpty': 'まだ何も撮っていないので、すぐに替えられます。', // ko: 아직 찍은 사진이 없어서 바로 바꿀 수 있어요. · en: Nothing shot yet, so you can switch right away.
-  'cam.switchConfirm': 'カメラを替えるには、いまのフィルム（{shots}）を先に現像に出します。撮った写真はすべて現像されます。', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
+  'cam.switchConfirm': 'カメラを替えるには、いまのフィルム（{shots}）を先に現像に出します。撮った写真はすべて現像されます。', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 찍은 사진은 모두 현상돼요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Every shot will be developed. [+ counts: n] — shown only when no frames are left unused
   'cam.switchConfirmPack': 'カメラを替えるには、いまのパック（{shots}）を先に取り出します。写真はアルバムにそのまま残ります。', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
   'cam.switchConfirmCard': 'カメラを替えるには、いまのカード（{shots}）を先に使い終えます。写真はアルバムにそのまま残ります。', // ko: 카메라를 바꾸려면 지금 카드({shots})를 먼저 정리해요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this card ({shots}) is finished first. Your photos stay in the album. [+ counts: n]
-  'cam.switchOkFilm': '現像して替える', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
-  'cam.switchOkDone': '終了して替える', // ko: 정리하고 바꾸기 · en: Finish & switch
+  'cam.switchOkFilm': '現像に出して替える', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
+  'cam.switchOkDone': '使い終えて替える', // ko: 정리하고 바꾸기 · en: Finish & switch
   'cam.switchedLab': 'フィルムを現像に出しました。次のカメラを選びましょう。', // ko: 롤을 현상소에 보냈어요. 이제 새 카메라를 골라 보세요. · en: Roll sent to the lab. Pick your next camera.
   'cam.switchedAlbum': '写真をアルバムに入れました。次のカメラを選びましょう。', // ko: 사진을 앨범에 넣었어요. 이제 새 카메라를 골라 보세요. · en: Photos are in your album. Pick your next camera.
   'cam.more': 'その他', // ko: 더보기 · en: More
@@ -249,11 +249,11 @@ export const messages: LocaleMessages = {
   'dr.border': 'フチ', // ko: 테두리 · en: Border
   'dr.border.none': 'なし', // ko: 없음 · en: None
   'dr.border.film35': '35mm', // ko: 35mm · en: 35mm
-  'dr.border.instant': '太フチ', // ko: 인스턴트 · en: Instant
+  'dr.border.instant': 'インスタント', // ko: 인스턴트 · en: Instant
   'dr.border.print': 'プリント', // ko: 인화지 · en: Print
   'dr.border.slide': 'スライド', // ko: 슬라이드 · en: Slide
   'dr.border.gate': 'シネ', // ko: 시네 · en: Cine
-  'dr.border.sprocket': '穴あき', // ko: 스프로킷 · en: Sprocket
+  'dr.border.sprocket': 'スプロケット', // ko: 스프로킷 · en: Sprocket
   'dr.compare': '長押しで比較', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
   'dr.reset': 'リセット', // ko: 초기화 · en: Reset
   'dr.saved': '再現像しました', // ko: 다시 현상했어요 · en: Re-developed
@@ -364,16 +364,16 @@ export const messages: LocaleMessages = {
   'set.backup.hint': '写真と記録は、このデバイスにだけ保存されます。機種変更やブラウザのデータ消去の前に、バックアップ（.zip）を保存しておきましょう。', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
   'set.backup.export': 'バックアップを保存（.zip）', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'もう一度保存', // ko: 한 번 더 저장 · en: Save another copy
-  'set.backup.send': 'LINEやドライブに送る', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
+  'set.backup.send': 'LINEやメールで送る', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'ダウンロードフォルダに保存しました。{name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
-  'set.backup.savedShared': '共有シートで選んだ場所（ファイル、ドライブなど）に保存しました。{name}', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
+  'set.backup.savedShared': '共有シートで選んだ場所（「ファイル」やクラウドなど）に保存しました。{name}', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
   'set.backup.restoreHint': '機種変更するときは、このファイルをLINEやメールなどで自分に送り、新しいスマートフォンのFilm Camelaで「バックアップから復元」を選んでください。', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
   'set.credit': '© 2026 ATIUM GROUP Co., Ltd.', // ko: © 2026 아티움그룹 주식회사 (ATIUM GROUP Co., Ltd.) · en: © 2026 ATIUM GROUP Co., Ltd.
   'set.backup.import': 'バックアップから復元', // ko: 백업에서 복원 · en: Restore from backup
   'set.backup.working': 'バックアップ中…{done}/{total}', // ko: 백업 중… {done}/{total} · en: Backing up… {done}/{total}
   'set.backup.restoring': '復元中…', // ko: 복원 중… · en: Restoring…
   'set.backup.done': 'バックアップの準備ができました。フィルム{rolls}本・写真{photos}枚', // ko: 백업 준비 완료 · 롤 {rolls}개, 사진 {photos}장 · en: Backup ready · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}}
-  'set.backup.save': '準備完了・保存する', // ko: 준비 완료 · 저장하기 · en: Ready · Save it
+  'set.backup.save': 'ファイルを保存', // ko: 준비 완료 · 저장하기 · en: Ready · Save it
   'set.backup.saved': 'バックアップファイルを保存しました', // ko: 백업 파일을 저장했어요 · en: Backup file saved
   'set.backup.saveFailed': '保存できませんでした。もう一度タップしてください', // ko: 저장하지 못했어요. 다시 눌러 주세요 · en: Couldn't save it. Tap again
   'set.backup.tooLarge': '4GBを超えるため、1つのファイルにまとめられません。古いフィルムを整理してから、もう一度お試しください', // ko: 4GB가 넘어 파일 하나에 담을 수 없어요. 오래된 롤을 정리한 뒤 다시 시도해 주세요 · en: Over 4 GB, too large for one file. Clear out some old rolls and try again
@@ -445,7 +445,7 @@ export const messages: LocaleMessages = {
 export const cameraText: LocaleCameraText = {
   /** Camera body descriptions (expressive register, guide §1.1). */
   desc: {
-    pro35: '頼れる35mm一眼レフ。すべての35mmフィルムに、3つの比率、ズーム、露出補正まで。', // ko: 믿음직한 35mm SLR. 모든 35mm 필름과 3가지 비율, 줌, 노출 보정까지. · en: A dependable 35mm SLR. Every 35mm film, three formats, zoom, and an exposure dial.
+    pro35: '頼れる35mm一眼レフ。どの35mmフィルムでも使えて、3つの比率にズーム、露出補正まで。', // ko: 믿음직한 35mm SLR. 모든 35mm 필름과 3가지 비율, 줌, 노출 보정까지. · en: A dependable 35mm SLR. Every 35mm film, three formats, zoom, and an exposure dial.
     snap27: '27枚撮りの使い捨てカメラ。ほんのりやわらかなレンズと、1枚ごとに充電するフラッシュ。', // ko: 27장짜리 일회용 카메라. 살짝 뭉개지는 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable. A soft plastic lens and a flash you charge before every shot.
     instasq: '10枚パックの真四角インスタント。撮ったそばから写真が出てきて、ゆっくりと像が浮かびます。', // ko: 정사각 인스턴트, 10장 팩. 찍자마자 사진이 나오고, 천천히 상이 떠올라요. · en: A square instant camera with 10-shot packs. Each print slides out and slowly comes to life.
     half72: '35mmの1コマに2枚を並べて撮るハーフサイズ。フィルム1本で72枚、残せる瞬間も2倍に。', // ko: 35mm 한 컷에 두 장을 나란히 담는 하프프레임. 한 롤에 72장, 두 배의 순간. · en: Two shots side by side in every frame. 72 half-frames, twice the moments.
@@ -460,11 +460,11 @@ export const cameraText: LocaleCameraText = {
     pixel: '128×112のポケットピクセルカメラ。4色パレットで撮る30枚。', // ko: 128×112 픽셀의 포켓 카메라. 4색 팔레트에 담는 30장. · en: A 128×112 pocket pixel camera. 30 shots in four-color palettes.
     range: '静かなレンジファインダー。シャープなレンズ、ブライトフレーム、モノクロが基本。', // ko: 조용한 레인지파인더. 선명한 렌즈, 밝은 프레임 라인, 기본은 흑백. · en: A quiet rangefinder. Crisp lens, bright frame lines, black and white by default.
     aqua27: '防水ハウジングをまとった27枚撮りの使い捨て。水のような青緑の色調、やわらかなレンズ、1枚ごとに充電するフラッシュ。', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
-    instaw: '横長のワイドインスタント、10枚パック。横に広い写真に、ゆっくりと像が浮かびます。', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
+    instaw: '横長のワイドインスタント、10枚パック。大きく広がる写真に、ゆっくりと像が浮かびます。', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
     twin66: '上からのぞき込む二眼レフ。6×6の真四角で12枚、ファインダーの中は左右が逆に見えます。', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
     super8: '8mmホームムービーから切り出した1コマ。丸みのあるゲート、あたたかな色、粗い粒子。', // ko: 8mm 홈무비에서 꺼낸 한 프레임. 둥근 게이트, 따뜻한 색, 굵은 입자. · en: A single frame from an 8mm home movie. Rounded gate, warm color, heavy grain.
     slide35: 'リバーサルフィルム専用のコンパクト。鮮やかな色を、白いマウントに収めて返します。', // ko: 슬라이드 필름 전용 컴팩트. 쨍한 색을 하얀 마운트에 담아 돌려줘요. · en: A compact made for slide film. Vivid color, returned in white slide mounts.
-    party: '大きなフラッシュが最初からオンになっている、パーティー向けコンパクト。正面から強く光るフラッシュと、日付写し込み。', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
+    party: '大きなフラッシュが最初からオンの、パーティー向けコンパクト。正面から強く当たる光と、日付の写し込み。', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
     kidcam: '0.3メガピクセルのキッズデジカメ。640ピクセル、めいっぱい濃い色、デジタルの日付、撮ってすぐ確認。', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
     sprocket: 'パーフォレーションまで写るパノラマ。写真の上下に、フィルムの穴が残ります。', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
   },
@@ -504,7 +504,7 @@ export const stockText: LocaleStockText = {
   mono400: '深い黒と、ざらついた粒子のモノクロ。ありのままを写す、ドキュメンタリーの手ざわり。', // ko: 깊은 검정과 거친 입자의 흑백. 있는 그대로를 담는 다큐멘터리의 결. · en: Deep blacks and gritty grain. Black and white that tells it straight.
   insta600: 'ほんのり色あせた色と、白いフチ。手のひらに収まる、インスタント写真のぬくもり。', // ko: 살짝 바랜 색과 하얀 테두리. 손에 쥐는 즉석 사진의 온기. · en: Softly faded color in a white frame. The warmth of an instant print.
   neon800t: 'タングステンタイプのシネマフィルム。ネオンのまわりに、赤いハレーションがにじみます。', // ko: 텅스텐 시네마 필름. 네온 불빛 둘레로 번지는 붉은 할레이션. · en: Tungsten cinema film. Red halation blooms around neon lights.
-  velvet50: '鮮やかな彩度と高いコントラストのリバーサルフィルム。風景のためのフィルム。', // ko: 쨍한 채도와 높은 대비의 슬라이드 필름. 풍경을 위한 필름. · en: Rich saturation and bold contrast. A slide film for landscapes.
+  velvet50: '鮮やかな彩度と、高いコントラスト。風景のためのリバーサルフィルム。', // ko: 쨍한 채도와 높은 대비의 슬라이드 필름. 풍경을 위한 필름. · en: Rich saturation and bold contrast. A slide film for landscapes.
   chrome100: '澄んだ、クールなリバーサルの色調。抜けるような青空。', // ko: 맑고 차가운 슬라이드 톤. 투명하게 갠 하늘. · en: Clean, cool slide tones. Skies as clear as glass.
   silver100: 'きめ細かな粒子と、豊かな階調。光の機微まで繊細に写すモノクロ。', // ko: 고운 입자와 넓은 계조. 빛의 결이 섬세한 흑백. · en: Fine grain and a long tonal range. Black and white in quiet, subtle shades.
   dream160: '低いコントラスト、空気のように軽いパステル。', // ko: 낮은 대비, 공기처럼 가벼운 파스텔. · en: Low contrast and pastels as light as air.

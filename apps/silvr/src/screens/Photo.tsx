@@ -229,7 +229,7 @@ export function PhotoScreen({ id }: { id: string }) {
             <dd>{photo.undated ? t('view.noDate') : formatDate(photo.takenAt, signalLang.value, true)}</dd>
             <dt>{t('view.frame')}</dt>
             <dd>
-              <Ltr>#{photo.frame}</Ltr>
+              <Ltr>{photo.frame}</Ltr>
             </dd>
             <dt>{t('view.size')}</dt>
             <dd class="mono">

@@ -130,7 +130,7 @@ function NewRollSheet({ open, onClose, last }: { open: boolean; onClose: () => v
       <form onSubmit={submit} class="form">
         <label class="field">
           <span>{t('an.log.camera')}</span>
-          <input value={camera} onInput={(e) => setCamera(e.currentTarget.value)} placeholder={ltr('35mm SLR')} maxLength={60} data-testid="log-camera" />
+          <input value={camera} onInput={(e) => setCamera(e.currentTarget.value)} placeholder={ltr('35mm')} maxLength={60} data-testid="log-camera" />
         </label>
         <label class="field">
           <span>{t('an.log.film')}</span>
@@ -508,7 +508,7 @@ export function LogScreen({ id }: { id: string }) {
     <div class="page log" data-testid="log-screen">
       <Header
         title={roll.film}
-        sub={`${isolate(roll.camera)} · ${ltr(`ISO\u00A0${roll.iso}`)} · ${t('an.log.frames', { n: frames.length, m: roll.exposures })}`}
+        sub={`${isolate(roll.camera)} · ${ltr(`ISO\u00A0${roll.iso}`)} · ${t('an.log.frames', { n: frames.length, m: roll.exposures })}`}
         onBack={() => back({ name: 'analog' })}
         right={
           <>

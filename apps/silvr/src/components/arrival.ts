@@ -15,9 +15,11 @@ export function formatArrival(readyAt: number, now: number, lang: ResolvedLang):
   const today = new Date(now);
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const time = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(at);
+  // No line break inside a time or a date ("9:00 AM", "5 nov.").
+  const keep = (v: string) => v.replace(/[  ]/g, ' ');
+  const time = keep(new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(at));
   if (sameDay(at, today)) return translate(lang, 'speed.at.today', { time });
   if (sameDay(at, tomorrow)) return translate(lang, 'speed.at.tomorrow', { time });
-  const date = new Intl.DateTimeFormat(locale, { month: LONG_MONTH.has(lang) ? 'long' : 'short', day: 'numeric' }).format(at);
+  const date = keep(new Intl.DateTimeFormat(locale, { month: LONG_MONTH.has(lang) ? 'long' : 'short', day: 'numeric' }).format(at));
   return translate(lang, 'speed.at.date', { date });
 }

@@ -29,7 +29,9 @@
  * zh notes: 你 (not 您); full-width punctuation; half-width space between Han and Latin/digits/placeholders
  * that render Latin or digits. Glossary: 冲洗 (develop), 送去冲洗 (send to lab), 冲洗店 (lab), 暗房 (darkroom),
  * 胶卷/卷 (roll), 张 (exposures/photos), 相纸 (instant pack), 接触印样 (contact sheet), 原图 (original),
- * 即时成像 (instant; never 拍立得), 分享/保存. {time} arrives as "上午 9:00", so it attaches to 今天/明天 directly.
+ * 即时成像 (instant; never 拍立得), 分享/保存. {time} arrives as "9:00" / "14:48" (zh-CN default 24 h), after 今天/明天 + space.
+ * Print border chip = 白边 (相纸 is reserved for instant packs). Backup copy names no third-party apps.
+ * Number + measure word inside long prose uses \u00A0 so the pair never splits across lines.
  */
 import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types';
 
@@ -70,10 +72,10 @@ export const messages: LocaleMessages = {
   'onb.restore': '换了新手机？恢复备份', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
   'onb.1.title': '像胶片一样，一张一张拍', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': '选一台相机，装上一卷胶卷。数着剩下的张数，用心按下每一次快门。', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
-  'onb.2.title': '静候冲洗的期待', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': '拍完的胶卷就送去冲洗。立即、1\u00A0小时、早上 9\u00A0点或 3\u00A0天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.2.title': '等待冲洗的心动', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
+  'onb.2.body': '拍完一卷，就送去冲洗。立即、1\u00A0小时、早上 9\u00A0点或 3\u00A0天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': '在暗房重新冲洗', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
-  'onb.3.body': '原图始终原样保留。胶卷、亮度、过期胶卷质感和光晕，想重选几次都可以。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
+  'onb.3.body': '原图始终完好保留。胶卷、亮度、过期胶卷质感和光晕，想重选几次都可以。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '免费 · 无需账户，没有服务器。每一张照片都只留在这台设备上。', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': '装入胶卷', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': '选择胶卷', // ko: 필름을 고르세요 · en: Choose your film
@@ -154,21 +156,21 @@ export const messages: LocaleMessages = {
   'cam.inCamera': '相机内', // ko: 카메라 안 · en: In camera
   'cam.lastShot': '最近一张', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': '这盒相纸用完了。照片正在相册里等你。', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
-  'cam.nShots': '{n} 张', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
-  'cam.nHalves': '{n} 张（{f} 格）', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
-  'cam.nHalfShots': '{n} 张', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
-  'cam.develop': '去冲洗', // ko: 현상소로 · en: Send to lab
+  'cam.nShots': '{n}\u00A0张', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
+  'cam.nHalves': '{n}\u00A0张（{f}\u00A0格）', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
+  'cam.nHalfShots': '{n}\u00A0张', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
+  'cam.develop': '送去冲洗', // ko: 현상소로 · en: Send to lab
   'cam.finishPack': '取出相纸', // ko: 팩 꺼내기 · en: Finish pack
   'cam.finishCard': '取出存储卡', // ko: 카드 정리 · en: Finish card
   'cam.rewindSub': '胶卷倒片后送去冲洗。冲洗好后，就能在相册里看到照片。', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
-  'cam.finishSubViewable': '照片已经在相册里了。取出后就能装入新的。', // ko: 사진은 이미 앨범에 있어요. 정리하면 새로 넣을 수 있어요. · en: Your photos are already in the album. Finish to start a fresh one.
+  'cam.finishSubViewable': '照片已经在相册里了。取出后就能换上新的。', // ko: 사진은 이미 앨범에 있어요. 정리하면 새로 넣을 수 있어요. · en: Your photos are already in the album. Finish to start a fresh one.
   'cam.finishPackConfirm': '已拍 {shots}。剩下的 {left}将不再使用，现在取出相纸吗？', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
   'cam.finishCardConfirm': '已拍 {shots}。存储卡剩下的 {left}将留空，现在取出吗？照片会一直留在相册里。', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
   'cam.switchBody': '换一台相机', // ko: 다른 카메라로 바꾸기 · en: Switch camera body
   'cam.switchSub': '先把这一卷送去冲洗，再选新的相机。', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
   'cam.switchSubViewable': '照片留在相册里，接着选新的相机。', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
   'cam.switchSubEmpty': '还没有拍照，可以直接更换。', // ko: 아직 찍은 사진이 없어서 바로 바꿀 수 있어요. · en: Nothing shot yet, so you can switch right away.
-  'cam.switchConfirm': '要换相机，需要先把这一卷（{shots}）送去冲洗。没拍的部分会留空。', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
+  'cam.switchConfirm': '要换相机，需要先把这一卷（{shots}）送去冲洗。拍下的照片都会冲洗出来。', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 찍은 사진은 모두 현상돼요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Every shot will be developed. [+ counts: n] — shown only when no frames are left unused
   'cam.switchConfirmPack': '要换相机，需要先取出这盒相纸（{shots}）。照片会留在相册里。', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
   'cam.switchConfirmCard': '要换相机，需要先取出这张存储卡（{shots}）。照片会留在相册里。', // ko: 카메라를 바꾸려면 지금 카드({shots})를 먼저 정리해요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this card ({shots}) is finished first. Your photos stay in the album. [+ counts: n]
   'cam.switchOkFilm': '送去冲洗并更换', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
@@ -181,7 +183,7 @@ export const messages: LocaleMessages = {
   'cam.flashOnScreen': '闪光灯已打开 · 前置镜头会用屏幕补光', // ko: 플래시 켬 · 전면 카메라는 화면이 하얗게 빛나요 · en: Flash on · the front camera lights up the screen instead
   'cam.flipToFront': '切换到前置镜头', // ko: 전면 카메라로 전환 · en: Flip to front camera
   'cam.flipToBack': '切换到后置镜头', // ko: 후면 카메라로 전환 · en: Flip to back camera
-  'gal.emptyHintCamera': '相机里已拍的 {shots}正在等你。送去冲洗，冲洗完成后就会出现在这里。', // ko: 카메라 안에 사진 {shots}이 기다리고 있어요. 현상소로 보내면 현상을 마친 뒤 여기에 나타나요. · en: You have {shots} in the camera. Send them to the lab and they show up here once developed. [+ counts: n]
+  'gal.emptyHintCamera': '相机里还有已拍的 {shots}。送去冲洗后，照片就会出现在这里。', // ko: 카메라 안에 사진 {shots}이 기다리고 있어요. 현상소로 보내면 현상을 마친 뒤 여기에 나타나요. · en: You have {shots} in the camera. Send them to the lab and they show up here once developed. [+ counts: n]
   'gal.developNow': '送去冲洗', // ko: 현상소로 보내기 · en: Send to lab
   'gal.inCameraBanner': '相机内 {shots} · 送去冲洗', // ko: 카메라 안 {shots} · 현상소로 보내기 · en: {shots} in the camera · Send to lab [+ counts: n]
   'lab.emptyCamera': '相机里已拍 {shots}。把胶卷送过来，就会在这里开始冲洗。', // ko: 카메라 안에 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상이 시작돼요. · en: You have {shots} in the camera. Send the roll to the lab and it develops here. [+ counts: n]
@@ -255,7 +257,7 @@ export const messages: LocaleMessages = {
   'dr.border.none': '无', // ko: 없음 · en: None
   'dr.border.film35': '35mm', // ko: 35mm · en: 35mm
   'dr.border.instant': '即时成像', // ko: 인스턴트 · en: Instant
-  'dr.border.print': '相纸', // ko: 인화지 · en: Print
+  'dr.border.print': '白边', // ko: 인화지 · en: Print
   'dr.border.slide': '反转片', // ko: 슬라이드 · en: Slide
   'dr.border.gate': '电影', // ko: 시네 · en: Cine
   'dr.border.sprocket': '齿孔', // ko: 스프로킷 · en: Sprocket
@@ -369,15 +371,15 @@ export const messages: LocaleMessages = {
   'set.backup.hint': '照片和记录只保存在这台设备上。换手机或清除浏览器数据前，记得先存一份备份文件（.zip）。', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
   'set.backup.export': '保存备份文件（.zip）', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': '再存一份', // ko: 한 번 더 저장 · en: Save another copy
-  'set.backup.send': '通过微信或其他 App 发送', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
+  'set.backup.send': '发送到其他 App', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': '已保存到“下载”文件夹 · {name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
   'set.backup.savedShared': '已保存到你在分享面板中选择的位置（文件、网盘等）· {name}', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
-  'set.backup.restoreHint': '换新手机时，先把这个文件通过微信或邮件发给自己，再在新手机上打开 Film Camela，进入“设置”，轻点“从备份恢复”。', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
+  'set.backup.restoreHint': '换新手机时，先用聊天 App、邮件或网盘把这个文件发给自己，再在新手机上打开 Film Camela，进入“设置”，轻点“从备份恢复”。', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
   'set.credit': '© 2026 ATIUM GROUP Co., Ltd.', // ko: © 2026 아티움그룹 주식회사 (ATIUM GROUP Co., Ltd.) · en: © 2026 ATIUM GROUP Co., Ltd.
   'set.backup.import': '从备份恢复', // ko: 백업에서 복원 · en: Restore from backup
   'set.backup.working': '正在备份… {done}/{total}', // ko: 백업 중… {done}/{total} · en: Backing up… {done}/{total}
   'set.backup.restoring': '正在恢复…', // ko: 복원 중… · en: Restoring…
-  'set.backup.done': '备份已就绪 · {rolls} 卷胶卷，{photos} 张照片', // ko: 백업 준비 완료 · 롤 {rolls}개, 사진 {photos}장 · en: Backup ready · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}}
+  'set.backup.done': '备份已就绪 · {rolls} 卷胶卷、{photos} 张照片', // ko: 백업 준비 완료 · 롤 {rolls}개, 사진 {photos}장 · en: Backup ready · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}}
   'set.backup.save': '已就绪 · 保存', // ko: 준비 완료 · 저장하기 · en: Ready · Save it
   'set.backup.saved': '备份文件已保存', // ko: 백업 파일을 저장했어요 · en: Backup file saved
   'set.backup.saveFailed': '没能保存，请再轻点一次', // ko: 저장하지 못했어요. 다시 눌러 주세요 · en: Couldn't save it. Tap again
@@ -450,27 +452,27 @@ export const messages: LocaleMessages = {
 export const cameraText: LocaleCameraText = {
   /** Camera body descriptions (expressive register, guide §1.1). */
   desc: {
-    pro35: '可靠的 35mm 单反。兼容所有 35mm 胶卷，3 种画幅，还有变焦和曝光补偿。', // ko: 믿음직한 35mm SLR. 모든 35mm 필름과 3가지 비율, 줌, 노출 보정까지. · en: A dependable 35mm SLR. Every 35mm film, three formats, zoom, and an exposure dial.
-    snap27: '27 张的一次性相机。微微朦胧的塑料镜头，每拍一张都要给闪光灯充电。', // ko: 27장짜리 일회용 카메라. 살짝 뭉개지는 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable. A soft plastic lens and a flash you charge before every shot.
-    instasq: '方画幅即时成像相机，10 张装相纸。按下快门，照片随即吐出，影像慢慢浮现。', // ko: 정사각 인스턴트, 10장 팩. 찍자마자 사진이 나오고, 천천히 상이 떠올라요. · en: A square instant camera with 10-shot packs. Each print slides out and slowly comes to life.
-    half72: '在一格 35mm 里并排拍下两张的半格相机。一卷 72 张，留下双倍的瞬间。', // ko: 35mm 한 컷에 두 장을 나란히 담는 하프프레임. 한 롤에 72장, 두 배의 순간. · en: Two shots side by side in every frame. 72 half-frames, twice the moments.
+    pro35: '可靠的 35mm 单反。兼容所有 35mm 胶卷，3\u00A0种画幅，还有变焦和曝光补偿。', // ko: 믿음직한 35mm SLR. 모든 35mm 필름과 3가지 비율, 줌, 노출 보정까지. · en: A dependable 35mm SLR. Every 35mm film, three formats, zoom, and an exposure dial.
+    snap27: '27\u00A0张的一次性相机。微微朦胧的塑料镜头，每拍一张都要给闪光灯充电。', // ko: 27장짜리 일회용 카메라. 살짝 뭉개지는 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable. A soft plastic lens and a flash you charge before every shot.
+    instasq: '方画幅即时成像相机，10\u00A0张装相纸。按下快门，照片随即吐出，影像慢慢浮现。', // ko: 정사각 인스턴트, 10장 팩. 찍자마자 사진이 나오고, 천천히 상이 떠올라요. · en: A square instant camera with 10-shot packs. Each print slides out and slowly comes to life.
+    half72: '在一格 35mm 里并排拍下两张的半格相机。一卷 72\u00A0张，留下双倍的瞬间。', // ko: 35mm 한 컷에 두 장을 나란히 담는 하프프레임. 한 롤에 72장, 두 배의 순간. · en: Two shots side by side in every frame. 72 half-frames, twice the moments.
     zonelc: '隧道般的暗角，浓郁的色彩。适合漫步街巷的便携机。', // ko: 터널 같은 비네팅과 진한 색. 골목을 걷는 날을 위한 컴팩트. · en: Tunnel vignetting and saturated color. A compact made for wandering the streets.
     toy120: '塑料镜头的中画幅玩具相机。边缘柔和，暗角浓重，时常漏光。', // ko: 플라스틱 렌즈의 중판 토이 카메라. 흐릿한 가장자리, 짙은 비네팅, 자주 스미는 빛샘. · en: A plastic-lens medium-format toy. Soft edges, deep vignetting, and frequent light leaks.
-    quad4: '4 个镜头每隔 0.2 秒依次拍摄。一张照片，留住四个动作瞬间。', // ko: 렌즈 4개가 0.2초 간격으로 차례차례. 한 장에 담기는 네 번의 움직임. · en: Four lenses fire 0.2 s apart. Four moments of motion in one frame.
+    quad4: '4\u00A0个镜头每隔 0.2\u00A0秒依次拍摄。一张照片，留住四个动作瞬间。', // ko: 렌즈 4개가 0.2초 간격으로 차례차례. 한 장에 담기는 네 번의 움직임. · en: Four lenses fire 0.2 s apart. Four moments of motion in one frame.
     doublex: '一格，两次曝光。第二个画面轻轻叠在第一个之上。', // ko: 한 컷에 두 번의 노출. 첫 장면 위로 두 번째 장면이 포개져요. · en: Two exposures, one frame. A second scene settles over the first.
-    panox: '65:24 的宽幅全景，满满一整片视野。一卷 21 张。', // ko: 65:24의 넓은 파노라마. 시야 가득, 한 롤에 21장. · en: Sweeping 65:24 panoramas. 21 frames per roll.
+    panox: '65:24\u00A0的宽幅全景，视野一览无余。一卷 21\u00A0张。', // ko: 65:24의 넓은 파노라마. 시야 가득, 한 롤에 21장. · en: Sweeping 65:24 panoramas. 21 frames per roll.
     fish180: '180° 圆形鱼眼。把世界装进一个圆。', // ko: 180° 원형 어안. 세상을 동그랗게 담아요. · en: A 180° circular fisheye. The whole world in a circle.
-    cine: '2.39:1 变形宽银幕。一道蓝色光斑，横贯明亮的光源。', // ko: 2.39:1 시네마스코프. 밝은 빛을 가로지르는 푸른 플레어. · en: 2.39:1 anamorphic widescreen. Blue streaks of flare across bright lights.
-    ccd03: '来自 2003 年的数码卡片机。99 张存储卡，数码日期，拍完即看。', // ko: 2003년 그 시절의 디카. 99장 메모리, 디지털 날짜, 찍고 바로 확인. · en: A digicam straight from 2003. 99-shot card, digital date imprint, instant review.
-    pixel: '128×112 像素的口袋相机。用 4 色色板拍下 30 张。', // ko: 128×112 픽셀의 포켓 카메라. 4색 팔레트에 담는 30장. · en: A 128×112 pocket pixel camera. 30 shots in four-color palettes.
+    cine: '2.39:1\u00A0变形宽银幕。一道蓝色光斑，横贯明亮的光源。', // ko: 2.39:1 시네마스코프. 밝은 빛을 가로지르는 푸른 플레어. · en: 2.39:1 anamorphic widescreen. Blue streaks of flare across bright lights.
+    ccd03: '来自 2003\u00A0年的数码卡片机。99\u00A0张存储卡，数码日期，拍完即看。', // ko: 2003년 그 시절의 디카. 99장 메모리, 디지털 날짜, 찍고 바로 확인. · en: A digicam straight from 2003. 99-shot card, digital date imprint, instant review.
+    pixel: '128×112\u00A0像素的口袋相机。用 4\u00A0色色板拍下 30\u00A0张。', // ko: 128×112 픽셀의 포켓 카메라. 4색 팔레트에 담는 30장. · en: A 128×112 pocket pixel camera. 30 shots in four-color palettes.
     range: '安静的旁轴相机。锐利的镜头，明亮的取景框线，默认黑白。', // ko: 조용한 레인지파인더. 선명한 렌즈, 밝은 프레임 라인, 기본은 흑백. · en: A quiet rangefinder. Crisp lens, bright frame lines, black and white by default.
-    aqua27: '穿上防水壳的 27 张一次性相机。水一般的青绿色调，柔和的镜头，每拍一张都要给闪光灯充电。', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
-    instaw: '横向宽幅的即时成像相机，10 张装相纸。宽幅照片上，影像慢慢浮现。', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
-    twin66: '低头俯看取景的双反相机。12 张 6×6 方画幅，取景器里的世界左右颠倒。', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
+    aqua27: '穿上防水壳的 27\u00A0张一次性相机。水一般的青绿色调，柔和的镜头，每拍一张都要给闪光灯充电。', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
+    instaw: '横向宽幅的即时成像相机，10\u00A0张装相纸。宽幅照片上，影像慢慢浮现。', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
+    twin66: '低头俯看取景的双反相机。12\u00A0张 6×6\u00A0方画幅，取景器里的世界左右颠倒。', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
     super8: '从 8mm 家庭电影里截下的一帧。圆角片窗，温暖的色彩，粗粝的颗粒。', // ko: 8mm 홈무비에서 꺼낸 한 프레임. 둥근 게이트, 따뜻한 색, 굵은 입자. · en: A single frame from an 8mm home movie. Rounded gate, warm color, heavy grain.
     slide35: '反转片专用便携机。鲜亮的色彩，装进白色幻灯片框交到你手中。', // ko: 슬라이드 필름 전용 컴팩트. 쨍한 색을 하얀 마운트에 담아 돌려줘요. · en: A compact made for slide film. Vivid color, returned in white slide mounts.
     party: '大号闪光灯默认开启的派对便携机。强烈的正面闪光，再加上日期印记。', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
-    kidcam: '30 万像素的儿童数码相机。640 像素的画面，浓烈到溢出的色彩，数码日期，拍完即看。', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
+    kidcam: '30\u00A0万像素的儿童数码相机。640\u00A0像素的画面，浓烈到溢出的色彩，数码日期，拍完即看。', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
     sprocket: '连齿孔一起拍下的全景相机。照片上下边缘，留着胶片的齿孔。', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
@@ -494,7 +496,7 @@ export const cameraText: LocaleCameraText = {
     TLR: '双反',
     'Home movie': '家庭电影',
     Slide: '反转片',
-    'Big flash': '大闪光',
+    'Big flash': '大闪光灯',
     'Kids digicam': '儿童数码相机',
     Sprocket: '齿孔',
   },
@@ -513,13 +515,13 @@ export const stockText: LocaleStockText = {
   chrome100: '清透冷冽的反转片色调。天空澄澈如洗。', // ko: 맑고 차가운 슬라이드 톤. 투명하게 갠 하늘. · en: Clean, cool slide tones. Skies as clear as glass.
   silver100: '颗粒细腻，影调宽广。光影层次丰富而微妙的黑白。', // ko: 고운 입자와 넓은 계조. 빛의 결이 섬세한 흑백. · en: Fine grain and a long tonal range. Black and white in quiet, subtle shades.
   dream160: '低反差，空气般轻盈的粉彩。', // ko: 낮은 대비, 공기처럼 가벼운 파스텔. · en: Low contrast and pastels as light as air.
-  expired98: '1998 年就已过期。洋红色的雾、灰尘，结果如何，冲出来才知道。', // ko: 1998년에 만료된 필름. 마젠타 포그와 먼지, 결과는 현상해 봐야 알아요. · en: Expired in 1998. Magenta fog, dust, and a surprise in every frame.
+  expired98: '1998\u00A0年就已过期。洋红色的雾、灰尘，结果如何，冲出来才知道。', // ko: 1998년에 만료된 필름. 마젠타 포그와 먼지, 결과는 현상해 봐야 알아요. · en: Expired in 1998. Magenta fog, dust, and a surprise in every frame.
   xpro200: '反转片按负片（C-41）工艺交叉冲洗。强烈反差，青柠色高光，青绿色阴影。', // ko: 슬라이드 필름을 네거티브(C-41)로 교차현상. 강한 대비, 연둣빛 하이라이트, 청록빛 그림자. · en: Slide film cross-processed as negative (C-41). Hard contrast, lime highlights, teal shadows.
   instamini: '明亮清爽的迷你即时成像相纸。干净的白，带一点冷调。', // ko: 밝고 산뜻한 미니 인스턴트. 깨끗한 화이트와 살짝 차가운 톤. · en: Bright, crisp mini instant film with clean whites and a cool touch.
-  ccd: '2000 年代初数码卡片机的 CCD。高光溢出，色调偏蓝，带着紫边。', // ko: 2000년대 초 디카의 CCD. 날아가는 하이라이트, 푸르스름한 톤, 보랏빛 번짐. · en: The CCD of an early-2000s digicam. Clipped highlights, a blue cast, purple fringing.
-  pixel: '128 像素的 2-bit 传感器。只有 4 种颜色和抖动点阵。', // ko: 128픽셀 2비트 센서. 단 4가지 색과 디더링. · en: A 128-pixel, 2-bit sensor. Just four colors and dithering.
+  ccd: '2000\u00A0年代初数码卡片机的 CCD。高光溢出，色调偏蓝，带着紫边。', // ko: 2000년대 초 디카의 CCD. 날아가는 하이라이트, 푸르스름한 톤, 보랏빛 번짐. · en: The CCD of an early-2000s digicam. Clipped highlights, a blue cast, purple fringing.
+  pixel: '128\u00A0像素的 2-bit 传感器。只有 4\u00A0种颜色和抖动点阵。', // ko: 128픽셀 2비트 센서. 단 4가지 색과 디더링. · en: A 128-pixel, 2-bit sensor. Just four colors and dithering.
   aqua400: '水下一次性胶卷。红色褪尽，只剩青绿色调和朦胧的颗粒。', // ko: 물속 일회용 필름. 붉은빛이 바래 사라진 청록 톤, 뿌연 입자. · en: Underwater disposable film. Reds fade into a blue-green haze, with soft grain.
   instawide: '宽幅即时成像相纸。色彩自然，高光微微偏暖。', // ko: 와이드 인스턴트 필름. 자연스러운 색에 살짝 따뜻한 하이라이트. · en: Wide instant film. Natural color with gently warm highlights.
   reel40: '家庭电影反转片。温暖浓郁的色彩，粗大的颗粒，片窗边沾着灰尘。', // ko: 홈무비 리버설 필름. 따뜻하고 진한 색, 굵은 입자, 먼지 앉은 게이트. · en: Home-movie reversal film. Warm, saturated color, big grain, and a dusty gate.
-  toycmos: '30 万像素的玩具传感器。糖果般的色彩，过曝的高光，斑驳的彩色噪点。', // ko: 0.3메가 장난감 센서. 사탕 같은 색, 날아간 하이라이트, 얼룩덜룩한 색 노이즈. · en: A 0.3 MP toy sensor: candy colors, blown highlights, blotchy color noise.
+  toycmos: '30\u00A0万像素的玩具传感器。糖果般的色彩，过曝的高光，斑驳的彩色噪点。', // ko: 0.3메가 장난감 센서. 사탕 같은 색, 날아간 하이라이트, 얼룩덜룩한 색 노이즈. · en: A 0.3 MP toy sensor: candy colors, blown highlights, blotchy color noise.
 };

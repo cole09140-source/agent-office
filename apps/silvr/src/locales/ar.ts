@@ -59,9 +59,9 @@ export const messages: LocaleMessages = {
   'cam.useCamera': 'التصوير بهذه الكاميرا', // ko: 이 카메라로 찍기 · en: Use this camera
   'cam.allCameras': 'عرض الكل', // ko: 모두 보기 · en: All cameras
   'cam.allCamerasTitle': 'كل الكاميرات', // ko: 카메라 모두 보기 · en: All cameras
-  'cam.group.film': 'كاميرات الفيلم', // ko: 필름 카메라 · en: Film cameras
+  'cam.group.film': 'كاميرات فيلم', // ko: 필름 카메라 · en: Film cameras
   'cam.group.instant': 'كاميرات فورية', // ko: 즉석 카메라 · en: Instant cameras
-  'cam.group.digital': 'رقمية', // ko: 디지털 · en: Digital
+  'cam.group.digital': 'كاميرات رقمية', // ko: 디지털 · en: Digital
   'cam.group.toy': 'كاميرات لعبة وخاصة', // ko: 토이·특수 카메라 · en: Toy & special
   'a11y.stockKeys': 'تصفّح الأفلام بمفتاحي الأسهم، واختر بمفتاح Enter', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': 'تُحمَّض صورك بالفيلم الذي اخترته، ويمكنك تغييره في الغرفة المظلمة متى شئت.', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
@@ -71,7 +71,7 @@ export const messages: LocaleMessages = {
   'onb.2.title': 'متعة الترقّب في المعمل', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
   'onb.2.body': 'أرسل الفيلم إلى المعمل، واختر مدة انتظارك: فورًا، أو ساعة، أو حتى 9 صباحًا، أو 3 أيام.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'أعد التحميض في الغرفة المظلمة متى شئت', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
-  'onb.3.body': 'تبقى صورتك الأصلية محفوظة دائمًا. جرّب فيلمًا آخر، أو سطوعًا مختلفًا، أو مظهر الفيلم القديم، أو الوهج، كلما شئت.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
+  'onb.3.body': 'صورتك الأصلية محفوظة دائمًا. جرّب فيلمًا آخر، أو سطوعًا مختلفًا، أو مظهر الفيلم القديم، أو الوهج، كلما أردت.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': 'مجاني. لا حساب ولا خوادم. تبقى كل صورك على هذا الجهاز فقط.', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': 'إدخال فيلم', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'اختر فيلمك', // ko: 필름을 고르세요 · en: Choose your film
@@ -118,19 +118,19 @@ export const messages: LocaleMessages = {
   'lab.rushFor': 'التحميض الآن · {stock}', // ko: 지금 바로 현상 · {stock} · en: Develop now · {stock}
   'speed.default': 'الافتراضي', // ko: 기본 · en: default
   'palette.moss': 'طحلبي', // ko: 이끼 · en: Moss
-  'palette.mono': 'أحادي', // ko: 흑백 · en: Mono
+  'palette.mono': 'رمادي', // ko: 흑백 · en: Mono
   'palette.sepia': 'سيبيا', // ko: 세피아 · en: Sepia
   'palette.ice': 'جليدي', // ko: 얼음 · en: Ice
   'palette.berry': 'توتي', // ko: 베리 · en: Berry
   'cam.chooseCamera': 'اختر كاميرتك', // ko: 카메라를 고르세요 · en: Choose your camera
   'cam.film': 'الفيلم', // ko: 필름 · en: Film
   'cam.fixedFilm': 'فيلم مدمج', // ko: 전용 필름 · en: Built-in film
-  'cam.pin': 'تثبيت {name}', // ko: {name} 고정 · en: Pin {name}
+  'cam.pin': 'تثبيت كاميرا {name}', // ko: {name} 고정 · en: Pin {name}
   'cam.pinHint': 'تثبيت في المقدمة', // ko: 맨 앞에 고정 · en: Pin to the front
   'cam.pinned': 'مثبّتة', // ko: 고정됨 · en: Pinned
-  'cam.pinnedSay': 'تم تثبيت {name} · تظهر في المقدمة', // ko: {name} 고정했어요 · 맨 앞에 보여요 · en: {name} pinned to the front
-  'cam.unpinnedSay': 'تم إلغاء تثبيت {name}', // ko: {name} 고정을 풀었어요 · en: {name} unpinned
-  'cam.pinnedToast': 'تم تثبيت {name} · نُقلت إلى المقدمة', // ko: {name} 고정 · 맨 앞으로 옮겼어요 · en: {name} pinned · moved to the front
+  'cam.pinnedSay': 'تم تثبيت كاميرا {name} · تظهر الآن في المقدمة', // ko: {name} 고정했어요 · 맨 앞에 보여요 · en: {name} pinned to the front
+  'cam.unpinnedSay': 'تم إلغاء تثبيت كاميرا {name}', // ko: {name} 고정을 풀었어요 · en: {name} unpinned
+  'cam.pinnedToast': 'تم تثبيت كاميرا {name} · نُقلت إلى المقدمة', // ko: {name} 고정 · 맨 앞으로 옮겼어요 · en: {name} pinned · moved to the front
   'cam.pinShow': 'عرض', // ko: 보기 · en: Show
   'cam.otherWindow': 'التُقطت بالفعل في نافذة أخرى', // ko: 다른 창에서 이미 찍었어요 · en: Already taken in another window
   'cam.pressesDropped': '{n, plural, zero {لم تُلغَ أي ضغطة} one {أُلغيت ضغطة واحدة} two {أُلغيت ضغطتان} few {أُلغيت # ضغطات} many {أُلغيت # ضغطة} other {أُلغيت # ضغطة}}', // ko: {n}번 누른 건 취소됐어요 · en: {n, plural, one {# press was} other {# presses were}} cancelled
@@ -164,7 +164,7 @@ export const messages: LocaleMessages = {
   'cam.finishCardConfirm': '{n, plural, zero {لم تلتقط أي صورة بعد} one {التقطت {shots}} two {التقطت لقطتين} few {التقطت {shots}} many {التقطت {shots}} other {التقطت {shots}}}. {m, plural, zero {هل تريد إنهاء البطاقة؟} one {هل تريد إنهاء البطاقة مع ترك اللقطة المتبقية فارغة؟} two {هل تريد إنهاء البطاقة مع ترك اللقطتين المتبقيتين فارغتين؟} few {هل تريد إنهاء البطاقة مع ترك اللقطات المتبقية ({left}) فارغة؟} many {هل تريد إنهاء البطاقة مع ترك اللقطات المتبقية ({left}) فارغة؟} other {هل تريد إنهاء البطاقة مع ترك اللقطات المتبقية ({left}) فارغة؟}} تبقى صورك في الألبوم كما هي.', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
   'cam.switchBody': 'التبديل إلى كاميرا أخرى', // ko: 다른 카메라로 바꾸기 · en: Switch camera body
   'cam.switchSub': 'يُرسل هذا الفيلم إلى المعمل أولًا، ثم تختار كاميرا جديدة.', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
-  'cam.switchSubViewable': 'تبقى صورك في الألبوم، وتختار كاميرا جديدة.', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
+  'cam.switchSubViewable': 'تبقى صورك في الألبوم، ثم تختار كاميرا جديدة.', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
   'cam.switchSubEmpty': 'لا توجد لقطات بعد، لذا يمكنك التبديل فورًا.', // ko: 아직 찍은 사진이 없어서 바로 바꿀 수 있어요. · en: Nothing shot yet, so you can switch right away.
   'cam.switchConfirm': 'لتبديل الكاميرا، يُرسل هذا الفيلم ({shots}) إلى المعمل أولًا، وستُحمَّض كل اللقطات التي التقطتها.', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 찍은 사진은 모두 현상돼요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Every shot will be developed. [+ counts: n]
   'cam.switchConfirmPack': 'لتبديل الكاميرا، تُخرَج هذه العبوة ({shots}) أولًا. تبقى صورك في الألبوم كما هي.', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
@@ -175,7 +175,7 @@ export const messages: LocaleMessages = {
   'cam.switchedAlbum': 'أصبحت صورك في الألبوم. اختر الآن كاميرا جديدة.', // ko: 사진을 앨범에 넣었어요. 이제 새 카메라를 골라 보세요. · en: Photos are in your album. Pick your next camera.
   'cam.more': 'المزيد', // ko: 더보기 · en: More
   'cam.flashOnSay': 'الفلاش يعمل', // ko: 플래시 켬 · en: Flash on
-  'cam.flashOffSay': 'الفلاش متوقف', // ko: 플래시 끔 · en: Flash off
+  'cam.flashOffSay': 'الفلاش مطفأ', // ko: 플래시 끔 · en: Flash off
   'cam.flashOnScreen': 'الفلاش يعمل · مع الكاميرا الأمامية تضيء الشاشة بدلًا منه', // ko: 플래시 켬 · 전면 카메라는 화면이 하얗게 빛나요 · en: Flash on · the front camera lights up the screen instead
   'cam.flipToFront': 'التبديل إلى الكاميرا الأمامية', // ko: 전면 카메라로 전환 · en: Flip to front camera
   'cam.flipToBack': 'التبديل إلى الكاميرا الخلفية', // ko: 후면 카메라로 전환 · en: Flip to back camera
@@ -192,7 +192,7 @@ export const messages: LocaleMessages = {
   'speed.at.date': 'تصل في {date}', // ko: {date} 도착 · en: Arrives {date}
   'speed.instant.d': 'بلا انتظار، شاهدها الآن', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': 'ساعة', // ko: 1시간 · en: 1 hour
-  'speed.1h.d': 'بقدر فنجان قهوة', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
+  'speed.1h.d': 'وقت لفنجان قهوة', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
   'speed.morning': '9 صباحًا', // ko: 아침 9시 · en: Next 9 AM
   'speed.morning.d': 'تستيقظ فتجد صورك بانتظارك', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
   'speed.3d': '3 أيام', // ko: 3일 · en: 3 days
@@ -203,12 +203,12 @@ export const messages: LocaleMessages = {
   'lab.emptyWhat': 'هنا تبقى الأفلام التي ترسلها إلى المعمل حتى يكتمل تحميضها.', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
   'lab.emptyHow': 'تصل في الموعد الذي تختاره، ومع «فورًا» تذهب إلى الألبوم مباشرة.', // ko: 고른 시간에 맞춰 도착해요. ‘즉시’라면 바로 앨범으로. · en: They arrive on the schedule you choose. Instant skips the wait.
   'lab.intro': 'تنتقل الأفلام إلى الألبوم بعد اكتمال تحميضها.', // ko: 현상을 마친 롤은 앨범으로 옮겨져요. · en: Developed rolls move to your album.
-  'lab.introRush': 'لا تطيق الانتظار؟ اضغط «التحميض الآن».', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
+  'lab.introRush': 'لا تطيق الانتظار؟ اضغط «التحميض الآن».', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
   'lab.readyIn': 'جاهز بعد {t}', // ko: {t} 남음 · en: Ready in {t}
   'lab.ready': 'تم التحميض', // ko: 현상 완료 · en: Developed
   'lab.rush': 'التحميض الآن', // ko: 지금 바로 현상 · en: Develop now
   'lab.rushConfirm': 'يمكنك تخطي الانتظار ورؤية الصور في الألبوم فورًا.', // ko: 기다림을 건너뛰고 바로 앨범에서 볼 수 있어요. · en: Skip the wait and see the photos in the album right away.
-  'lab.developedToast': 'اكتمل تحميض فيلم {stock}', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
+  'lab.developedToast': 'اكتمل تحميض {stock}', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
   'lab.open': 'عرض الصور', // ko: 사진 보기 · en: View photos
   'gal.title': 'الألبوم', // ko: 앨범 · en: Album
   'gal.empty': 'لا توجد صور محمّضة بعد.', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
@@ -335,7 +335,7 @@ export const messages: LocaleMessages = {
   'an.log.logged': 'سُجّلت اللقطة {n}', // ko: {n}번 컷을 기록했어요 · en: Frame {n} logged
   'an.log.deleted': 'حُذف سجل اللقطة {n}', // ko: {n}번 컷 기록을 지웠어요 · en: Frame {n} log deleted
   'an.log.undo': 'تراجع', // ko: 되돌리기 · en: Undo
-  'an.log.undoFailed': 'تعذّر التراجع: سُجّل رقم اللقطة نفسه في الأثناء', // ko: 그 사이 같은 번호가 기록돼서 되돌리지 못했어요 · en: Couldn't undo: that frame number is taken now
+  'an.log.undoFailed': 'تعذّر التراجع: سُجّلت لقطة بالرقم نفسه في هذه الأثناء', // ko: 그 사이 같은 번호가 기록돼서 되돌리지 못했어요 · en: Couldn't undo: that frame number is taken now
   'an.log.full': 'سُجّلت كل لقطات هذا الفيلم', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': 'سجّل هنا كل لقطة تلتقطها. ويمكنك الضغط على أي سطر في أي وقت لتعديله.', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': 'الإعدادات', // ko: 설정 · en: Settings
@@ -403,7 +403,7 @@ export const messages: LocaleMessages = {
   'update.reload': 'إعادة التحميل', // ko: 새로고침 · en: Reload
   'offline.ready': 'جاهز للعمل دون اتصال', // ko: 오프라인에서도 사용할 수 있어요 · en: Ready to work offline
   'a11y.cameraTitle': 'الكاميرا', // ko: 카메라 · en: Camera
-  'a11y.rollLoaded': 'تم إدخال {stock} · {n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
+  'a11y.rollLoaded': 'تم إدخال فيلم {stock} · {n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
   'a11y.sentToLab': 'أُرسل إلى المعمل · جاهز بعد {wait}', // ko: 현상소로 보냈어요 · {wait} 뒤 도착 · en: Sent to the lab · ready in {wait}
   'a11y.cameraKeys': 'اختر كاميرا بمفتاحي الأسهم، وانتقل بمفتاح Tab إلى زر التثبيت', // ko: ← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요 · en: Use the arrow keys to choose a camera; Tab reaches its pin button
   'cam.timerSay': '{n, plural, zero {الالتقاط الآن} one {الالتقاط بعد ثانية} two {الالتقاط بعد ثانيتين} few {الالتقاط بعد # ثوانٍ} many {الالتقاط بعد # ثانية} other {الالتقاط بعد # ثانية}} · اضغط زر الغالق مرة أخرى للإلغاء', // ko: {n}초 뒤 촬영 · 셔터를 다시 누르면 취소 · en: Taking the photo in {n} seconds · press the shutter again to cancel

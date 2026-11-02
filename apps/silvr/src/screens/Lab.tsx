@@ -43,7 +43,7 @@ export function LabScreen() {
               const remaining = Math.max(0, (r.readyAt ?? n) - n);
               const pct = Math.min(100, Math.max(0, 100 - (remaining / total) * 100));
               const etaParts = remaining > 0 ? [formatArrival(r.readyAt ?? n, n, signalLang.value), t('lab.readyIn', { t: formatDuration(remaining, signalLang.value) })] : [t('lab.ready')];
-              const eta = etaParts.join(' · ');
+              const eta = etaParts.join(' · ');
               return (
                 <li class="lab-item" key={r.id} data-testid="lab-item">
                   <div class="tank" aria-hidden="true">
@@ -65,7 +65,7 @@ export function LabScreen() {
                     <span class="tnum small lab-eta" data-testid="lab-eta">
                       {etaParts.map((p, i) => (
                         <>
-                          {i > 0 && ' · '}
+                          {i > 0 && ' · '}
                           <span>{p}</span>
                         </>
                       ))}

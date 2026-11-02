@@ -64,11 +64,11 @@ export const messages: LocaleMessages = {
   'a11y.stockKeys': '← → कीज़ से फ़िल्में देखें, Enter से चुनें', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': 'आपकी तस्वीरें इसी फ़िल्म से डेवलप होंगी। डार्करूम में इसे कभी भी बदल सकते हैं।', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': 'पुराने फ़ोन से आए हैं? बैकअप रीस्टोर करें', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
-  'onb.1.title': 'गिनी-चुनी तस्वीरें, फ़िल्म की तरह', // ko: 필름처럼, 한 장씩 · en: Shoot like film
-  'onb.1.body': 'कैमरा चुनिए और रोल डालिए। बची तस्वीरें गिनते हुए, हर क्लिक दिल से कीजिए।', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
+  'onb.1.title': 'फ़िल्म की तरह, एक-एक तस्वीर', // ko: 필름처럼, 한 장씩 · en: Shoot like film
+  'onb.1.body': 'कैमरा चुनिए, रोल डालिए। गिनी-चुनी तस्वीरें हैं, तो हर एक दिल से खींचिए।', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': 'लैब का मीठा इंतज़ार', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
   'onb.2.body': 'पूरे हो चुके रोल लैब भेजिए और चुनिए कितना इंतज़ार करना है: तुरंत, 1 घंटा, सुबह 9 बजे या 3 दिन।', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
-  'onb.3.title': 'फिर से डेवलप करें, जब चाहें', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
+  'onb.3.title': 'जब चाहें, फिर से डेवलप', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'आपकी ओरिजिनल तस्वीर हमेशा जस की तस रहती है। फ़िल्म, ब्राइटनेस, पुराना लुक या ग्लो — डार्करूम में जितनी बार चाहें, बदलकर देखिए।', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': 'मुफ़्त · न अकाउंट, न सर्वर। सारी तस्वीरें सिर्फ़ इसी डिवाइस पर रहती हैं।', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': 'रोल डालें', // ko: 필름 넣기 · en: Load film
@@ -93,7 +93,7 @@ export const messages: LocaleMessages = {
   'cam.starting': 'कैमरा तैयार हो रहा है…', // ko: 카메라 준비 중… · en: Starting camera…
   'cam.saved': 'फ़्रेम {n}', // ko: {n}번째 컷 · en: Frame {n}
   'cam.rewindConfirm': 'आपने {shots} {n, plural, one {खींच ली है} other {खींच ली हैं}}। बाकी {left} खाली छोड़कर रोल लैब भेजें?', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
-  'cam.emptyRewind': 'अभी तक कोई तस्वीर नहीं खींची है। अभी रोल निकालेंगे, तो यह रोल हटा दिया जाएगा।', // ko: 아직 찍은 사진이 없어요. 지금 필름을 빼면 이 롤은 사라져요. · en: No shots yet. If you unload now, this roll is discarded.
+  'cam.emptyRewind': 'अभी तक कोई तस्वीर नहीं खींची गई है। अभी निकालेंगे, तो यह रोल हटा दिया जाएगा।', // ko: 아직 찍은 사진이 없어요. 지금 필름을 빼면 이 롤은 사라져요. · en: No shots yet. If you unload now, this roll is discarded.
   'cam.unload': 'रोल निकालें', // ko: 필름 빼기 · en: Unload film
   'cam.rollSize': 'रोल साइज़', // ko: 롤 장수 · en: Roll size
   'cam.rollInfo': 'रोल की जानकारी', // ko: 롤 정보 · en: roll info
@@ -263,13 +263,13 @@ export const messages: LocaleMessages = {
   'dr.ev': 'एक्सपोज़र', // ko: 노출 보정 · en: Exposure
   'dr.palette': 'पैलेट', // ko: 팔레트 · en: Palette
   'dr.camera': 'कैमरा', // ko: 카메라 · en: Camera
-  'hint.ios': 'Film Camela को होम स्क्रीन में जोड़ने से आपकी तस्वीरें ज़्यादा सुरक्षित रहती हैं। (“शेयर करें” → “होम स्क्रीन में जोड़ें”)', // ko: 홈 화면에 추가하면 사진을 더 안전하게 지킬 수 있어요. (공유 → 홈 화면에 추가) · en: Add Film Camela to your Home Screen to keep photos safe (Share → Add to Home Screen).
+  'hint.ios': 'Film Camela को होम स्क्रीन पर जोड़ने से आपकी तस्वीरें ज़्यादा सुरक्षित रहती हैं। (“शेयर करें” → “होम स्क्रीन पर जोड़ें”)', // ko: 홈 화면에 추가하면 사진을 더 안전하게 지킬 수 있어요. (공유 → 홈 화면에 추가) · en: Add Film Camela to your Home Screen to keep photos safe (Share → Add to Home Screen).
   'dr.applyRollDone': 'पूरे रोल पर लगा दिया गया', // ko: 롤 전체에 적용했어요 · en: Applied to the whole roll
   'dr.applyRollUndone': 'रोल की पिछली सेटिंग्ज़ वापस आ गईं', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
   'dr.discardConfirm': 'बदलाव छोड़ दें?', // ko: 변경 사항을 버릴까요? · en: Discard changes?
   'dr.discard': 'छोड़ दें', // ko: 버리기 · en: Discard
   'dr.saveNew': 'कॉपी सेव करें', // ko: 새 사진으로 저장 · en: Save as new photo
-  'dr.savedNew': 'कॉपी के रूप में सेव हो गई (#{n})', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
+  'dr.savedNew': 'कॉपी सेव हो गई (#{n})', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
   'dr.tone': 'डिजिटल लुक', // ko: 디지털 룩 · en: Digital look
   'dr.look': 'लुक', // ko: 룩 · en: Look
   'dr.tone.none': 'डिफ़ॉल्ट', // ko: 기본 · en: Default
@@ -333,7 +333,7 @@ export const messages: LocaleMessages = {
   'an.log.logged': 'फ़्रेम {n} लॉग हो गया', // ko: {n}번 컷을 기록했어요 · en: Frame {n} logged
   'an.log.deleted': 'फ़्रेम {n} का लॉग हटा दिया गया', // ko: {n}번 컷 기록을 지웠어요 · en: Frame {n} log deleted
   'an.log.undo': 'वापस लें', // ko: 되돌리기 · en: Undo
-  'an.log.undoFailed': 'इस बीच यही फ़्रेम नंबर लॉग हो गया, इसलिए इसे वापस नहीं लिया जा सका', // ko: 그 사이 같은 번호가 기록돼서 되돌리지 못했어요 · en: Couldn't undo: that frame number is taken now
+  'an.log.undoFailed': 'वापस नहीं ले सके: इस बीच यह फ़्रेम नंबर लॉग हो चुका है', // ko: 그 사이 같은 번호가 기록돼서 되돌리지 못했어요 · en: Couldn't undo: that frame number is taken now
   'an.log.full': 'इस रोल के सभी फ़्रेम लॉग हो गए', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': 'हर फ़्रेम खींचते ही उसे यहाँ लॉग कीजिए। किसी भी लाइन पर टैप करके उसे कभी भी बदल सकते हैं।', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': 'सेटिंग्ज़', // ko: 설정 · en: Settings
@@ -365,7 +365,7 @@ export const messages: LocaleMessages = {
   'set.backup.hint': 'आपकी तस्वीरें और लॉग सिर्फ़ इसी डिवाइस पर रहते हैं। फ़ोन बदलने या ब्राउज़र डेटा मिटाने से पहले बैकअप फ़ाइल (.zip) किसी सुरक्षित जगह सेव कर लें।', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
   'set.backup.export': 'बैकअप सेव करें (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'एक और कॉपी सेव करें', // ko: 한 번 더 저장 · en: Save another copy
-  'set.backup.send': 'मैसेज, ईमेल या Drive पर भेजें', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
+  'set.backup.send': 'ख़ुद को भेजें (मैसेज, ईमेल, Drive)', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'डाउनलोड फ़ोल्डर में सेव हो गई · {name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
   'set.backup.savedShared': 'शेयर शीट में चुनी गई जगह (फ़ाइल्स, Drive…) पर सेव हो गई · {name}', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
   'set.backup.restoreHint': 'नए फ़ोन पर ले जाने के लिए यह फ़ाइल ख़ुद को भेजें (मैसेज, ईमेल या Drive), फिर नए फ़ोन पर Film Camela की सेटिंग्ज़ में “बैकअप से रीस्टोर करें” दबाकर इसे खोलें।', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
@@ -379,15 +379,15 @@ export const messages: LocaleMessages = {
   'set.backup.saveFailed': 'सेव नहीं हो सका, फिर से टैप करें', // ko: 저장하지 못했어요. 다시 눌러 주세요 · en: Couldn't save it. Tap again
   'set.backup.tooLarge': 'बैकअप 4 GB से बड़ा है, एक फ़ाइल में नहीं आ सकता। कुछ पुराने रोल हटाकर फिर कोशिश करें।', // ko: 4GB가 넘어 파일 하나에 담을 수 없어요. 오래된 롤을 정리한 뒤 다시 시도해 주세요 · en: Over 4 GB, too large for one file. Clear out some old rolls and try again
   'set.backup.newer': 'यह बैकअप ऐप के नए वर्ज़न में बना है। कृपया ऐप अपडेट करें।', // ko: 더 새로운 버전의 앱에서 만든 백업이에요. 앱을 업데이트해 주세요 · en: This backup is from a newer version of the app. Please update
-  'set.backup.partial': '{rolls, plural, one {# रोल} other {# रोल}} रीस्टोर करने के बाद रुक गया। स्टोरेज में जगह बनाकर फिर से रीस्टोर करें, वहीं से आगे चलेगा।', // ko: 롤 {rolls}개까지 복원하고 멈췄어요. 저장 공간을 확보한 뒤 다시 복원하면 이어서 진행돼요 · en: Stopped after restoring {rolls, plural, one {# roll} other {# rolls}}. Free up storage and restore again to continue
+  'set.backup.partial': 'रीस्टोर बीच में रुक गया: {rolls, plural, one {# रोल ही रीस्टोर हो पाया} other {# रोल ही रीस्टोर हो पाए}}। स्टोरेज में जगह बनाकर फिर से रीस्टोर करें, वहीं से आगे चलेगा।', // ko: 롤 {rolls}개까지 복원하고 멈췄어요. 저장 공간을 확보한 뒤 다시 복원하면 이어서 진행돼요 · en: Stopped after restoring {rolls, plural, one {# roll} other {# rolls}}. Free up storage and restore again to continue
   'set.backup.empty': 'अभी बैकअप के लिए कुछ नहीं है', // ko: 아직 백업할 사진이나 기록이 없어요 · en: Nothing to back up yet
-  'set.backup.restored': 'रीस्टोर हो गया · {rolls, plural, one {# रोल} other {# रोल}} और {photos, plural, one {# फ़ोटो जोड़ी गई} other {# फ़ोटो जोड़ी गईं}}', // ko: 복원 완료 · 롤 {rolls}개, 사진 {photos}장 추가 · en: Restored · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}} added
+  'set.backup.restored': 'रीस्टोर हो गया · जोड़े गए: {rolls, plural, one {# रोल} other {# रोल}}, {photos, plural, one {# फ़ोटो} other {# फ़ोटो}}', // ko: 복원 완료 · 롤 {rolls}개, 사진 {photos}장 추가 · en: Restored · {rolls, plural, one {# roll} other {# rolls}}, {photos, plural, one {# photo} other {# photos}} added
   'set.backup.skipped': '{n, plural, one {पहले से मौजूद # आइटम छोड़ दिया गया} other {पहले से मौजूद # आइटम छोड़ दिए गए}}', // ko: 이미 있는 항목 {n}개는 그대로 두었어요 · en: Skipped {n, plural, one {# item} other {# items}} you already have
   'set.backup.damaged': '{n, plural, one {# ख़राब आइटम छोड़ दिया गया} other {# ख़राब आइटम छोड़ दिए गए}}', // ko: 손상된 항목 {n}개는 건너뛰었어요 · en: Skipped {n} damaged {n, plural, one {item} other {items}}
   'set.backup.invalid': 'यह Film Camela की बैकअप फ़ाइल नहीं है, या फ़ाइल ख़राब है', // ko: Film Camela 백업 파일이 아니거나 손상된 파일이에요 · en: Not a Film Camela backup, or the file is damaged
   'set.backup.failed': 'बैकअप नहीं बन सका। स्टोरेज में खाली जगह देख लें।', // ko: 백업을 만들지 못했어요. 저장 공간을 확인해 주세요 · en: Couldn't create the backup. Check free storage
   'set.reset': 'सारा डेटा डिलीट करें', // ko: 모든 데이터 삭제 · en: Delete all data
-  'set.resetConfirm': 'सभी रोल, तस्वीरें, लॉग और सेटिंग्ज़ डिलीट हो जाएँगी, और यह वापस नहीं हो सकेगा। पहले ऊपर “बैकअप फ़ाइल सेव करें” से बैकअप ले लें। फिर भी डिलीट करें?', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
+  'set.resetConfirm': 'सभी रोल, तस्वीरें, लॉग और सेटिंग्ज़ डिलीट हो जाएँगी, और यह वापस नहीं हो सकेगा। पहले ऊपर “बैकअप सेव करें” से बैकअप ले लें। फिर भी डिलीट करें?', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
   'set.version': 'वर्ज़न', // ko: 버전 · en: Version
   'set.replayOnb': 'परिचय फिर से देखें', // ko: 소개 다시 보기 · en: Replay intro
   'share.title': 'Film Camela से खींची गई', // ko: Film Camela로 촬영 · en: Shot on Film Camela
@@ -499,7 +499,7 @@ export const cameraText: LocaleCameraText = {
 /** Film stock / sensor descriptions (expressive register). Film names stay in Latin letters. */
 export const stockText: LocaleStockText = {
   sunny200: 'धूप भरे गर्म पीले रंग। सफ़र और रोज़मर्रा के लिए क्लासिक फ़िल्म।', // ko: 햇살을 머금은 따뜻한 노랑. 여행과 일상 스냅의 정석. · en: Warm yellows full of sunshine. The classic film for travel and everyday snapshots.
-  muse400: 'कोमल स्किन टोन और पेस्टल हाइलाइट्स। लोगों की तस्वीरों के लिए बनी फ़िल्म।', // ko: 부드러운 피부톤, 파스텔빛 하이라이트. 사람을 담기 좋은 인물용 필름. · en: Gentle skin tones and pastel highlights. Made for portraits.
+  muse400: 'कोमल स्किन टोन और पेस्टल हाइलाइट्स। पोर्ट्रेट के लिए बनी फ़िल्म।', // ko: 부드러운 피부톤, 파스텔빛 하이라이트. 사람을 담기 좋은 인물용 필름. · en: Gentle skin tones and pastel highlights. Made for portraits.
   mint400: 'परछाइयों में हल्की हरी झलक। फ़्रेम में शहर की हवा।', // ko: 그늘에 살짝 도는 초록빛. 도시와 거리의 공기. · en: A hint of green in the shadows. City air in a frame.
   snap800: 'वही डिस्पोज़ेबल वाला पुराना एहसास। फ़्लैश, गहरी विनेटिंग और अनजाने में आए लाइट लीक।', // ko: 일회용 카메라, 그때 그 느낌. 플래시, 진한 비네팅, 우연이 만든 빛샘. · en: Straight out of a disposable. Flash, deep vignetting, and leaks by happy accident.
   mono400: 'गहरा काला और खुरदुरा ग्रेन। जो जैसा है, वैसा ही दिखाती ब्लैक ऐंड व्हाइट।', // ko: 깊은 검정과 거친 입자의 흑백. 있는 그대로를 담는 다큐멘터리의 결. · en: Deep blacks and gritty grain. Black and white that tells it straight.
