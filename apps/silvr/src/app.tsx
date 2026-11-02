@@ -7,7 +7,7 @@ import { DEFAULT_CAMERA_ID, getCamera, hasCamera, stockFits } from './cameras/mo
 import { randomSeed } from './film/random';
 import { defaultDevelop } from './film/resolve';
 import { DEFAULT_STOCK_ID, getStock, STOCKS } from './film/stocks';
-import { stockDescription, t, type MsgKey } from './i18n';
+import { rollName, stockDescription, t, type MsgKey } from './i18n';
 import { holdCapture, isIos, isStandalone, updateReady } from './platform/pwa';
 import { clearShareCache, isNative } from './platform/share';
 import { get, put } from './store/db';
@@ -221,7 +221,7 @@ function useLabClock() {
       if (r.kind === 'camera' && inLab.current.has(r.id) && r.readyAt !== r.finishedAt && !r.seenAt) {
         // Several rolls back at once (a rush, the app reopened after 9 AM): one "3 rolls developed · View".
         // Named like the lab and the album: "camera · film".
-        const name = hasCamera(r.cameraId) ? `${getCamera(r.cameraId).name} · ${getStock(r.stockId).name}` : getStock(r.stockId).name;
+        const name = rollName(hasCamera(r.cameraId) ? getCamera(r.cameraId).name : undefined, getStock(r.stockId).name);
         toast(t('lab.developedToast', { stock: name }), { label: t('lab.open'), run: () => go({ name: 'roll', id: r.id }) }, 6000, undefined, {
           group: 'developed',
           many: (n) => ({ text: t('lab.developedMany', { n }), action: { label: t('lab.open'), run: () => goTab({ name: 'gallery' }) } }),

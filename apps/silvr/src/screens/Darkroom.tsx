@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Empty, Header, Segmented, Slider, StockCard, Toggle } from '../components/ui';
+import { Empty, formatSigned, Header, Segmented, Slider, StockCard, Toggle } from '../components/ui';
 import { composePrint, gpuDevelopAvailable, scaleTo } from '../film/develop';
 import { randomSeed } from '../film/random';
 import { defaultBorderFor, defaultDevelop, developKey } from '../film/resolve';
@@ -283,6 +283,7 @@ export function DarkroomScreen({ id }: { id: string }) {
         <Header
           title={t('dr.title')}
           onBack={goBack}
+          wrap
           right={
             <button class="btn primary small" onClick={save} disabled={saving} data-testid="btn-dr-save">
               {t('dr.redevelop')}
@@ -360,7 +361,7 @@ export function DarkroomScreen({ id }: { id: string }) {
           max={2}
           step={1 / 3}
           onInput={(v) => set({ ev: Math.round(v * 3) / 3 })}
-          format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)} EV`)}
+          format={(v) => ltr(`${formatSigned(v)} EV`)}
           testId="sl-dr-ev"
         />
         {!isDigital && (

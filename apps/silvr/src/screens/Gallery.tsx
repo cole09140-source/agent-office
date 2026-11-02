@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Thumb } from '../components/ui';
 import { getStock } from '../film/stocks';
-import { t, legalLang } from '../i18n';
+import { t, legalLang, rollName } from '../i18n';
 import { activeRoll, developedRolls, developingRolls } from '../state/app';
 import { signalLang } from '../state/lang';
 import { go, goTab } from '../state/router';
@@ -61,7 +61,7 @@ function RollCard({ roll }: { roll: Roll }) {
       {cover ? <Thumb photo={cover} onClick={open} label={stock.name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={stock.name} tabIndex={-1} />}
       <button class="roll-meta" onClick={open}>
         <strong>
-          {roll.kind === 'import' ? t('gal.imported') : <bdi>{`${getCamera(roll.cameraId).name} · ${stock.name}`}</bdi>}
+          {roll.kind === 'import' ? t('gal.imported') : rollName(getCamera(roll.cameraId).name, stock.name)}
           {inCamera(roll) ? <span class="badge">{t('cam.inCamera')}</span> : !roll.seenAt && <span class="badge new">{t('gal.new')}</span>}
         </strong>
         <span class="muted small">

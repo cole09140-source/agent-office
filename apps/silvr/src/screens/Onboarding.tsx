@@ -57,28 +57,31 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
   const s = SLIDES[i];
   return (
     <div class="onboarding" role="dialog" aria-modal="true" aria-labelledby="onb-title" aria-describedby="onb-body" ref={boxRef} data-testid="onboarding">
-      <div class="onb-brand">
-        <span class="logo">FILM CAMELA</span>
-        <span class="muted small">{t('app.tagline')}</span>
-      </div>
-      <div class={`onb-art art-${s.art}`} aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-      <h1 tabIndex={-1} ref={titleRef} id="onb-title">
-        <span class="sr-only">
-          {i + 1}/{SLIDES.length}.{' '}
-        </span>
-        {t(s.title)}
-      </h1>
-      <p id="onb-body">{t(s.body)}</p>
-      {last && <p class="onb-privacy small">{t('onb.privacy')}</p>}
-      <div class="dots" aria-hidden="true">
-        {SLIDES.map((_, k) => (
-          <i key={k} class={k === i ? 'on' : ''} />
-        ))}
+      {/* The slide scrolls on its own above the action row, so large text never hides it behind the buttons. */}
+      <div class="onb-scroll">
+        <div class="onb-brand">
+          <span class="logo">FILM CAMELA</span>
+          <span class="muted small">{t('app.tagline')}</span>
+        </div>
+        <div class={`onb-art art-${s.art}`} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+        <h1 tabIndex={-1} ref={titleRef} id="onb-title">
+          <span class="sr-only">
+            {i + 1}/{SLIDES.length}.{' '}
+          </span>
+          {t(s.title)}
+        </h1>
+        <p id="onb-body">{t(s.body)}</p>
+        {last && <p class="onb-privacy small">{t('onb.privacy')}</p>}
+        <div class="dots" aria-hidden="true">
+          {SLIDES.map((_, k) => (
+            <i key={k} class={k === i ? 'on' : ''} />
+          ))}
+        </div>
       </div>
       {/* Pinned to the bottom: with large text on a small phone the slide scrolls, the buttons stay in reach. */}
       <div class="onb-actions">

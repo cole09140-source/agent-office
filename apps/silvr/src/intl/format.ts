@@ -12,19 +12,49 @@ export function formatNumber(n: number, lang: ResolvedLang = cur(), opts?: Intl.
   return new Intl.NumberFormat(intlLocale(lang), opts).format(n);
 }
 
+/** One decimal with the locale's separator: "0.7" / "0,7" (EV, slider values). Float noise rounds away. */
+export function formatFixed1(n: number, lang: ResolvedLang = cur()): string {
+  return formatNumber(Math.round(n * 10) / 10 || 0, lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+/**
+ * A signed one-decimal value: "+1,0", "−0,3" (true minus sign), and for zero "0,0" or, with
+ * `zero: '±'`, "±0,0". Callers add the unit ("EV") and the LTR isolate (ltr()).
+ */
+export function formatSigned(n: number, lang: ResolvedLang = cur(), zero: '' | '±' = ''): string {
+  const r = Math.round(n * 10) / 10;
+  return `${r > 0 ? '+' : r < 0 ? '−' : zero}${formatFixed1(Math.abs(r), lang)}`;
+}
+
+const NBSP = '\u00A0';
+
+/**
+ * Spaces inside a date or a time ("5 nov.", "2026. 11. 2.", "1:16 PM") never break a line. Only the
+ * gap between the date and the time stays breakable ("2026년 11월 2일 / 오후 1:14", "Nov 2, 2026, / 1:16 PM").
+ */
+function keepTogether(parts: Intl.DateTimeFormatPart[]): string {
+  const firstTime = parts.findIndex((p) => p.type === 'hour' || p.type === 'dayPeriod');
+  const hasDate = parts.some((p) => p.type === 'day');
+  let gap = -1;
+  if (hasDate && firstTime > 0 && parts[firstTime - 1].type === 'literal') gap = firstTime - 1;
+  return parts.map((p, i) => (i === gap ? p.value : p.value.replace(/ /g, NBSP))).join('');
+}
+
 /** "2026. 11. 2." / "Nov 2, 2026" / "2 нояб. 2026 г." (with the time when asked). */
 export function formatDate(ts: number, lang: ResolvedLang = cur(), withTime = false): string {
-  return new Intl.DateTimeFormat(intlLocale(lang), {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
-  }).format(ts);
+  return keepTogether(
+    new Intl.DateTimeFormat(intlLocale(lang), {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+    }).formatToParts(ts),
+  );
 }
 
 /** Clock time, 12/24 h as the locale prefers. */
 export function formatTime(ts: number, lang: ResolvedLang = cur()): string {
-  return new Intl.DateTimeFormat(intlLocale(lang), { hour: '2-digit', minute: '2-digit' }).format(ts);
+  return keepTogether(new Intl.DateTimeFormat(intlLocale(lang), { hour: '2-digit', minute: '2-digit' }).formatToParts(ts));
 }
 
 /** A storage size: "1.2 GB", "1,2 Go", "1,2 ГБ". */

@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { Segmented, Sheet, StockStrip } from '../components/ui';
 import { PAYMENTS_ENABLED } from '../entitlements';
 import { getStock } from '../film/stocks';
-import { cameraDescription, cameraEra, stockDescription, t, type MsgKey } from '../i18n';
+import { cameraDescription, eraText, stockDescription, t, type MsgKey } from '../i18n';
 import { rolls, setCameraPinned, settings, toast } from '../state/app';
 import { get } from '../store/db';
 import { CameraBody } from './Body';
@@ -67,7 +67,7 @@ function AllCameras({ open, onClose, items, selected, onPick }: { open: boolean;
                   <li key={c.id}>
                     <button type="button" class={`all-cam ${c.id === selected ? 'on' : ''}`} aria-pressed={c.id === selected} onClick={() => onPick(c.id)} data-testid={`allcam-${c.id}`}>
                       <strong><bdi>{c.name}</bdi></strong>
-                      <span>{cameraEra(c.era)}</span>
+                      <span>{eraText(c.era)}</span>
                     </button>
                   </li>
                 ))}
@@ -135,7 +135,7 @@ function CameraCard({
       >
         <CameraBody camera={camera} width={72} />
         <span class="camera-name"><bdi>{camera.name}</bdi></span>
-        <span class="camera-era">{cameraEra(camera.era)}</span>
+        <span class="camera-era">{eraText(camera.era)}</span>
         {PAYMENTS_ENABLED && camera.pro && <span class="badge">{t('common.pro')}</span>}
         {pinned && <span class="sr-only">{t('cam.pinned')}</span>}
       </button>

@@ -2,9 +2,9 @@ import { signal } from '@preact/signals';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { advise, APERTURES, ISOS, LIGHTS, LOG_APERTURES, LOG_SHUTTERS, type Light } from '../companion/exposure';
 import { Icon } from '../components/Icon';
-import { Empty, formatDate, Header, Sheet, Slider } from '../components/ui';
+import { Empty, formatDate, formatFixed1, formatSigned, Header, Ltr, Sheet, Slider } from '../components/ui';
 import { formatTime } from '../intl/format';
-import { ltr, t } from '../i18n';
+import { isolate, ltr, t } from '../i18n';
 import { arrowStep, centerInStrip, revealInStrip } from '../platform/dir';
 import { saveFile } from '../platform/share';
 import { confirm, toast } from '../state/app';
@@ -41,17 +41,21 @@ function Meter() {
         <div>
           <small class="muted">{t('an.shutter')}</small>
           <strong class="mono" data-testid="meter-shutter">
-            {a.label}
+            <Ltr>{a.label}</Ltr>
           </strong>
         </div>
         <div>
           <small class="muted">{t('an.aperture')}</small>
-          <strong class="mono">f/{m.aperture}</strong>
+          <strong class="mono">
+            <Ltr>f/{m.aperture}</Ltr>
+          </strong>
         </div>
         <div>
-          <small class="muted">EV (ISO {m.iso})</small>
+          <small class="muted">
+            <Ltr>EV (ISO&nbsp;{m.iso})</Ltr>
+          </small>
           <strong class="mono" data-testid="meter-ev" dir="ltr">
-            {a.ev.toFixed(1)}
+            {formatFixed1(a.ev)}
           </strong>
         </div>
       </div>
@@ -86,7 +90,7 @@ function Meter() {
           ))}
         </div>
       </div>
-      <Slider label={t('an.comp')} value={m.comp} min={-3} max={3} step={1 / 3} onInput={(v) => set({ comp: Math.round(v * 3) / 3 })} format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)}`)} />
+      <Slider label={t('an.comp')} value={m.comp} min={-3} max={3} step={1 / 3} onInput={(v) => set({ comp: Math.round(v * 3) / 3 })} format={(v) => ltr(formatSigned(v))} />
     </section>
   );
 }
@@ -126,11 +130,11 @@ function NewRollSheet({ open, onClose, last }: { open: boolean; onClose: () => v
       <form onSubmit={submit} class="form">
         <label class="field">
           <span>{t('an.log.camera')}</span>
-          <input value={camera} onInput={(e) => setCamera(e.currentTarget.value)} placeholder="Nikon FM2" maxLength={60} data-testid="log-camera" />
+          <input value={camera} onInput={(e) => setCamera(e.currentTarget.value)} placeholder={ltr('35mm SLR')} maxLength={60} data-testid="log-camera" />
         </label>
         <label class="field">
           <span>{t('an.log.film')}</span>
-          <input value={film} onInput={(e) => setFilm(e.currentTarget.value)} placeholder="Portra 400" maxLength={60} data-testid="log-film" />
+          <input value={film} onInput={(e) => setFilm(e.currentTarget.value)} placeholder={ltr('ISO 400')} maxLength={60} data-testid="log-film" />
         </label>
         <div class="two">
           <label class="field">
@@ -189,14 +193,18 @@ export function AnalogScreen() {
         <button class="card log-active" onClick={() => go({ name: 'log', id: active.id })} data-testid="active-log">
           <span class="log-active-txt">
             <small class="muted">{t('an.active')}</small>
-            <strong>{active.film}</strong>
+            <strong>
+              <bdi>{active.film}</bdi>
+            </strong>
             <small class="muted">
-              {active.camera} · ISO {active.iso}
+              <bdi>{active.camera}</bdi> · <Ltr>ISO&nbsp;{active.iso}</Ltr>
             </small>
           </span>
           <span class="log-active-side">
             <strong class="mono">
-              {counts[active.id] ?? 0}/{active.exposures}
+              <Ltr>
+                {counts[active.id] ?? 0}/{active.exposures}
+              </Ltr>
             </strong>
             <span class="log-active-go">
               {t('an.active.go')} <Icon name="chevron" size={16} />
@@ -225,12 +233,14 @@ export function AnalogScreen() {
                   <span>
                     <strong><bdi>{r.film}</bdi></strong>
                     <small class="muted">
-                      <bdi>{r.camera}</bdi> · <bdi>ISO {r.iso}</bdi> · {formatDate(r.startedAt, signalLang.value)}
+                      <bdi>{r.camera}</bdi> · <Ltr>ISO&nbsp;{r.iso}</Ltr> · {formatDate(r.startedAt, signalLang.value)}
                     </small>
                   </span>
                   <span class="list-row-end">
                     <small class="mono muted">
-                      {counts[r.id] ?? 0}/{r.exposures}
+                      <Ltr>
+                        {counts[r.id] ?? 0}/{r.exposures}
+                      </Ltr>
                     </small>
                     <Icon name="chevron" size={18} />
                   </span>
@@ -302,7 +312,7 @@ function StopPicker({ label, options, value, onChange, testId, autofocus }: { la
             class={o === value ? 'on' : ''}
             onClick={() => onChange(o)}
           >
-            {o}
+            <Ltr>{o}</Ltr>
           </button>
         ))}
       </div>
@@ -498,7 +508,7 @@ export function LogScreen({ id }: { id: string }) {
     <div class="page log" data-testid="log-screen">
       <Header
         title={roll.film}
-        sub={`${roll.camera} · ISO ${roll.iso} · ${t('an.log.frames', { n: frames.length, m: roll.exposures })}`}
+        sub={`${isolate(roll.camera)} · ${ltr(`ISO\u00A0${roll.iso}`)} · ${t('an.log.frames', { n: frames.length, m: roll.exposures })}`}
         onBack={() => back({ name: 'analog' })}
         right={
           <>
@@ -518,9 +528,9 @@ export function LogScreen({ id }: { id: string }) {
               <span class="mono frame-num">{f.frame}</span>
               <span class="grow">
                 <strong class="mono">
-                  {f.aperture || '—'} · {f.shutter || '—'}
+                  <Ltr>{f.aperture || '—'}</Ltr> · <Ltr>{f.shutter || '—'}</Ltr>
                 </strong>
-                <small class="muted">{[f.lens, f.note, timeOf(f.takenAt)].filter(Boolean).join(' · ')}</small>
+                <small class="muted">{[f.lens && isolate(f.lens), f.note && isolate(f.note), timeOf(f.takenAt)].filter(Boolean).join(' · ')}</small>
               </span>
               <span class="sr-only">{t('an.log.editFrame', { n: f.frame })}</span>
             </button>
@@ -537,7 +547,7 @@ export function LogScreen({ id }: { id: string }) {
           <button class="btn primary log-repeat" onClick={repeat} disabled={full || saving} data-testid="btn-repeat-frame">
             <span>{t('an.log.repeat')}</span>
             <small class="mono">
-              {[last.aperture, last.shutter].filter(Boolean).join(' · ')}
+              {[last.aperture, last.shutter].filter(Boolean).map((v) => ltr(v)).join(' · ')}
             </small>
           </button>
         )}
@@ -575,7 +585,7 @@ export function LogScreen({ id }: { id: string }) {
           </div>
           <label class="field">
             <span>{t('an.log.lens')}</span>
-            <input value={lens} onInput={(e) => setLens(e.currentTarget.value)} placeholder="50mm f/1.8" maxLength={40} />
+            <input value={lens} onInput={(e) => setLens(e.currentTarget.value)} placeholder={ltr('50mm f/1.8')} maxLength={40} />
           </label>
           <label class="field">
             <span>{t('an.log.note')}</span>

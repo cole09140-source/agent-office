@@ -67,9 +67,9 @@ export const messages: LocaleMessages = {
   'onb.1.title': 'Como no filme, uma foto por vez', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': 'Escolha uma câmera e coloque um filme. Com as poses contadas, faça cada clique valer a pena.', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': 'A expectativa da revelação', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': 'Terminou o filme? Mande revelar e escolha quanto quer esperar: na hora, 1 hora, às 9h ou 3 dias.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.2.body': 'Terminou o filme? Mande revelar e escolha quanto quer esperar: na hora, 1\u00a0hora, às 9h ou 3\u00a0dias.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'Revele de novo no quarto escuro', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
-  'onb.3.body': 'Seu original fica sempre guardado. Experimente outro filme, brilho, visual de filme vencido ou halo quantas vezes quiser.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
+  'onb.3.body': 'Seu original fica sempre guardado. Troque filme, brilho, envelhecimento e halo quantas vezes quiser.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': 'Grátis. Sem conta. Sem servidores. Todas as fotos ficam só neste dispositivo.', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': 'Colocar filme', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'Escolha o filme', // ko: 필름을 고르세요 · en: Choose your film
@@ -92,7 +92,7 @@ export const messages: LocaleMessages = {
   'cam.noCamera.import': 'Importar e revelar fotos', // ko: 사진 불러와 현상하기 · en: Import & develop photos
   'cam.starting': 'Iniciando a câmera…', // ko: 카메라 준비 중… · en: Starting camera…
   'cam.saved': 'Pose {n}', // ko: {n}번째 컷 · en: Frame {n}
-  'cam.rewindConfirm': 'Você tirou {shots}. Mandar revelar este filme? {m, plural, one {A foto restante vai ficar em branco.} other {As {left} restantes vão ficar em branco.}}', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
+  'cam.rewindConfirm': 'Você tirou {shots}. Mandar revelar este filme? {m, plural, one {A foto restante fica em branco.} other {As {left} restantes ficam em branco.}}', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
   'cam.emptyRewind': 'Nenhuma foto ainda. Se você tirar o filme agora, ele será descartado.', // ko: 아직 찍은 사진이 없어요. 지금 필름을 빼면 이 롤은 사라져요. · en: No shots yet. If you unload now, this roll is discarded.
   'cam.unload': 'Tirar o filme', // ko: 필름 빼기 · en: Unload film
   'cam.rollSize': 'Poses por filme', // ko: 롤 장수 · en: Roll size
@@ -150,7 +150,7 @@ export const messages: LocaleMessages = {
   'cam.inCamera': 'Na câmera', // ko: 카메라 안 · en: In camera
   'cam.lastShot': 'Última foto', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': 'Cartucho terminado. Suas fotos estão esperando no álbum.', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
-  'cam.nShots': '{n, plural, =0 {# fotos} one {# foto} other {# fotos}}', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
+  'cam.nShots': '{n, plural, =0 {#\u00a0fotos} one {#\u00a0foto} other {#\u00a0fotos}}', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
   'cam.nHalves': '{n, plural, =0 {# fotos} one {# foto} other {# fotos}} ({f, plural, =0 {# quadros} one {# quadro} other {# quadros}})', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
   'cam.nHalfShots': '{n, plural, =0 {# fotos} one {# foto} other {# fotos}}', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
   'cam.develop': 'Mandar revelar', // ko: 현상소로 · en: Send to lab
@@ -158,8 +158,8 @@ export const messages: LocaleMessages = {
   'cam.finishCard': 'Finalizar cartão', // ko: 카드 정리 · en: Finish card
   'cam.rewindSub': 'O filme é rebobinado e vai para a revelação. Quando ficar pronto, as fotos aparecem no álbum.', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
   'cam.finishSubViewable': 'Suas fotos já estão no álbum. Finalize para colocar outro.', // ko: 사진은 이미 앨범에 있어요. 정리하면 새로 넣을 수 있어요. · en: Your photos are already in the album. Finish to start a fresh one.
-  'cam.finishPackConfirm': 'Você tirou {shots}. Tirar o cartucho? {m, plural, one {A foto restante não vai ser usada.} other {As {left} restantes não vão ser usadas.}}', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
-  'cam.finishCardConfirm': 'Você tirou {shots}. Finalizar o cartão? {m, plural, one {A foto restante vai ficar em branco.} other {As {left} restantes vão ficar em branco.}} Suas fotos continuam no álbum.', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
+  'cam.finishPackConfirm': 'Você tirou {shots}. Tirar o cartucho? {m, plural, one {A foto restante fica sem uso.} other {As {left} restantes ficam sem uso.}}', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
+  'cam.finishCardConfirm': 'Você tirou {shots}. Finalizar o cartão? {m, plural, one {A foto restante fica em branco.} other {As {left} restantes ficam em branco.}} Suas fotos continuam no álbum.', // ko: {shots} 찍었어요. 카드에 남은 {left}은 비워 두고 정리할까요? 사진은 앨범에 그대로 있어요. · en: {shots} taken. Finish the card? The remaining {left} will stay blank; your photos stay in the album. [+ counts: n, m]
   'cam.switchBody': 'Trocar de câmera', // ko: 다른 카메라로 바꾸기 · en: Switch camera body
   'cam.switchSub': 'Primeiro este filme vai para a revelação, depois você escolhe outra câmera.', // ko: 지금 롤을 먼저 현상소로 보낸 뒤 새 카메라를 골라요. · en: This roll goes to the lab first, then you pick a new camera.
   'cam.switchSubViewable': 'Suas fotos ficam no álbum, depois você escolhe outra câmera.', // ko: 지금 사진은 앨범에 두고 새 카메라를 골라요. · en: Your photos stay in the album, then you pick a new camera.
@@ -167,7 +167,7 @@ export const messages: LocaleMessages = {
   'cam.switchConfirm': 'Para trocar de câmera, este filme ({shots}) vai primeiro para a revelação. Todas as fotos serão reveladas.', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
   'cam.switchConfirmPack': 'Para trocar de câmera, este cartucho ({shots}) é retirado primeiro. Suas fotos continuam no álbum.', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
   'cam.switchConfirmCard': 'Para trocar de câmera, este cartão ({shots}) é finalizado primeiro. Suas fotos continuam no álbum.', // ko: 카메라를 바꾸려면 지금 카드({shots})를 먼저 정리해요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this card ({shots}) is finished first. Your photos stay in the album. [+ counts: n]
-  'cam.switchOkFilm': 'Mandar revelar e trocar', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
+  'cam.switchOkFilm': 'Revelar e trocar', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
   'cam.switchOkDone': 'Finalizar e trocar', // ko: 정리하고 바꾸기 · en: Finish & switch
   'cam.switchedLab': 'Filme enviado para revelação. Agora escolha a próxima câmera.', // ko: 롤을 현상소에 보냈어요. 이제 새 카메라를 골라 보세요. · en: Roll sent to the lab. Pick your next camera.
   'cam.switchedAlbum': 'Suas fotos estão no álbum. Agora escolha a próxima câmera.', // ko: 사진을 앨범에 넣었어요. 이제 새 카메라를 골라 보세요. · en: Photos are in your album. Pick your next camera.
@@ -181,9 +181,9 @@ export const messages: LocaleMessages = {
   'gal.developNow': 'Mandar revelar', // ko: 현상소로 보내기 · en: Send to lab
   'gal.inCameraBanner': '{shots} na câmera · Mandar revelar', // ko: 카메라 안 {shots} · 현상소로 보내기 · en: {shots} in the camera · Send to lab [+ counts: n]
   'lab.emptyCamera': 'Há {shots} na câmera. Mande revelar o filme, e a revelação começa aqui.', // ko: 카메라 안에 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상이 시작돼요. · en: You have {shots} in the camera. Send the roll to the lab and it develops here. [+ counts: n]
-  'speed.title': 'Quando você quer receber as fotos?', // ko: 언제 받아볼까요? · en: When do you want your prints?
+  'speed.title': 'Quando quer receber as fotos?', // ko: 언제 받아볼까요? · en: When do you want your prints?
   'speed.instant': 'Na hora', // ko: 즉시 · en: Instant
-  'speed.why': 'Esquecer o filme e, de repente, reencontrar as fotos: essa é a graça. Para ver agora, escolha “Na hora”.', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
+  'speed.why': 'Esquecer o filme e reencontrar as fotos: essa é a graça. Para ver agora, escolha “Na hora”.', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
   'speed.at.now': 'No álbum agora mesmo', // ko: 지금 바로 앨범에 도착 · en: In your album right away
   'speed.at.today': 'Chega hoje às {time}', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
   'speed.at.tomorrow': 'Chega amanhã às {time}', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
@@ -218,15 +218,15 @@ export const messages: LocaleMessages = {
   'gal.importing': 'Revelando… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
   'gal.imported': 'Importadas', // ko: 불러온 사진 · en: Imported
   'gal.new': 'NOVO', // ko: 새 롤 · en: NEW
-  'gal.frames': '{n, plural, =0 {# fotos} one {# foto} other {# fotos}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
+  'gal.frames': '{n, plural, =0 {#\u00a0fotos} one {#\u00a0foto} other {#\u00a0fotos}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
   'gal.contact': 'Folha de contato', // ko: 밀착 인화 · en: Contact sheet
   'gal.deleteRoll': 'Apagar filme', // ko: 롤 삭제 · en: Delete roll
   'gal.deleteRollConfirm': '{n, plural, one {A foto deste filme vai ser apagada.} other {Todas as # fotos deste filme vão ser apagadas.}} Você pode desfazer por alguns segundos.', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
   'gal.developing': 'Revelando', // ko: 현상 중 · en: Developing
-  'view.share': 'Compartilhar', // ko: 공유 · en: Share
+  'view.share': 'Enviar', // ko: 공유 · en: Share
   'view.saveImage': 'Salvar', // ko: 저장 · en: Save
   'view.darkroom': 'Quarto escuro', // ko: 다크룸 · en: Darkroom
-  'view.info': 'Info', // ko: 정보 · en: Info
+  'view.info': 'Informações', // ko: 정보 · en: Info
   'view.deleteConfirm': 'Apagar esta foto? O original também será apagado.', // ko: 이 사진을 삭제할까요? 원본도 함께 삭제돼요. · en: Delete this photo? The original is deleted too.
   'view.developing': 'Revelando…', // ko: 현상 중… · en: Developing…
   'view.taken': 'Tirada em', // ko: 촬영 · en: Taken
@@ -254,7 +254,7 @@ export const messages: LocaleMessages = {
   'dr.border.print': 'Cópia', // ko: 인화지 · en: Print
   'dr.border.slide': 'Slide', // ko: 슬라이드 · en: Slide
   'dr.border.gate': 'Cinema', // ko: 시네 · en: Cine
-  'dr.border.sprocket': 'Perfurações', // ko: 스프로킷 · en: Sprocket
+  'dr.border.sprocket': 'Perfurada', // ko: 스프로킷 · en: Sprocket
   'dr.compare': 'Toque e segure para ver o original', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
   'dr.reset': 'Redefinir', // ko: 초기화 · en: Reset
   'dr.saved': 'Foto revelada de novo', // ko: 다시 현상했어요 · en: Re-developed
@@ -268,20 +268,20 @@ export const messages: LocaleMessages = {
   'dr.applyRollUndone': 'Ajustes do filme restaurados', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
   'dr.discardConfirm': 'Descartar as alterações?', // ko: 변경 사항을 버릴까요? · en: Discard changes?
   'dr.discard': 'Descartar', // ko: 버리기 · en: Discard
-  'dr.saveNew': 'Salvar como nova foto', // ko: 새 사진으로 저장 · en: Save as new photo
+  'dr.saveNew': 'Salvar cópia', // ko: 새 사진으로 저장 · en: Save as new photo
   'dr.savedNew': 'Salva como nova foto (nº {n})', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
   'dr.tone': 'Visual digital', // ko: 디지털 룩 · en: Digital look
   'dr.look': 'Visual', // ko: 룩 · en: Look
   'dr.tone.none': 'Padrão', // ko: 기본 · en: Default
   'dr.tone.cool': 'Frio', // ko: 쿨 · en: Cool
   'dr.tone.warm': 'Quente', // ko: 웜 · en: Warm
-  'dr.tone.washed': 'Desbotado', // ko: 바랜 · en: Washed
+  'dr.tone.washed': 'Pálido', // ko: 바랜 · en: Washed
   'dr.tone.night': 'Noite', // ko: 야간 · en: Night
   'view.noDate': 'Sem data', // ko: 날짜 정보 없음 · en: No date info
   'roll.select': 'Selecionar', // ko: 선택 · en: Select
   'roll.selectHint': 'Toque nas fotos para selecionar', // ko: 사진을 눌러 선택하세요 · en: Tap photos to select them
   'roll.selectedN': '{n, plural, =0 {Nenhuma selecionada} one {# selecionada} other {# selecionadas}}', // ko: {n}장 선택됨 · en: {n} selected
-  'roll.shareN': 'Compartilhar {n}', // ko: 공유 {n}장 · en: Share {n}
+  'roll.shareN': 'Enviar {n}', // ko: 공유 {n}장 · en: Share {n}
   'roll.saveN': 'Salvar {n}', // ko: 저장 {n}장 · en: Save {n}
   'roll.selectPhoto': 'Selecionar foto {n}', // ko: 사진 {n} 선택 · en: Select photo {n}
   'roll.ready': '{n, plural, one {# foto pronta} other {# fotos prontas}}', // ko: 사진 {n}장이 준비됐어요 · en: {n, plural, one {# photo} other {# photos}} ready
@@ -318,7 +318,7 @@ export const messages: LocaleMessages = {
   'an.log.deleteRoll': 'Apagar registro', // ko: 기록 삭제 · en: Delete log
   'an.log.deleteConfirm': 'Apagar o registro deste filme?', // ko: 이 롤 기록을 삭제할까요? · en: Delete this roll log?
   'an.log.useMeter': 'Usar valores da calculadora', // ko: 계산기 값 사용 · en: Use calculator values
-  'an.log.frames': '{n}/{m} poses', // ko: {n}/{m}장 · en: {n}/{m} frames
+  'an.log.frames': '{n}/{m}\u00a0poses', // ko: {n}/{m}장 · en: {n}/{m} frames
   'an.log.location': 'Salvar localização', // ko: 위치 함께 저장 · en: Save location
   'an.active': 'Filme em andamento', // ko: 지금 기록 중인 롤 · en: Roll in progress
   'an.active.go': 'Registrar uma pose', // ko: 컷 기록하기 · en: Log a frame
@@ -363,7 +363,7 @@ export const messages: LocaleMessages = {
   'set.licenses': 'Licenças de código aberto', // ko: 오픈소스 라이선스 · en: Open-source licenses
   'set.backup': 'Backup', // ko: 백업 · en: Backup
   'set.backup.hint': 'Suas fotos e anotações ficam só neste dispositivo. Antes de trocar de celular ou limpar os dados do navegador, salve um arquivo de backup (.zip) em um lugar seguro.', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
-  'set.backup.export': 'Salvar arquivo de backup (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
+  'set.backup.export': 'Salvar backup (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'Salvar outra cópia', // ko: 한 번 더 저장 · en: Save another copy
   'set.backup.send': 'Enviar por mensagem ou e-mail', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'Salvo na pasta Downloads · {name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
@@ -387,7 +387,7 @@ export const messages: LocaleMessages = {
   'set.backup.invalid': 'Não é um backup do Film Camela, ou o arquivo está danificado', // ko: Film Camela 백업 파일이 아니거나 손상된 파일이에요 · en: Not a Film Camela backup, or the file is damaged
   'set.backup.failed': 'Não foi possível criar o backup. Verifique o espaço livre', // ko: 백업을 만들지 못했어요. 저장 공간을 확인해 주세요 · en: Couldn't create the backup. Check free storage
   'set.reset': 'Apagar todos os dados', // ko: 모든 데이터 삭제 · en: Delete all data
-  'set.resetConfirm': 'Todos os filmes, fotos, anotações e ajustes serão apagados, e isso não pode ser desfeito. Antes, faça um backup com “Salvar arquivo de backup”, acima. Apagar mesmo assim?', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
+  'set.resetConfirm': 'Todos os filmes, fotos, anotações e ajustes serão apagados, e isso não pode ser desfeito. Antes, faça um backup com “Salvar backup (.zip)”, acima. Apagar mesmo assim?', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
   'set.version': 'Versão', // ko: 버전 · en: Version
   'set.replayOnb': 'Ver a introdução de novo', // ko: 소개 다시 보기 · en: Replay intro
   'share.title': 'Fotografado com Film Camela', // ko: Film Camela로 촬영 · en: Shot on Film Camela
@@ -413,9 +413,9 @@ export const messages: LocaleMessages = {
   'cam.pressBusy': 'Ainda salvando as fotos anteriores', // ko: 앞 사진을 저장하는 중이에요 · en: Still saving the previous shots
   'cam.pressFull': 'Não restam poses', // ko: 남은 컷이 없어요 · en: No frames left
   'cam.startingQueued': 'A foto será tirada assim que a câmera estiver pronta', // ko: 카메라가 준비되면 바로 찍어요 · en: Taking the photo as soon as the camera is ready
-  'cam.switchConfirmFilm2': 'Ao trocar de câmera, este filme vai para a revelação. {n, plural, one {A foto que você tirou será revelada} other {As {shots} que você tirou serão reveladas}}; {m, plural, one {a foto restante não vai ser usada} other {as {left} restantes não vão ser usadas}}.', // ko: 카메라를 바꾸면 지금 롤은 현상소로 가요. 찍은 {shots}은 현상하고, 남은 {left}은 쓰지 않아요. · en: Switching sends this roll to the lab. The {shots} you took {n, plural, one {gets} other {get}} developed; the {left} left {m, plural, one {stays} other {stay}} unused. [+ counts: n, m]
-  'cam.switchConfirmPack2': 'Ao trocar de câmera, este cartucho é retirado. {n, plural, one {A foto que você tirou vai} other {As {shots} que você tirou vão}} para o álbum; {m, plural, one {a foto restante não vai ser usada} other {as {left} restantes não vão ser usadas}}.', // ko: 카메라를 바꾸면 지금 팩을 꺼내요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching takes this pack out. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
-  'cam.switchConfirmCard2': 'Ao trocar de câmera, este cartão é finalizado. {n, plural, one {A foto que você tirou vai} other {As {shots} que você tirou vão}} para o álbum; {m, plural, one {a foto restante não vai ser usada} other {as {left} restantes não vão ser usadas}}.', // ko: 카메라를 바꾸면 지금 카드를 정리해요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching finishes this card. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
+  'cam.switchConfirmFilm2': 'Ao trocar de câmera, este filme vai para a revelação. {n, plural, one {A foto tirada será revelada} other {As {shots} tiradas serão reveladas}}; {m, plural, one {a foto restante fica sem uso} other {as {left} restantes ficam sem uso}}.', // ko: 카메라를 바꾸면 지금 롤은 현상소로 가요. 찍은 {shots}은 현상하고, 남은 {left}은 쓰지 않아요. · en: Switching sends this roll to the lab. The {shots} you took {n, plural, one {gets} other {get}} developed; the {left} left {m, plural, one {stays} other {stay}} unused. [+ counts: n, m]
+  'cam.switchConfirmPack2': 'Ao trocar de câmera, este cartucho é retirado. {n, plural, one {A foto tirada vai} other {As {shots} tiradas vão}} para o álbum; {m, plural, one {a foto restante fica sem uso} other {as {left} restantes ficam sem uso}}.', // ko: 카메라를 바꾸면 지금 팩을 꺼내요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching takes this pack out. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
+  'cam.switchConfirmCard2': 'Ao trocar de câmera, este cartão é finalizado. {n, plural, one {A foto tirada vai} other {As {shots} tiradas vão}} para o álbum; {m, plural, one {a foto restante fica sem uso} other {as {left} restantes ficam sem uso}}.', // ko: 카메라를 바꾸면 지금 카드를 정리해요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching finishes this card. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
   'common.undo': 'Desfazer', // ko: 되돌리기 · en: Undo
   'view.deleteUndoConfirm': 'Você pode desfazer por alguns segundos.', // ko: 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: You can undo it for a few seconds afterwards.
   'view.deleted': 'Foto apagada', // ko: 사진을 삭제했어요 · en: Photo deleted

@@ -9,7 +9,7 @@ import { canLoad, DEFAULT_CAMERA_ID, defaultCapacity, ejectsPrints, getCamera, P
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { Icon } from '../components/Icon';
-import { Canister, Sheet, Slider, Thumb, useObjectUrl } from '../components/ui';
+import { Canister, formatSigned, Ltr, Sheet, Slider, Thumb, useObjectUrl } from '../components/ui';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -17,7 +17,7 @@ import { randomSeed } from '../film/random';
 import { defaultBorderFor, defaultDevelop, resolveLook } from '../film/resolve';
 import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
-import { cameraDescription, isolate, ltr, t, type MsgKey } from '../i18n';
+import { cameraDescription, isolate, ltr, rollName, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
 import { holdCapture } from '../platform/pwa';
@@ -863,7 +863,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (!r) return;
     setRollInfoOpen(false);
     if (!hasShots(r)) {
-      if (!(await confirm(t('cam.emptyRewind'), t('cam.unload'), true))) return;
+      // Titled with the roll's name: the OK label stays a short verb, not the dialog title too.
+      if (!(await confirm(t('cam.emptyRewind'), t('cam.unload'), true, rollName(camera.name, stock.name)))) return;
       try {
         await finishRoll(r.id, 'instant');
       } catch (err) {
@@ -878,7 +879,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       const leftText = camera.capture === 'half' ? t('cam.nHalfShots', { n: left }) : t('cam.nShots', { n: left });
       const text = t(kind === 'film' ? 'cam.rewindConfirm' : kind === 'pack' ? 'cam.finishPackConfirm' : 'cam.finishCardConfirm', { shots: shotsText(r), left: leftText, n: shotCount(r), m: left });
       const ok = kind === 'film' ? t('cam.sendToLab') : kind === 'pack' ? t('cam.finishPack') : t('cam.finishCard');
-      if (!(await confirm(text, ok))) return;
+      if (!(await confirm(text, ok, false, rollName(camera.name, stock.name)))) return;
     }
     if (camera.instant) {
       await finishWithPending(r, 'instant');
@@ -966,7 +967,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             m: unused,
           })
         : t(kind === 'film' ? 'cam.switchConfirm' : kind === 'pack' ? 'cam.switchConfirmPack' : 'cam.switchConfirmCard', { shots: shotsText(r), n: shotCount(r) });
-    if (!(await confirm(text, kind === 'film' ? t('cam.switchOkFilm') : t('cam.switchOkDone')))) return;
+    if (!(await confirm(text, kind === 'film' ? t('cam.switchOkFilm') : t('cam.switchOkDone'), false, t('cam.switchBody')))) return;
     switchingRef.current = true;
     if (camera.instant) await finishWithPending(r, 'instant');
     else setSpeedOpen(true); // the lab speed sheet; cancelling it keeps the roll (and the body)
@@ -1020,7 +1021,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     <div class={`camera cam-${camera.id}${roll ? '' : ' unloaded'}`} data-testid="camera-screen" data-camera={camera.id}>
       <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
         <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll || counting} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
-          <span class="chip-txt">{camera.name}</span>
+          <span class="chip-txt" dir="auto">{camera.name}</span>
         </button>
         {camera.flash === 'standard' && (
           <button class={`chip ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={chipLock} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
@@ -1058,19 +1059,18 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </button>
         {camera.formats.length > 1 && (
           <button class="chip" disabled={chipLock} onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
-            <span class="chip-txt mono">{aspect}</span>
+            <span class="chip-txt mono" dir="ltr">{aspect}</span>
           </button>
         )}
         {camera.zoom.length > 1 && (
           <button class={`chip ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
-            <span class="chip-txt mono">{zoom}×</span>
+            <span class="chip-txt mono" dir="ltr">{zoom}×</span>
           </button>
         )}
         {camera.ev && (
-          <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${ev > 0 ? '+' : ''}${ev.toFixed(1)}`} data-testid="btn-ev">
+          <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
             <span class="chip-txt mono" dir="ltr">
-              {ev > 0 ? '+' : ev < 0 ? '−' : '±'}
-              {Math.abs(ev).toFixed(1)}
+              {formatSigned(ev, undefined, '±')}
             </span>
           </button>
         )}
@@ -1112,7 +1112,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       </div>
       {camera.ev && evOpen && (
         <div class="ev-row">
-          <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${v > 0 ? '+' : ''}${v.toFixed(1)} EV`)} testId="sl-ev" />
+          <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
         </div>
       )}
 
@@ -1287,10 +1287,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {announce}
       </div>
 
-      <Sheet open={rollInfoOpen} onClose={() => setRollInfoOpen(false)} title={`${camera.name} · ${stock.name}`} testId="roll-sheet">
+      <Sheet open={rollInfoOpen} onClose={() => setRollInfoOpen(false)} title={rollName(camera.name, stock.name)} testId="roll-sheet">
         <p class="muted">{cameraDescription(camera.id)}</p>
         <p class="mono big-num">
-          {roll?.shots ?? 0} / {roll?.capacity ?? 0}
+          <Ltr>
+            {roll?.shots ?? 0} / {roll?.capacity ?? 0}
+          </Ltr>
         </p>
         {/* "5 / 27" already says the roll size. Half-frame: the counter counts halves, the album counts frames. Say both. */}
         {roll && shot && camera.capture === 'half' && <p class="muted small">{shotsText(roll)}</p>}
@@ -1369,7 +1371,12 @@ export function SpeedSheet({ open, onClose, onPick, full }: { open: boolean; onC
           >
             <strong>
               {t(`speed.${sp}` as const)}
-              {sp === def && <small class="speed-def"> · {t('speed.default')}</small>}
+              {sp === def && (
+                <small class="speed-def">
+                  <span class="sr-only"> · </span>
+                  {t('speed.default')}
+                </small>
+              )}
             </strong>
             <span class="speed-at tnum" data-testid={`speed-at-${sp}`}>
               {formatArrival(readyAtFor(sp, at), at, signalLang.value)}

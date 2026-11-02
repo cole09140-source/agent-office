@@ -30,7 +30,7 @@
 import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types';
 
 export const messages: LocaleMessages = {
-  'app.tagline': 'फ़िल्म कैमरा, जिसमें हर ओरिजिनल फ़ोटो जस की तस रहती है', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
+  'app.tagline': 'हर ओरिजिनल सँभालकर रखने वाला फ़िल्म कैमरा', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
   'tab.camera': 'कैमरा', // from guide §8.3 · en: Camera
   'tab.lab': 'लैब', // from guide §8.3 · en: Lab
   'tab.gallery': 'एल्बम', // from guide §8.3 · en: Album
@@ -64,13 +64,13 @@ export const messages: LocaleMessages = {
   'a11y.stockKeys': '← → कीज़ से फ़िल्में देखें, Enter से चुनें', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': 'आपकी तस्वीरें इसी फ़िल्म से डेवलप होंगी। डार्करूम में इसे कभी भी बदल सकते हैं।', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': 'पुराने फ़ोन से आए हैं? बैकअप रीस्टोर करें', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
-  'onb.1.title': 'फ़िल्म की तरह, एक-एक तस्वीर', // ko: 필름처럼, 한 장씩 · en: Shoot like film
+  'onb.1.title': 'गिनी-चुनी तस्वीरें, फ़िल्म की तरह', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': 'कैमरा चुनिए और रोल डालिए। बची तस्वीरें गिनते हुए, हर क्लिक दिल से कीजिए।', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
-  'onb.2.title': 'लैब में इंतज़ार की मिठास', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
+  'onb.2.title': 'लैब का मीठा इंतज़ार', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
   'onb.2.body': 'पूरे हो चुके रोल लैब भेजिए और चुनिए कितना इंतज़ार करना है: तुरंत, 1 घंटा, सुबह 9 बजे या 3 दिन।', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
-  'onb.3.title': 'डार्करूम में जब चाहें, फिर से डेवलप', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
-  'onb.3.body': 'आपकी ओरिजिनल तस्वीर हमेशा जस की तस रहती है। फ़िल्म, ब्राइटनेस, पुरानी फ़िल्म वाला लुक या ग्लो — जितनी बार चाहें, बदलकर देखिए।', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': 'मुफ़्त · न कोई अकाउंट, न कोई सर्वर। आपकी सारी तस्वीरें सिर्फ़ इसी डिवाइस पर रहती हैं।', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.3.title': 'फिर से डेवलप करें, जब चाहें', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
+  'onb.3.body': 'आपकी ओरिजिनल तस्वीर हमेशा जस की तस रहती है। फ़िल्म, ब्राइटनेस, पुराना लुक या ग्लो — डार्करूम में जितनी बार चाहें, बदलकर देखिए।', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
+  'onb.privacy': 'मुफ़्त · न अकाउंट, न सर्वर। सारी तस्वीरें सिर्फ़ इसी डिवाइस पर रहती हैं।', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': 'रोल डालें', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'फ़िल्म चुनें', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n} फ़ोटो', // ko: {n}장 · en: {n} exp
@@ -185,16 +185,16 @@ export const messages: LocaleMessages = {
   'speed.instant': 'तुरंत', // ko: 즉시 · en: Instant
   'speed.why': 'जब आप भूलने लगें, तभी तस्वीरें आ जाएँ — यही तो फ़िल्म का मज़ा है। अभी देखना है? “तुरंत” चुनें।', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
   'speed.at.now': 'अभी एल्बम में', // ko: 지금 바로 앨범에 도착 · en: In your album right away
-  'speed.at.today': 'आज {time} पर तैयार', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
-  'speed.at.tomorrow': 'कल {time} पर तैयार', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
-  'speed.at.date': '{date} को तैयार', // ko: {date} 도착 · en: Arrives {date}
-  'speed.instant.d': 'बिना इंतज़ार, अभी के अभी', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
+  'speed.at.today': 'आज {time}', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
+  'speed.at.tomorrow': 'कल {time}', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
+  'speed.at.date': '{date} को', // ko: {date} 도착 · en: Arrives {date}
+  'speed.instant.d': 'बिना किसी इंतज़ार के', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': '1 घंटा', // ko: 1시간 · en: 1 hour
-  'speed.1h.d': 'बस एक कप चाय का वक़्त', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
+  'speed.1h.d': 'एक चाय का वक़्त', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
   'speed.morning': 'सुबह 9 बजे', // ko: 아침 9시 · en: Next 9 AM
-  'speed.morning.d': 'सुबह उठते ही तस्वीरें तैयार', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
+  'speed.morning.d': 'उठते ही तस्वीरें तैयार', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
   'speed.3d': '3 दिन', // ko: 3일 · en: 3 days
-  'speed.3d.d': 'असली फ़िल्म की तरह, आराम से', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
+  'speed.3d.d': 'फ़िल्म वाला सुकून', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
   'lab.title': 'फ़िल्म लैब', // ko: 현상소 · en: Film Lab
   'lab.empty': 'लैब अभी शांत है।', // ko: 지금은 현상소가 조용해요. · en: The lab is quiet right now.
   'lab.emptyHint': 'लैब भेजे गए रोल यहीं इंतज़ार करते हैं।', // ko: 현상소로 보낸 롤은 여기서 기다려요. · en: Rolls you send to the lab wait here.
@@ -235,12 +235,12 @@ export const messages: LocaleMessages = {
   'view.size': 'साइज़', // ko: 크기 · en: Size
   'dr.title': 'डार्करूम', // ko: 다크룸 · en: Darkroom
   'dr.film': 'फ़िल्म', // ko: 필름 · en: Film
-  'dr.push': 'पुश / पुल (कंट्रास्ट और ग्रेन)', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
+  'dr.push': 'पुश / पुल', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
   'dr.push.hint': '+ कंट्रास्ट और ग्रेन / − ज़्यादा सॉफ़्ट', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
   'dr.stops': '{v} {n, plural, one {स्टॉप} other {स्टॉप}}', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
   'dr.normal': 'नॉर्मल', // ko: 노멀 · en: Normal
   'dr.redevelop': 'फिर से डेवलप करें', // ko: 다시 현상 · en: Re-develop
-  'dr.expired': 'पुरानी फ़िल्म का लुक (एक्सपायर्ड)', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
+  'dr.expired': 'पुरानी फ़िल्म का लुक', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
   'dr.grain': 'ग्रेन', // ko: 입자 · en: Grain
   'dr.halation': 'ग्लो (हेलेशन)', // ko: 빛 번짐 (할레이션) · en: Glow (halation)
   'dr.leak': 'लाइट लीक', // ko: 빛샘 · en: Light leak
@@ -255,10 +255,10 @@ export const messages: LocaleMessages = {
   'dr.border.slide': 'स्लाइड', // ko: 슬라이드 · en: Slide
   'dr.border.gate': 'सिने', // ko: 시네 · en: Cine
   'dr.border.sprocket': 'स्प्रॉकेट', // ko: 스프로킷 · en: Sprocket
-  'dr.compare': 'ओरिजिनल देखने के लिए दबाकर रखें', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
+  'dr.compare': 'दबाए रखें', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
   'dr.reset': 'रीसेट करें', // ko: 초기화 · en: Reset
   'dr.saved': 'फिर से डेवलप हो गया', // ko: 다시 현상했어요 · en: Re-developed
-  'dr.applyRoll': 'पूरे रोल पर लगाएँ', // ko: 롤 전체에 적용 · en: Apply to roll
+  'dr.applyRoll': 'रोल पर लगाएँ', // ko: 롤 전체에 적용 · en: Apply to roll
   'dr.rotate': 'घुमाएँ', // ko: 회전 · en: Rotate
   'dr.ev': 'एक्सपोज़र', // ko: 노출 보정 · en: Exposure
   'dr.palette': 'पैलेट', // ko: 팔레트 · en: Palette
@@ -268,8 +268,8 @@ export const messages: LocaleMessages = {
   'dr.applyRollUndone': 'रोल की पिछली सेटिंग्ज़ वापस आ गईं', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
   'dr.discardConfirm': 'बदलाव छोड़ दें?', // ko: 변경 사항을 버릴까요? · en: Discard changes?
   'dr.discard': 'छोड़ दें', // ko: 버리기 · en: Discard
-  'dr.saveNew': 'नई फ़ोटो के रूप में सेव करें', // ko: 새 사진으로 저장 · en: Save as new photo
-  'dr.savedNew': 'नई फ़ोटो के रूप में सेव हो गई (#{n})', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
+  'dr.saveNew': 'कॉपी सेव करें', // ko: 새 사진으로 저장 · en: Save as new photo
+  'dr.savedNew': 'कॉपी के रूप में सेव हो गई (#{n})', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
   'dr.tone': 'डिजिटल लुक', // ko: 디지털 룩 · en: Digital look
   'dr.look': 'लुक', // ko: 룩 · en: Look
   'dr.tone.none': 'डिफ़ॉल्ट', // ko: 기본 · en: Default
@@ -354,7 +354,7 @@ export const messages: LocaleMessages = {
   'set.storage.persistHint': 'यह ब्राउज़र से अनुरोध करता है कि डिवाइस में जगह कम होने पर भी वह इस ऐप की तस्वीरें अपने-आप न मिटाए।', // ko: 기기 저장 공간이 부족해져도 브라우저가 이 앱의 사진을 자동으로 지우지 않도록 요청해요. · en: Asks the browser not to clear this app’s photos automatically when the device runs low on space.
   'set.storage.persistAsk': 'चालू करें', // ko: 보호 켜기 · en: Turn on
   'set.storage.persisted': 'सुरक्षित', // ko: 보호됨 · en: Protected
-  'set.storage.refusedShort': 'अनुमति नहीं मिली', // ko: 허락 안 됨 · en: Not allowed
+  'set.storage.refusedShort': 'अनुमति नहीं', // ko: 허락 안 됨 · en: Not allowed
   'set.storage.refused': 'इस ब्राउज़र ने अनुमति नहीं दी। Film Camela को होम स्क्रीन पर जोड़ने से तस्वीरें ज़्यादा समय तक रहती हैं। साथ में बैकअप भी रखें।', // ko: 이 브라우저가 보호를 허락하지 않았어요. 홈 화면에 추가하면 더 오래 보관돼요. 백업도 함께 해 두세요. · en: This browser declined. Adding Film Camela to your Home Screen keeps photos longer. Keep a backup too.
   'set.install': 'होम स्क्रीन पर ऐप इंस्टॉल करें', // ko: 홈 화면에 앱 설치 · en: Install app to home screen
   'set.privacy': 'प्राइवेसी पॉलिसी', // ko: 개인정보 처리방침 · en: Privacy policy
@@ -363,7 +363,7 @@ export const messages: LocaleMessages = {
   'set.licenses': 'ओपन-सोर्स लाइसेंस', // ko: 오픈소스 라이선스 · en: Open-source licenses
   'set.backup': 'बैकअप', // ko: 백업 · en: Backup
   'set.backup.hint': 'आपकी तस्वीरें और लॉग सिर्फ़ इसी डिवाइस पर रहते हैं। फ़ोन बदलने या ब्राउज़र डेटा मिटाने से पहले बैकअप फ़ाइल (.zip) किसी सुरक्षित जगह सेव कर लें।', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
-  'set.backup.export': 'बैकअप फ़ाइल सेव करें (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
+  'set.backup.export': 'बैकअप सेव करें (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'एक और कॉपी सेव करें', // ko: 한 번 더 저장 · en: Save another copy
   'set.backup.send': 'मैसेज, ईमेल या Drive पर भेजें', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'डाउनलोड फ़ोल्डर में सेव हो गई · {name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
@@ -417,7 +417,7 @@ export const messages: LocaleMessages = {
   'cam.switchConfirmPack2': 'कैमरा बदलने पर यह पैक निकल जाएगा। खींची गई {shots} एल्बम में {n, plural, one {जाएगी} other {जाएँगी}}, और बाकी {left} इस्तेमाल नहीं {m, plural, one {होगी} other {होंगी}}।', // ko: 카메라를 바꾸면 지금 팩을 꺼내요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching takes this pack out. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
   'cam.switchConfirmCard2': 'कैमरा बदलने पर यह कार्ड निकल जाएगा। खींची गई {shots} एल्बम में {n, plural, one {जाएगी} other {जाएँगी}}, और बाकी {left} इस्तेमाल नहीं {m, plural, one {होगी} other {होंगी}}।', // ko: 카메라를 바꾸면 지금 카드를 정리해요. 찍은 {shots}은 앨범으로, 남은 {left}은 쓰지 않아요. · en: Switching finishes this card. The {shots} you took {n, plural, one {goes} other {go}} to the album; the {left} left won't be used. [+ counts: n, m]
   'common.undo': 'वापस लें', // ko: 되돌리기 · en: Undo
-  'view.deleteUndoConfirm': 'डिलीट करने के बाद कुछ सेकंड तक आप इसे वापस ले सकते हैं।', // ko: 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: You can undo it for a few seconds afterwards.
+  'view.deleteUndoConfirm': 'डिलीट करने के बाद कुछ सेकंड तक इसे वापस ले सकते हैं।', // ko: 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: You can undo it for a few seconds afterwards.
   'view.deleted': 'फ़ोटो डिलीट हो गई', // ko: 사진을 삭제했어요 · en: Photo deleted
   'view.restored': 'फ़ोटो वापस आ गई', // ko: 사진을 되돌렸어요 · en: Photo restored
   'view.deleteTitle': 'यह फ़ोटो डिलीट करें?', // ko: 사진을 삭제할까요? · en: Delete this photo?
@@ -460,14 +460,14 @@ export const cameraText: LocaleCameraText = {
     ccd03: 'सीधे 2003 से आया डिजिकैम। 99 फ़ोटो वाला कार्ड, डिजिटल तारीख़ और तुरंत प्रीव्यू।', // ko: 2003년 그 시절의 디카. 99장 메모리, 디지털 날짜, 찍고 바로 확인. · en: A digicam straight from 2003. 99-shot card, digital date imprint, instant review.
     pixel: '128×112 का पॉकेट पिक्सेल कैमरा। चार रंगों के पैलेट में 30 फ़ोटो।', // ko: 128×112 픽셀의 포켓 카메라. 4색 팔레트에 담는 30장. · en: A 128×112 pocket pixel camera. 30 shots in four-color palettes.
     range: 'शांत रेंजफ़ाइंडर। साफ़ लेंस, ब्राइट फ़्रेम लाइन्स, और डिफ़ॉल्ट रूप से ब्लैक ऐंड व्हाइट।', // ko: 조용한 레인지파인더. 선명한 렌즈, 밝은 프레임 라인, 기본은 흑백. · en: A quiet rangefinder. Crisp lens, bright frame lines, black and white by default.
-    aqua27: 'वॉटरप्रूफ़ कवर में 27 फ़ोटो वाला डिस्पोज़ेबल। पानी जैसे नीले-हरे टोन, नर्म लेंस, और हर फ़ोटो से पहले चार्ज होने वाला फ़्लैश।', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
+    aqua27: 'वॉटरप्रूफ़ कवर में 27 फ़ोटो का डिस्पोज़ेबल। नीले-हरे टोन, नर्म लेंस और हर फ़ोटो से पहले चार्ज होने वाला फ़्लैश।', // ko: 방수 하우징을 입은 27장 일회용. 물빛 청록 톤, 부드러운 렌즈, 한 장마다 충전하는 플래시. · en: A 27-shot disposable in a waterproof housing. Blue-green water tones, a soft lens, a flash you charge every shot.
     instaw: 'वाइड फ़ॉर्मैट इंस्टेंट कैमरा, 10 फ़ोटो वाले पैक। चौड़ा प्रिंट बाहर आता है और धीरे-धीरे तस्वीर उभरती है।', // ko: 가로로 넓은 와이드 인스턴트, 10장 팩. 넓게 나온 사진에 천천히 상이 떠올라요. · en: A wide-format instant camera with 10-shot packs. Landscape prints slide out and slowly come to life.
-    twin66: 'ट्विन-लेंस रिफ़्लेक्स, जिसमें ऊपर से झाँककर देखते हैं। 12 चौकोर 6×6 फ़्रेम, और व्यूफ़ाइंडर में दाएँ-बाएँ उलटी दुनिया।', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
+    twin66: 'ऊपर से झाँककर देखने वाला ट्विन-लेंस रिफ़्लेक्स। 12 चौकोर 6×6 फ़्रेम, व्यूफ़ाइंडर में दाएँ-बाएँ उलटी दुनिया।', // ko: 고개 숙여 내려다보는 이안 리플렉스. 6×6 정사각 12장, 파인더 속 세상은 좌우가 뒤바뀌어요. · en: A twin-lens reflex you look down into. 12 square 6×6 frames through a mirror-reversed finder.
     super8: '8mm होम मूवी से निकला एक फ़्रेम। गोल किनारों वाला गेट, गर्म रंग, मोटा ग्रेन।', // ko: 8mm 홈무비에서 꺼낸 한 프레임. 둥근 게이트, 따뜻한 색, 굵은 입자. · en: A single frame from an 8mm home movie. Rounded gate, warm color, heavy grain.
     slide35: 'स्लाइड फ़िल्म के लिए बना कॉम्पैक्ट कैमरा। चटक रंग, सफ़ेद स्लाइड माउंट में लौटकर आते हैं।', // ko: 슬라이드 필름 전용 컴팩트. 쨍한 색을 하얀 마운트에 담아 돌려줘요. · en: A compact made for slide film. Vivid color, returned in white slide mounts.
     party: 'पार्टी कॉम्पैक्ट, जिसका बड़ा फ़्लैश पहले से चालू रहता है। सामने से पड़ता तेज़ फ़्लैश और तारीख़ की छाप।', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
     kidcam: '0.3 MP का बच्चों का कैमरा। 640 px, एकदम चटक रंग, डिजिटल तारीख़ और तुरंत प्रीव्यू।', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
-    sprocket: 'ऐसा पैनोरमा जो स्प्रॉकेट होल्स के ऊपर तक फैलता है, इसलिए हर फ़ोटो के ऊपर-नीचे फ़िल्म के छेद दिखते हैं।', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
+    sprocket: 'स्प्रॉकेट होल्स तक फैला पैनोरमा। हर फ़ोटो के ऊपर-नीचे फ़िल्म के छेद दिखते हैं।', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -498,7 +498,7 @@ export const cameraText: LocaleCameraText = {
 
 /** Film stock / sensor descriptions (expressive register). Film names stay in Latin letters. */
 export const stockText: LocaleStockText = {
-  sunny200: 'धूप से भरे गर्म पीले रंग। सफ़र और रोज़मर्रा की तस्वीरों के लिए क्लासिक फ़िल्म।', // ko: 햇살을 머금은 따뜻한 노랑. 여행과 일상 스냅의 정석. · en: Warm yellows full of sunshine. The classic film for travel and everyday snapshots.
+  sunny200: 'धूप भरे गर्म पीले रंग। सफ़र और रोज़मर्रा के लिए क्लासिक फ़िल्म।', // ko: 햇살을 머금은 따뜻한 노랑. 여행과 일상 스냅의 정석. · en: Warm yellows full of sunshine. The classic film for travel and everyday snapshots.
   muse400: 'कोमल स्किन टोन और पेस्टल हाइलाइट्स। लोगों की तस्वीरों के लिए बनी फ़िल्म।', // ko: 부드러운 피부톤, 파스텔빛 하이라이트. 사람을 담기 좋은 인물용 필름. · en: Gentle skin tones and pastel highlights. Made for portraits.
   mint400: 'परछाइयों में हल्की हरी झलक। फ़्रेम में शहर की हवा।', // ko: 그늘에 살짝 도는 초록빛. 도시와 거리의 공기. · en: A hint of green in the shadows. City air in a frame.
   snap800: 'वही डिस्पोज़ेबल वाला पुराना एहसास। फ़्लैश, गहरी विनेटिंग और अनजाने में आए लाइट लीक।', // ko: 일회용 카메라, 그때 그 느낌. 플래시, 진한 비네팅, 우연이 만든 빛샘. · en: Straight out of a disposable. Flash, deep vignetting, and leaks by happy accident.
@@ -514,7 +514,7 @@ export const stockText: LocaleStockText = {
   instamini: 'चमकीली, ताज़ा मिनी इंस्टेंट फ़िल्म — साफ़ सफ़ेद और हल्की ठंडक।', // ko: 밝고 산뜻한 미니 인스턴트. 깨끗한 화이트와 살짝 차가운 톤. · en: Bright, crisp mini instant film with clean whites and a cool touch.
   ccd: '2000 के दशक की शुरुआत के डिजिकैम का CCD। उड़ी हुई हाइलाइट्स, हल्की नीली झलक, बैंगनी किनारे।', // ko: 2000년대 초 디카의 CCD. 날아가는 하이라이트, 푸르스름한 톤, 보랏빛 번짐. · en: The CCD of an early-2000s digicam. Clipped highlights, a blue cast, purple fringing.
   pixel: '128 पिक्सेल, 2-बिट सेंसर। सिर्फ़ चार रंग और डिदरिंग।', // ko: 128픽셀 2비트 센서. 단 4가지 색과 디더링. · en: A 128-pixel, 2-bit sensor. Just four colors and dithering.
-  aqua400: 'पानी के अंदर वाली डिस्पोज़ेबल फ़िल्म। लाल रंग फीके पड़कर नीली-हरी धुंध में घुल जाते हैं, ग्रेन नर्म रहता है।', // ko: 물속 일회용 필름. 붉은빛이 바래 사라진 청록 톤, 뿌연 입자. · en: Underwater disposable film. Reds fade into a blue-green haze, with soft grain.
+  aqua400: 'पानी के अंदर की डिस्पोज़ेबल फ़िल्म। लाल रंग नीली-हरी धुंध में घुल जाते हैं, ग्रेन नर्म रहता है।', // ko: 물속 일회용 필름. 붉은빛이 바래 사라진 청록 톤, 뿌연 입자. · en: Underwater disposable film. Reds fade into a blue-green haze, with soft grain.
   instawide: 'वाइड इंस्टेंट फ़िल्म। नैचुरल रंग और हल्की गर्म हाइलाइट्स।', // ko: 와이드 인스턴트 필름. 자연스러운 색에 살짝 따뜻한 하이라이트. · en: Wide instant film. Natural color with gently warm highlights.
   reel40: 'होम मूवी रिवर्सल फ़िल्म। गर्म, गहरे रंग, मोटा ग्रेन और धूल भरा गेट।', // ko: 홈무비 리버설 필름. 따뜻하고 진한 색, 굵은 입자, 먼지 앉은 게이트. · en: Home-movie reversal film. Warm, saturated color, big grain, and a dusty gate.
   toycmos: '0.3 MP का टॉय सेंसर: टॉफ़ी जैसे रंग, उड़ी हुई हाइलाइट्स और धब्बेदार कलर नॉइज़।', // ko: 0.3메가 장난감 센서. 사탕 같은 색, 날아간 하이라이트, 얼룩덜룩한 색 노이즈. · en: A 0.3 MP toy sensor: candy colors, blown highlights, blotchy color noise.

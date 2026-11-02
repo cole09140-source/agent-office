@@ -443,8 +443,9 @@ async function runLang(browser, baseUrl, opts, lang) {
     p.on('console', (m) => m.type() === 'error' && report.consoleErrors.push(`console: ${m.text()}`));
     return { context, page: p };
   }
-  const mainProfile = await openProfile(opts.sizes[0]);
-  let page = mainProfile.page;
+  /** Every size / scale combo runs on its own fresh profile (a long-lived one piled up rolls and logs
+   *  and got stuck after the first combo). */
+  let page = null;
 
   const tid = (id) => page.locator(`[data-testid="${id}"]`).first();
   const isVis = (loc) => loc.isVisible().catch(() => false);
@@ -587,10 +588,6 @@ async function runLang(browser, baseUrl, opts, lang) {
     }, scale);
   }
 
-  // Main profile: past the intro once; it accumulates rolls / logs across the passes.
-  await openApp();
-  await tid('onb-skip').click().catch(() => page.keyboard.press('Escape'));
-
   for (const size of opts.sizes) {
     for (const scale of opts.scales) {
       combo = { size: `${size.width}x${size.height}`, scale, dir: `${size.width}x${size.height}-${scale}` };
@@ -628,11 +625,8 @@ async function runLang(browser, baseUrl, opts, lang) {
       await step('camera-quick-start', async () => {
         await reveal(tid('quick-start'));
       }, { needs: ['panel'] });
-      await fresh.context.close();
-      page = mainProfile.page;
-      await applyCombo(size, scale);
-
-      // Load a roll and shoot.
+      // The same profile goes on: load a roll and shoot.
+      await closeSheets();
       await step('camera-loaded', async () => {
         await tab('camera');
         await waitVis(tid('load-panel'));
@@ -824,10 +818,10 @@ async function runLang(browser, baseUrl, opts, lang) {
       await step('settings-language', async () => {
         await reveal(tid('lang-picker').locator('xpath=ancestor::*[contains(@class,"field") or self::section][1]'));
       }, { needs: ['settings'] });
+      await fresh.context.close().catch(() => {});
     }
   }
 
-  await mainProfile.context.close();
   report.durationMs = Date.now() - t0;
   writeReports(outLang, report);
   return report;

@@ -69,7 +69,7 @@ export const messages: LocaleMessages = {
   'onb.1.title': 'كالفيلم، لقطة تلو الأخرى', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': 'اختر كاميرا وأدخِل فيلمًا. اللقطات معدودة، فاجعل لكل ضغطة على الغالق معنى.', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': 'متعة الترقّب في المعمل', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': 'أرسل كل فيلم تنهيه إلى المعمل، واختر مدة انتظارك: فورًا، أو ساعة، أو حتى 9 صباحًا، أو 3 أيام.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.2.body': 'أرسل الفيلم إلى المعمل، واختر مدة انتظارك: فورًا، أو ساعة، أو حتى 9 صباحًا، أو 3 أيام.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'أعد التحميض في الغرفة المظلمة متى شئت', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'تبقى صورتك الأصلية محفوظة دائمًا. جرّب فيلمًا آخر، أو سطوعًا مختلفًا، أو مظهر الفيلم القديم، أو الوهج، كلما شئت.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': 'مجاني. لا حساب ولا خوادم. تبقى كل صورك على هذا الجهاز فقط.', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
@@ -155,7 +155,7 @@ export const messages: LocaleMessages = {
   'cam.nShots': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
   'cam.nHalves': '{n, plural, zero {0 نصف إطار} one {نصف إطار واحد} two {نصفا إطار} few {# أنصاف إطار} many {# نصف إطار} other {# نصف إطار}} ({f, plural, zero {0 إطار} one {إطار واحد} two {إطاران} few {# إطارات} many {# إطارًا} other {# إطار}})', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
   'cam.nHalfShots': '{n, plural, zero {0 نصف إطار} one {نصف إطار واحد} two {نصفا إطار} few {# أنصاف إطار} many {# نصف إطار} other {# نصف إطار}}', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
-  'cam.develop': 'إرسال للتحميض', // ko: 현상소로 · en: Send to lab
+  'cam.develop': 'إلى المعمل', // ko: 현상소로 · en: Send to lab
   'cam.finishPack': 'إخراج العبوة', // ko: 팩 꺼내기 · en: Finish pack
   'cam.finishCard': 'إنهاء البطاقة', // ko: 카드 정리 · en: Finish card
   'cam.rewindSub': 'يُلَفّ الفيلم ويُرسل إلى المعمل، وبعد التحميض تجد الصور في ألبومك.', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
@@ -187,8 +187,8 @@ export const messages: LocaleMessages = {
   'speed.instant': 'فورًا', // ko: 즉시 · en: Instant
   'speed.why': 'أن تصلك الصور حين تكاد تنساها، تلك متعة الفيلم. ولرؤيتها الآن، اختر «فورًا».', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
   'speed.at.now': 'في ألبومك الآن', // ko: 지금 바로 앨범에 도착 · en: In your album right away
-  'speed.at.today': 'تصل اليوم الساعة {time}', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
-  'speed.at.tomorrow': 'تصل غدًا الساعة {time}', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
+  'speed.at.today': 'تصل اليوم {time}', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
+  'speed.at.tomorrow': 'تصل غدًا {time}', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
   'speed.at.date': 'تصل في {date}', // ko: {date} 도착 · en: Arrives {date}
   'speed.instant.d': 'بلا انتظار، شاهدها الآن', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': 'ساعة', // ko: 1시간 · en: 1 hour
@@ -220,8 +220,8 @@ export const messages: LocaleMessages = {
   'gal.importing': 'جارٍ التحميض… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
   'gal.imported': 'صور مستوردة', // ko: 불러온 사진 · en: Imported
   'gal.new': 'جديد', // ko: 새 롤 · en: NEW
-  'gal.frames': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
-  'gal.contact': 'طبعة تلامسية', // ko: 밀착 인화 · en: Contact sheet
+  'gal.frames': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
+  'gal.contact': 'ورقة التلامس', // ko: 밀착 인화 · en: Contact sheet
   'gal.deleteRoll': 'حذف الفيلم', // ko: 롤 삭제 · en: Delete roll
   'gal.deleteRollConfirm': '{n, plural, zero {سيُحذف هذا الفيلم.} one {ستُحذف الصورة الوحيدة في هذا الفيلم.} two {ستُحذف صورتا هذا الفيلم.} few {ستُحذف كل صور هذا الفيلم (# صور).} many {ستُحذف كل صور هذا الفيلم (# صورة).} other {ستُحذف كل صور هذا الفيلم (# صورة).}} ويمكنك التراجع خلال ثوانٍ بعد الحذف.', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
   'gal.developing': 'قيد التحميض', // ko: 현상 중 · en: Developing
@@ -238,11 +238,11 @@ export const messages: LocaleMessages = {
   'dr.title': 'الغرفة المظلمة', // ko: 다크룸 · en: Darkroom
   'dr.film': 'الفيلم', // ko: 필름 · en: Film
   'dr.push': 'دفع/سحب (التباين والحبيبات)', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
-  'dr.push.hint': '+ تباين وحبيبات أكثر / − أنعم', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
+  'dr.push.hint': '− أنعم / + تباين وحبيبات أكثر', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
   'dr.stops': '{v} {n, plural, zero {درجة} one {درجة} two {درجة} few {درجات} many {درجة} other {درجة}}', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
   'dr.normal': 'عادي', // ko: 노멀 · en: Normal
   'dr.redevelop': 'إعادة التحميض', // ko: 다시 현상 · en: Re-develop
-  'dr.expired': 'مظهر فيلم قديم (منتهي الصلاحية)', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
+  'dr.expired': 'مظهر الفيلم القديم', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
   'dr.grain': 'الحبيبات', // ko: 입자 · en: Grain
   'dr.halation': 'الوهج (هالة الضوء)', // ko: 빛 번짐 (할레이션) · en: Glow (halation)
   'dr.leak': 'تسرّب الضوء', // ko: 빛샘 · en: Light leak
@@ -250,7 +250,7 @@ export const messages: LocaleMessages = {
   'dr.flash': 'تأثير الفلاش', // ko: 플래시 룩 · en: Flash look
   'dr.date': 'ختم التاريخ', // ko: 날짜 각인 · en: Date stamp
   'dr.border': 'الحافة', // ko: 테두리 · en: Border
-  'dr.border.none': 'بلا', // ko: 없음 · en: None
+  'dr.border.none': 'بلا حافة', // ko: 없음 · en: None
   'dr.border.film35': '35mm', // ko: 35mm · en: 35mm
   'dr.border.instant': 'فورية', // ko: 인스턴트 · en: Instant
   'dr.border.print': 'مطبوعة', // ko: 인화지 · en: Print
@@ -260,7 +260,7 @@ export const messages: LocaleMessages = {
   'dr.compare': 'اضغط مطولًا لعرض الأصل', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
   'dr.reset': 'إعادة تعيين', // ko: 초기화 · en: Reset
   'dr.saved': 'تمت إعادة التحميض', // ko: 다시 현상했어요 · en: Re-developed
-  'dr.applyRoll': 'تطبيق على الفيلم كله', // ko: 롤 전체에 적용 · en: Apply to roll
+  'dr.applyRoll': 'تطبيق على الفيلم', // ko: 롤 전체에 적용 · en: Apply to roll
   'dr.rotate': 'تدوير', // ko: 회전 · en: Rotate
   'dr.ev': 'تعويض التعريض', // ko: 노출 보정 · en: Exposure
   'dr.palette': 'الألوان', // ko: 팔레트 · en: Palette
@@ -324,7 +324,7 @@ export const messages: LocaleMessages = {
   'an.log.location': 'حفظ الموقع أيضًا', // ko: 위치 함께 저장 · en: Save location
   'an.active': 'فيلم قيد التسجيل', // ko: 지금 기록 중인 롤 · en: Roll in progress
   'an.active.go': 'تسجيل لقطة', // ko: 컷 기록하기 · en: Log a frame
-  'an.log.repeat': '+1 بالإعدادات نفسها', // ko: 같은 설정으로 +1컷 · en: Same settings +1
+  'an.log.repeat': 'لقطة أخرى بالإعدادات نفسها', // ko: 같은 설정으로 +1컷 · en: Same settings +1
   'an.log.otherSettings': 'إعدادات أخرى', // ko: 다른 설정 · en: New settings
   'an.log.frameN': 'تسجيل اللقطة {n}', // ko: {n}번 컷 기록 · en: Log frame {n}
   'an.log.editFrame': 'تعديل اللقطة {n}', // ko: {n}번 컷 고치기 · en: Edit frame {n}
@@ -365,7 +365,7 @@ export const messages: LocaleMessages = {
   'set.licenses': 'تراخيص المصادر المفتوحة', // ko: 오픈소스 라이선스 · en: Open-source licenses
   'set.backup': 'النسخ الاحتياطي', // ko: 백업 · en: Backup
   'set.backup.hint': 'تبقى صورك وسجلاتك على هذا الجهاز فقط. قبل تغيير هاتفك أو مسح بيانات المتصفح، احفظ ملف نسخة احتياطية (.zip) في مكان آمن.', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
-  'set.backup.export': 'حفظ ملف النسخة الاحتياطية (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
+  'set.backup.export': 'حفظ نسخة احتياطية (.zip)', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'حفظ نسخة أخرى', // ko: 한 번 더 저장 · en: Save another copy
   'set.backup.send': 'إرسال الملف إلى نفسك', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'حُفظ في مجلد التنزيلات · {name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
@@ -389,7 +389,7 @@ export const messages: LocaleMessages = {
   'set.backup.invalid': 'هذا ليس ملف نسخة احتياطية من Film Camela، أو أن الملف تالف', // ko: Film Camela 백업 파일이 아니거나 손상된 파일이에요 · en: Not a Film Camela backup, or the file is damaged
   'set.backup.failed': 'تعذّر إنشاء النسخة الاحتياطية. تحقّق من المساحة المتاحة', // ko: 백업을 만들지 못했어요. 저장 공간을 확인해 주세요 · en: Couldn't create the backup. Check free storage
   'set.reset': 'حذف كل البيانات', // ko: 모든 데이터 삭제 · en: Delete all data
-  'set.resetConfirm': 'ستُحذف كل الأفلام والصور والسجلات والإعدادات، ولا يمكن التراجع عن ذلك. احفظ أولًا نسخة احتياطية من «حفظ ملف النسخة الاحتياطية» أعلاه. هل تريد الحذف رغم ذلك؟', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
+  'set.resetConfirm': 'ستُحذف كل الأفلام والصور والسجلات والإعدادات، ولا يمكن التراجع عن ذلك. احفظ أولًا نسخة احتياطية من «حفظ نسخة احتياطية» أعلاه. هل تريد الحذف رغم ذلك؟', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
   'set.version': 'الإصدار', // ko: 버전 · en: Version
   'set.replayOnb': 'إعادة عرض المقدمة', // ko: 소개 다시 보기 · en: Replay intro
   'share.title': 'صُوّرت بتطبيق Film Camela', // ko: Film Camela로 촬영 · en: Shot on Film Camela
@@ -474,7 +474,7 @@ export const cameraText: LocaleCameraText = {
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
     SLR: 'SLR',
-    Disposable: 'أحادية الاستخدام',
+    Disposable: 'لمرة واحدة',
     Instant: 'فورية',
     'Half-frame': 'نصف إطار',
     Compact: 'مدمجة',

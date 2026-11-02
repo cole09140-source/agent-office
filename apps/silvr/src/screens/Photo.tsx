@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
-import { cleanNumber, Empty, formatDate, Header, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
+import { cleanNumber, Empty, formatDate, formatSigned, Header, Ltr, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
 import { getStock } from '../film/stocks';
-import { isolate, isRtl, ltr, t } from '../i18n';
+import { isolate, isRtl, ltr, rollName, t } from '../i18n';
 import { fileName, shareImages } from '../platform/share';
 import { announce, confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
@@ -17,7 +17,7 @@ const INSTANT_DEV_S = 45;
 function pushLabel(push: number): string {
   const v = cleanNumber(push);
   if (v === 0) return t('view.pushNormal');
-  return ltr(`${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} EV`);
+  return ltr(`${formatSigned(v)} EV`);
 }
 
 /** Same scale as the darkroom's expiry slider (0–1 → 0–30 years). */
@@ -145,7 +145,7 @@ export function PhotoScreen({ id }: { id: string }) {
     <div class="viewer" data-testid="photo-screen">
       <Header
         // Same "camera · film" naming as the roll and the album.
-        title={camera && stock ? `${camera.name} · ${stock.name}` : (stock?.name ?? '')}
+        title={stock ? rollName(camera?.name, stock.name) : ''}
         sub={photo && idx >= 0 ? ltr(`${idx + 1} / ${siblings.length}`) : undefined}
         onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
         right={
@@ -210,34 +210,45 @@ export function PhotoScreen({ id }: { id: string }) {
       </div>
       <Sheet open={info} onClose={() => setInfo(false)} title={t('view.info')}>
         {photo && stock && (
-          <dl class="info">
+          // Container: the list stacks label above value when the sheet is narrow for the text size.
+          <div class="info-box">
+            <dl class="info">
             <dt>{t('view.film')}</dt>
             <dd>
-              <bdi>{stock.name}</bdi> · <bdi>ISO {stock.iso}</bdi>
+              <bdi>{stock.name}</bdi> · <Ltr>ISO&nbsp;{stock.iso}</Ltr>
             </dd>
             {camera && (
               <>
                 <dt>{t('dr.camera')}</dt>
-                <dd>{camera.name}</dd>
+                <dd>
+                  <bdi>{camera.name}</bdi>
+                </dd>
               </>
             )}
             <dt>{t('view.taken')}</dt>
             <dd>{photo.undated ? t('view.noDate') : formatDate(photo.takenAt, signalLang.value, true)}</dd>
             <dt>{t('view.frame')}</dt>
-            <dd>#{photo.frame}</dd>
+            <dd>
+              <Ltr>#{photo.frame}</Ltr>
+            </dd>
             <dt>{t('view.size')}</dt>
-            <dd class="mono">{photo.printW ? `${photo.printW}×${photo.printH}` : `${photo.width}×${photo.height}`}</dd>
+            <dd class="mono">
+              <Ltr>{photo.printW ? `${photo.printW}×${photo.printH}` : `${photo.width}×${photo.height}`}</Ltr>
+            </dd>
             {roll && (
               <>
                 <dt>{t('cam.aspect')}</dt>
-                <dd class="mono">{roll.aspect}</dd>
+                <dd class="mono">
+                  <Ltr>{roll.aspect}</Ltr>
+                </dd>
               </>
             )}
             <dt>{t('dr.push')}</dt>
             <dd>{pushLabel(photo.develop.push)}</dd>
             <dt>{t('dr.expired')}</dt>
             <dd>{expiredYears(photo.develop.expired) ? t('view.expiredYears', { n: expiredYears(photo.develop.expired) }) : t('view.expiredNone')}</dd>
-          </dl>
+            </dl>
+          </div>
         )}
       </Sheet>
     </div>

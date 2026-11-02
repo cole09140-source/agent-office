@@ -193,8 +193,8 @@ describe('Intl formatting follows the language', () => {
     expect(formatBytes(1.2 * 1024 ** 3, 'fr')).toMatch(/^1,20\s?Go$/);
     expect(formatBytes(5 * 1024 ** 2, 'ru')).toMatch(/^5,0\s?МБ$/);
     expect(formatDate(t0, 'ja')).toBe('2026年11月1日');
-    expect(formatDate(t0, 'ar')).toMatch(/^1 .+ 2026$/);
-    expect(formatDate(t0, 'en')).toBe('Nov 1, 2026');
+    expect(formatDate(t0, 'ar')).toMatch(/^1\s.+\s2026$/); // non-breaking spaces: a date never wraps inside
+    expect(formatDate(t0, 'en')).toBe('Nov\u00A01,\u00A02026'); // a date never wraps inside
   });
 
   it('arrival times in every language (24h where the locale wants it)', async () => {

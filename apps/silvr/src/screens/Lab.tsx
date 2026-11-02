@@ -4,7 +4,7 @@ import { formatArrival } from '../components/arrival';
 import { Canister, Empty, formatDuration, Header } from '../components/ui';
 import { canUse } from '../entitlements';
 import { getStock } from '../film/stocks';
-import { t } from '../i18n';
+import { joinSentences, rollName, t } from '../i18n';
 import { confirm, developingRolls, now } from '../state/app';
 import { signalLang } from '../state/lang';
 import { rushRoll } from '../store/rolls';
@@ -32,14 +32,13 @@ export function LabScreen() {
       ) : (
         <>
           <p class="muted small lab-intro" data-testid="lab-intro">
-            {t('lab.intro')}
-            {canUse('rushDevelop') && ` ${t('lab.introRush')}`}
+            {canUse('rushDevelop') ? joinSentences(t('lab.intro'), t('lab.introRush')) : t('lab.intro')}
           </p>
           <ul class="lab-list">
             {list.map((r) => {
               const stock = getStock(r.stockId);
               // Named like the album: "camera · film".
-              const name = `${getCamera(r.cameraId).name} · ${stock.name}`;
+              const name = rollName(getCamera(r.cameraId).name, stock.name);
               const total = Math.max(1, (r.readyAt ?? n) - (r.finishedAt ?? n));
               const remaining = Math.max(0, (r.readyAt ?? n) - n);
               const pct = Math.min(100, Math.max(0, 100 - (remaining / total) * 100));
@@ -57,7 +56,7 @@ export function LabScreen() {
                   </div>
                   <div class="lab-body">
                     <strong class="lab-name">
-                      <bdi>{getCamera(r.cameraId).name}</bdi> · <bdi>{stock.name}</bdi>
+                      {name}
                     </strong>
                     <span class="muted">{framesText(r)}</span>
                     <div class="progress" role="progressbar" aria-label={name} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-valuetext={eta}>

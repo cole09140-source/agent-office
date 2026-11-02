@@ -292,16 +292,18 @@ a {
   justify-content: center;
   gap: 3px;
   min-width: 0;
-  padding: 8px 2px;
+  padding: 8px 1px;
   color: var(--fg-3);
-  /* follows text size, capped so five labels still fit side by side (two lines when a label needs it) */
-  font-size: min(0.6875rem, 16.5px);
+  /* follows text size, capped so five labels still fit side by side: a 9-10 letter word ("Revelação",
+     "Настройки") fits one 72px column whole; longer labels wrap between words, never inside one */
+  font-size: min(0.6875rem, 12px);
   font-weight: 600;
   line-height: 1.15;
+  letter-spacing: -0.01em;
   text-align: center;
   word-break: keep-all;
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  overflow-wrap: normal;
+  hyphens: none;
 }
 .tabbar button.on {
   color: var(--accent);
@@ -377,6 +379,20 @@ a {
   color: var(--accent);
   font-weight: 600;
 }
+/* "Instant  [default]": the tag is a small pill next to the name that drops whole to the next line. */
+.speed > strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+}
+.speed .speed-def {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 138, 43, 0.14);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
 .chip.on {
   color: var(--accent);
   background: rgba(255, 138, 43, 0.16);
@@ -384,6 +400,14 @@ a {
 .chip-txt {
   font-size: 0.75rem;
   font-weight: 700;
+}
+/* Camera toolbar: one row on a 360px phone for every body, also with large text. The chips are 44px
+   targets with short values (3:2, 1×, ±0.0, the body name); the full words are in their aria-labels. */
+.cam-top .chip-txt {
+  font-size: min(0.75rem, 12px);
+}
+.cam-top .more-dots {
+  font-size: min(1.25rem, 20px);
 }
 .cam-stage {
   position: relative;
@@ -721,6 +745,14 @@ a {
 }
 .card-head h2 {
   margin: 0;
+}
+/* The action keeps its label on one line: when it does not fit beside the heading it goes under it. */
+.card-head {
+  flex-wrap: wrap;
+}
+.card-head .btn {
+  min-width: fit-content;
+  max-width: 100%;
 }
 
 .row {
@@ -1322,10 +1354,16 @@ input[type='range']::-moz-range-thumb {
   background: rgba(14, 13, 12, 0.94);
   border-top: 1px solid var(--line);
 }
+.sel-bar {
+  flex-wrap: wrap;
+}
+/* Capped text and padding keep Save (n) / Share (n) side by side with large text; a longer pair wraps. */
 .sel-bar .btn {
   flex: 1;
-  min-width: 0;
-  padding: 0 12px;
+  min-width: fit-content;
+  max-width: 100%;
+  padding: 0 10px;
+  font-size: min(1rem, 18px);
   white-space: nowrap;
 }
 @media (forced-colors: active) {
@@ -1461,17 +1499,37 @@ input[type='range']::-moz-range-thumb {
   border-radius: 8px;
   margin: 4px 0 4px;
 }
+.info-box {
+  container-type: inline-size;
+}
 .info {
   display: grid;
-  grid-template-columns: auto 1fr;
+  /* Both columns shrink to their longest word at most: values never break inside a word. */
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 8px 16px;
   margin: 8px 0 0;
 }
 .info dt {
   color: var(--fg-2);
+  overflow-wrap: break-word;
 }
 .info dd {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+/* Narrow for the text size (large text, long labels in ru / fr / ar): label above value, full width. */
+@container (max-width: 21em) {
+  .info {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .info dt {
+    font-size: 0.875rem;
+  }
+  .info dt:not(:first-child) {
+    margin-top: 10px;
+  }
 }
 
 /* ---------- darkroom ---------- */
@@ -1577,7 +1635,8 @@ input[type='range']::-moz-range-thumb {
   margin: 6px 0;
 }
 .tone-seg .seg.grid {
-  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  /* rem: the columns widen with large text ("Estándar" stays whole) */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.5rem), 1fr));
 }
 /* Four darkroom actions: a tidy 2×2 instead of ragged wrapping. */
 .dr-controls > .btn-row {
@@ -1892,8 +1951,17 @@ input[type='range']::-moz-range-thumb {
   padding: calc(24px + var(--safe-t)) 28px 0;
   background: radial-gradient(circle at 50% 30%, #2a1a10, var(--bg) 70%);
   animation: fade 0.3s ease;
-  /* Large text (130–160%) makes a slide taller than the screen: the words scroll, the buttons stay pinned. */
+  /* Large text (130–160%) makes a slide taller than the screen: .onb-scroll scrolls, the buttons stay below it. */
+  overflow: hidden;
+}
+.onb-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  margin: 0 -28px;
+  padding: 0 28px 12px;
 }
 .onb-brand {
   /* In the flow (not absolute) so the art and title can never slide under it. */
@@ -1903,16 +1971,15 @@ input[type='range']::-moz-range-thumb {
   margin-bottom: auto;
   padding: 4px 0 16px;
 }
-/* Start / Next / Skip and the restore link: pinned to the bottom of the screen, always in reach. */
+/* Start / Next / Skip and the restore link: below the scrolling slide, always in reach, never over it. */
 .onb-actions {
-  position: sticky;
-  bottom: 0;
+  position: relative;
   z-index: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
-  margin: auto -28px 0;
-  padding: 12px 28px calc(16px + var(--safe-b));
-  background: linear-gradient(transparent, var(--bg) 14px);
+  margin: 0 -28px;
+  padding: 8px 28px calc(16px + var(--safe-b));
 }
 .onb-actions > .btn-row {
   margin-top: 0;
@@ -1926,7 +1993,8 @@ input[type='range']::-moz-range-thumb {
   font-size: 1.125rem;
 }
 .onboarding h1 {
-  font-size: 1.875rem;
+  /* Capped: with large text the slide (title, body, privacy note) still fits above the pinned buttons. */
+  font-size: min(1.875rem, 30px);
   margin: 24px 0 8px;
   letter-spacing: -0.02em;
 }
@@ -1934,6 +2002,10 @@ input[type='range']::-moz-range-thumb {
   color: var(--fg-2);
   margin: 0;
   max-width: 420px;
+}
+/* Capped like the title, so slide 3 (body + privacy note) fits a 360×640 phone with large text. */
+#onb-body {
+  font-size: min(1rem, 18px);
 }
 .onb-privacy {
   margin-top: 16px !important;
@@ -1983,7 +2055,7 @@ input[type='range']::-moz-range-thumb {
 .dots {
   display: flex;
   gap: 6px;
-  margin-top: 28px;
+  margin-top: 20px;
 }
 .dots i {
   width: 6px;
@@ -2028,8 +2100,19 @@ html.tap-guard * {
 /* ---------- toasts: close button ---------- */
 
 /* The message wraps (large text, long film names); the action and × keep their size beside it. */
+.toast {
+  flex-wrap: wrap;
+}
+.toast > span + button {
+  margin-inline-start: auto;
+}
+/* Photo viewer: "camera · film" on one line with large text too (capped; it still wraps at " · "). */
+.viewer .hdr h1 {
+  font-size: min(1.25rem, 22px);
+}
 .toast > span {
-  flex: 1 1 auto;
+  /* below ~11em (large text, long words) the action and × move under the text */
+  flex: 1 1 11em;
   min-width: 0;
   padding: 8px 0;
   line-height: 1.35;
@@ -2081,7 +2164,7 @@ html.tap-guard * {
   margin-top: 4px;
   padding: 0;
   color: var(--accent-2);
-  font-size: 0.875rem;
+  font-size: min(0.875rem, 15px);
   font-weight: 600;
   text-align: start;
   text-decoration: underline;
@@ -2208,13 +2291,15 @@ html.tap-guard * {
   line-height: 1.15;
   padding: 4px 8px;
   overflow-wrap: normal;
-  hyphens: auto;
+  hyphens: none;
 }
 .seg.grid button {
   min-width: 0;
+  padding: 4px 5px;
 }
 .border-seg .seg.grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
+  /* 3 columns on a phone (2 with large text): room for "Instantânea" / "Sofortbild" without hyphenating. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr));
 }
 /* Screen titles: two lines before an ellipsis. */
 .hdr h1 {
@@ -2240,6 +2325,12 @@ html.tap-guard * {
 .hdr.wrap > .hdr-title {
   flex: 1 1 6.5em;
 }
+/* Next to a back button the title asks for its full one-line width (up to the row): when it and the
+   actions do not fit together, the actions take the next row rather than squeezing the title. */
+.hdr.wrap > .icon-btn + .hdr-title {
+  flex: 1 1 auto;
+  max-width: calc(100% - 52px);
+}
 .hdr.wrap > .hdr-right {
   flex: none;
   margin-inline-start: auto;
@@ -2255,10 +2346,16 @@ html.tap-guard * {
 .roll-btn {
   font-size: min(0.75rem, 16px);
 }
+/* Two lines are fine, a split word is not: the label is capped so its longest word fits the pill's column
+   (the shutter keeps its place in the middle). */
+.roll-btn {
+  gap: 5px;
+  padding-inline-end: 10px;
+}
 .roll-btn-txt b {
-  font-size: min(0.8125rem, 17px);
+  font-size: min(0.8125rem, 14.5px);
   overflow-wrap: normal;
-  hyphens: auto;
+  hyphens: none;
 }
 .viewer-actions button {
   font-size: min(0.75rem, 16px);
@@ -2269,10 +2366,23 @@ html.tap-guard * {
 }
 .btn {
   text-align: center;
+  overflow-wrap: normal;
+  hyphens: none;
 }
+/* Each button is at least as wide as its label on one line (up to the row): two that do not fit side
+   by side stack instead of breaking a word ("Développe|r", "Поделитьс|я"). (min(100%, max-content) is
+   not valid CSS: math functions take no intrinsic keywords, so that rule was dropped.) */
 .btn-row .btn {
   white-space: normal;
-  min-width: min(100%, max-content);
+  min-width: fit-content;
+  max-width: 100%;
+}
+/* Chinese / Japanese have no spaces, and the body's keep-all forbids breaks between Han / kana: there a
+   label may break between any two characters (normal for CJK), or it could not wrap at all. */
+:root:lang(ja) :is(.btn, .seg button, .tabbar button, .roll-btn-txt b, .speed-def),
+:root:lang(zh) :is(.btn, .seg button, .tabbar button, .roll-btn-txt b, .speed-def) {
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Windows high contrast / forced colors ---------- */
@@ -2828,6 +2938,7 @@ html.tap-guard * {
   display: flex;
   flex-direction: column;
   min-width: 168px;
+  max-width: calc(100vw - 24px);
   padding: 6px;
   border-radius: 14px;
   background: #1f1b18;

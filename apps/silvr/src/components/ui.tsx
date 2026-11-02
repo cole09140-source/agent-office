@@ -8,6 +8,7 @@ import type { FilmStock } from '../film/types';
 import { pushBackHandler } from '../platform/back';
 import { isNative } from '../platform/share';
 import { Icon } from './Icon';
+import { formatFixed1 } from '../intl/format';
 import { arrowStep, centerInStrip } from '../platform/dir';
 
 export function useObjectUrl(blob: Blob | null | undefined): string | undefined {
@@ -74,6 +75,19 @@ export function Thumb({ photo, onClick, label, tabIndex }: { photo: Photo; onCli
  * Screen header. `wrap`: when space is tight (large text), the actions move to a row of their own
  * instead of squeezing the title, and the title is never cut.
  */
+/**
+ * A technical run that always reads left to right, also inside right-to-left text: numbers with
+ * units or symbols (1×, 3:2, 1/125, f/2.8, "'26 10 24", 1080×720, 3/36), ISO / EV, file names.
+ * Without the isolate an RTL paragraph moves edge punctuation to the other side ("×1", "26'").
+ */
+export function Ltr({ children, class: cls }: { children: ComponentChildren; class?: string }) {
+  return (
+    <bdi dir="ltr" class={cls}>
+      {children}
+    </bdi>
+  );
+}
+
 export function Header({ title, onBack, right, sub, wrap }: { title: string; onBack?: () => void; right?: ComponentChildren; sub?: string; wrap?: boolean }) {
   return (
     <header class={`hdr${wrap ? ' wrap' : ''}`}>
@@ -317,7 +331,7 @@ export function Slider(props: {
   const { label, min, max, step, onInput, format, hint, testId } = props;
   const id = useId();
   const value = cleanNumber(props.value);
-  const shown = format ? format(value) : value.toFixed(1);
+  const shown = format ? format(value) : formatFixed1(value);
   // A step like 1/3 has no exact decimal form: the browser's own stepping then yields values like -2e-16.
   // Such sliders run with step="any" and are stepped (and snapped) here instead.
   const exact = Math.abs(step * 1e6 - Math.round(step * 1e6)) < 1e-6;
@@ -641,4 +655,4 @@ export function savedToastText(): string {
 }
 
 // Locale-aware formatting lives in intl/format; re-exported here for existing imports.
-export { formatBytes, formatDate, formatDuration } from '../intl/format';
+export { formatBytes, formatDate, formatDuration, formatFixed1, formatSigned } from '../intl/format';

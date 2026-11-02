@@ -48,7 +48,7 @@ export const messages: LocaleMessages = {
   'common.retry': '重试', // ko: 다시 시도 · en: Retry
   'common.back': '返回', // ko: 뒤로 · en: Back
   'common.next': '下一步', // ko: 다음 · en: Next
-  'common.start': '开始使用', // ko: 시작하기 · en: Get started
+  'common.start': '开始', // ko: 시작하기 · en: Get started
   'common.on': '打开', // ko: 켜짐 · en: On
   'common.off': '关闭', // ko: 꺼짐 · en: Off
   'common.pro': 'PRO', // ko: PRO · en: PRO
@@ -71,8 +71,8 @@ export const messages: LocaleMessages = {
   'onb.1.title': '像胶片一样，一张一张拍', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': '选一台相机，装上一卷胶卷。数着剩下的张数，用心按下每一次快门。', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': '静候冲洗的期待', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': '拍完的胶卷就送去冲洗。立即、1 小时、早上 9 点或 3 天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
-  'onb.3.title': '随时在暗房重新冲洗', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
+  'onb.2.body': '拍完的胶卷就送去冲洗。立即、1\u00A0小时、早上 9\u00A0点或 3\u00A0天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.3.title': '在暗房重新冲洗', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': '原图始终原样保留。胶卷、亮度、过期胶卷质感和光晕，想重选几次都可以。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '免费 · 无需账户，没有服务器。每一张照片都只留在这台设备上。', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': '装入胶卷', // ko: 필름 넣기 · en: Load film
@@ -157,7 +157,7 @@ export const messages: LocaleMessages = {
   'cam.nShots': '{n} 张', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
   'cam.nHalves': '{n} 张（{f} 格）', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
   'cam.nHalfShots': '{n} 张', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
-  'cam.develop': '送去冲洗', // ko: 현상소로 · en: Send to lab
+  'cam.develop': '去冲洗', // ko: 현상소로 · en: Send to lab
   'cam.finishPack': '取出相纸', // ko: 팩 꺼내기 · en: Finish pack
   'cam.finishCard': '取出存储卡', // ko: 카드 정리 · en: Finish card
   'cam.rewindSub': '胶卷倒片后送去冲洗。冲洗好后，就能在相册里看到照片。', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
@@ -188,21 +188,21 @@ export const messages: LocaleMessages = {
   'speed.title': '想什么时候拿到照片？', // ko: 언제 받아볼까요? · en: When do you want your prints?
   'speed.instant': '立即', // ko: 즉시 · en: Instant
   'speed.why': '快要忘记时，照片才送到。这份惊喜，就是胶片的乐趣。想马上看，就选“立即”。', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
-  'speed.at.now': '马上出现在相册里', // ko: 지금 바로 앨범에 도착 · en: In your album right away
-  'speed.at.today': '今天{time} 送达', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
-  'speed.at.tomorrow': '明天{time} 送达', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
+  'speed.at.now': '直接进入相册', // ko: 지금 바로 앨범에 도착 · en: In your album right away
+  'speed.at.today': '今天 {time} 送达', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
+  'speed.at.tomorrow': '明天 {time} 送达', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
   'speed.at.date': '{date}送达', // ko: {date} 도착 · en: Arrives {date}
-  'speed.instant.d': '无需等待，现在就看', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
+  'speed.instant.d': '不用等，现在就看', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': '1 小时', // ko: 1시간 · en: 1 hour
   'speed.1h.d': '一杯咖啡的时间', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
   'speed.morning': '早上 9 点', // ko: 아침 9시 · en: Next 9 AM
-  'speed.morning.d': '一觉醒来，照片就到了', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
+  'speed.morning.d': '一觉醒来就到了', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
   'speed.3d': '3 天', // ko: 3일 · en: 3 days
-  'speed.3d.d': '像真正的胶片一样，慢慢来', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
+  'speed.3d.d': '慢慢来，才是胶片', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
   'lab.title': '冲洗店', // ko: 현상소 · en: Film Lab
   'lab.empty': '冲洗店里现在很安静。', // ko: 지금은 현상소가 조용해요. · en: The lab is quiet right now.
   'lab.emptyHint': '送去冲洗的胶卷会在这里等候。', // ko: 현상소로 보낸 롤은 여기서 기다려요. · en: Rolls you send to the lab wait here.
-  'lab.emptyWhat': '这里是胶卷冲洗完成前停留的地方。', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
+  'lab.emptyWhat': '冲洗好之前，胶卷都在这里。', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
   'lab.emptyHow': '照片会按你选的时间送达。选“立即”，就直接进入相册。', // ko: 고른 시간에 맞춰 도착해요. ‘즉시’라면 바로 앨범으로. · en: They arrive on the schedule you choose. Instant skips the wait.
   'lab.intro': '冲洗完成的胶卷会移到相册。', // ko: 현상을 마친 롤은 앨범으로 옮겨져요. · en: Developed rolls move to your album.
   'lab.introRush': '等不及的话，轻点“立即冲洗”。', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
@@ -222,7 +222,7 @@ export const messages: LocaleMessages = {
   'gal.importing': '正在冲洗… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
   'gal.imported': '导入的照片', // ko: 불러온 사진 · en: Imported
   'gal.new': '新', // ko: 새 롤 · en: NEW
-  'gal.frames': '{n} 张', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
+  'gal.frames': '{n}\u00A0张', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
   'gal.contact': '接触印样', // ko: 밀착 인화 · en: Contact sheet
   'gal.deleteRoll': '删除胶卷', // ko: 롤 삭제 · en: Delete roll
   'gal.deleteRollConfirm': '这一卷的 {n} 张照片将全部删除。删除后几秒内仍可撤销。', // ko: 이 롤의 사진 {n}장이 모두 삭제돼요. 삭제한 뒤 잠시 동안 되돌릴 수 있어요. · en: All {n, plural, one {# photo} other {# photos}} in this roll will be deleted. You can undo it for a few seconds afterwards.
@@ -239,7 +239,7 @@ export const messages: LocaleMessages = {
   'view.size': '尺寸', // ko: 크기 · en: Size
   'dr.title': '暗房', // ko: 다크룸 · en: Darkroom
   'dr.film': '胶卷', // ko: 필름 · en: Film
-  'dr.push': '迫冲／拉冲（反差与颗粒）', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
+  'dr.push': '迫冲／拉冲', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
   'dr.push.hint': '+ 反差、颗粒更强 / − 更柔和', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
   'dr.stops': '{v} 档', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
   'dr.normal': '正常', // ko: 노멀 · en: Normal
@@ -322,7 +322,7 @@ export const messages: LocaleMessages = {
   'an.log.deleteRoll': '删除记录', // ko: 기록 삭제 · en: Delete log
   'an.log.deleteConfirm': '删除这一卷的记录？', // ko: 이 롤 기록을 삭제할까요? · en: Delete this roll log?
   'an.log.useMeter': '使用计算器数值', // ko: 계산기 값 사용 · en: Use calculator values
-  'an.log.frames': '{n}/{m} 张', // ko: {n}/{m}장 · en: {n}/{m} frames
+  'an.log.frames': '{n}/{m}\u00A0张', // ko: {n}/{m}장 · en: {n}/{m} frames
   'an.log.location': '同时保存位置', // ko: 위치 함께 저장 · en: Save location
   'an.active': '正在记录的胶卷', // ko: 지금 기록 중인 롤 · en: Roll in progress
   'an.active.go': '记录一张', // ko: 컷 기록하기 · en: Log a frame

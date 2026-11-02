@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { HelpLink } from './Gallery';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
-import { isRtl, legalLang, t } from '../i18n';
+import { bidi, isRtl, legalLang, ltr, t } from '../i18n';
 import { ENDONYMS, HTML_LANG, LOCALES } from '../intl/locales';
 import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
 import { BackupError, createBackup, restoreBackup } from '../store/backup';
@@ -118,7 +118,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         return;
       }
       // Say where it went, and how it comes back.
-      setBackupStatus(res === 'downloaded' && !isNative() ? t('set.backup.savedWeb', { name: file.name }) : t('set.backup.savedShared', { name: file.name }));
+      setBackupStatus(res === 'downloaded' && !isNative() ? t('set.backup.savedWeb', { name: ltr(file.name) }) : t('set.backup.savedShared', { name: ltr(file.name) }));
       backupWhereSig.value = t('set.backup.restoreHint');
       setBackupFile({ ...file, saved: true });
     } catch (err) {
@@ -138,7 +138,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     if (isNative()) return saveBackup(file);
     try {
       await navigator.share({ files: [new File([file.blob], file.name, { type: 'application/zip' })], title: file.name });
-      setBackupStatus(t('set.backup.savedShared', { name: file.name }));
+      setBackupStatus(t('set.backup.savedShared', { name: ltr(file.name) }));
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         console.error('[silvr] backup share failed', err);
@@ -218,7 +218,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <section class="card" aria-labelledby="backup-h">
         <div class="field">
           <span id="backup-h">{t('set.backup')}</span>
-          <p class="muted small backup-hint">{t('set.backup.hint')}</p>
+          <p class="muted small backup-hint">{bidi(t('set.backup.hint'))}</p>
           <HelpLink class="small" />
         </div>
         {backupFile && !backupFile.saved ? (
@@ -228,7 +228,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           </button>
         ) : (
           <button class={`btn ${restoreFirst ? 'ghost' : 'primary'} wide backup-save`} onClick={() => void exportBackup()} disabled={backupBusy} data-testid="btn-backup">
-            <Icon name="download" size={18} /> {t('set.backup.export')}
+            <Icon name="download" size={18} /> {bidi(t('set.backup.export'))}
           </button>
         )}
         <p class="muted small backup-status" role="status" aria-live="polite" data-testid="backup-status">
@@ -273,9 +273,9 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
             value={s.dateFormat}
             onChange={(dateFormat) => updateSettings({ dateFormat })}
             options={[
-              { value: 'YMD', label: "'26 10 24" },
-              { value: 'MDY', label: "10 24 '26" },
-              { value: 'DMY', label: "24 10 '26" },
+              { value: 'YMD', label: "'26 10 24", dir: 'ltr' },
+              { value: 'MDY', label: "10 24 '26", dir: 'ltr' },
+              { value: 'DMY', label: "24 10 '26", dir: 'ltr' },
             ]}
           />
         </div>
@@ -305,7 +305,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <section class="card">
         <div class="row">
           <span>{t('set.storage')}</span>
-          <span class="muted mono">{usage === null ? '—' : t('set.storage.used', { used: formatBytes(usage) })}</span>
+          <span class="muted mono">{usage === null ? '—' : t('set.storage.used', { used: ltr(formatBytes(usage)) })}</span>
         </div>
         {/* App storage is already durable in the native apps. */}
         {!isNative() && navigator.storage?.persist && (
@@ -371,14 +371,14 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         </button>
         <div class="row">
           <span>{t('set.version')}</span>
-          <span class="muted mono">{__APP_VERSION__}</span>
+          <span class="muted mono" dir="ltr">{__APP_VERSION__}</span>
         </div>
       </section>
       <button class="btn danger wide" onClick={reset} data-testid="btn-reset">
         {t('set.reset')}
       </button>
       {/* Same operator name as terms.html: 아티움그룹 주식회사 / ATIUM GROUP Co., Ltd. */}
-      <p class="muted small app-credit">{t('set.credit')}</p>
+      <p class="muted small app-credit">{bidi(t('set.credit'))}</p>
     </div>
   );
 }

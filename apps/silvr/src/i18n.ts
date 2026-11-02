@@ -96,6 +96,55 @@ export function ltr(s: string, lang: Locale = signalLang.value): string {
   return RTL_LOCALES.has(lang) ? LRI + s + PDI : s;
 }
 
+const RTL_LETTER = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
+/**
+ * A left-to-right technical run inside right-to-left text: a Latin / digit run, with neutral
+ * marks glued to its start (".zip", "'26", "#3") and a closing unit or quote ("1×", '1"', "25%").
+ * Sentence punctuation after it (". ،") stays outside, so it keeps its place in the RTL sentence.
+ */
+const LTR_RUN = /[.'‘’"“”×#+−-]*[A-Za-z0-9](?:[A-Za-z0-9 .,'’"×:/%°+−_-]*[A-Za-z0-9×%°"″'])?/g;
+
+/**
+ * For translated sentences that mix in technical fragments ("(.zip)", "ISO 400", "© 2026 ATIUM
+ * GROUP Co., Ltd."): in an RTL UI each Latin / number run is isolated left-to-right (a string with
+ * no RTL letters at all is isolated whole), so the bidi algorithm cannot move its punctuation to
+ * the other side ("(zip.)", "×1"). Unchanged in LTR UIs. Display text only (not file names / CSV).
+ */
+export function bidi(s: string, lang: Locale = signalLang.value): string {
+  if (!RTL_LOCALES.has(lang) || !s) return s;
+  if (!RTL_LETTER.test(s)) return LRI + s + PDI;
+  return s.replace(LTR_RUN, (run) => LRI + run + PDI);
+}
+
+/**
+ * "camera · film" (or just the film), the one name a roll has on every screen and in toasts. Each
+ * name is isolated, so in an RTL UI the pair reads right to left (camera first, at the right) the
+ * same way everywhere, whatever the names' own scripts.
+ */
+export function rollName(camera: string | undefined, film: string, lang: Locale = signalLang.value): string {
+  const one = (name: string) => isolate(modelName(name), lang);
+  return camera ? `${one(camera)} · ${one(film)}` : one(film);
+}
+
+/** A camera / film model name that never breaks at its inner space ("Pro 35", "Sunny 200"): lines wrap at " · ". */
+export function modelName(name: string): string {
+  return name.replace(/ /g, '\u00A0');
+}
+
+/**
+ * A camera's era line ("1979 · SLR", "1982 · فورية"): year and kind each isolated, so every card shows
+ * them in the same order in an RTL UI (year first, at the right), translated kind or not.
+ */
+export function eraText(era: string, lang: Locale = signalLang.value): string {
+  const s = cameraEra(era, lang);
+  return RTL_LOCALES.has(lang) ? s.split(' · ').map((p) => isolate(p, lang)).join(' · ') : s;
+}
+
+/** Two sentences in a row: Chinese and Japanese full stops (。) take no space after them; other languages do. */
+export function joinSentences(a: string, b: string, lang: Locale = signalLang.value): string {
+  return lang === 'zh' || lang === 'ja' ? a + b : `${a} ${b}`;
+}
+
 /** Sets <html lang> and dir for the active language. */
 export function setDocumentLang(lang: Locale): void {
   if (typeof document === 'undefined') return;

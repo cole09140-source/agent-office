@@ -50,7 +50,7 @@ export const messages: LocaleMessages = {
   'common.loading': '読み込み中…', // ko: 불러오는 중… · en: Loading…
   'common.error': '問題が発生しました。もう一度お試しください。', // ko: 잠시 문제가 생겼어요. 다시 시도해 주세요. · en: Something went wrong. Please try again.
   'toast.close': '通知を閉じる', // ko: 알림 닫기 · en: Dismiss
-  'lab.developedMany': 'フィルム{n}本の現像が終わりました', // ko: 롤 {n}개 현상이 끝났어요 · en: {n} rolls developed
+  'lab.developedMany': 'フィルム{n}本、仕上がりました', // ko: 롤 {n}개 현상이 끝났어요 · en: {n} rolls developed
   'cam.loadCard': 'メモリーカードを入れる', // ko: 메모리 카드 넣기 · en: Insert card
   'cam.loadPack': 'フィルムパックを入れる', // ko: 필름 팩 넣기 · en: Load film pack
   'cam.useCamera': 'このカメラで撮る', // ko: 이 카메라로 찍기 · en: Use this camera
@@ -62,13 +62,13 @@ export const messages: LocaleMessages = {
   'cam.group.toy': 'トイ・特殊カメラ', // ko: 토이·특수 카메라 · en: Toy & special
   'a11y.stockKeys': '←→キーでフィルムを見比べ、Enterキーで選びます', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': '選んだフィルムで現像します。暗室でいつでも変更できます。', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
-  'onb.restore': '別のスマートフォンから移行しますか？　バックアップから復元', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
+  'onb.restore': '機種変更しましたか？　バックアップから復元', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
   'onb.1.title': 'フィルムのように、撮る。', // ko: 필름처럼, 한 장씩 · en: Shoot like film
   'onb.1.body': 'カメラを選んで、フィルムを入れましょう。残りの枚数を数えながら、一枚ずつ大切に。', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
   'onb.2.title': '現像所で、待つ楽しみ。', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
   'onb.2.body': '撮り終えたフィルムは、現像に出しましょう。今すぐ・1時間・朝9時・3日から、待つ時間を選べます。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
-  'onb.3.title': '暗室で、いつでも再現像。', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
-  'onb.3.body': '撮ったオリジナルは、いつでもそのまま残ります。フィルム、明るさ、期限切れフィルムの風合い、光のにじみまで、何度でも選び直せます。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
+  'onb.3.title': '暗室で、何度でも現像。', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
+  'onb.3.body': 'オリジナルは、いつでもそのまま残ります。フィルムや明るさ、期限切れの風合い、光のにじみまで、あとから選び直せます。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '無料。アカウントも、サーバーもありません。写真はすべて、このデバイスの中だけに。', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
   'cam.loadFilm': 'フィルムを入れる', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'フィルムを選ぶ', // ko: 필름을 고르세요 · en: Choose your film
@@ -99,7 +99,7 @@ export const messages: LocaleMessages = {
   'cam.sec': '{n}秒', // ko: {n}초 · en: {n}s
   'cam.err.insecure': 'カメラは安全な接続（HTTPS）でのみ使用できます。「https://」で始まるアドレスで開いてください。', // ko: 카메라는 보안 연결(HTTPS)에서만 쓸 수 있어요. https 주소로 열어 주세요. · en: The camera only works over a secure (HTTPS) connection. Open the https address.
   'cam.err.unsupported': 'このブラウザはカメラに対応していません。最新のSafariまたはChromeで開いてください。', // ko: 이 브라우저는 카메라를 지원하지 않아요. 최신 Safari나 Chrome에서 열어 주세요. · en: This browser doesn't support the camera. Try the latest Safari or Chrome.
-  'cam.err.busy': 'ほかのアプリがカメラを使用中です。そのアプリを閉じてから、もう一度お試しください。それまでのあいだ、デバイス内の写真を読み込んで現像することもできます。', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.
+  'cam.err.busy': 'ほかのアプリがカメラを使用中です。そのアプリを閉じて、もう一度お試しください。そのあいだに、写真を読み込んで現像することもできます。', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.
   'cam.err.notfound': 'このデバイスにカメラが見つかりませんでした。代わりに、デバイス内の写真を読み込んで現像できます。', // ko: 이 기기에서 카메라를 찾지 못했어요. 대신 기기의 사진을 불러와 현상할 수 있어요. · en: No camera was found on this device. You can import photos and develop them instead.
   'cam.quadProgress': 'レンズ{n}/4', // ko: 렌즈 {n}/4 · en: Lens {n}/4
   'common.skip': 'スキップ', // ko: 건너뛰기 · en: Skip
@@ -152,9 +152,9 @@ export const messages: LocaleMessages = {
   'cam.nShots': '{n}枚', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
   'cam.nHalves': '{n}枚（{f}コマ）', // ko: {n}컷({f}프레임) · en: {n, plural, one {# half} other {# halves}} ({f, plural, one {# frame} other {# frames}})
   'cam.nHalfShots': '{n}枚', // ko: {n}컷 · en: {n, plural, one {# half} other {# halves}}
-  'cam.develop': '現像に出す', // ko: 현상소로 · en: Send to lab
-  'cam.finishPack': 'パックを取り出す', // ko: 팩 꺼내기 · en: Finish pack
-  'cam.finishCard': 'カードを使い終える', // ko: 카드 정리 · en: Finish card
+  'cam.develop': '現像へ', // ko: 현상소로 · en: Send to lab
+  'cam.finishPack': '取り出す', // ko: 팩 꺼내기 · en: Finish pack
+  'cam.finishCard': '使い終える', // ko: 카드 정리 · en: Finish card
   'cam.rewindSub': 'フィルムを巻き戻して、現像に出します。現像が終わると、アルバムで見られます。', // ko: 필름을 감아 현상소로 보내요. 현상이 끝나면 앨범에서 볼 수 있어요. · en: The roll goes to the lab. Once developed, the photos appear in your album.
   'cam.finishSubViewable': '写真はすでにアルバムにあります。使い終えると、新しく入れ直せます。', // ko: 사진은 이미 앨범에 있어요. 정리하면 새로 넣을 수 있어요. · en: Your photos are already in the album. Finish to start a fresh one.
   'cam.finishPackConfirm': '{shots}撮りました。パックに残った{left}は使わずに、取り出しますか？', // ko: {shots} 찍었어요. 팩에 남은 {left}은 쓰지 않고 꺼낼까요? · en: {shots} taken. Finish the pack? The remaining {left} will go unused. [+ counts: n, m]
@@ -166,8 +166,8 @@ export const messages: LocaleMessages = {
   'cam.switchConfirm': 'カメラを替えるには、いまのフィルム（{shots}）を先に現像に出します。撮った写真はすべて現像されます。', // ko: 카메라를 바꾸려면 지금 롤({shots})을 먼저 현상소로 보내야 해요. 남은 칸은 비워 둔 채 현상해요. · en: To switch cameras, this roll ({shots}) goes to the lab first. Unused frames stay blank. [+ counts: n]
   'cam.switchConfirmPack': 'カメラを替えるには、いまのパック（{shots}）を先に取り出します。写真はアルバムにそのまま残ります。', // ko: 카메라를 바꾸려면 지금 팩({shots})을 먼저 꺼내요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this pack ({shots}) comes out first. Your photos stay in the album. [+ counts: n]
   'cam.switchConfirmCard': 'カメラを替えるには、いまのカード（{shots}）を先に使い終えます。写真はアルバムにそのまま残ります。', // ko: 카메라를 바꾸려면 지금 카드({shots})를 먼저 정리해요. 사진은 앨범에 그대로 있어요. · en: To switch cameras, this card ({shots}) is finished first. Your photos stay in the album. [+ counts: n]
-  'cam.switchOkFilm': '現像に出して替える', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
-  'cam.switchOkDone': '撮影を終えて替える', // ko: 정리하고 바꾸기 · en: Finish & switch
+  'cam.switchOkFilm': '現像して替える', // ko: 현상소로 보내고 바꾸기 · en: Send to lab & switch
+  'cam.switchOkDone': '終了して替える', // ko: 정리하고 바꾸기 · en: Finish & switch
   'cam.switchedLab': 'フィルムを現像に出しました。次のカメラを選びましょう。', // ko: 롤을 현상소에 보냈어요. 이제 새 카메라를 골라 보세요. · en: Roll sent to the lab. Pick your next camera.
   'cam.switchedAlbum': '写真をアルバムに入れました。次のカメラを選びましょう。', // ko: 사진을 앨범에 넣었어요. 이제 새 카메라를 골라 보세요. · en: Photos are in your album. Pick your next camera.
   'cam.more': 'その他', // ko: 더보기 · en: More
@@ -182,30 +182,30 @@ export const messages: LocaleMessages = {
   'lab.emptyCamera': 'カメラの中に{shots}の写真があります。現像に出すと、ここで現像が始まります。', // ko: 카메라 안에 사진 {shots}이 있어요. 현상소로 보내면 여기서 현상이 시작돼요. · en: You have {shots} in the camera. Send the roll to the lab and it develops here. [+ counts: n]
   'speed.title': 'いつ受け取りますか？', // ko: 언제 받아볼까요? · en: When do you want your prints?
   'speed.instant': '今すぐ', // ko: 즉시 · en: Instant
-  'speed.why': '忘れたころに届く、あのときめき。それが、フィルムの楽しみです。すぐに見たいときは「今すぐ」を。', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
-  'speed.at.now': 'すぐにアルバムに届きます', // ko: 지금 바로 앨범에 도착 · en: In your album right away
-  'speed.at.today': '今日{time}に届きます', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
-  'speed.at.tomorrow': '明日{time}に届きます', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
-  'speed.at.date': '{date}に届きます', // ko: {date} 도착 · en: Arrives {date}
+  'speed.why': '忘れたころに届く、あのときめき。それがフィルムの楽しみです。待てないときは「今すぐ」で。', // ko: 잊을 즈음 도착하는 설렘, 그게 필름의 재미예요. 바로 보려면 ‘즉시’. · en: Forget the roll, then find it again. That’s film. Instant shows them now.
+  'speed.at.now': 'すぐアルバムへ', // ko: 지금 바로 앨범에 도착 · en: In your album right away
+  'speed.at.today': '今日{time}着', // ko: 오늘 {time} 도착 · en: Arrives today at {time}
+  'speed.at.tomorrow': '明日{time}着', // ko: 내일 {time} 도착 · en: Arrives tomorrow at {time}
+  'speed.at.date': '{date}着', // ko: {date} 도착 · en: Arrives {date}
   'speed.instant.d': '待たずに、すぐ見られる', // ko: 기다림 없이, 지금 바로 · en: No waiting. See them now
   'speed.1h': '1時間', // ko: 1시간 · en: 1 hour
-  'speed.1h.d': 'コーヒー1杯ぶんの待ち時間', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
+  'speed.1h.d': 'コーヒーでも一杯', // ko: 커피 한 잔의 기다림 · en: Time for a coffee
   'speed.morning': '朝9時', // ko: 아침 9시 · en: Next 9 AM
   'speed.morning.d': '目覚めたら、もう届いている', // ko: 자고 일어나면 와 있어요 · en: Wake up to your photos
   'speed.3d': '3日', // ko: 3일 · en: 3 days
-  'speed.3d.d': '本物のフィルムのように、ゆっくりと', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
+  'speed.3d.d': 'フィルムらしく、気長に', // ko: 진짜 필름처럼, 느긋하게 · en: Slow, like real film
   'lab.title': '現像所', // ko: 현상소 · en: Film Lab
   'lab.empty': '現像所は、いま静かです。', // ko: 지금은 현상소가 조용해요. · en: The lab is quiet right now.
   'lab.emptyHint': '現像に出したフィルムは、ここで仕上がりを待ちます。', // ko: 현상소로 보낸 롤은 여기서 기다려요. · en: Rolls you send to the lab wait here.
   'lab.emptyWhat': '現像に出したフィルムが、仕上がるまで過ごす場所です。', // ko: 현상소로 보낸 롤이 현상될 때까지 머무는 곳이에요. · en: Rolls you send to the lab rest here while they develop.
   'lab.emptyHow': '選んだ時間に合わせて届きます。「今すぐ」なら、そのままアルバムへ。', // ko: 고른 시간에 맞춰 도착해요. ‘즉시’라면 바로 앨범으로. · en: They arrive on the schedule you choose. Instant skips the wait.
   'lab.intro': '現像が終わったフィルムは、アルバムに移ります。', // ko: 현상을 마친 롤은 앨범으로 옮겨져요. · en: Developed rolls move to your album.
-  'lab.introRush': '待ちきれないときは、「今すぐ現像」をタップしてください。', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
+  'lab.introRush': '待ちきれないときは「今すぐ現像」をどうぞ。', // ko: 기다리기 어렵다면 ‘지금 바로 현상’을 눌러 보세요. · en: Can’t wait? Tap Develop now.
   'lab.readyIn': 'あと{t}', // ko: {t} 남음 · en: Ready in {t}
   'lab.ready': '現像完了', // ko: 현상 완료 · en: Developed
   'lab.rush': '今すぐ現像', // ko: 지금 바로 현상 · en: Develop now
   'lab.rushConfirm': '待ち時間をスキップして、すぐにアルバムで見られます。', // ko: 기다림을 건너뛰고 바로 앨범에서 볼 수 있어요. · en: Skip the wait and see the photos in the album right away.
-  'lab.developedToast': '{stock}の現像が終わりました', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
+  'lab.developedToast': '{stock}、仕上がりました', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
   'lab.open': '写真を見る', // ko: 사진 보기 · en: View photos
   'gal.title': 'アルバム', // ko: 앨범 · en: Album
   'gal.empty': '現像された写真はまだありません。', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
@@ -234,12 +234,12 @@ export const messages: LocaleMessages = {
   'view.size': 'サイズ', // ko: 크기 · en: Size
   'dr.title': '暗室', // ko: 다크룸 · en: Darkroom
   'dr.film': 'フィルム', // ko: 필름 · en: Film
-  'dr.push': '増感／減感（コントラスト・粒子）', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
+  'dr.push': '増感／減感', // ko: 증감현상 (대비·입자) · en: Push / pull (contrast & grain)
   'dr.push.hint': '+でコントラストと粒子が強く、−でやわらかく', // ko: + 대비·입자↑ / − 부드럽게 · en: + contrast & grain / − softer
   'dr.stops': '{v}段', // ko: {v} 스톱 · en: {v} {n, plural, one {stop} other {stops}} [+ counts: n]
   'dr.normal': 'ノーマル', // ko: 노멀 · en: Normal
   'dr.redevelop': '再現像', // ko: 다시 현상 · en: Re-develop
-  'dr.expired': '期限切れフィルムの風合い', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
+  'dr.expired': '期限切れの風合い', // ko: 오래된 필름 느낌 (만료) · en: Aged film look (expired)
   'dr.grain': '粒子', // ko: 입자 · en: Grain
   'dr.halation': 'にじみ（ハレーション）', // ko: 빛 번짐 (할레이션) · en: Glow (halation)
   'dr.leak': '光漏れ', // ko: 빛샘 · en: Light leak
@@ -249,26 +249,26 @@ export const messages: LocaleMessages = {
   'dr.border': 'フチ', // ko: 테두리 · en: Border
   'dr.border.none': 'なし', // ko: 없음 · en: None
   'dr.border.film35': '35mm', // ko: 35mm · en: 35mm
-  'dr.border.instant': 'インスタント', // ko: 인스턴트 · en: Instant
+  'dr.border.instant': '太フチ', // ko: 인스턴트 · en: Instant
   'dr.border.print': 'プリント', // ko: 인화지 · en: Print
   'dr.border.slide': 'スライド', // ko: 슬라이드 · en: Slide
   'dr.border.gate': 'シネ', // ko: 시네 · en: Cine
-  'dr.border.sprocket': 'スプロケット', // ko: 스프로킷 · en: Sprocket
-  'dr.compare': '長押しでオリジナルを表示', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
+  'dr.border.sprocket': '穴あき', // ko: 스프로킷 · en: Sprocket
+  'dr.compare': '長押しで比較', // ko: 길게 눌러 원본 보기 · en: Hold to see the original
   'dr.reset': 'リセット', // ko: 초기화 · en: Reset
   'dr.saved': '再現像しました', // ko: 다시 현상했어요 · en: Re-developed
-  'dr.applyRoll': 'フィルム全体に適用', // ko: 롤 전체에 적용 · en: Apply to roll
+  'dr.applyRoll': '全コマに適用', // ko: 롤 전체에 적용 · en: Apply to roll
   'dr.rotate': '回転', // ko: 회전 · en: Rotate
   'dr.ev': '露出補正', // ko: 노출 보정 · en: Exposure
   'dr.palette': 'パレット', // ko: 팔레트 · en: Palette
   'dr.camera': 'カメラ', // ko: 카메라 · en: Camera
   'hint.ios': 'Film Camelaをホーム画面に追加すると、写真をより安全に保管できます（「共有」→「ホーム画面に追加」）。', // ko: 홈 화면에 추가하면 사진을 더 안전하게 지킬 수 있어요. (공유 → 홈 화면에 추가) · en: Add Film Camela to your Home Screen to keep photos safe (Share → Add to Home Screen).
-  'dr.applyRollDone': 'フィルム全体に適用しました', // ko: 롤 전체에 적용했어요 · en: Applied to the whole roll
-  'dr.applyRollUndone': 'フィルム全体への適用を取り消しました', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
+  'dr.applyRollDone': '全コマに適用しました', // ko: 롤 전체에 적용했어요 · en: Applied to the whole roll
+  'dr.applyRollUndone': '全コマへの適用を取り消しました', // ko: 롤 전체 적용을 되돌렸어요 · en: Roll settings restored
   'dr.discardConfirm': '変更を破棄しますか？', // ko: 변경 사항을 버릴까요? · en: Discard changes?
   'dr.discard': '破棄', // ko: 버리기 · en: Discard
-  'dr.saveNew': '新規写真として保存', // ko: 새 사진으로 저장 · en: Save as new photo
-  'dr.savedNew': '新しい写真として保存しました（{n}コマ目）', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
+  'dr.saveNew': '複製を保存', // ko: 새 사진으로 저장 · en: Save as new photo
+  'dr.savedNew': '複製を保存しました（{n}コマ目）', // ko: 새 사진으로 저장했어요 ({n}번) · en: Saved as a new photo (#{n})
   'dr.tone': 'デジタル風', // ko: 디지털 룩 · en: Digital look
   'dr.look': '仕上がり', // ko: 룩 · en: Look
   'dr.tone.none': '標準', // ko: 기본 · en: Default
@@ -343,7 +343,7 @@ export const messages: LocaleMessages = {
   'set.dateStamp': '写真に日付を写し込む', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': '日付の形式', // ko: 날짜 형식 · en: Date format
   'set.grid': 'グリッドを表示', // ko: 격자 표시 · en: Show grid
-  'set.mirror': '前面カメラの写真を左右反転して保存', // ko: 전면 카메라 좌우 반전 저장 · en: Mirror front camera photos
+  'set.mirror': '前面カメラを左右反転', // ko: 전면 카메라 좌우 반전 저장 · en: Mirror front camera photos
   'set.rollSize': '標準の撮影枚数', // ko: 기본 롤 장수 · en: Default roll size
   'set.speed': '標準の現像スピード', // ko: 기본 현상 속도 · en: Default lab speed
   'set.speed.hint': 'フィルムを現像に出すとき、「標準」と表示されます。インスタントカメラとデジカメの写真は、現像所を通らずにそのままアルバムに入ります。', // ko: 필름 롤을 현상소로 보낼 때 ‘기본’으로 표시돼요. 인스턴트·디카 사진은 현상소 없이 바로 앨범에 들어가요. · en: Marked as default when you send a film roll to the lab. Instant and digital cameras skip the lab: their photos go straight to the album.
@@ -361,13 +361,13 @@ export const messages: LocaleMessages = {
   'set.support': 'サポート・お問い合わせ', // ko: 고객지원 · 문의 · en: Support & contact
   'set.licenses': 'オープンソースライセンス', // ko: 오픈소스 라이선스 · en: Open-source licenses
   'set.backup': 'バックアップ', // ko: 백업 · en: Backup
-  'set.backup.hint': '写真と記録は、このデバイスにだけ保存されます。機種変更やブラウザのデータ消去の前に、バックアップファイル（.zip）を保存しておきましょう。', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
-  'set.backup.export': 'バックアップファイルを保存（.zip）', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
+  'set.backup.hint': '写真と記録は、このデバイスにだけ保存されます。機種変更やブラウザのデータ消去の前に、バックアップ（.zip）を保存しておきましょう。', // ko: 사진과 기록은 이 기기에만 머물러요. 폰을 바꾸거나 브라우저 데이터를 지우기 전에 백업 파일(.zip)로 챙겨 두세요. · en: Your photos and logs live only on this device. Before you switch phones or clear browser data, save a backup file (.zip) somewhere safe.
+  'set.backup.export': 'バックアップを保存（.zip）', // ko: 백업 파일 저장 (.zip) · en: Save backup file (.zip)
   'set.backup.saveAgain': 'もう一度保存', // ko: 한 번 더 저장 · en: Save another copy
   'set.backup.send': 'LINEやドライブに送る', // ko: 카카오톡·드라이브로 보내기 · en: Send to KakaoTalk or Drive
   'set.backup.savedWeb': 'ダウンロードフォルダに保存しました。{name}', // ko: 다운로드 폴더에 저장했어요 · {name} · en: Saved to your Downloads folder · {name}
   'set.backup.savedShared': '共有シートで選んだ場所（ファイル、ドライブなど）に保存しました。{name}', // ko: 공유 창에서 고른 곳(파일·드라이브 등)에 저장했어요 · {name} · en: Saved where you picked in the share sheet (Files, Drive…) · {name}
-  'set.backup.restoreHint': '機種変更するときは、このファイルをLINE・ドライブ・メールなどで自分宛てに送り、新しいスマートフォンでFilm Camelaの「設定」から「バックアップから復元」を開いてください。', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
+  'set.backup.restoreHint': '機種変更するときは、このファイルをLINEやメールなどで自分に送り、新しいスマートフォンのFilm Camelaで「バックアップから復元」を選んでください。', // ko: 새 폰으로 옮기려면 이 파일을 카카오톡 ‘나와의 채팅’이나 드라이브로 보낸 뒤, 새 폰의 Film Camela 설정에서 ‘백업에서 복원’을 눌러 열어요. · en: To move to a new phone, send this file to yourself (KakaoTalk, Drive or email), then open it there with Restore from backup in Film Camela Settings.
   'set.credit': '© 2026 ATIUM GROUP Co., Ltd.', // ko: © 2026 아티움그룹 주식회사 (ATIUM GROUP Co., Ltd.) · en: © 2026 ATIUM GROUP Co., Ltd.
   'set.backup.import': 'バックアップから復元', // ko: 백업에서 복원 · en: Restore from backup
   'set.backup.working': 'バックアップ中…{done}/{total}', // ko: 백업 중… {done}/{total} · en: Backing up… {done}/{total}
@@ -386,7 +386,7 @@ export const messages: LocaleMessages = {
   'set.backup.invalid': 'Film Camelaのバックアップファイルではないか、ファイルが破損しています', // ko: Film Camela 백업 파일이 아니거나 손상된 파일이에요 · en: Not a Film Camela backup, or the file is damaged
   'set.backup.failed': 'バックアップを作成できませんでした。ストレージの空き容量を確認してください', // ko: 백업을 만들지 못했어요. 저장 공간을 확인해 주세요 · en: Couldn't create the backup. Check free storage
   'set.reset': 'すべてのデータを削除', // ko: 모든 데이터 삭제 · en: Delete all data
-  'set.resetConfirm': 'すべてのフィルム、写真、記録、設定が削除され、元に戻せません。先に上の「バックアップファイルを保存」でバックアップしておきましょう。それでも削除しますか？', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
+  'set.resetConfirm': 'すべてのフィルム、写真、記録、設定が削除され、元に戻せません。先に上の「バックアップを保存」でバックアップしておきましょう。それでも削除しますか？', // ko: 모든 롤, 사진, 기록, 설정이 삭제되고 되돌릴 수 없어요. 먼저 위의 ‘백업 파일 저장’으로 백업해 두세요. 그래도 삭제할까요? · en: All rolls, photos, logs and settings will be deleted, and this cannot be undone. Save a backup file first (above). Delete anyway?
   'set.version': 'バージョン', // ko: 버전 · en: Version
   'set.replayOnb': '紹介をもう一度見る', // ko: 소개 다시 보기 · en: Replay intro
   'share.title': 'Film Camelaで撮影', // ko: Film Camela로 촬영 · en: Shot on Film Camela

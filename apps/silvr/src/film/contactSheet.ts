@@ -16,6 +16,8 @@ export interface ContactMeta {
   camera?: string;
   /** Instant prints: laid out as loose prints, not on film strips. */
   instant?: boolean;
+  /** Right-to-left UI language: the header text reads from the right (the frames are never mirrored). */
+  rtl?: boolean;
 }
 
 /** How the frames sit on the sheet: frames per strip, cell shape (width / height), film strip or loose prints. */
@@ -110,17 +112,24 @@ export async function contactSheet(input: ContactFrame[], meta: ContactMeta, pre
 
   ctx.fillStyle = '#1a1714';
   ctx.textBaseline = 'alphabetic';
+  // Header text follows the UI direction: title and subtitle at the start side, the camera at the end.
+  ctx.direction = meta.rtl ? 'rtl' : 'ltr';
+  const startX = meta.rtl ? sheetW - pad : pad;
+  const endX = meta.rtl ? pad : sheetW - pad;
+  ctx.textAlign = 'start';
   ctx.font = `700 ${Math.round(header * 0.42)}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
-  ctx.fillText(meta.title, pad, pad + header * 0.48);
+  ctx.fillText(meta.title, startX, pad + header * 0.48);
   if (meta.camera) {
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'end';
     ctx.font = `700 ${Math.round(header * 0.3)}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
-    ctx.fillText(meta.camera.toUpperCase(), sheetW - pad, pad + header * 0.48);
-    ctx.textAlign = 'left';
+    ctx.fillText(meta.camera.toUpperCase(), endX, pad + header * 0.48);
+    ctx.textAlign = 'start';
   }
   ctx.fillStyle = '#6b645b';
   ctx.font = `500 ${Math.round(header * 0.24)}px ui-monospace, Menlo, monospace`;
-  ctx.fillText(meta.subtitle, pad, pad + header * 0.86);
+  ctx.fillText(meta.subtitle, startX, pad + header * 0.86);
+  ctx.direction = 'ltr';
+  ctx.textAlign = 'left';
 
   for (let r = 0; r < rows; r++) {
     const y = pad + header + r * (stripH + gap * 3);
