@@ -19,6 +19,7 @@ import { LabScreen } from './screens/Lab';
 import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
+import { PaywallSheet, proRequest } from './screens/My';
 import { restoreRequest, SettingsScreen } from './screens/Settings';
 import { activeRoll, announce, confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
 import { go, goTab, route, routeToHash, type Route } from './state/router';
@@ -398,6 +399,7 @@ export function App() {
   }, []);
 
   const [importOpen, setImportOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const cameraShown = useRef(false);
   const r = route.value;
   useLabClock();
@@ -419,6 +421,16 @@ export function App() {
       })
       .catch(() => undefined);
   }, [ready.value, onboarded, r.name]);
+
+  // A shutter press with no shots left (free + earned) opens the paywall. The quota engine fires
+  // 'fc:quota-exhausted' together with its quotaExhausted signal; the camera screen stays untouched.
+  useEffect(() => {
+    const onEmpty = () => {
+      if (settings.value.onboarded) setPaywallOpen(true);
+    };
+    window.addEventListener('fc:quota-exhausted', onEmpty);
+    return () => window.removeEventListener('fc:quota-exhausted', onEmpty);
+  }, []);
 
   // A confirm left open by a route change (system back) must not act on the next screen.
   useEffect(() => {
@@ -489,6 +501,15 @@ export function App() {
       </main>
       <TabBar />
       <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} />
+      <PaywallSheet
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        onGoPro={() => {
+          setPaywallOpen(false);
+          proRequest.value = true;
+          goTab({ name: 'settings' });
+        }}
+      />
       <ConfirmDialog />
       <Toasts />
       <Announcer />

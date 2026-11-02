@@ -197,6 +197,7 @@ describe('Intl formatting follows the language', () => {
     expect(formatDate(t0, 'en')).toBe('Nov\u00A01,\u00A02026'); // a date never wraps inside
   });
 
+  // Loads eight lazy locale chunks: well under a second alone, but slow when the whole suite runs in parallel.
   it('arrival times in every language (24h where the locale wants it)', async () => {
     for (const l of ['ja', 'zh', 'es', 'fr', 'pt', 'ru', 'hi', 'ar'] as const) await loadLocale(l);
     const in1h = t0 + 3600_000;
@@ -205,5 +206,5 @@ describe('Intl formatting follows the language', () => {
     expect(formatArrival(in1h, t0, 'ar')).toMatch(/3:20/);
     expect(formatArrival(t0 + 3 * 86400_000, t0, 'ja')).toContain('11月4日');
     expect(formatArrival(t0 + 3 * 86400_000, t0, 'ko').replace(/ /g, ' ')).toBe('11월 4일 도착');
-  });
+  }, 20_000);
 });

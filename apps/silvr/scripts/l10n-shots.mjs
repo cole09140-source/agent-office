@@ -104,7 +104,8 @@ function readMessages(lang) {
   const f = join(ROOT, 'src', 'locales', `${lang}.ts`);
   if (!existsSync(f)) return null;
   const out = new Map();
-  const re = /^\s*'([\w.-]+)':\s*(['"`])((?:\\.|(?!\2).)*)\2\s*,?\s*$/gm;
+  // A trailing "// ko: … · en: …" note after the value is fine (translated files carry one per line).
+  const re = /^\s*'([\w.-]+)':\s*(['"`])((?:\\.|(?!\2).)*)\2\s*,?\s*(?:\/\/[^\r\n]*)?\r?$/gm;
   for (const m of readFileSync(f, 'utf8').matchAll(re)) out.set(m[1], m[3].replace(/\\(['"`\\])/g, '$1'));
   return out;
 }
@@ -509,6 +510,29 @@ async function runLang(browser, baseUrl, opts, lang) {
       await page.waitForFunction((b) => document.querySelector('[data-testid="counter"]')?.textContent !== b, before, { timeout: 15000 });
     }
   }
+  /** Marks today's free shots as used (IndexedDB silvr/kv['quota']) and tells the app to re-read it. */
+  async function exhaustQuota() {
+    await page.evaluate(
+      () =>
+        new Promise((resolve, reject) => {
+          const open = indexedDB.open('silvr');
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const d = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const dayKey = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            const tx = open.result.transaction('kv', 'readwrite');
+            tx.objectStore('kv').put({ v: 1, dayKey, freeUsedToday: 10, earnedBalance: 0, adsWatchedToday: 0 }, 'quota');
+            tx.onerror = () => reject(tx.error);
+            tx.oncomplete = () => {
+              open.result.close();
+              new BroadcastChannel('silvr-quota').postMessage('quota');
+              resolve();
+            };
+          };
+        }),
+    );
+  }
   async function pickLangViaSettings() {
     await tab('settings');
     const opt = tid('lang-picker').locator(`[data-value="${lang}"]`);
@@ -818,6 +842,28 @@ async function runLang(browser, baseUrl, opts, lang) {
       await step('settings-language', async () => {
         await reveal(tid('lang-picker').locator('xpath=ancestor::*[contains(@class,"field") or self::section][1]'));
       }, { needs: ['settings'] });
+
+      // MY (top of the same screen): the web build's "get the app" card.
+      await step('my-get-app', async () => {
+        await scrollTop();
+        await reveal(tid('get-app'));
+      }, { needs: ['settings'] });
+      // Paywall: today's free shots used up (written straight into the stored quota), then a shutter press.
+      await step('paywall', async () => {
+        await exhaustQuota();
+        await tab('camera');
+        await waitVis(tid('load-panel').or(tid('shutter')), 10000);
+        if (await isVis(tid('btn-load'))) await tid('btn-load').click();
+        await shutterReady();
+        await tid('shutter').click();
+        await waitVis(tid('paywall'));
+      }, { sets: 'paywall', after: closeSheets });
+      await step('my-empty', async () => {
+        await tab('settings');
+        await waitVis(tid('my-shots'));
+        await page.waitForFunction(() => document.querySelector('[data-testid="my-shots"]')?.getAttribute('data-state') === 'empty', null, { timeout: 5000 });
+        await scrollTop();
+      }, { needs: ['paywall'] });
       await fresh.context.close().catch(() => {});
     }
   }

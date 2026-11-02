@@ -195,7 +195,10 @@ export function stockDescription(id: string, lang: Locale = signalLang.value): s
 
 export const MESSAGES = { ko: koLocale.messages, en: enLocale.messages };
 
-/** The legal / support pages exist in Korean and English only (for now): everyone else gets English. */
-export function legalLang(lang: Locale = signalLang.value): 'ko' | 'en' {
-  return lang === 'ko' ? 'ko' : 'en';
+/** The privacy / terms / support pages exist in all 10 UI languages (?lang=ko|en|ja|zh|es|fr|pt|ru|hi|ar). */
+export function legalLang(lang: Locale = signalLang.value): Locale {
+  return lang;
 }
+
+/** licenses.html is English only. */
+export const LICENSES_LANG = 'en';

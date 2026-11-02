@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { App } from './app';
 import { initNativeBack } from './platform/back';
 import { initPwa } from './platform/pwa';
+import { initMonetization } from './monetize';
 import { depth, go, route } from './state/router';
 import { applyLang, ready, refreshRolls, settings, storageError } from './state/app';
 import { loadSettings } from './store/settings';
@@ -10,6 +11,8 @@ import './styles.css';
 async function boot() {
   initPwa();
   void initNativeBack({ depth, atRoot: () => route.value.name === 'camera', toRoot: () => go({ name: 'camera' }, true) });
+  // Daily shot quota (+ store billing and rewarded ads in the native apps). Never blocks start-up.
+  void initMonetization();
   const s = await loadSettings();
   settings.value = s;
   // A lazy locale is a local chunk (precached offline); never let it hold the app back for long.

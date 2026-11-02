@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { guardTaps, trapTab } from '../components/ui';
 import { t, type MsgKey } from '../i18n';
+import { FREE_SHOTS_PER_DAY } from '../monetize/config';
 
 const SLIDES: { title: MsgKey; body: MsgKey; art: string }[] = [
   { title: 'onb.1.title', body: 'onb.1.body', art: 'roll' },
@@ -76,7 +77,7 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
           {t(s.title)}
         </h1>
         <p id="onb-body">{t(s.body)}</p>
-        {last && <p class="onb-privacy small">{t('onb.privacy')}</p>}
+        {last && <p class="onb-privacy small">{t('onb.privacy', { n: FREE_SHOTS_PER_DAY })}</p>}
         <div class="dots" aria-hidden="true">
           {SLIDES.map((_, k) => (
             <i key={k} class={k === i ? 'on' : ''} />

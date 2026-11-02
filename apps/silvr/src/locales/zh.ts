@@ -41,7 +41,7 @@ export const messages: LocaleMessages = {
   'tab.lab': '冲洗店', // from guide §8.3 · en: Lab
   'tab.gallery': '相册', // from guide §8.3 · en: Album
   'tab.analog': '胶片机', // from guide §8.3 · en: Analog
-  'tab.settings': '设置', // from guide §8.3 · en: Settings
+  'tab.settings': '我的',
   'common.cancel': '取消', // ko: 취소 · en: Cancel
   'common.close': '关闭', // ko: 닫기 · en: Close
   'common.save': '保存', // ko: 저장 · en: Save
@@ -76,7 +76,7 @@ export const messages: LocaleMessages = {
   'onb.2.body': '拍完一卷，就送去冲洗。立即、1\u00A0小时、早上 9\u00A0点或 3\u00A0天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': '在暗房重新冲洗', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': '原图始终完好保留。胶卷、亮度、过期胶卷质感和光晕，想重选几次都可以。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': '免费 · 无需账户，没有服务器。每一张照片都只留在这台设备上。', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.privacy': '每天免费拍 {n}\u00A0张 · 无需注册账号。每一张照片都只留在这台设备上。',
   'cam.loadFilm': '装入胶卷', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': '选择胶卷', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n} 张', // ko: {n}장 · en: {n} exp
@@ -447,6 +447,60 @@ export const messages: LocaleMessages = {
   'wait.days': '{n} 天', // ko: {n}일 · en: {n} d
   'wait.hours': '{n} 小时', // ko: {n}시간 · en: {n} h
   'wait.minutes': '{n} 分钟', // ko: {n}분 · en: {n} min
+
+  // MY tab (shots, rewarded ads, Pro) and the paywall sheet. {n} = a count; {left} = how many are left;
+  // {time} = local clock time; {date} = a date; {store} = "Google Play" / "App Store" (never translated).
+  'quota.empty': '今天的 10\u00A0张免费照片已用完 · 可在“我的”中补充，或升级 Pro 无限拍',
+  'my.free': '今日免费拍摄',
+  'my.free.say': '今天的 {n}\u00A0张免费照片还剩 {left}\u00A0张',
+  'my.unlimited': '无限',
+  'my.earned.label': '看广告获得的张数',
+  'my.earned.note': '过了午夜也不会清零',
+  'my.resets': '{time} 重新补满 {n}\u00A0张免费照片',
+  'my.ad.watch': '看广告 +{n}\u00A0张',
+  'my.ad.left': '今天还能看 {left}\u00A0次（每天 {n}\u00A0次）',
+  'my.ad.loading': '正在载入广告…',
+  'my.ad.none': '今天的广告次数已用完，午夜后可以再看。',
+  'my.ad.offline': '连接互联网后即可观看广告。',
+  'my.ad.blocked': '暂时无法观看广告。',
+  'my.ad.pro': 'Pro 无广告，尽情拍吧。',
+  'my.ad.rewarded': '已获得 {n}\u00A0张，继续拍吧。',
+  'my.ad.dismissed': '看完整段广告，即可获得 {n}\u00A0张。',
+  'my.ad.failed': '广告没能载入，请稍后再试。',
+  'my.pro.lead': '无限拍摄 · 无广告',
+  'my.plans': 'Pro 方案',
+  'my.plan.week': '1 周',
+  'my.plan.3month': '3 个月',
+  'my.plan.lifetime': '永久',
+  'my.plan.week.d': '每周自动续订',
+  'my.plan.3month.d': '每 3 个月自动续订',
+  'my.plan.lifetime.d': '一次购买，永久使用',
+  'my.plan.best': '最划算',
+  'my.buy': '开通 Pro',
+  'my.restore': '恢复购买',
+  'my.manage': '管理订阅',
+  'my.pro.on': '你正在使用 Pro',
+  'my.pro.lifetimeOn': '永久版 · 无限拍摄，无广告',
+  'my.pro.subOn': '订阅中 · 无限拍摄，无广告',
+  'my.pro.renews': '下次续订：{date}',
+  'my.pro.pending': '正在等待付款，确认后会立即开通 Pro。',
+  'my.pro.noStore': '暂时无法连接商店，请稍后再试。',
+  'my.pro.legal': '除非在当期结束前至少 24\u00A0小时取消，订阅将按相同周期自动续订，并从你的 {store} 账户扣费。你可以随时在 {store} 的订阅设置中取消。永久版为一次性购买。',
+  'my.buy.done': 'Pro 已开通，尽情拍吧。',
+  'my.buy.failed': '购买未完成，请再试一次。',
+  'my.restore.done': '已恢复 Pro。',
+  'my.restore.none': '此账户没有可恢复的购买。',
+  'my.restore.failed': '无法恢复，请稍后再试。',
+  'my.app.title': '在 App 里多拍一些',
+  'my.app.body': '在 App 里看一段短广告，就能多拍 {n}\u00A0张，或升级 Pro 无限拍摄。',
+  'my.app.play': '前往 Google Play 下载',
+  'my.adPrivacy': '广告隐私选项',
+  'shots.left': '今天剩 {n}\u00A0张',
+  'shots.leftSay': '今天还能拍 {n} 张照片',
+  'pw.title': '今天的 {n}\u00A0张免费照片已用完',
+  'pw.lead': '趁光线还好，再多拍几张吧。',
+  'pw.pro': '升级 Pro 无限拍',
+  'pw.later': '明天再来拍',
 };
 
 export const cameraText: LocaleCameraText = {

@@ -18,7 +18,7 @@ Mac이 없으니 **GitHub이 빌려주는 Mac(GitHub Actions)** 으로 빌드하
 
 | 항목 | 상태 | 위치 |
 |------|------|------|
-| 번들 ID | `app.silvr.camera` (앱 이름을 바꿔도 이 값은 그대로) | `ios/App/App.xcodeproj/project.pbxproj` |
+| 번들 ID | `com.filmcamela.app` (2026-11-02 변경, App Store Connect에 앱을 만든 뒤에는 바꾸지 마세요) | `ios/App/App.xcodeproj/project.pbxproj` |
 | iPhone 전용 | `TARGETED_DEVICE_FAMILY = 1` — iPad 스크린샷 필요 없음 | 같은 파일 |
 | 개인정보 매니페스트 | `PrivacyInfo.xcprivacy`가 앱 리소스에 포함됨 | `ios/App/App/PrivacyInfo.xcprivacy` |
 | 최소 iOS 버전 | iOS 15.0 (Capacitor 8 요구 사항과 같음) | `project.pbxproj` |
@@ -52,7 +52,7 @@ GitHub → Actions → "iOS build" → Run workflow 클릭 (매번)
 ### A-1. Apple Developer Program 가입 확인
 
 - `08_APP_STORE_CONNECT.md`의 0번(조직으로 등록)대로 가입이 끝나 있어야 해요.
-- **App Store Connect에 앱이 먼저 만들어져 있어야** 업로드가 돼요(`08_APP_STORE_CONNECT.md` 1번, 번들 ID `app.silvr.camera`).
+- **App Store Connect에 앱이 먼저 만들어져 있어야** 업로드가 돼요(`08_APP_STORE_CONNECT.md` 1번, 번들 ID `com.filmcamela.app`).
 
 ### A-2. 팀 ID 확인 → 비밀값 `APPLE_TEAM_ID`
 
@@ -63,7 +63,7 @@ GitHub → Actions → "iOS build" → Run workflow 클릭 (매번)
 
 1. https://developer.apple.com/account/resources/identifiers/list
 2. **+** → **App IDs** → **App** → 계속
-3. Description: `Film Camela` / Bundle ID: **Explicit** → `app.silvr.camera`
+3. Description: `Film Camela` / Bundle ID: **Explicit** → `com.filmcamela.app`
 4. Capabilities는 아무것도 체크하지 않아도 돼요 → **Register**
 
 > 이미 등록돼 있으면 건너뛰세요.
@@ -104,7 +104,7 @@ Set-Location "$HOME\ios-signing"
 
 1. https://developer.apple.com/account/resources/profiles/list → **+**
 2. **Distribution** 아래 **App Store Connect** 선택 → 계속
-3. App ID: `app.silvr.camera` → 계속
+3. App ID: `com.filmcamela.app` → 계속
 4. 인증서: 방금 만든 **Apple Distribution** 선택 → 계속
 5. 프로필 이름: `SILVR App Store` (아무 이름이나 돼요 · 사용자에게 안 보임) → **Generate** → **Download**
 6. 받은 `SILVR_App_Store.mobileprovision`을 `ios-signing` 폴더에 넣어요
@@ -243,7 +243,7 @@ Xcode가 안 열리면 Finder에서 `apps/silvr/ios/App/App.xcodeproj`를 더블
 3. **Signing & Capabilities** 탭
    - ☑ **Automatically manage signing**
    - **Team**: ATIUM GROUP Co., Ltd. (조직 팀) 선택
-   - **Bundle Identifier**: `app.silvr.camera` 인지 확인(바꾸지 마세요)
+   - **Bundle Identifier**: `com.filmcamela.app` 인지 확인(바꾸지 마세요)
 4. **General** 탭 → **Identity**의 **Build** 숫자를 이전 업로드보다 크게(처음이면 1 그대로)
 
 ### B-3. Archive → 업로드

@@ -34,7 +34,7 @@ export const messages: LocaleMessages = {
   'tab.lab': '現像所', // ko: 현상소 · en: Lab
   'tab.gallery': 'アルバム', // ko: 앨범 · en: Album
   'tab.analog': 'アナログ', // ko: 아날로그 · en: Analog
-  'tab.settings': '設定', // ko: 설정 · en: Settings
+  'tab.settings': 'マイ',
   'common.cancel': 'キャンセル', // ko: 취소 · en: Cancel
   'common.close': '閉じる', // ko: 닫기 · en: Close
   'common.save': '保存', // ko: 저장 · en: Save
@@ -69,7 +69,7 @@ export const messages: LocaleMessages = {
   'onb.2.body': '撮り終えたフィルムは、現像に出しましょう。今すぐ・1時間・朝9時・3日から、待つ時間を選べます。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': '暗室で、何度でも現像。', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'オリジナルは、いつでもそのまま残ります。フィルムや明るさ、期限切れの風合い、光のにじみまで、あとから選び直せます。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': '無料。アカウントも、サーバーもありません。写真はすべて、このデバイスの中だけに。', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.privacy': '1日{n}枚まで無料。アカウント不要。写真はすべて、このデバイスの中だけに。',
   'cam.loadFilm': 'フィルムを入れる', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'フィルムを選ぶ', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n}枚撮り', // ko: {n}장 · en: {n} exp
@@ -440,6 +440,60 @@ export const messages: LocaleMessages = {
   'wait.days': '{n}日', // ko: {n}일 · en: {n} d
   'wait.hours': '{n}時間', // ko: {n}시간 · en: {n} h
   'wait.minutes': '{n}分', // ko: {n}분 · en: {n} min
+
+  // MY tab (shots, rewarded ads, Pro) and the paywall sheet. {n} = a count; {left} = how many are left;
+  // {time} = local clock time; {date} = a date; {store} = "Google Play" / "App Store" (never translated).
+  'quota.empty': '今日の無料10枚を使い切りました。マイでチャージするか、Proで無制限に。',
+  'my.free': '今日の無料撮影',
+  'my.free.say': '今日の無料{n}枚のうち、残り{left}枚です',
+  'my.unlimited': '無制限',
+  'my.earned.label': '広告でもらった枚数',
+  'my.earned.note': '日付が変わっても消えません',
+  'my.resets': '{time}に無料{n}枚がまた使えます',
+  'my.ad.watch': '広告を見て+{n}枚',
+  'my.ad.left': '今日はあと{left}回（1日{n}回まで）',
+  'my.ad.loading': '広告を読み込んでいます…',
+  'my.ad.none': '今日の広告はすべて見ました。0時にまた見られます。',
+  'my.ad.offline': 'インターネットに接続すると、広告を見られます。',
+  'my.ad.blocked': '今は広告を見られません。',
+  'my.ad.pro': 'Proなら広告なしで、好きなだけ撮れます。',
+  'my.ad.rewarded': '+{n}枚もらいました。撮影を続けましょう。',
+  'my.ad.dismissed': '広告を最後まで見ると{n}枚もらえます。',
+  'my.ad.failed': '広告を読み込めませんでした。少し待ってからもう一度お試しください。',
+  'my.pro.lead': '無制限の撮影・広告なし',
+  'my.plans': 'Proプラン',
+  'my.plan.week': '1週間',
+  'my.plan.3month': '3か月',
+  'my.plan.lifetime': '買い切り',
+  'my.plan.week.d': '毎週自動更新',
+  'my.plan.3month.d': '3か月ごとに自動更新',
+  'my.plan.lifetime.d': '1回の購入で、ずっと使えます',
+  'my.plan.best': 'いちばんお得',
+  'my.buy': 'Proをはじめる',
+  'my.restore': '購入を復元',
+  'my.manage': 'サブスクリプションを管理',
+  'my.pro.on': 'Proをご利用中です',
+  'my.pro.lifetimeOn': '買い切り・無制限の撮影、広告なし',
+  'my.pro.subOn': 'サブスクリプション利用中・無制限の撮影、広告なし',
+  'my.pro.renews': '次回更新日：{date}',
+  'my.pro.pending': 'お支払いの承認を待っています。承認されると、すぐにProが使えます。',
+  'my.pro.noStore': '今はストアに接続できません。少し待ってからもう一度お試しください。',
+  'my.pro.legal': 'サブスクリプションは、期間終了の24時間以上前に解約しない限り、同じ期間で自動更新されます。料金は{store}アカウントに請求されます。解約は{store}のサブスクリプション設定からいつでも行えます。買い切りは1回限りのお支払いです。',
+  'my.buy.done': 'Proが使えるようになりました。好きなだけ撮りましょう。',
+  'my.buy.failed': '購入を完了できませんでした。もう一度お試しください。',
+  'my.restore.done': 'Proを復元しました。',
+  'my.restore.none': 'このアカウントに復元できる購入はありません。',
+  'my.restore.failed': '復元できませんでした。少し待ってからもう一度お試しください。',
+  'my.app.title': 'アプリなら、もっと撮れます',
+  'my.app.body': 'アプリでは広告で{n}枚追加、Proなら無制限に撮れます。',
+  'my.app.play': 'Google Playで入手',
+  'my.adPrivacy': '広告のプライバシー設定',
+  'shots.left': '今日あと{n}枚',
+  'shots.leftSay': '今日撮れる写真はあと{n}枚です',
+  'pw.title': '今日の無料{n}枚を使い切りました',
+  'pw.lead': 'まだ光がきれいなら、もう少し撮りましょう。',
+  'pw.pro': 'Proで無制限に撮る',
+  'pw.later': 'また明日にします',
 };
 
 export const cameraText: LocaleCameraText = {

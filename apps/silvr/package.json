@@ -19,10 +19,12 @@
     "test:all": "npm run typecheck && npm run test && npm run build && npm run test:e2e"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.3.0",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.5.3",
     "@capacitor/filesystem": "^8.1.5",
     "@capacitor/share": "^8.0.3",
+    "@capgo/native-purchases": "^8.9.6",
     "@preact/signals": "^2.11.3",
     "preact": "^10.29.8"
   },

@@ -8,7 +8,10 @@ import { LoadPanel, QUICK_START_KEY } from '../cameras/LoadPanel';
 import { canLoad, DEFAULT_CAMERA_ID, defaultCapacity, ejectsPrints, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
+import { BackDecor, BackWindow } from '../cameras/backs/Back';
+import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
+import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
 import { Canister, formatSigned, Ltr, Sheet, Slider, Thumb, useObjectUrl } from '../components/ui';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
@@ -21,7 +24,8 @@ import { cameraDescription, isolate, ltr, rollName, t, type MsgKey } from '../i1
 import { haptic } from '../platform/feedback';
 import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
 import { holdCapture } from '../platform/pwa';
-import { go, isCurrent } from '../state/router';
+import { consumeShot, refundShot } from '../monetize/quota';
+import { go, goTab, isCurrent } from '../state/router';
 import { get, put } from '../store/db';
 import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, readyAtFor, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
 import { formatArrival } from '../components/arrival';
@@ -118,6 +122,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [countdown, setCountdown] = useState(0);
   /** Set by a second shutter press or Escape while the self-timer runs. */
   const timerCancel = useRef(false);
+  /** Wakes the self-timer wait at once when it is cancelled (instead of at its next tick). */
+  const timerWake = useRef<(() => void) | null>(null);
   const [zoom, setZoom] = useState(1);
   const [formatPick, setFormatPick] = useState<Aspect | null>(null);
   const [busy, setBusy] = useState(false);
@@ -301,7 +307,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth, h: el.clientHeight }));
+    // Content box: the stage's padding is the room the body's window bezel takes around the preview.
+    const ro = new ResizeObserver(([e]) => setBox({ w: Math.floor(e.contentRect.width), h: Math.floor(e.contentRect.height) }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -483,9 +490,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     setQueued(n);
   };
 
-  /** The countdown stops at its next 100 ms check (shutter, timer chip, viewfinder tap or Escape). */
+  /** Stops the countdown at once (shutter, timer chip, viewfinder tap or Escape). */
   const cancelTimer = () => {
-    if (countdown > 0) timerCancel.current = true;
+    if (countdown > 0) {
+      timerCancel.current = true;
+      timerWake.current?.();
+    }
   };
 
   /** The shutter button / Space / Enter. Presses during a capture queue up instead of being dropped. */
@@ -563,6 +573,18 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (!fromQueue) await afterRollFull(r);
       return;
     }
+    // Daily shot quota: every accepted shutter press costs one shot (half-frame / double exposure:
+    // each press; quad: one press). Taken before the timer so a refused press says so at once;
+    // given back below unless the exposure is actually saved. Imports never come through here.
+    if (!(await consumeShot())) {
+      shootingRef.current = false;
+      setQueue(0);
+      if (mountedRef.current) setBusy(false);
+      // The paywall sheet (App, on the engine's 'fc:quota-exhausted' event) explains and offers more shots.
+      return;
+    }
+    /** The press produced a saved exposure: its shot stays spent. */
+    let kept = false;
     const left = framesLeft(r);
     // A double exposure takes two presses per frame; half-frame and the rest one.
     pressesLeftRef.current = camera.capture === 'double' ? left * 2 - (r.pending ? 1 : 0) : left;
@@ -580,22 +602,41 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         timerCancel.current = false;
         // One announcement, not one per second.
         setAnnounce(t('cam.timerSay', { n: timer }));
-        for (let i = timer; i > 0; i--) {
-          setCountdown(i);
-          haptic(8);
-          for (let k = 0; k < 10; k++) {
-            await sleep(100);
-            if (aborted()) {
-              drain = false;
-              return;
+        // Counted against a wall-clock deadline, not by adding up sleeps: timers fire late under load
+        // (100 ms ticks ran ~1.6x slow), but the shutter still goes off `timer` seconds after the press.
+        const deadline = performance.now() + timer * 1000;
+        let shown = 0;
+        for (;;) {
+          const remaining = deadline - performance.now();
+          if (remaining <= 0) break;
+          const n = Math.ceil(remaining / 1000);
+          if (n !== shown) {
+            shown = n;
+            setCountdown(n);
+            haptic(8);
+          }
+          // Sleep to the next whole second (re-checking at least every 250 ms for backgrounding);
+          // a cancel wakes the wait at once.
+          const wait = Math.min(250, remaining - (n - 1) * 1000);
+          await new Promise<void>((res) => {
+            const id = setTimeout(done, wait);
+            function done() {
+              clearTimeout(id);
+              timerWake.current = null;
+              res();
             }
-            if (timerCancel.current) {
-              timerCancel.current = false;
-              drain = false;
-              // The toast region is a live region: announcing it here too would say it twice.
-              toast(t('cam.timerCancelled'), undefined, 1800);
-              return;
-            }
+            timerWake.current = done;
+          });
+          if (aborted()) {
+            drain = false;
+            return;
+          }
+          if (timerCancel.current) {
+            timerCancel.current = false;
+            drain = false;
+            // The toast region is a live region: announcing it here too would say it twice.
+            toast(t('cam.timerCancelled'), undefined, 1800);
+            return;
           }
         }
         setCountdown(0);
@@ -692,6 +733,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
       // Everything below runs only once the frame is committed to IndexedDB (addShot resolves on
       // transaction complete): the thumbnail / eject never shows a photo that is not saved yet.
+      kept = true;
       if (s.sound) playAdvance(camera.sound);
       if (result) setAnnounce(t('cam.saved', { n: result.photo.frame }));
       else if (camera.capture === 'half') setAnnounce(t('cam.halfNext'));
@@ -725,6 +767,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         toast(quota ? t('err.storage') : t('common.error'));
       }
     } finally {
+      if (!kept) void refundShot(); // cancelled timer, backgrounded, another window, save failed
       if (torchOn) void cam().setTorch(false);
       release();
       shootingRef.current = false;
@@ -1016,10 +1059,26 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const starting = state === 'starting';
   /** While the self-timer counts, only the timer chip (cancel) stays usable in the toolbar. */
   const chipLock = counting || undefined;
+  /** The body's back plate: material, window, buttons and release for this camera (static CSS). */
+  const back = useMemo(() => backFor(camera), [camera.id]);
 
   return (
     <div class={`camera cam-${camera.id}${roll ? '' : ' unloaded'}`} data-testid="camera-screen" data-camera={camera.id}>
-      <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
+      <div
+        class="bp-body"
+        data-family={back.family}
+        data-mat={back.material}
+        data-win={back.window}
+        data-btn={back.buttons}
+        data-shutter={back.shutterStyle}
+        data-band={back.bandAt}
+        data-plate={back.plate === 'transparent' ? 'print' : 'badge'}
+        data-rainbow={back.details.rainbow || undefined}
+        data-stripe={back.details.stripe || undefined}
+        style={backVars(back)}
+      >
+      <BackDecor key={camera.id} spec={back} />
+      <div class={`cam-top${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
         <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll || counting} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
           <span class="chip-txt" dir="auto">{camera.name}</span>
         </button>
@@ -1117,6 +1176,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       )}
 
       <div class="cam-stage" ref={stageRef}>
+        <BackWindow spec={back} width={frame.width} height={frame.height} />
         <div class={`viewfinder vfs-${camera.viewfinder}`} style={{ width: `${frame.width}px`, height: `${frame.height}px` }}>
           {gpu ? <canvas key={glKey} ref={canvasRef} class="preview" data-testid="preview" /> : <div class="preview" ref={videoHostRef} />}
           <ViewfinderOverlay
@@ -1150,6 +1210,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               <small>/{roll.capacity}</small>
             </div>
           )}
+          {/* Today's free shots, in the corner opposite the frame counter (hidden for Pro / unlimited and while counting down). */}
+          {roll && !counting && <ShotsLeftBadge class="vf-shots" onClick={() => goTab({ name: 'settings' })} />}
           {roll && (camera.viewfinder === 'lcd' || camera.viewfinder === 'pixel') && (
             <span class="sr-only" data-testid="counter">
               {String(roll.shots).padStart(2, '0')}/{roll.capacity}
@@ -1166,7 +1228,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')}
             data-testid="btn-flip"
             data-facing={facing}
-            style={{ top: `${(box.h - frame.height) / 2 + 10}px`, right: `${(box.w - frame.width) / 2 + 10}px` }}
+            style={{ top: `calc(var(--bp-pad-t, 0px) + ${(box.h - frame.height) / 2 + 10}px)`, right: `calc(var(--bp-pad-x, 0px) + ${(box.w - frame.width) / 2 + 10}px)` }}
           >
             <Icon name="flip" size={22} />
           </button>
@@ -1198,7 +1260,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         )}
       </div>
 
-      {roll ? (
+      {roll && (
         <div class="cam-bottom">
           {camera.instant && lastPhoto ? (
             <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
@@ -1253,7 +1315,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             </button>
           </div>
         </div>
-      ) : (
+      )}
+      </div>
+      {!roll && (
         <LoadPanel
           cameraId={camera.id}
           stockId={stock.id}

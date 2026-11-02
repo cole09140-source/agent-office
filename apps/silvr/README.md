@@ -1,6 +1,6 @@
 # Film Camela – 필름 카메라
 
-> 2026-11-01 SILVR에서 이름을 바꿨어요. 패키지/번들 ID `app.silvr.camera`, 폴더 `apps/silvr`, 웹 주소 `silvr.muzig.ai`, 저장소 이름은 데이터 호환을 위해 그대로예요.
+> 2026-11-01 SILVR에서 이름을 바꿨어요. 패키지/번들 ID는 11/2에 `com.filmcamela.app`으로 바뀌었고(코드의 Java 패키지 `com.filmcamela.app`는 그대로), 폴더 `apps/silvr`, 웹 주소 `silvr.muzig.ai`, 저장소 이름은 데이터 호환을 위해 그대로예요.
 
 네거티브가 남는 필름 카메라. PWA + iOS/Android(Capacitor).
 

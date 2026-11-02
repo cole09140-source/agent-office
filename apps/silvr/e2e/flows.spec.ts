@@ -87,7 +87,8 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
   await expect(page.getByTestId('speed-at-instant')).toHaveText('In your album right away');
   await expect(page.getByTestId('speed-at-1h')).toHaveText(/^Arrives (today|tomorrow) at \d{1,2}:\d{2}\s[AP]M$/);
   await expect(page.getByTestId('speed-at-morning')).toHaveText(/^Arrives (today|tomorrow) at 9:00\sAM$/);
-  await expect(page.getByTestId('speed-at-3d')).toHaveText(/^Arrives [A-Z][a-z]{2} \d{1,2}$/);
+  // dates and model names glue their inner space with a no-break space (U+00A0) so they never wrap: \s matches both
+  await expect(page.getByTestId('speed-at-3d')).toHaveText(/^Arrives [A-Z][a-z]{2}\s\d{1,2}$/);
   await page.getByTestId('speed-1h').click();
   await expect(page.getByTestId('lab-screen')).toBeVisible();
   await expect(page.getByTestId('lab-item')).toHaveCount(1);
@@ -107,7 +108,7 @@ test('lab: rewind early → 1 hour → countdown → rush develop → album badg
   await page.getByTestId('btn-rush').click();
   await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('lab-item')).toHaveCount(0);
-  await expect(page.getByText(/Mono 400 roll is developed/)).toBeVisible();
+  await expect(page.getByText(/Mono\s400 roll is developed/)).toBeVisible();
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await expect(page.getByTestId('roll-card')).toContainText('NEW');

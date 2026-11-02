@@ -61,7 +61,8 @@ test('R2 lab clock: tomorrow 9 AM and 3 days develop on their own', async ({ pag
   await page.getByTestId('speed-morning').click();
   await expect(page.getByTestId('lab-item')).toContainText(/Ready in 11h 30m|Ready in 11h 29m/);
   await page.clock.fastForward(11.5 * 3600_000 + 60_000);
-  await expect(page.getByText(/Sunny 200 roll is developed/)).toBeVisible({ timeout: 10_000 });
+  // model names glue their inner space with U+00A0 so "Sunny 200" never wraps: \s matches it
+  await expect(page.getByText(/Sunny\s200 roll is developed/)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByTestId('lab-item')).toHaveCount(0);
 
   await page.getByTestId('tab-camera').click();
@@ -236,7 +237,7 @@ test('R8 onboarding replay, language persistence, reset wipes pending exposures'
   await page.getByTestId('onb-skip').click();
   await page.getByRole('radio', { name: '한국어' }).click();
   await page.reload();
-  await expect(page.getByTestId('tab-settings')).toContainText('설정');
+  await expect(page.getByTestId('tab-camera')).toContainText('카메라'); // Korean survived the reload (ko and en both label the MY tab "MY")
   await page.getByTestId('tab-settings').click();
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();

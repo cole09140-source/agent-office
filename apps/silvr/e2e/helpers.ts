@@ -1,6 +1,20 @@
 import { expect, type Page } from '@playwright/test';
 
-export async function start(page: Page, path = './') {
+/**
+ * Opens the app and skips onboarding. By default the daily free-shot limit is lifted (web-only QA
+ * hatch localStorage['fc-unlimited']='1', see src/monetize/config.ts) so long shooting tests are not
+ * stopped after 10 shots; pass { unlimited: false } to test the limit itself.
+ */
+export async function start(page: Page, path = './', opts: { unlimited?: boolean } = {}) {
+  const unlimited = opts.unlimited ?? true;
+  await page.addInitScript((on: boolean) => {
+    try {
+      if (on) localStorage.setItem('fc-unlimited', '1');
+      else localStorage.removeItem('fc-unlimited');
+    } catch {
+      /* storage blocked: the test decides what it expects */
+    }
+  }, unlimited);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => {

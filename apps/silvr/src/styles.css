@@ -475,6 +475,45 @@ a {
   color: var(--fg-3);
   font-size: 0.75rem;
 }
+/* Today's shots (ShotsLeftBadge): the bottom corner opposite the frame counter, inside the preview,
+   so it never meets the back-plate bezel parts (screws, print, grille, LED sit outside the preview). */
+.viewfinder .vf-shots {
+  position: absolute;
+  z-index: 1;
+  right: 10px;
+  bottom: 10px;
+}
+/* LCD bodies show the count top-right and the date bottom-right; Game Boy bodies count bottom-right. */
+.vfs-lcd .vf-shots,
+.vfs-pixel .vf-shots {
+  right: auto;
+  left: 10px;
+}
+.vfs-pixel .vf-shots {
+  left: 14px;
+  bottom: 14px;
+}
+/* An LED date stamp shares that corner: it steps up above the badge. */
+.viewfinder:has(.vf-shots) .vf-date {
+  bottom: 48px;
+}
+/* Narrow previews (panorama / cine / sprocket held upright): no room for counter and badge side by
+   side, so the badge stands on the same edge one row higher (still inside the picture's corner). */
+.viewfinder {
+  container: vf / inline-size;
+}
+@container vf (max-width: 14.5rem) {
+  /* Counter row: 10px inset + its height (1.125rem text + padding), then a 6px gap. */
+  .viewfinder .vf-shots {
+    bottom: calc(24px + 1.65rem);
+  }
+  .vfs-pixel .vf-shots {
+    bottom: calc(28px + 1.65rem);
+  }
+  .viewfinder:has(.vf-shots) .vf-date {
+    bottom: calc(64px + 1.65rem);
+  }
+}
 .countdown {
   position: absolute;
   inset: 0;
@@ -2248,6 +2287,15 @@ html.tap-guard * {
 .load-row .seg {
   flex: 1 1 10em;
 }
+/* Roll sizes are short labels ("36枚撮り", "24 exp"): never broken mid-word. When they need more room the
+   size switch takes the whole row and the load button drops below it (the row wraps), not the label. */
+.load-row .seg button {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+.load-row .seg {
+  flex: 1 1 auto;
+}
 /* The picker: the viewfinder gets the space left after the controls (never its own content size, which
    made it grow with every camera change), keeps a usable minimum and a cap; the screen scrolls instead. */
 .camera.unloaded .cam-stage {
@@ -2974,8 +3022,10 @@ html.tap-guard * {
 .cam-name .chip-txt {
   white-space: nowrap;
 }
-/* Timer: a fixed 44px chip, the seconds in a corner badge, so turning it on never wraps the bar. */
-.cam-top .chip.timer-chip {
+/* Timer: a fixed 44px chip, the seconds in a corner badge, so turning it on never wraps the bar.
+   (Also over the back plates' 360px chip padding, which would leave the icon + badge 4px too little room.) */
+.cam-top .chip.timer-chip,
+.bp-body .cam-top .chip.timer-chip {
   width: 44px;
   min-width: 44px;
   padding: 0;
@@ -3517,3 +3567,879 @@ button[aria-disabled='true'] {
 :root:lang(hi) body {
   line-height: 1.6;
 }
+
+/* ---------- camera back plates (src/cameras/backs) ----------
+   The shooting screen is the back of the chosen body: a molded plate (material from data-mat),
+   the live preview inside a bezel (data-win), physical buttons (data-btn) and a release (data-shutter).
+   Colours come from inline --bp-* properties (backs/spec.ts). Everything is static CSS: no images,
+   no filters on the live preview. Lettering always has a solid colour pair (checked in tests/backs.test.ts). */
+
+:root {
+  --bp-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --bp-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 -.4'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
+  --bp-pebble: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 -.62'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)'/%3E%3C/svg%3E");
+  --bp-pebble-hi: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .7 -.36'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)'/%3E%3C/svg%3E");
+  /* 1000 px wide (wider than any plate) so the grain never shows a tile seam; frequencies × size are whole numbers so it stitches. */
+  --bp-brush: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.003 .75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .8 -.33'/%3E%3C/filter%3E%3Crect width='1000' height='240' filter='url(%23f)'/%3E%3C/svg%3E");
+  --bp-crinkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='.32' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 -.42'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+
+/* ---- the plate ---- */
+.bp-body {
+  --bp-r: 26px;
+  --bp-bez-t: 9px;
+  --bp-bez-x: 9px;
+  --bp-bez-b: 9px;
+  --bp-vf-r: 10px;
+  --bp-win-r: 19px;
+  --bp-win-ink: rgba(255, 255, 255, 0.5);
+  --bp-pad-t: calc(var(--bp-bez-t) + 2px);
+  --bp-pad-x: calc(var(--bp-bez-x) + 6px);
+  --bp-pad-b: calc(var(--bp-bez-b) + 2px);
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(100% - 16px, 640px);
+  margin: calc(4px + var(--safe-t)) auto 6px;
+  border-radius: var(--bp-r);
+  background-color: var(--bp-body);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.75),
+    0 14px 30px -10px rgba(0, 0, 0, 0.9);
+  transition: background-color 180ms ease;
+}
+.camera.unloaded .bp-body {
+  flex: 1 0 auto;
+  margin-bottom: 10px;
+}
+.bp-decor {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  direction: ltr; /* the physical body is never mirrored */
+}
+.bp-skin {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bp-noise), linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12)), var(--bp-body);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 28px rgba(0, 0, 0, 0.16);
+  animation: bp-in 200ms var(--bp-ease);
+}
+@keyframes bp-in {
+  from {
+    opacity: 0.35;
+  }
+}
+/* Materials */
+[data-mat='leather'] .bp-skin {
+  background: var(--bp-pebble-hi), var(--bp-pebble), radial-gradient(130% 70% at 50% 0%, rgba(255, 255, 255, 0.08), transparent 60%), var(--bp-body);
+  background-position: 1px 1px, 0 0, 0 0, 0 0;
+}
+[data-mat='gloss'] .bp-skin {
+  background:
+    radial-gradient(120% 55% at 25% 0%, rgba(255, 255, 255, 0.38), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.14)),
+    var(--bp-body);
+}
+/* Satin aluminium: fine horizontal grain under one soft anisotropic sheen (light from the upper left). */
+[data-mat='brushed'] .bp-skin {
+  background:
+    linear-gradient(100deg, rgba(255, 255, 255, 0) 8%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.06) 48%, rgba(255, 255, 255, 0) 70%),
+    var(--bp-brush),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(0, 0, 0, 0.02) 1px 2px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.14)),
+    var(--bp-body);
+}
+[data-mat='card'] .bp-skin {
+  background: var(--bp-noise), linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.06)), var(--bp-body);
+  background-size: 90px 90px, auto, auto;
+}
+[data-mat='jelly'] .bp-skin {
+  background:
+    radial-gradient(90% 40% at 50% 0%, rgba(255, 255, 255, 0.42), transparent 62%),
+    radial-gradient(70% 30% at 50% 100%, rgba(255, 255, 255, 0.2), transparent 70%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 10px, transparent 10px 20px),
+    linear-gradient(180deg, var(--bp-body), var(--bp-shade));
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.14),
+    inset 0 -6px 14px rgba(0, 0, 0, 0.22),
+    inset 0 0 30px rgba(255, 255, 255, 0.08);
+}
+[data-mat='rubber'] .bp-skin {
+  background: var(--bp-noise), radial-gradient(110% 60% at 50% 0%, rgba(255, 255, 255, 0.16), transparent 65%), linear-gradient(180deg, var(--bp-body), var(--bp-shade));
+  background-size: 70px 70px, auto, auto;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 4px rgba(0, 0, 0, 0.12),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.22);
+}
+[data-mat='crinkle'] .bp-skin {
+  background: var(--bp-crinkle), radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 60%), var(--bp-body);
+  background-size: 120px 120px, auto, auto;
+}
+[data-mat='housing'] .bp-skin {
+  background:
+    radial-gradient(60% 22% at 30% 4%, rgba(255, 255, 255, 0.5), transparent 70%),
+    radial-gradient(circle at 12% 62%, rgba(255, 255, 255, 0.35) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 15% 58%, rgba(255, 255, 255, 0.3) 0 1.2px, transparent 1.7px),
+    linear-gradient(180deg, var(--bp-body), var(--bp-shade));
+  box-shadow:
+    inset 0 0 0 5px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 7px rgba(0, 30, 45, 0.35),
+    inset 0 3px 0 5px rgba(255, 255, 255, 0.25),
+    inset 0 -8px 16px rgba(0, 20, 40, 0.3);
+}
+
+/* Bands of a second colour */
+.bp-body[data-band='top'] .cam-top,
+.bp-body[data-band='both'] .cam-top {
+  border-radius: var(--bp-r) var(--bp-r) 4px 4px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, rgba(0, 0, 0, 0.035) 1px 3px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.05) 45%, rgba(0, 0, 0, 0.16)),
+    var(--bp-band);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1.5px 0 rgba(0, 0, 0, 0.6),
+    0 3px 3px rgba(0, 0, 0, 0.3);
+  padding-bottom: 6px;
+}
+/* Rangefinder base plate: the same satin chrome as the top, a dark seam where it meets the leather. */
+.bp-body[data-band='both'] .cam-bottom {
+  border-radius: 4px 4px var(--bp-r) var(--bp-r);
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, rgba(0, 0, 0, 0.035) 1px 3px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.04) 40%, rgba(0, 0, 0, 0.2)),
+    var(--bp-band);
+  box-shadow:
+    0 -1.5px 0 rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+.bp-body[data-band='stage'] .cam-stage {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.1)), var(--bp-band);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.45),
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+.bp-body[data-band='bottom'] .cam-bottom {
+  border-radius: 4px 4px var(--bp-r) var(--bp-r);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.12)), var(--bp-band);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+}
+.bp-body[data-stripe] .cam-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--bp-accent);
+  opacity: 0.85;
+}
+
+/* Parts on the plate */
+.bp-lug {
+  position: absolute;
+  top: 17%;
+  width: 6px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #5d6066, #e9eaec 45%, #8a8d92);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.bp-lug.bp-l {
+  left: -5px;
+}
+.bp-lug.bp-r {
+  right: -5px;
+}
+.bp-grip {
+  position: absolute;
+  right: 0;
+  top: 32%;
+  width: 11px;
+  height: 32%;
+  border-radius: 8px 0 0 8px;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 2px, rgba(0, 0, 0, 0.4) 2px 5px), #1b1b1b;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    -1px 0 2px rgba(0, 0, 0, 0.45);
+}
+.bp-screw,
+.bp-wscrew {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f5f6, #a2a6ac 45%, #555a60 78%);
+  box-shadow:
+    0 0 0 0.6px rgba(0, 0, 0, 0.65),
+    0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.bp-screw::after,
+.bp-wscrew::after {
+  content: '';
+  position: absolute;
+  left: 0.5px;
+  right: 0.5px;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: rgba(0, 0, 0, 0.6);
+  transform: rotate(35deg);
+}
+.bp-screw {
+  bottom: 9px;
+}
+.bp-screw.bp-bl {
+  left: 11px;
+}
+.bp-screw.bp-br {
+  right: 11px;
+}
+/* On a chrome base plate the corner screws sit in the plate, above the band. */
+.bp-body[data-band='both'] .bp-screw {
+  z-index: 1;
+}
+
+/* ---- top row: physical buttons ---- */
+/* One row for the fullest body (7 controls) on a 390px phone, like the bar it replaces. */
+.bp-body .cam-top {
+  gap: 5px;
+  padding: 7px 6px 5px;
+}
+.bp-body[data-btn='rubber'] {
+  --bp-face: radial-gradient(120% 120% at 50% 15%, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0) 55%), var(--bp-btn);
+  --bp-btn-sh: 0 0 0 1.5px rgba(0, 0, 0, 0.6), 0 2px 0 1.5px rgba(0, 0, 0, 0.3), 0 3px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+  --bp-btn-down: 0 0 0 1.5px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+.bp-body[data-btn='chrome'] {
+  --bp-face: radial-gradient(110% 90% at 50% 0%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 62%), linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.2)), var(--bp-btn);
+  --bp-btn-sh: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(0, 0, 0, 0.1), 0 2px 3px rgba(0, 0, 0, 0.45), inset 0 1px 0 #fff, inset 0 -1.5px 1px rgba(0, 0, 0, 0.25);
+  --bp-btn-down: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(0, 0, 0, 0.1), inset 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+.bp-body[data-btn='gloss'] {
+  --bp-face: radial-gradient(90% 60% at 50% 8%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%), linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.18)), var(--bp-btn);
+  --bp-btn-sh: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 0 rgba(0, 0, 0, 0.25), 0 3px 5px rgba(0, 0, 0, 0.3), inset 0 -2px 2px rgba(0, 0, 0, 0.2);
+  --bp-btn-down: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+.bp-body[data-btn='jelly'] {
+  --bp-face: radial-gradient(70% 45% at 50% 16%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 72%), radial-gradient(80% 50% at 50% 100%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 70%), var(--bp-btn);
+  --bp-btn-sh: 0 3px 0 rgba(0, 0, 0, 0.26), 0 4px 7px rgba(0, 0, 0, 0.25), inset 0 -3px 4px rgba(0, 0, 0, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  --bp-btn-down: 0 1px 0 rgba(0, 0, 0, 0.26), inset 0 2px 5px rgba(0, 0, 0, 0.28);
+}
+.bp-body .chip,
+.bp-body .icon-btn:not(.vf-flip) {
+  color: var(--bp-btn-ink);
+  background: var(--bp-face);
+  box-shadow: var(--bp-btn-sh);
+  transition:
+    transform 120ms var(--bp-ease),
+    box-shadow 120ms var(--bp-ease);
+}
+.bp-body .chip:active:not(:disabled),
+.bp-body .icon-btn:not(.vf-flip):active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: var(--bp-btn-down);
+  background: var(--bp-face);
+}
+/* Latched (on) buttons sit pressed in, their lettering lit. */
+.bp-body .chip.on,
+.bp-body .flash-charge.charge-ready {
+  color: var(--bp-btn-on);
+  background: var(--bp-face);
+  box-shadow: var(--bp-btn-down);
+}
+.bp-body .flash-charge.flash-charge.off {
+  color: var(--bp-btn-ink);
+  background: var(--bp-face);
+  box-shadow: var(--bp-btn-sh);
+  opacity: 0.8;
+}
+.bp-body .chip.cancel {
+  color: #c62828;
+  background: var(--bp-face);
+  box-shadow:
+    var(--bp-btn-down),
+    0 0 0 2px #ff6b5e;
+}
+.bp-body[data-btn='rubber'] .chip.cancel {
+  color: #ff8a7f;
+}
+/* Model nameplate: printed / engraved on the body, or a small badge. Still the roll-info button. */
+.bp-body .cam-top .cam-name {
+  padding: 0 9px;
+  border-radius: 7px;
+  color: var(--bp-plate-ink);
+  background: var(--bp-plate);
+  box-shadow: none;
+  font-family: var(--sans);
+}
+.bp-body .cam-name:disabled {
+  opacity: 1;
+}
+.bp-body .cam-name .chip-txt {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 850;
+}
+.bp-body[data-plate='badge'] .cam-top .cam-name {
+  height: 30px;
+  min-width: 0;
+  margin-block: 7px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.bp-body[data-plate='badge'] .cam-top .cam-name::after {
+  inset: -7px -2px; /* 44px tall hit area around the 30px badge */
+}
+.bp-body[data-band='top'] .cam-name .chip-txt,
+.bp-body[data-band='both'] .cam-name .chip-txt {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65); /* engraved into the chrome plate */
+}
+.bp-body[data-rainbow] .cam-name::before {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 12px;
+  margin-inline-end: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #e8452c 0 20%, #f39c1f 20% 40%, #f2cf2e 40% 60%, #3fa34d 60% 80%, #2d7dd2 80%);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- the window around the live preview ---- */
+.bp-body .cam-stage {
+  margin: 0;
+  padding: var(--bp-pad-t) var(--bp-pad-x) var(--bp-pad-b);
+}
+.bp-body .cam-stage > .viewfinder,
+.bp-window {
+  grid-area: 1 / 1;
+}
+.bp-body .viewfinder {
+  border-radius: var(--bp-vf-r);
+  box-shadow: none;
+}
+/* Glass edge: a hairline and a soft inner shadow over the picture (no filter on the preview itself). */
+.bp-body .viewfinder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.65),
+    inset 0 2px 7px rgba(0, 0, 0, 0.5);
+}
+.bp-window {
+  position: relative;
+  /* Negative margins: the margin box is exactly the preview's size, so the grid centres both alike. */
+  margin: calc(-1 * var(--bp-bez-t)) calc(-1 * var(--bp-bez-x)) calc(-1 * var(--bp-bez-b));
+  border-radius: var(--bp-win-r);
+  pointer-events: none;
+  direction: ltr;
+}
+/* Rubber eyecup (film bodies) */
+[data-win='optical'] .bp-window {
+  background: linear-gradient(180deg, #2c2c2c, #111 28%, #0b0b0b 72%, #1d1d1d);
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.7),
+    0 3px 5px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 4px rgba(255, 255, 255, 0.025),
+    inset 0 0 0 5px rgba(0, 0, 0, 0.4);
+}
+/* LCD in a glossy frame with four screws and a printed lower band */
+.bp-body[data-win='lcd'] {
+  --bp-bez-t: 9px;
+  --bp-bez-x: 9px;
+  --bp-bez-b: 15px;
+  --bp-vf-r: 3px;
+  --bp-win-r: 9px;
+}
+[data-win='lcd'] .bp-window {
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0) 32%),
+    linear-gradient(180deg, #23272c, #0f1113 60%, #16191c);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 1.5px 0 1px rgba(255, 255, 255, 0.4),
+    0 -1px 0 1px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+/* Molded instant / Y2K rim: body-coloured lip, then a black step */
+.bp-body[data-win='instant'] {
+  --bp-bez-t: 10px;
+  --bp-bez-x: 10px;
+  --bp-bez-b: 14px;
+  --bp-vf-r: 5px;
+  --bp-win-r: 15px;
+  --bp-win-ink: var(--bp-print-ink, var(--bp-plate-ink));
+}
+[data-win='instant'] .bp-window {
+  background: #0d0d0d;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    inset 0 0 0 7px var(--bp-shade),
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.25);
+}
+[data-win='instant'] .bp-window::before {
+  /* the printed lower band of the rim */
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--bp-bez-b) - 2px);
+  border-radius: 0 0 var(--bp-win-r) var(--bp-win-r);
+  background: var(--bp-shade);
+}
+[data-family='y2k'] .bp-window {
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 7px var(--bp-shade),
+    0 0 0 2px rgba(255, 255, 255, 0.25),
+    0 2px 5px rgba(0, 0, 0, 0.3);
+}
+.bp-body[data-family='y2k'] {
+  --bp-win-ink: rgba(255, 255, 255, 0.82);
+}
+/* Handheld screen: slate frame, rounded lower-right corner, power LED */
+.bp-body[data-win='console'] {
+  --bp-bez-t: 11px;
+  --bp-bez-x: 12px;
+  --bp-bez-b: 20px;
+  --bp-vf-r: 2px;
+  --bp-win-r: 10px;
+  --bp-win-ink: rgba(255, 255, 255, 0.62);
+}
+[data-win='console'] .bp-window {
+  border-radius: 10px 10px 36px 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12)), var(--bp-frame);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.5),
+    0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+[data-win='console'] .bp-led {
+  left: calc(var(--bp-bez-x) + 2px);
+  right: auto;
+}
+[data-win='console'] .bp-grille {
+  display: none;
+}
+/* Sealed port: thick clear rim and a black gasket */
+.bp-body[data-win='housing'] {
+  --bp-bez-t: 13px;
+  --bp-bez-x: 13px;
+  --bp-bez-b: 17px;
+  --bp-vf-r: 12px;
+  --bp-win-r: 25px;
+  --bp-win-ink: rgba(255, 255, 255, 0.85);
+}
+[data-win='housing'] .bp-window {
+  background: radial-gradient(70% 30% at 30% 0%, rgba(255, 255, 255, 0.4), transparent 70%), rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.4),
+    0 0 0 4px rgba(0, 30, 45, 0.3),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+    inset 0 0 0 calc(var(--bp-bez-x) - 4px) rgba(255, 255, 255, 0.1),
+    inset 0 0 0 var(--bp-bez-x) #0a1c26;
+}
+/* TLR finder hood: ribbed black leather well */
+.bp-body[data-win='waist'] {
+  --bp-bez-t: 11px;
+  --bp-bez-x: 11px;
+  --bp-bez-b: 11px;
+  --bp-vf-r: 3px;
+  --bp-win-r: 8px;
+}
+[data-win='waist'] .bp-window {
+  background: repeating-linear-gradient(90deg, #171717 0 2px, #0c0c0c 2px 4px);
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.75),
+    0 0 0 3px var(--bp-band),
+    0 0 0 4px rgba(0, 0, 0, 0.45),
+    0 4px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+/* Kids' LCD: a chunky coloured rubber frame */
+.bp-body[data-family='kid'] {
+  --bp-bez-t: 11px;
+  --bp-bez-x: 11px;
+  --bp-bez-b: 16px;
+  --bp-vf-r: 8px;
+  --bp-win-r: 16px;
+  --bp-win-ink: var(--bp-btn-ink);
+}
+[data-family='kid'] .bp-window {
+  background: radial-gradient(90% 40% at 50% 0%, rgba(255, 255, 255, 0.45), transparent 70%), var(--bp-frame);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.22),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+[data-family='kid'] .bp-wscrew {
+  display: none;
+}
+/* Window parts */
+.bp-wscrew {
+  width: 6px;
+  height: 6px;
+}
+[data-win='housing'] .bp-wscrew {
+  width: 8px;
+  height: 8px;
+}
+.bp-wscrew.bp-tl,
+.bp-wscrew.bp-bl {
+  left: calc(var(--bp-bez-x) / 2 - 3px);
+}
+.bp-wscrew.bp-tr,
+.bp-wscrew.bp-br {
+  right: calc(var(--bp-bez-x) / 2 - 3px);
+}
+.bp-wscrew.bp-tl,
+.bp-wscrew.bp-tr {
+  top: calc(var(--bp-bez-t) / 2 - 3px);
+}
+.bp-wscrew.bp-bl,
+.bp-wscrew.bp-br {
+  bottom: calc(var(--bp-bez-b) / 2 - 3px);
+}
+.bp-print {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bp-bez-b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Generated text: decoration only (the real name is the nameplate button). */
+.bp-print::after {
+  content: attr(data-print);
+  font: 700 7.5px/1 var(--sans);
+  letter-spacing: 0.2em;
+  color: var(--bp-win-ink);
+  white-space: nowrap;
+}
+.bp-grille {
+  position: absolute;
+  left: calc(var(--bp-bez-x) + 16px);
+  bottom: calc(var(--bp-bez-b) / 2 - 3.5px);
+  width: 21px;
+  height: 7px;
+  background: radial-gradient(circle, var(--bp-win-ink) 0 0.9px, transparent 1.3px) 0 0 / 3.5px 3.5px;
+  opacity: 0.7;
+}
+.bp-led {
+  position: absolute;
+  right: calc(var(--bp-bez-x) + 16px);
+  bottom: calc(var(--bp-bez-b) / 2 - 2.5px);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bp-led);
+  box-shadow:
+    0 0 5px var(--bp-led),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Narrow windows (landscape, panorama): drop the small parts before they crowd the print. */
+.bp-window {
+  container-type: inline-size;
+}
+@container (max-width: 250px) {
+  .bp-grille,
+  .bp-led {
+    display: none;
+  }
+}
+@container (max-width: 170px) {
+  .bp-print {
+    display: none;
+  }
+}
+
+/* ---- shutter row ---- */
+.bp-body > .cam-bottom,
+.bp-body > .ev-row {
+  position: relative;
+}
+.bp-body .cam-bottom {
+  padding: 9px 16px 11px;
+}
+.bp-body .ev-row {
+  margin: 0 12px 6px;
+  padding: 2px 12px;
+  border-radius: 12px;
+  background: #15120f;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+/* Film memo window: the loaded roll shows through a small framed window, like on a real back. */
+.bp-body .roll-btn,
+.bp-body .roll-btn.has-shots {
+  color: #ddd6c9;
+  background: linear-gradient(180deg, #0c0b09, #1b1915);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 0 3px var(--bp-frame),
+    0 0 0 4px rgba(0, 0, 0, 0.35),
+    0 2px 4px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 120ms var(--bp-ease);
+}
+.bp-body .roll-btn.has-shots {
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 138, 43, 0.45),
+    0 0 0 3px var(--bp-frame),
+    0 0 0 4px rgba(0, 0, 0, 0.35),
+    0 2px 4px 3px rgba(0, 0, 0, 0.25);
+}
+.bp-body .roll-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.bp-body .last-shot .thumb {
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 3px var(--bp-frame),
+    0 0 0 4px rgba(0, 0, 0, 0.4),
+    0 3px 6px 3px rgba(0, 0, 0, 0.3);
+}
+.bp-body .last-shot.instant .thumb {
+  border-radius: 2px;
+}
+
+/* ---- shutter releases ---- */
+.bp-body .shutter {
+  border: 0;
+  transition: transform 120ms var(--bp-ease);
+}
+.bp-body .shutter span {
+  transition:
+    transform 100ms ease,
+    filter 100ms ease;
+}
+.bp-body .shutter:active:not(:disabled) span,
+.bp-body .shutter.busy span {
+  transform: scale(0.92);
+  filter: brightness(0.86);
+}
+.bp-body .shutter.starting {
+  animation: bp-wait 1.1s ease-in-out infinite alternate;
+}
+.bp-body .shutter.starting span {
+  transform: scale(0.92);
+  opacity: 0.65;
+}
+@keyframes bp-wait {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+/* Knurled metal dial */
+.bp-body[data-shutter='knurl'] .shutter {
+  background:
+    radial-gradient(closest-side, transparent 84%, rgba(0, 0, 0, 0.4) 86%, transparent 92%),
+    repeating-conic-gradient(var(--bp-shutter-rim) 0 4deg, var(--bp-shutter) 4deg 8deg);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.55),
+    0 0 0 5px rgba(255, 255, 255, 0.07),
+    0 5px 9px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+.bp-body[data-shutter='knurl'] .shutter span {
+  width: 58px;
+  height: 58px;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.16) 0 1px, rgba(0, 0, 0, 0.05) 1px 2.4px),
+    radial-gradient(circle at 50% 28%, #fff, var(--bp-shutter) 46%, var(--bp-shutter-rim) 135%);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(255, 255, 255, 0.85),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+}
+/* Glossy dome on a body-coloured collar */
+.bp-body[data-shutter='dome'] .shutter {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 62%), var(--bp-shade);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 4px 8px rgba(0, 0, 0, 0.35),
+    inset 0 2px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.22);
+}
+.bp-body[data-shutter='dome'] .shutter span {
+  width: 60px;
+  height: 60px;
+  background:
+    radial-gradient(circle, #fbf8f2 0 5.5px, rgba(0, 0, 0, 0.22) 6px, transparent 7.5px),
+    radial-gradient(70% 50% at 50% 20%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(circle at 50% 62%, var(--bp-shutter) 55%, var(--bp-shutter-rim));
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.45),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.25);
+}
+/* Black rubber ring with a coloured centre */
+.bp-body[data-shutter='rubber'] .shutter {
+  background: radial-gradient(circle at 50% 28%, #3c3c3c, #151515 70%);
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.75),
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.bp-body[data-shutter='rubber'] .shutter span {
+  width: 54px;
+  height: 54px;
+  background: radial-gradient(60% 45% at 50% 22%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 70%), var(--bp-shutter);
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.5),
+    0 1px 0 3px rgba(255, 255, 255, 0.08),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+}
+/* Big candy button */
+.bp-body[data-shutter='jelly'] .shutter {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 65%), var(--bp-shutter-rim);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.25),
+    0 6px 10px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.35);
+}
+.bp-body[data-shutter='jelly'] .shutter span {
+  width: 64px;
+  height: 64px;
+  background:
+    radial-gradient(60% 38% at 50% 18%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 75%),
+    radial-gradient(80% 50% at 50% 100%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 70%),
+    var(--bp-shutter);
+  box-shadow:
+    inset 0 -4px 6px rgba(0, 0, 0, 0.18),
+    0 2px 0 rgba(0, 0, 0, 0.18);
+}
+/* Movie-camera run button: rounded square */
+.bp-body[data-shutter='trigger'] .shutter {
+  border-radius: 24px;
+  background: linear-gradient(180deg, #3a3a3a, #141414);
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.bp-body[data-shutter='trigger'] .shutter span {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: radial-gradient(70% 45% at 50% 18%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 72%), linear-gradient(180deg, var(--bp-shutter), var(--bp-shutter-rim));
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.3);
+}
+/* Handheld A-button in a moulded well */
+.bp-body[data-shutter='console'] .shutter {
+  background: radial-gradient(circle at 50% 65%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 70%), var(--bp-shade);
+  box-shadow:
+    inset 0 3px 5px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.bp-body[data-shutter='console'] .shutter span {
+  width: 58px;
+  height: 58px;
+  background: radial-gradient(60% 40% at 50% 22%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 72%), radial-gradient(circle at 50% 60%, var(--bp-shutter) 60%, var(--bp-shutter-rim));
+  box-shadow:
+    0 3px 0 var(--bp-shutter-rim),
+    0 4px 5px rgba(0, 0, 0, 0.35);
+}
+.bp-body .shutter.cancel span {
+  background: #3a1d1a;
+  color: #ff8a7f;
+  box-shadow: inset 0 0 0 2px #ff6b5e;
+  transform: scale(0.86);
+}
+
+/* ---- sizes ---- */
+@media (max-width: 374px) {
+  .bp-body {
+    width: calc(100% - 8px);
+    --bp-r: 22px;
+  }
+  .bp-body .cam-top {
+    gap: 4px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  .bp-body .cam-top .chip {
+    padding: 0 7px;
+  }
+  .bp-body .cam-top .cam-name {
+    padding: 0 6px;
+  }
+  .bp-body .cam-name .chip-txt {
+    letter-spacing: 0;
+  }
+  .bp-body .cam-bottom {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+/* Landscape phones: a thinner plate so the picture keeps its height. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bp-body {
+    --bp-r: 18px;
+    margin-top: calc(2px + var(--safe-t));
+    margin-bottom: 4px;
+  }
+  .bp-body .cam-top {
+    padding-top: 3px;
+    padding-bottom: 2px;
+  }
+  .bp-body .cam-bottom {
+    padding-top: 4px;
+    padding-bottom: 6px;
+  }
+}
+@media (forced-colors: active) {
+  html .bp-decor,
+  html .bp-window {
+    display: none;
+  }
+  html .bp-body {
+    border: 1px solid CanvasText;
+  }
+  html .bp-body .shutter {
+    border: 4px solid ButtonText;
+  }
+  html .bp-body .shutter span {
+    background: ButtonText;
+  }
+}
+/* ---------- end camera back plates ---------- */

@@ -1,0 +1,234 @@
+/* MY tab (top of the Settings screen) and the paywall sheet. Tokens from styles.css :root. */
+
+.my-label {
+  margin: 0 0 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+/* ---- shots card: a calm film counter ---- */
+.my-count {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 12px;
+}
+.my-count-num {
+  color: var(--accent);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.my-count-num small {
+  color: var(--fg-3);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-inline-start: 2px;
+}
+.my-count-word {
+  font-weight: 700;
+}
+/* Ten frame marks, like the edge of a negative: lit while that free shot is still left. */
+.my-marks {
+  display: inline-flex;
+  gap: 4px;
+  direction: ltr;
+}
+.my-marks i {
+  width: 7px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--line);
+  transition: background-color 0.3s ease;
+}
+.my-marks i.on {
+  background: var(--accent);
+}
+.my-earned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.my-earned > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.my-earned strong {
+  flex: none;
+  font-size: 1.0625rem;
+  font-variant-numeric: tabular-nums;
+}
+.my-reset,
+.my-note {
+  margin: 10px 0 0;
+}
+
+/* ---- rewarded ad ---- */
+.my-ad-card .btn.wide {
+  margin-top: 0;
+}
+.my-ad-note {
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+/* ---- Pro ---- */
+.my-pro-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.my-pro-head h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.my-pro-head .badge {
+  margin: 0;
+}
+.my-pro-lead,
+.my-pro-on {
+  margin: 0 0 12px;
+}
+.my-pro-on {
+  font-weight: 700;
+}
+.my-pro-on + .small {
+  margin: -8px 0 4px;
+}
+.my-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.my-plan {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.my-plan input {
+  /* the label is the target; the native radio stays for keyboard and screen readers */
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.my-plan:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.my-plan.on {
+  border-color: var(--accent);
+  background: rgba(255, 138, 43, 0.08);
+}
+.my-plan::before {
+  content: '';
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--fg-3);
+  box-sizing: border-box;
+}
+.my-plan.on::before {
+  border: 5px solid var(--accent);
+}
+.my-plan-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.my-plan-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-weight: 700;
+}
+.my-plan-best {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: rgba(255, 138, 43, 0.16);
+  color: var(--accent-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.my-plan-price {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.my-plans:disabled .my-plan {
+  opacity: 0.6;
+  cursor: default;
+}
+.my-pro-pending {
+  margin: 12px 0 0;
+  color: var(--accent-2);
+}
+.my-pro-nostore {
+  margin: 12px 0 0;
+}
+.my-restore {
+  display: block;
+  min-height: 44px;
+  margin: 8px auto 0;
+}
+.my-legal {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+.my-legal a {
+  color: var(--fg);
+  text-underline-offset: 3px;
+}
+
+/* ---- web: get the app ---- */
+.my-app h2 {
+  margin-bottom: 6px;
+}
+.my-app-body {
+  margin: 0;
+}
+.my-app.compact {
+  margin-top: 4px;
+}
+
+/* The settings that follow MY, under their own small heading. */
+.my-settings-h {
+  margin: 22px 4px 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+/* ---- paywall sheet ---- */
+.pw-lead {
+  margin: 0 0 8px;
+}
+.pw-reset {
+  margin: 8px 0 0;
+}

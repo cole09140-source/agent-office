@@ -15,7 +15,7 @@ const LANGS: [code: string, htmlLang: string, endonym: string][] = [
   ['ar', 'ar', 'العربية'],
 ];
 const TABS = ['camera', 'lab', 'gallery', 'analog', 'settings'];
-const PREFIXES = 'app|tab|common|cam|lab|gal|onb|speed|dr|view|roll|set|an|a11y|palette|share|hint|err|update|toast|dur|wait|stock|era';
+const PREFIXES = 'app|tab|common|cam|lab|gal|onb|speed|dr|view|roll|set|an|a11y|palette|share|hint|err|update|toast|dur|wait|stock|era|quota|my|pw|shots';
 
 /** Raw keys, unfilled placeholders and plural syntax left in the visible text or labels. */
 async function leaks(page: Page, where: string): Promise<string[]> {

@@ -6,7 +6,7 @@
 | 항목 | 값 |
 |------|----|
 | 앱 이름 | SILVR – 필름 카메라 (EN: SILVR – Film Camera) |
-| 번들 ID / 패키지 | `app.silvr.camera` |
+| 번들 ID / 패키지 | `com.filmcamela.app` |
 | 카테고리 | 사진 및 비디오 (Photo & Video) |
 | 연령 등급 | 4+ / 전체 이용가 |
 | 가격 | 무료 (인앱 결제 없음, v1.0 기준) |

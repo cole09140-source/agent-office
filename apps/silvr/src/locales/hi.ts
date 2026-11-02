@@ -35,7 +35,7 @@ export const messages: LocaleMessages = {
   'tab.lab': 'लैब', // from guide §8.3 · en: Lab
   'tab.gallery': 'एल्बम', // from guide §8.3 · en: Album
   'tab.analog': 'एनालॉग', // from guide §8.3 · en: Analog
-  'tab.settings': 'सेटिंग्ज़', // from guide §8.3 · en: Settings
+  'tab.settings': 'मेरा पेज',
   'common.cancel': 'रद्द करें', // ko: 취소 · en: Cancel
   'common.close': 'बंद करें', // ko: 닫기 · en: Close
   'common.save': 'सेव करें', // ko: 저장 · en: Save
@@ -70,7 +70,7 @@ export const messages: LocaleMessages = {
   'onb.2.body': 'पूरे हो चुके रोल लैब भेजिए और चुनिए कितना इंतज़ार करना है: तुरंत, 1 घंटा, सुबह 9 बजे या 3 दिन।', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'जब चाहें, फिर से डेवलप', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'आपकी ओरिजिनल तस्वीर हमेशा जस की तस रहती है। फ़िल्म, ब्राइटनेस, पुराना लुक या ग्लो — डार्करूम में जितनी बार चाहें, बदलकर देखिए।', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': 'मुफ़्त · न अकाउंट, न सर्वर। सारी तस्वीरें सिर्फ़ इसी डिवाइस पर रहती हैं।', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.privacy': '{n, plural, one {रोज़ # तस्वीर मुफ़्त} other {रोज़ # तस्वीरें मुफ़्त}} · कोई अकाउंट नहीं। सारी तस्वीरें सिर्फ़ इसी डिवाइस पर रहती हैं।',
   'cam.loadFilm': 'रोल डालें', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'फ़िल्म चुनें', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n} फ़ोटो', // ko: {n}장 · en: {n} exp
@@ -441,6 +441,60 @@ export const messages: LocaleMessages = {
   'wait.days': '{n} दिन', // ko: {n}일 · en: {n} d
   'wait.hours': '{n} घंटे', // ko: {n}시간 · en: {n} h
   'wait.minutes': '{n} मिनट', // ko: {n}분 · en: {n} min
+
+  // MY tab (shots, rewarded ads, Pro) and the paywall sheet. {n} = a count; {left} = how many are left;
+  // {time} = local clock time; {date} = a date; {store} = "Google Play" / "App Store" (never translated).
+  'quota.empty': 'आज की 10 मुफ़्त तस्वीरें इस्तेमाल हो गईं · ‘मेरा पेज’ में और पाएँ या Pro लें',
+  'my.free': 'आज की मुफ़्त फ़ोटो',
+  'my.free.say': 'आज की {n} मुफ़्त तस्वीरों में से {left} बाकी हैं',
+  'my.unlimited': 'अनलिमिटेड',
+  'my.earned.label': 'बोनस फ़ोटो',
+  'my.earned.note': 'आधी रात के बाद भी ख़त्म नहीं होतीं',
+  'my.resets': '{n, plural, one {{time} पर फिर से # मुफ़्त तस्वीर मिलेगी} other {{time} पर फिर से # मुफ़्त तस्वीरें मिलेंगी}}',
+  'my.ad.watch': '{n, plural, one {विज्ञापन देखें · +# फ़ोटो} other {विज्ञापन देखें · +# फ़ोटो}}',
+  'my.ad.left': 'आज {n} में से {left} बाकी',
+  'my.ad.loading': 'विज्ञापन लोड हो रहा है…',
+  'my.ad.none': 'आपने आज के सारे विज्ञापन देख लिए। आधी रात के बाद फिर मिलेंगे।',
+  'my.ad.offline': 'विज्ञापन देखने के लिए इंटरनेट से कनेक्ट करें।',
+  'my.ad.blocked': 'अभी विज्ञापन उपलब्ध नहीं हैं।',
+  'my.ad.pro': 'Pro के साथ जितनी चाहें तस्वीरें लें। कोई विज्ञापन नहीं।',
+  'my.ad.rewarded': '{n, plural, one {+# तस्वीर मिल गई। खींचते रहिए।} other {+# तस्वीरें मिल गईं। खींचते रहिए।}}',
+  'my.ad.dismissed': '{n, plural, one {# तस्वीर पाने के लिए विज्ञापन पूरा देखें।} other {# तस्वीरें पाने के लिए विज्ञापन पूरा देखें।}}',
+  'my.ad.failed': 'विज्ञापन लोड नहीं हुआ। थोड़ी देर बाद फिर कोशिश करें।',
+  'my.pro.lead': 'अनलिमिटेड फ़ोटो · कोई विज्ञापन नहीं',
+  'my.plans': 'Pro प्लान',
+  'my.plan.week': '1 हफ़्ता',
+  'my.plan.3month': '3 महीने',
+  'my.plan.lifetime': 'लाइफ़टाइम',
+  'my.plan.week.d': 'हर हफ़्ते अपने-आप रिन्यू',
+  'my.plan.3month.d': 'हर 3 महीने में अपने-आप रिन्यू',
+  'my.plan.lifetime.d': 'एक बार पेमेंट, हमेशा के लिए',
+  'my.plan.best': 'सबसे किफ़ायती',
+  'my.buy': 'Pro लें',
+  'my.restore': 'ख़रीदारी रीस्टोर करें',
+  'my.manage': 'सब्सक्रिप्शन मैनेज करें',
+  'my.pro.on': 'Pro चालू है',
+  'my.pro.lifetimeOn': 'लाइफ़टाइम · अनलिमिटेड फ़ोटो, कोई विज्ञापन नहीं',
+  'my.pro.subOn': 'सब्सक्रिप्शन चालू · अनलिमिटेड फ़ोटो, कोई विज्ञापन नहीं',
+  'my.pro.renews': '{date} को रिन्यू होगा',
+  'my.pro.pending': 'पेमेंट का इंतज़ार है। मंज़ूरी मिलते ही Pro खुल जाएगा।',
+  'my.pro.noStore': 'अभी स्टोर से कनेक्ट नहीं हो पा रहा। थोड़ी देर बाद फिर कोशिश करें।',
+  'my.pro.legal': 'सब्सक्रिप्शन हर बार उतनी ही अवधि के लिए अपने-आप रिन्यू हो जाता है, जब तक आप अवधि ख़त्म होने से कम से कम 24 घंटे पहले उसे रद्द न करें। पेमेंट आपके {store} अकाउंट से लिया जाता है। आप {store} की सब्सक्रिप्शन सेटिंग्ज़ में इसे कभी भी रद्द कर सकते हैं। लाइफ़टाइम का पेमेंट सिर्फ़ एक बार होता है।',
+  'my.buy.done': 'Pro चालू हो गया। जितनी चाहें तस्वीरें लें।',
+  'my.buy.failed': 'ख़रीदारी पूरी नहीं हुई। फिर से कोशिश करें।',
+  'my.restore.done': 'Pro फिर से चालू हो गया।',
+  'my.restore.none': 'इस अकाउंट में रीस्टोर करने के लिए कोई ख़रीदारी नहीं मिली।',
+  'my.restore.failed': 'रीस्टोर नहीं हो सका। थोड़ी देर बाद फिर कोशिश करें।',
+  'my.app.title': 'ऐप में और तस्वीरें',
+  'my.app.body': '{n, plural, one {ऐप में एक छोटा विज्ञापन देखकर # और तस्वीर पाएँ, या Pro लेकर अनलिमिटेड तस्वीरें लें।} other {ऐप में एक छोटा विज्ञापन देखकर # और तस्वीरें पाएँ, या Pro लेकर अनलिमिटेड तस्वीरें लें।}}',
+  'my.app.play': 'इसे Google Play पर पाएँ',
+  'my.adPrivacy': 'विज्ञापन प्राइवेसी विकल्प',
+  'shots.left': 'आज {n} बाकी',
+  'shots.leftSay': '{n, plural, one {आज # तस्वीर बाकी है} other {आज # तस्वीरें बाकी हैं}}',
+  'pw.title': '{n, plural, one {आज की # मुफ़्त तस्वीर इस्तेमाल हो गई} other {आज की # मुफ़्त तस्वीरें इस्तेमाल हो गईं}}',
+  'pw.lead': 'अगर रोशनी अब भी अच्छी है, तो थोड़ी और तस्वीरें खींचिए।',
+  'pw.pro': 'Pro के साथ अनलिमिटेड फ़ोटो',
+  'pw.later': 'कल फिर मिलते हैं',
 };
 
 export const cameraText: LocaleCameraText = {

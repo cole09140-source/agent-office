@@ -1,6 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
-import { canUseStock, PAYMENTS_ENABLED } from '../entitlements';
+import { canUseStock, SHOW_PRO_BADGES } from '../entitlements';
 import { isRtl, t } from '../i18n';
 import { announcement, confirmReq, dismissToast, pauseToast, resumeToast, settings, toasts } from '../state/app';
 import { ensurePrint, type Photo } from '../store/rolls';
@@ -538,7 +538,7 @@ export function StockCard({ stock, selected, onClick }: { stock: FilmStock; sele
       <Canister stock={stock} size={34} />
       <span class="stock-name">{stock.name}</span>
       {/* PRO badges only make sense once purchases exist (and avoid store-review confusion before). */}
-      {PAYMENTS_ENABLED && stock.pro && <span class={`badge ${canUseStock(stock) ? '' : 'locked'}`}>{t('common.pro')}</span>}
+      {SHOW_PRO_BADGES && stock.pro && <span class={`badge ${canUseStock(stock) ? '' : 'locked'}`}>{t('common.pro')}</span>}
     </button>
   );
 }

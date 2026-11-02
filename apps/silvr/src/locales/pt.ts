@@ -35,7 +35,7 @@ export const messages: LocaleMessages = {
   'tab.lab': 'Revelação', // from guide §8.3 · en: Lab
   'tab.gallery': 'Álbum', // from guide §8.3 · en: Album
   'tab.analog': 'Analógico', // from guide §8.3 · en: Analog
-  'tab.settings': 'Ajustes', // from guide §8.3 · en: Settings
+  'tab.settings': 'Meu espaço',
   'common.cancel': 'Cancelar', // ko: 취소 · en: Cancel
   'common.close': 'Fechar', // ko: 닫기 · en: Close
   'common.save': 'Salvar', // ko: 저장 · en: Save
@@ -70,7 +70,7 @@ export const messages: LocaleMessages = {
   'onb.2.body': 'Terminou o filme? Mande revelar e escolha quanto quer esperar: na hora, 1\u00a0hora, às 9h ou 3\u00a0dias.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'Revele de novo no quarto escuro', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'Seu original fica sempre guardado. Troque filme, brilho, envelhecimento e halo quantas vezes quiser.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': 'Grátis. Sem conta. Sem servidores. Todas as fotos ficam só neste dispositivo.', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.privacy': '{n, plural, one {# foto grátis por dia} other {# fotos grátis por dia}}. Sem cadastro. Todas as fotos ficam só neste dispositivo.',
   'cam.loadFilm': 'Colocar filme', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'Escolha o filme', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n, plural, one {# pose} other {# poses}}', // ko: {n}장 · en: {n} exp
@@ -441,6 +441,60 @@ export const messages: LocaleMessages = {
   'wait.days': '{n, plural, one {# dia} other {# dias}}', // ko: {n}일 · en: {n} d
   'wait.hours': '{n, plural, one {# hora} other {# horas}}', // ko: {n}시간 · en: {n} h
   'wait.minutes': '{n, plural, one {# minuto} other {# minutos}}', // ko: {n}분 · en: {n} min
+
+  // MY tab (shots, rewarded ads, Pro) and the paywall sheet. {n} = a count; {left} = how many are left;
+  // {time} = local clock time; {date} = a date; {store} = "Google Play" / "App Store" (never translated).
+  'quota.empty': 'Você usou as 10 fotos grátis de hoje · ganhe mais em Meu espaço ou assine o Pro',
+  'my.free': 'Grátis hoje',
+  'my.free.say': '{left, plural, =0 {Restam 0 de {n} fotos grátis hoje} one {Resta # de {n} fotos grátis hoje} other {Restam # de {n} fotos grátis hoje}}',
+  'my.unlimited': 'Ilimitado',
+  'my.earned.label': 'Fotos extras',
+  'my.earned.note': 'Ficam até você usar.',
+  'my.resets': '{n, plural, one {# foto grátis de novo às {time}} other {# fotos grátis de novo às {time}}}',
+  'my.ad.watch': '{n, plural, one {Ver um anúncio · +# foto} other {Ver um anúncio · +# fotos}}',
+  'my.ad.left': '{left, plural, =0 {Restam 0 de {n} anúncios hoje} one {Resta # de {n} anúncios hoje} other {Restam # de {n} anúncios hoje}}',
+  'my.ad.loading': 'Carregando o anúncio…',
+  'my.ad.none': 'Você já viu todos os anúncios de hoje. Tem mais amanhã.',
+  'my.ad.offline': 'Conecte-se à internet para ver um anúncio.',
+  'my.ad.blocked': 'Não há anúncios disponíveis agora.',
+  'my.ad.pro': 'Com o Pro, fotografe à vontade. Sem anúncios.',
+  'my.ad.rewarded': '{n, plural, one {+# foto adicionada. Continue fotografando.} other {+# fotos adicionadas. Continue fotografando.}}',
+  'my.ad.dismissed': '{n, plural, one {Assista até o fim para ganhar # foto.} other {Assista até o fim para ganhar # fotos.}}',
+  'my.ad.failed': 'O anúncio não carregou. Tente de novo daqui a pouco.',
+  'my.pro.lead': 'Fotos ilimitadas. Sem anúncios.',
+  'my.plans': 'Planos Pro',
+  'my.plan.week': '1 semana',
+  'my.plan.3month': '3 meses',
+  'my.plan.lifetime': 'Vitalício',
+  'my.plan.week.d': 'Renovação automática semanal',
+  'my.plan.3month.d': 'Renovação automática a cada 3 meses',
+  'my.plan.lifetime.d': 'Pague uma vez, use para sempre',
+  'my.plan.best': 'Mais vantajoso',
+  'my.buy': 'Obter o Pro',
+  'my.restore': 'Restaurar compras',
+  'my.manage': 'Gerenciar assinatura',
+  'my.pro.on': 'Você tem o Pro',
+  'my.pro.lifetimeOn': 'Vitalício · fotos ilimitadas, sem anúncios',
+  'my.pro.subOn': 'Assinatura ativa · fotos ilimitadas, sem anúncios',
+  'my.pro.renews': 'Renova em {date}',
+  'my.pro.pending': 'Aguardando o pagamento. O Pro é liberado assim que for aprovado.',
+  'my.pro.noStore': 'Não foi possível conectar à loja agora. Tente de novo daqui a pouco.',
+  'my.pro.legal': 'As assinaturas são renovadas automaticamente pelo mesmo período, a menos que sejam canceladas pelo menos 24 horas antes do fim do período atual, e são cobradas na sua conta ({store}). Cancele quando quiser nas configurações de assinatura da loja ({store}). O plano vitalício é um pagamento único.',
+  'my.buy.done': 'O Pro está ativo. Fotografe à vontade.',
+  'my.buy.failed': 'A compra não foi concluída. Tente de novo.',
+  'my.restore.done': 'Pro restaurado.',
+  'my.restore.none': 'Não há compras para restaurar nesta conta.',
+  'my.restore.failed': 'Não foi possível restaurar. Tente de novo daqui a pouco.',
+  'my.app.title': 'Mais fotos no app',
+  'my.app.body': '{n, plural, one {No app, um anúncio curto dá # foto a mais, ou assine o Pro e fotografe sem limite.} other {No app, um anúncio curto dá # fotos a mais, ou assine o Pro e fotografe sem limite.}}',
+  'my.app.play': 'Baixar no Google Play',
+  'my.adPrivacy': 'Privacidade dos anúncios',
+  'shots.left': '{n, plural, =0 {Sem fotos hoje} one {Resta # foto} other {Restam # fotos}}',
+  'shots.leftSay': '{n, plural, =0 {Não restam fotos hoje} one {Resta # foto hoje} other {Restam # fotos hoje}}',
+  'pw.title': '{n, plural, one {Você usou a foto grátis de hoje} other {Você usou as # fotos grátis de hoje}}',
+  'pw.lead': 'Se a luz ainda está boa, fotografe mais um pouco.',
+  'pw.pro': 'Fotos ilimitadas com o Pro',
+  'pw.later': 'Volto amanhã',
 };
 
 export const cameraText: LocaleCameraText = {

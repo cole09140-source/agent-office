@@ -2,9 +2,10 @@ import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { HelpLink } from './Gallery';
+import { MySection } from './My';
 import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
-import { bidi, isRtl, legalLang, ltr, t } from '../i18n';
+import { bidi, isRtl, legalLang, LICENSES_LANG, ltr, t } from '../i18n';
 import { ENDONYMS, HTML_LANG, LOCALES } from '../intl/locales';
 import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
 import { BackupError, createBackup, restoreBackup } from '../store/backup';
@@ -192,7 +193,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
 
   return (
     <div class="page settings" data-testid="settings-screen">
-      <Header title={t('set.title')} />
+      {/* The tab is "MY": shots, ads and Pro first, then the settings as before. */}
+      <Header title={t('tab.settings')} />
+      <MySection />
+      <h2 class="my-settings-h">{t('set.title')}</h2>
       <section class="card">
         <div class="field">
           <span id="lang-h">{t('set.lang')}</span>
@@ -361,7 +365,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.support')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <a class="row link" href={`./licenses.html?lang=${legalLang()}`} {...legalLink}>
+        <a class="row link" href={`./licenses.html?lang=${LICENSES_LANG}`} {...legalLink}>
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
         </a>

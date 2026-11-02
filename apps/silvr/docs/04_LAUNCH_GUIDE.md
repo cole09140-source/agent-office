@@ -1,6 +1,6 @@
 # 출시 가이드
 
-> 앱 이름: **Film Camela** (2026-11-01 SILVR에서 변경). 패키지/번들 ID `app.silvr.camera`, 웹 주소 `silvr.muzig.ai`, 폴더 `apps/silvr`, 키스토어 파일 이름, 이미 만들어 둔 결과물 폴더(`SILVR_안드로이드` 등)는 옛 이름 그대로예요.
+> 앱 이름: **Film Camela** (2026-11-01 SILVR에서 변경). 패키지/번들 ID는 11/2에 `com.filmcamela.app`으로 바뀌었고(코드의 Java 패키지는 `com.filmcamela.app` 그대로), 웹 주소 `silvr.muzig.ai`, 폴더 `apps/silvr`, 키스토어 파일 이름, 이미 만들어 둔 결과물 폴더(`SILVR_안드로이드` 등)는 옛 이름 그대로예요.
 
 ## A. 웹(PWA) 즉시 배포 — 10분
 
@@ -56,7 +56,7 @@ npm ci
 npm run cap:ios          # build → cap sync ios → Xcode 열기
 ```
 Xcode에서:
-1. Signing & Capabilities → Team 선택, Bundle ID `app.silvr.camera`(원하면 변경하고 `capacitor.config.json`도 같이 변경)
+1. Signing & Capabilities → Team 선택, Bundle ID `com.filmcamela.app`(원하면 변경하고 `capacitor.config.json`도 같이 변경)
 2. General → Version `1.0.0`, Build `1`
 3. Info.plist 권한 문구는 이미 넣어 두었습니다(카메라, 사진 추가·읽기, 위치, 모션). 화면은 세로로 고정돼 있습니다.
 4. Product → Archive → App Store Connect 업로드
@@ -123,4 +123,4 @@ node scripts/android-release-smoke.mjs <adb 기기 이름> <app-release.apk> <�
 ## E. 운영 팁
 - 필름 렌더링 수식을 바꾸면 `src/film/resolve.ts`의 `RENDER_VERSION`을 올리세요. 기존 사진이 새 수식으로 자동 재현상됩니다(원본은 보존).
 - 새 필름 추가: `src/film/stocks.ts`에 항목 추가, `src/i18n.ts`의 `stockKo/stockEn`에 설명 추가. 단위 테스트가 LUT 단조성과 범위를 자동 검증합니다.
-- 아이콘 변경: `public/icons/icon.svg` 수정 후 `npm run icons`(웹, 네이티브 아이콘, 스플래시 일괄 재생성)
+- 아이콘 변경: 로고 원본 `design/brand/logo-source.webp`를 교체한 뒤 `npm run icons`(Python + Pillow·numpy 필요). `scripts/gen-brand-icons.py`가 `design/brand/` 마스터, 웹·PWA 아이콘, iOS·안드로이드 아이콘(적응형·테마 아이콘 포함), 스플래시, 스토어 아이콘을 일괄 재생성합니다.

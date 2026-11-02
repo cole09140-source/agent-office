@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">Film Camela</string>
     <string name="title_activity_main">Film Camela</string>
-    <string name="package_name">app.silvr.camera</string>
-    <string name="custom_url_scheme">app.silvr.camera</string>
+    <string name="package_name">com.filmcamela.app</string>
+    <string name="custom_url_scheme">com.filmcamela.app</string>
+    <!-- REAL AdMob APP id (not an ad unit id), account atiumcompany@gmail.com. Debug builds keep it too
+         (an app id cannot change at runtime) and request Google's TEST ad unit instead.
+         Must match ADMOB_APP_ID.android in src/monetize/config.ts (tests/monetize-config.test.ts checks it). -->
+    <string name="admob_app_id" translatable="false">ca-app-pub-6568578451894077~3582572576</string>
 </resources>

@@ -37,7 +37,7 @@ export const messages: LocaleMessages = {
   'tab.lab': 'المعمل', // from guide §8.3 · en: Lab
   'tab.gallery': 'الألبوم', // from guide §8.3 · en: Album
   'tab.analog': 'تناظري', // from guide §8.3 · en: Analog
-  'tab.settings': 'الإعدادات', // from guide §8.3 · en: Settings
+  'tab.settings': 'صفحتي',
   'common.cancel': 'إلغاء', // ko: 취소 · en: Cancel
   'common.close': 'إغلاق', // ko: 닫기 · en: Close
   'common.save': 'حفظ', // ko: 저장 · en: Save
@@ -72,7 +72,7 @@ export const messages: LocaleMessages = {
   'onb.2.body': 'أرسل الفيلم إلى المعمل، واختر مدة انتظارك: فورًا، أو ساعة، أو حتى 9 صباحًا، أو 3 أيام.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
   'onb.3.title': 'أعد التحميض في الغرفة المظلمة متى شئت', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'صورتك الأصلية محفوظة دائمًا. جرّب فيلمًا آخر، أو سطوعًا مختلفًا، أو مظهر الفيلم القديم، أو الوهج، كلما أردت.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
-  'onb.privacy': 'مجاني. لا حساب ولا خوادم. تبقى كل صورك على هذا الجهاز فقط.', // ko: 무료 · 계정도 서버도 없어요. 모든 사진은 이 기기 안에만 머물러요. · en: Free. No account. No servers. Every photo stays on this device.
+  'onb.privacy': '{n, plural, zero {لا لقطات مجانية يوميًا} one {لقطة مجانية واحدة يوميًا} two {لقطتان مجانيتان يوميًا} few {# لقطات مجانية يوميًا} many {# لقطة مجانية يوميًا} other {# لقطة مجانية يوميًا}}. بلا حساب. تبقى كل صورك على هذا الجهاز فقط.',
   'cam.loadFilm': 'إدخال فيلم', // ko: 필름 넣기 · en: Load film
   'cam.chooseFilm': 'اختر فيلمك', // ko: 필름을 고르세요 · en: Choose your film
   'cam.exposures': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n} exp
@@ -443,6 +443,60 @@ export const messages: LocaleMessages = {
   'wait.days': '{n, plural, zero {0 يوم} one {يوم} two {يومين} few {# أيام} many {# يومًا} other {# يوم}}', // ko: {n}일 · en: {n} d
   'wait.hours': '{n, plural, zero {0 ساعة} one {ساعة} two {ساعتين} few {# ساعات} many {# ساعة} other {# ساعة}}', // ko: {n}시간 · en: {n} h
   'wait.minutes': '{n, plural, zero {0 دقيقة} one {دقيقة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}', // ko: {n}분 · en: {n} min
+
+  // MY tab (shots, rewarded ads, Pro) and the paywall sheet. {n} = a count; {left} = how many are left;
+  // {time} = local clock time; {date} = a date; {store} = "Google Play" / "App Store" (never translated).
+  'quota.empty': 'انتهت لقطاتك المجانية العشر لهذا اليوم · احصل على المزيد من «صفحتي» أو صوّر بلا حدود مع Pro',
+  'my.free': 'لقطات اليوم المجانية',
+  'my.free.say': 'اللقطات المجانية المتبقية اليوم: {left} من {n}',
+  'my.unlimited': 'بلا حدود',
+  'my.earned.label': 'لقطات إضافية',
+  'my.earned.note': 'تبقى بعد منتصف الليل.',
+  'my.resets': '{n, plural, zero {تتجدد لقطاتك المجانية عند {time}} one {تعود لقطة مجانية عند {time}} two {تعود لقطتان مجانيتان عند {time}} few {تعود # لقطات مجانية عند {time}} many {تعود # لقطة مجانية عند {time}} other {تعود # لقطة مجانية عند {time}}}',
+  'my.ad.watch': '{n, plural, zero {مشاهدة إعلان} one {مشاهدة إعلان · لقطة إضافية} two {مشاهدة إعلان · لقطتان إضافيتان} few {مشاهدة إعلان · # لقطات إضافية} many {مشاهدة إعلان · # لقطة إضافية} other {مشاهدة إعلان · # لقطة إضافية}}',
+  'my.ad.left': 'الإعلانات المتبقية اليوم: {left} من {n}',
+  'my.ad.loading': 'جارٍ تحميل الإعلان…',
+  'my.ad.none': 'شاهدت كل إعلانات اليوم. المزيد بعد منتصف الليل.',
+  'my.ad.offline': 'اتصل بالإنترنت لمشاهدة إعلان.',
+  'my.ad.blocked': 'الإعلانات غير متاحة الآن.',
+  'my.ad.pro': 'مع Pro، صوّر كما تشاء. بلا إعلانات.',
+  'my.ad.rewarded': '{n, plural, zero {لم تُضف أي لقطة.} one {أُضيفت لقطة واحدة. تابع التصوير.} two {أُضيفت لقطتان. تابع التصوير.} few {أُضيفت # لقطات. تابع التصوير.} many {أُضيفت # لقطة. تابع التصوير.} other {أُضيفت # لقطة. تابع التصوير.}}',
+  'my.ad.dismissed': '{n, plural, zero {شاهد الإعلان حتى النهاية.} one {شاهد الإعلان حتى النهاية لتحصل على لقطة واحدة.} two {شاهد الإعلان حتى النهاية لتحصل على لقطتين.} few {شاهد الإعلان حتى النهاية لتحصل على # لقطات.} many {شاهد الإعلان حتى النهاية لتحصل على # لقطة.} other {شاهد الإعلان حتى النهاية لتحصل على # لقطة.}}',
+  'my.ad.failed': 'تعذّر تحميل الإعلان. حاول مرة أخرى بعد قليل.',
+  'my.pro.lead': 'تصوير بلا حدود. بلا إعلانات.',
+  'my.plans': 'خطط Pro',
+  'my.plan.week': 'أسبوع',
+  'my.plan.3month': '3 أشهر',
+  'my.plan.lifetime': 'مدى الحياة',
+  'my.plan.week.d': 'يتجدد تلقائيًا كل أسبوع',
+  'my.plan.3month.d': 'يتجدد تلقائيًا كل 3 أشهر',
+  'my.plan.lifetime.d': 'ادفع مرة واحدة واحتفظ به للأبد',
+  'my.plan.best': 'الأوفر',
+  'my.buy': 'الحصول على Pro',
+  'my.restore': 'استعادة المشتريات',
+  'my.manage': 'إدارة الاشتراك',
+  'my.pro.on': 'Pro مفعّل لديك',
+  'my.pro.lifetimeOn': 'مدى الحياة · تصوير بلا حدود، بلا إعلانات',
+  'my.pro.subOn': 'اشتراك فعّال · تصوير بلا حدود، بلا إعلانات',
+  'my.pro.renews': 'التجديد في {date}',
+  'my.pro.pending': 'بانتظار الدفع. سيُفعّل Pro فور الموافقة.',
+  'my.pro.noStore': 'تعذّر الاتصال بالمتجر الآن. حاول مرة أخرى بعد قليل.',
+  'my.pro.legal': 'يتجدد الاشتراك تلقائيًا للمدة نفسها ما لم يُلغَ قبل 24 ساعة على الأقل من نهاية الفترة، ويُحصَّل المبلغ من حسابك في {store}. يمكنك الإلغاء في أي وقت من إعدادات الاشتراكات في {store}. خطة مدى الحياة تُدفع مرة واحدة فقط.',
+  'my.buy.done': 'تم تفعيل Pro. صوّر كما تشاء.',
+  'my.buy.failed': 'لم تكتمل عملية الشراء. حاول مرة أخرى.',
+  'my.restore.done': 'تمت استعادة Pro.',
+  'my.restore.none': 'لا توجد مشتريات لاستعادتها في هذا الحساب.',
+  'my.restore.failed': 'تعذّرت الاستعادة. حاول مرة أخرى بعد قليل.',
+  'my.app.title': 'لقطات أكثر في التطبيق',
+  'my.app.body': '{n, plural, zero {في التطبيق، يمكنك التصوير بلا حدود مع Pro.} one {في التطبيق، يمنحك إعلان قصير لقطة إضافية، أو يمكنك التصوير بلا حدود مع Pro.} two {في التطبيق، يمنحك إعلان قصير لقطتين إضافيتين، أو يمكنك التصوير بلا حدود مع Pro.} few {في التطبيق، يمنحك إعلان قصير # لقطات إضافية، أو يمكنك التصوير بلا حدود مع Pro.} many {في التطبيق، يمنحك إعلان قصير # لقطة إضافية، أو يمكنك التصوير بلا حدود مع Pro.} other {في التطبيق، يمنحك إعلان قصير # لقطة إضافية، أو يمكنك التصوير بلا حدود مع Pro.}}',
+  'my.app.play': 'احصل عليه من Google Play',
+  'my.adPrivacy': 'خيارات خصوصية الإعلانات',
+  'shots.left': 'المتبقي {n}',
+  'shots.leftSay': '{n, plural, zero {لم يتبق لك اليوم أي لقطة} one {تبقّت لك اليوم لقطة واحدة} two {تبقّت لك اليوم لقطتان} few {تبقّت لك اليوم # لقطات} many {تبقّت لك اليوم # لقطة} other {تبقّت لك اليوم # لقطة}}',
+  'pw.title': '{n, plural, zero {لا لقطات مجانية اليوم} one {انتهت لقطتك المجانية اليوم} two {انتهت لقطتاك المجانيتان اليوم} few {انتهت # لقطات مجانية اليوم} many {انتهت # لقطة مجانية اليوم} other {انتهت # لقطة مجانية اليوم}}',
+  'pw.lead': 'إن كان الضوء ما زال جميلًا، فصوّر قليلًا بعد.',
+  'pw.pro': 'تصوير بلا حدود مع Pro',
+  'pw.later': 'سأعود غدًا',
 };
 
 export const cameraText: LocaleCameraText = {

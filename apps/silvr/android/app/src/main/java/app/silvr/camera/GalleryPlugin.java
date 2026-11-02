@@ -34,6 +34,14 @@ public class GalleryPlugin extends Plugin {
 
     private static final String ALBUM = "Film Camela";
 
+    /** Debug (debuggable) or release build: rewarded ads use Google's TEST unit in debug builds (src/monetize/ads.ts). */
+    @PluginMethod
+    public void buildInfo(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("debuggable", (getContext().getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0);
+        call.resolve(ret);
+    }
+
     @PluginMethod
     public void saveImage(PluginCall call) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && getPermissionState("storage") != PermissionState.GRANTED) {

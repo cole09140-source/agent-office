@@ -1,0 +1,26 @@
+/* ShotsLeftBadge: a small film-counter pill (see ShotsLeftBadge.tsx). Placement comes from the caller. */
+.shots-left {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--fg-2);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+button.shots-left {
+  min-height: 32px; /* tappable when it is a button (opens MY); still a small pill */
+  padding: 4px 10px;
+}
+.shots-left.low {
+  color: var(--accent-2);
+}
+.shots-left.empty {
+  color: var(--accent);
+}

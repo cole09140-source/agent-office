@@ -27,6 +27,15 @@
 
         </activity>
 
+        <!-- Rewarded ads (src/monetize/ads.ts). Value: res/values/strings.xml admob_app_id. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />
+        <!-- No ad-SDK measurement before the user first chooses to watch an ad (src/monetize/ads.ts). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -48,6 +57,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Save to gallery on Android 7–9 only; 10+ writes through MediaStore without a permission. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <!-- Pro subscriptions / lifetime through Google Play Billing (the billing library also merges this). -->
+    <uses-permission android:name="com.android.vending.BILLING" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

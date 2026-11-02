@@ -1,26 +1,34 @@
 /**
- * Monetisation seam. Payments are intentionally NOT implemented in v1.0:
- * with PAYMENTS_ENABLED = false every feature is unlocked and no PRO badges are
- * shown. Premium stocks are still flagged with `pro: true` in stocks.ts.
+ * Monetisation seam (v1.1). The engine lives in src/monetize/ (see docs/11_MONETIZATION.md).
  *
- * To ship paid tiers, replace `hasPro()` with a real entitlement check
- * (e.g. RevenueCat / StoreKit 2 / Play Billing via a Capacitor plugin) and set
- * PAYMENTS_ENABLED = true. Gated features call `canUse()`.
+ * Owner's decision: ONLY shots are limited for free users (10 a day + rewarded ads; Pro =
+ * unlimited, no ads). Film stocks, cameras and lab features stay free for everyone — nothing
+ * here paywalls them. Premium stocks keep their `pro: true` flag in stocks.ts for later.
  */
-export const PAYMENTS_ENABLED = false;
+import { isPro } from './monetize/billing';
+import { nativePlatform } from './monetize/platform';
+
+/** Store purchases exist in this build (the native apps). The web / PWA build has none. */
+export const PAYMENTS_ENABLED = nativePlatform() !== null;
+
+/** PRO badges on stocks / cameras: off while those stay free (a badge on a free item misleads). */
+export const SHOW_PRO_BADGES = false;
 
 export type Feature = 'proStocks' | 'rushDevelop' | 'contactSheet' | 'darkroom';
 
+/** Pro entitlement from the store (lifetime or an active subscription). */
 export function hasPro(): boolean {
-  return !PAYMENTS_ENABLED;
+  return isPro.value;
 }
 
-const FREE_FEATURES: Feature[] = ['contactSheet', 'darkroom', 'rushDevelop'];
+/** Features that need Pro. Empty: the owner limits only shots for now. */
+const PRO_ONLY: Feature[] = [];
 
 export function canUse(feature: Feature): boolean {
-  return hasPro() || FREE_FEATURES.includes(feature);
+  return hasPro() || !PRO_ONLY.includes(feature);
 }
 
-export function canUseStock(stock: { pro: boolean }): boolean {
-  return !stock.pro || canUse('proStocks');
+/** Every stock is usable by everyone (no stock paywall). */
+export function canUseStock(_stock: { pro: boolean }): boolean {
+  return true;
 }
