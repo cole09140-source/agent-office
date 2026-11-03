@@ -24,7 +24,7 @@ export function defaultDevelop(stock: FilmStock, seed: number, opts: Partial<Dev
 }
 
 /** Bodies that do not take 35mm film: 120 roll film (toy, TLR), instant packs, sensors. */
-const NOT_35MM = new Set(['toy', 'tlr', 'instant', 'wide', 'digicam', 'pixel', 'kid']);
+const NOT_35MM = new Set(['toy', 'tlr', 'mf', 'pinhole', 'instant', 'wide', 'digicam', 'pixel', 'kid', 'floppy', 'slim', 'bridge', 'flip', 'smart', 'slab']);
 
 /** Whether a body's frames sit on 35mm film (imports and old frames without a body count as 35mm). */
 export function shoots35mm(camera: CameraModel | null | undefined): boolean {

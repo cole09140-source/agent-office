@@ -7,15 +7,15 @@ import type { CameraModel } from '../models';
  */
 
 /** Body families: each sets the default material, window, buttons and shutter. */
-export type BackFamily = 'leather' | 'compact' | 'disposable' | 'instant' | 'digicam' | 'y2k' | 'console' | 'kid' | 'aqua' | 'cine';
+export type BackFamily = 'leather' | 'compact' | 'disposable' | 'instant' | 'digicam' | 'y2k' | 'console' | 'kid' | 'aqua' | 'cine' | 'phone';
 /** Surface of the plate. */
-export type BackMaterial = 'leather' | 'matte' | 'gloss' | 'brushed' | 'card' | 'jelly' | 'rubber' | 'crinkle' | 'housing';
-/** The window the live preview sits in: rubber eyecup, LCD with screws, molded instant rim, handheld screen, sealed port, TLR hood. */
-export type BackWindow = 'optical' | 'lcd' | 'instant' | 'console' | 'housing' | 'waist';
+export type BackMaterial = 'leather' | 'matte' | 'gloss' | 'brushed' | 'card' | 'jelly' | 'rubber' | 'crinkle' | 'housing' | 'wood';
+/** The window the live preview sits in: rubber eyecup, LCD with screws, molded instant rim, handheld screen, sealed port, TLR hood, edge-to-edge phone glass. */
+export type BackWindow = 'optical' | 'lcd' | 'instant' | 'console' | 'housing' | 'waist' | 'phone';
 /** Top-row buttons. */
 export type BackButtons = 'rubber' | 'chrome' | 'gloss' | 'jelly';
 /** The shutter release. */
-export type BackShutter = 'knurl' | 'dome' | 'rubber' | 'jelly' | 'trigger' | 'console';
+export type BackShutter = 'knurl' | 'dome' | 'rubber' | 'jelly' | 'trigger' | 'console' | 'touch';
 /** A band of a second colour across the body (behind the top row, the window, or the shutter row; 'both' = top and shutter rows, like a rangefinder's chrome top and base plates). */
 export type BackBand = 'top' | 'stage' | 'bottom' | 'both' | 'none';
 
@@ -99,6 +99,8 @@ export const FAMILIES: Record<BackFamily, FamilyDefaults> = {
   aqua: { material: 'housing', window: 'housing', buttons: 'jelly', shutterStyle: 'jelly', bandAt: 'none', details: { screws: true } },
   // Movie camera: crinkle paint, trigger-style run button.
   cine: { material: 'crinkle', window: 'optical', buttons: 'rubber', shutterStyle: 'trigger', bandAt: 'none', details: { grip: true, screws: true } },
+  // Phone: glass front, the preview fills a thin black bezel, an on-screen ring for the shutter.
+  phone: { material: 'gloss', window: 'phone', buttons: 'gloss', shutterStyle: 'touch', bandAt: 'none', details: {} },
 };
 
 /** Per-body choices on top of the family defaults. */
@@ -129,6 +131,15 @@ export const BACKS: Record<string, BackEntry> = {
   kidcam: { family: 'kid', body: '#ec5f95', shade: '#b5306a', band: '#ec5f95', plate: '#fff4c2', plateInk: '#6a1239', btn: '#7ed9c3', btnInk: '#0b3a31', btnOn: '#7a1747', shutter: '#ffd23f', shutterRim: '#c79a00', frame: '#7ed9c3', accent: '#ffd23f', print: '0.3 MEGA · FUN CAM' },
   aqua27: { family: 'aqua', body: '#1fa3c9', shade: '#0b5f7d', band: '#1fa3c9', plate: '#ffd400', plateInk: '#0b3d5c', btn: '#ffd400', btnInk: '#0b3d5c', btnOn: '#a32a00', shutter: '#ffd400', shutterRim: '#b08f00', frame: '#0b3d5c', accent: '#ffd400', print: 'WATERPROOF · 10 M' },
   cine: { family: 'cine', body: '#26272b', shade: '#121316', band: '#26272b', plate: '#9aa0a6', plateInk: '#141518', ...RUBBER_BTN, shutter: '#c8102e', shutterRim: '#5e0715', frame: '#55595f', accent: '#c8102e' },
+  floppy98: { family: 'digicam', material: 'matte', buttons: 'rubber', body: '#3c3f44', shade: '#24262a', band: '#3c3f44', plate: '#9aa3ad', plateInk: '#16181b', ...RUBBER_BTN, shutter: '#9aa3ad', shutterRim: '#4b525a', frame: '#1c1d20', accent: '#9aa3ad', print: '1.44 MB DISK · VGA', details: { screws: true, grille: true, led: '#ff9f1a' } },
+  slim06: { family: 'digicam', material: 'gloss', buttons: 'gloss', shutterStyle: 'dome', body: '#b3122f', shade: '#7a0b1f', band: '#b3122f', plate: 'transparent', plateInk: '#ffffff', btn: '#e9e9ec', btnInk: '#2a2a2e', btnOn: '#b3122f', shutter: '#e9e9ec', shutterRim: '#8f9095', frame: '#2a2a2e', accent: '#e9e9ec', print: '7.2 MEGA PIXELS · 3× ZOOM', details: { screws: false, grille: false, led: '#4cff7a' } },
+  bridge09: { family: 'digicam', material: 'rubber', buttons: 'rubber', body: '#1e1f22', shade: '#0e0f10', band: '#1e1f22', plate: 'transparent', plateInk: '#e6e6e8', ...RUBBER_BTN, shutter: '#8c8f94', shutterRim: '#3c3e42', frame: '#3a3b3f', accent: '#c8a24a', print: '20× OPTICAL ZOOM', details: { grip: true, screws: true, grille: true, led: '#ff3b30' } },
+  zoom90: { family: 'compact', body: '#cbbfa6', shade: '#9d927b', band: '#cbbfa6', plate: 'transparent', plateInk: '#2b2b2b', btn: '#2b2b2b', btnInk: '#f1ece0', btnOn: '#ffb36b', shutter: '#e8e1d0', shutterRim: '#8a7f6a', frame: '#2b2b2b', accent: '#8a7f6a', details: { grip: false, lugs: true, stripe: true } },
+  mf645: { family: 'leather', body: '#18191b', shade: '#0a0a0b', band: '#bfc2c6', plate: 'transparent', plateInk: '#141518', ...CHROME_BTN, shutter: '#c9ccd0', shutterRim: '#55585c', frame: '#a9acb0', accent: '#e0442b' },
+  pinhole: { family: 'compact', material: 'wood', buttons: 'chrome', shutterStyle: 'knurl', body: '#8a5a32', shade: '#5c3a1e', band: '#8a5a32', plate: '#d9c39a', plateInk: '#2b1d12', btn: '#d9c39a', btnInk: '#2b1d12', btnOn: '#7c2d12', shutter: '#c9b28a', shutterRim: '#5c3a1e', frame: '#2b1d12', accent: '#d9c39a', details: { grip: false, lugs: false, screws: true } },
+  flip03: { family: 'phone', material: 'brushed', window: 'lcd', buttons: 'chrome', shutterStyle: 'console', body: '#aeb4bb', shade: '#7d848c', band: '#aeb4bb', plate: 'transparent', plateInk: '#1b1e22', ...CHROME_BTN, shutter: '#2d6cdf', shutterRim: '#173f8a', frame: '#26292d', accent: '#2d6cdf', print: 'VGA CAMERA', details: { grille: true, led: '#4cc3ff' } },
+  touch07: { family: 'phone', body: '#141416', shade: '#060607', band: '#141416', plate: 'transparent', plateInk: '#e8e8ea', btn: '#2a2b2e', btnInk: '#f1f1f3', btnOn: '#ffcc4d', shutter: '#f4f4f6', shutterRim: '#9a9ca0', frame: '#2a2b2e', accent: '#b9bcc1' },
+  filter10: { family: 'phone', body: '#f4f4f2', shade: '#d4d4d0', band: '#f4f4f2', plate: 'transparent', plateInk: '#1b1b1d', btn: '#1b1b1d', btnInk: '#f4f4f2', btnOn: '#ffb36b', shutter: '#ffffff', shutterRim: '#b9b9b5', frame: '#1b1b1d', accent: '#c76b2a' },
   super8: { family: 'cine', body: '#4a4733', shade: '#2b291c', band: '#4a4733', plate: '#d9d6c8', plateInk: '#2b291c', ...RUBBER_BTN, shutter: '#e0a526', shutterRim: '#6e4f0c', frame: '#bdbdbd', accent: '#e0a526', details: { grip: true, screws: true, lugs: true } },
 };
 
@@ -136,6 +147,7 @@ export const BACKS: Record<string, BackEntry> = {
 const BY_BODY: Partial<Record<CameraModel['body'], string>> = {
   slr: 'pro35', double: 'doublex', range: 'range', tlr: 'twin66', trip: 'slide35', half: 'half72', compact: 'zonelc', toy: 'toy120', pano: 'panox', sprocket: 'sprocket',
   flash: 'party', disposable: 'snap27', instant: 'instasq', wide: 'instaw', digicam: 'ccd03', quad: 'quad4', fish: 'fish180', pixel: 'pixel', kid: 'kidcam', aqua: 'aqua27', cine: 'cine', super8: 'super8',
+  floppy: 'floppy98', slim: 'slim06', bridge: 'bridge09', zoomc: 'zoom90', mf: 'mf645', pinhole: 'pinhole', flip: 'flip03', smart: 'touch07', slab: 'filter10',
 };
 
 export function backFor(camera: Pick<CameraModel, 'id' | 'body'>): BackSpec {

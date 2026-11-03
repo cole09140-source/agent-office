@@ -747,7 +747,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           setLastPhoto(result.photo);
           if (ejectsPrints(camera)) {
             if (url && !reduceMotion()) setEject({ url, key: Date.now() });
-          } else if (s.sound && camera.sound !== 'digital') playBeep();
+          } else if (s.sound && camera.sound !== 'digital' && camera.sound !== 'phone') playBeep();
         }
       }
       if (result?.finished) {
@@ -882,7 +882,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       await loadRoll(stock.id, size, aspect, Date.now(), camera.id);
       await Promise.all([put('kv', stock.id, LAST_STOCK_KEY), put('kv', camera.id, LAST_CAMERA_KEY), put('kv', true, QUICK_START_KEY)]);
       if (s.haptics) haptic(25);
-      if (s.sound) playAdvance(camera.sound === 'digital' || camera.sound === 'pixel' || camera.sound === 'instant' ? 'slr' : camera.sound);
+      if (s.sound) playAdvance(camera.sound === 'digital' || camera.sound === 'phone' || camera.sound === 'pixel' || camera.sound === 'instant' ? 'slr' : camera.sound);
     } catch (err) {
       console.error(err);
       // Most likely a roll was loaded in another tab meanwhile; show it.
@@ -1078,7 +1078,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         style={backVars(back)}
       >
       <BackDecor key={camera.id} spec={back} />
-      <div class={`cam-top${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
+      <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
         <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll || counting} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
           <span class="chip-txt" dir="auto">{camera.name}</span>
         </button>

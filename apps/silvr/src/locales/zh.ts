@@ -67,6 +67,7 @@ export const messages: LocaleMessages = {
   'cam.group.instant': '即时成像相机', // ko: 즉석 카메라 · en: Instant cameras
   'cam.group.digital': '数码', // ko: 디지털 · en: Digital
   'cam.group.toy': '玩具与特殊相机', // ko: 토이·특수 카메라 · en: Toy & special
+  'cam.group.phone': '手机相机', // ko: 휴대폰 카메라 · en: Phone cameras
   'a11y.stockKeys': '用 ← → 键浏览胶卷，按 Enter 键选择', // ko: ← → 키로 필름을 살펴보고 Enter로 골라요 · en: Arrow keys browse films; Enter selects
   'gal.importHint': '照片会用这款胶卷冲洗，之后随时可以在暗房里更换。', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': '换了新手机？恢复备份', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
@@ -529,6 +530,15 @@ export const cameraText: LocaleCameraText = {
     party: '大号闪光灯默认开启的派对便携机。强烈的正面闪光，再加上日期印记。', // ko: 큼직한 플래시가 기본으로 켜지는 파티용 컴팩트. 정면으로 터지는 강한 플래시와 날짜 각인. · en: A party compact whose big flash is on by default. Hard, direct flash and a date imprint.
     kidcam: '30\u00A0万像素的儿童数码相机。640\u00A0像素的画面，浓烈到溢出的色彩，数码日期，拍完即看。', // ko: 0.3메가 어린이 디카. 640픽셀, 넘치는 채도, 디지털 날짜, 찍고 바로 확인. · en: A 0.3 MP kids’ camera. 640 px, colors turned all the way up, digital date, instant review.
     sprocket: '连齿孔一起拍下的全景相机。照片上下边缘，留着胶片的齿孔。', // ko: 필름 구멍까지 담기는 파노라마. 사진 위아래로 퍼포레이션이 그대로 남아요. · en: A panorama that runs right over the sprocket holes, so the perforations frame every shot.
+    floppy98: '1998\u00A0年的软盘数码相机。每张软盘可存 20\u00A0张 640\u00A0像素的照片，色调偏冷，细节发糊。', // ko: 플로피 디스크에 저장하는 1998년 디카. 디스크 한 장에 640픽셀 사진 20장, 차갑고 뭉개진 색. · en: A 1998 digicam that saves to a floppy disk. 20 shots of 640 px per disk, cool smeared color.
+    slim06: '700\u00A0万像素的超薄卡片机，随手放进口袋。色彩浓郁，闪光灯默认开启，带数码日期。', // ko: 주머니에 쏙 들어가는 700만 화소 초슬림 디카. 쨍한 색, 기본으로 켜지는 플래시, 디지털 날짜. · en: A 7 MP ultra-slim for your pocket. Punchy color, flash on by default, digital date.
+    bridge09: '20\u00A0倍光学变焦的长焦数码相机。远处的景物也能拉近，可选 4:3、3:2、1:1 三种比例。', // ko: 20배 줌의 하이줌 디카. 먼 곳도 당겨 찍고, 4:3·3:2·1:1 세 가지 비율로. · en: A 20× superzoom. Pull in what’s far away, in 4:3, 3:2 or 1:1.
+    zoom90: '90\u00A0年代的自动变焦傻瓜机。2\u00A0倍变焦，电动卷片，橙色日期印记。', // ko: 90년대 자동 줌 카메라. 2배 줌, 모터 감기, 주황색 날짜 각인. · en: A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.
+    mf645: '6×4.5 中画幅胶片。一卷 15\u00A0张，镜头极其锐利，影调层次丰富。', // ko: 6×4.5 중형 필름. 롤 하나에 15장, 아주 선명한 렌즈와 넓은 계조. · en: 6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.
+    pinhole: '用一个针孔代替镜头的木盒相机。整体柔和，四角深深暗下去。', // ko: 렌즈 대신 바늘구멍 하나로 찍는 나무 상자. 전체가 부드럽고 가장자리는 깊게 어두워요. · en: A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.
+    flip03: '2003\u00A0年翻盖手机的 30\u00A0万像素摄像头。640\u00A0像素，色彩褪淡，细节糊成一片。', // ko: 2003년 폴더폰의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.
+    touch07: '第一代触屏手机的 200\u00A0万像素摄像头。定焦，暖色调，天空一片过曝。', // ko: 초기 터치스크린 폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.
+    filter10: '2010\u00A0年修图应用的味道。方形照片，发灰的黑色，泛黄的高光，白色边框。', // ko: 2010년 사진 앱 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -554,6 +564,15 @@ export const cameraText: LocaleCameraText = {
     'Big flash': '大闪光灯',
     'Kids digicam': '儿童数码相机',
     Sprocket: '齿孔',
+    'Floppy digicam': '软盘数码相机',
+    'Ultra-slim': '超薄卡片机',
+    Superzoom: '长焦数码相机',
+    'Zoom compact': '变焦傻瓜机',
+    'Medium format': '中画幅',
+    Pinhole: '针孔',
+    'Flip phone': '翻盖手机',
+    Smartphone: '智能手机',
+    'Filter app': '滤镜应用',
   },
 };
 
@@ -579,4 +598,9 @@ export const stockText: LocaleStockText = {
   instawide: '宽幅即时成像相纸。色彩自然，高光微微偏暖。', // ko: 와이드 인스턴트 필름. 자연스러운 색에 살짝 따뜻한 하이라이트. · en: Wide instant film. Natural color with gently warm highlights.
   reel40: '家庭电影反转片。温暖浓郁的色彩，粗大的颗粒，片窗边沾着灰尘。', // ko: 홈무비 리버설 필름. 따뜻하고 진한 색, 굵은 입자, 먼지 앉은 게이트. · en: Home-movie reversal film. Warm, saturated color, big grain, and a dusty gate.
   toycmos: '30\u00A0万像素的玩具传感器。糖果般的色彩，过曝的高光，斑驳的彩色噪点。', // ko: 0.3메가 장난감 센서. 사탕 같은 색, 날아간 하이라이트, 얼룩덜룩한 색 노이즈. · en: A 0.3 MP toy sensor: candy colors, blown highlights, blotchy color noise.
+  vga98: '90\u00A0年代末软盘数码相机的传感器。宽容度窄，色调偏冷，JPEG 涂抹明显。', // ko: 90년대 말 플로피 디카의 센서. 좁은 계조, 차가운 톤, 뭉개진 JPEG. · en: A late-90s floppy-disk sensor. Short tonal range, a cool cast, soft JPEG blur.
+  ccd7: '2000\u00A0年代中期的 700\u00A0万像素 CCD。色彩浓郁，肤色温暖，锐化过度，高光一过就爆。', // ko: 2000년대 중반 700만 화소 CCD. 쨍한 색, 따뜻한 피부, 과한 샤프닝, 확 날아가는 하이라이트. · en: A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.
+  vgaphone: '早期拍照手机的传感器。色彩褪淡，偏黄绿，暗部噪点密布。', // ko: 초기 폰카 센서. 바랜 색, 누르스름한 초록빛, 자글자글한 그림자. · en: An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.
+  phone2mp: '第一代智能手机的传感器。白平衡偏暖，天空过曝，细节柔和。', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
+  app10: '2010\u00A0年代初修图应用的滤镜。哑光的黑，泛黄的高光，浓重的暗角。', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
 };

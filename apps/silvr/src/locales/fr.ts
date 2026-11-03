@@ -62,6 +62,7 @@ export const messages: LocaleMessages = {
   'cam.group.instant': 'Appareils instantanés',
   'cam.group.digital': 'Appareils numériques',
   'cam.group.toy': 'Jouets et curiosités',
+  'cam.group.phone': 'Téléphones photo', // ko: 휴대폰 카메라 · en: Phone cameras
   'a11y.stockKeys': 'Flèches pour parcourir les pellicules, Entrée pour choisir',
   'gal.importHint': 'Vos photos seront développées avec cette pellicule. Vous pourrez la changer à tout moment en chambre noire.',
   'onb.restore': 'Vous venez d’un autre téléphone ? Restaurez une sauvegarde',
@@ -535,6 +536,15 @@ export const cameraText: LocaleCameraText = {
     party: 'Un compact de soirée dont le gros flash est activé par défaut. Un éclair frontal et franc, et la date incrustée.',
     kidcam: 'Un appareil numérique pour enfants de 0,3 Mpx : 640 px, couleurs sursaturées, date incrustée, aperçu immédiat.',
     sprocket: 'Un panoramique qui expose jusque sur les perforations : elles bordent le haut et le bas de chaque image.',
+    floppy98: 'Un numérique de 1998 qui enregistre sur disquette : 20 photos de 640 px par disque, couleurs froides et empâtées.', // ko: 플로피 디스크에 저장하는 1998년 디카. 디스크 한 장에 640픽셀 사진 20장, 차갑고 뭉개진 색. · en: A 1998 digicam that saves to a floppy disk. 20 shots of 640 px per disk, cool smeared color.
+    slim06: 'Un ultra-plat de 7 Mpx pour la poche : couleurs éclatantes, flash activé par défaut, date incrustée.', // ko: 주머니에 쏙 들어가는 700만 화소 초슬림 디카. 쨍한 색, 기본으로 켜지는 플래시, 디지털 날짜. · en: A 7 MP ultra-slim for your pocket. Punchy color, flash on by default, digital date.
+    bridge09: 'Un bridge à zoom 20× : rapprochez ce qui est loin, en 4:3, 3:2 ou 1:1.', // ko: 20배 줌의 하이줌 디카. 먼 곳도 당겨 찍고, 4:3·3:2·1:1 세 가지 비율로. · en: A 20× superzoom. Pull in what’s far away, in 4:3, 3:2 or 1:1.
+    zoom90: 'Un compact zoom des années 90 : zoom 2×, avance motorisée, date orange incrustée.', // ko: 90년대 자동 줌 카메라. 2배 줌, 모터 감기, 주황색 날짜 각인. · en: A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.
+    mf645: 'Moyen format 6×4,5 : 15 vues par rouleau, un objectif très net et une large gamme de tons.', // ko: 6×4.5 중형 필름. 롤 하나에 15장, 아주 선명한 렌즈와 넓은 계조. · en: 6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.
+    pinhole: 'Une boîte en bois percée d’un sténopé au lieu d’un objectif : tout est doux, les coins plongent dans l’ombre.', // ko: 렌즈 대신 바늘구멍 하나로 찍는 나무 상자. 전체가 부드럽고 가장자리는 깊게 어두워요. · en: A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.
+    flip03: 'L’appareil 0,3 Mpx d’un téléphone à clapet de 2003 : 640 px, couleurs passées, détails empâtés.', // ko: 2003년 폴더폰의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.
+    touch07: 'L’appareil 2 Mpx des premiers téléphones tactiles : mise au point fixe, tons chauds, ciels brûlés.', // ko: 초기 터치스크린 폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.
+    filter10: 'Le style d’une appli photo de 2010 : photos carrées, noirs relevés, hautes lumières jaunes, bordure blanche.', // ko: 2010년 사진 앱 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -560,6 +570,15 @@ export const cameraText: LocaleCameraText = {
     'Big flash': 'Flash puissant',
     'Kids digicam': 'Numérique enfant',
     Sprocket: 'Perforations',
+    'Floppy digicam': 'Numérique à disquette',
+    'Ultra-slim': 'Ultra-plat',
+    Superzoom: 'Superzoom',
+    'Zoom compact': 'Compact zoom',
+    'Medium format': 'Moyen format',
+    Pinhole: 'Sténopé',
+    'Flip phone': 'Téléphone à clapet',
+    Smartphone: 'Smartphone',
+    'Filter app': 'Appli à filtres',
   },
 };
 
@@ -585,4 +604,9 @@ export const stockText: LocaleStockText = {
   instawide: 'Un instantané grand format : couleurs naturelles, hautes lumières légèrement chaudes.',
   reel40: 'Un film inversible de cinéma amateur : couleurs chaudes et saturées, gros grain, fenêtre poussiéreuse.',
   toycmos: 'Un capteur jouet de 0,3 Mpx : couleurs bonbon, hautes lumières brûlées, bruit chromatique en taches.',
+  vga98: 'Le capteur d’un numérique à disquette de la fin des années 90 : faible latitude, dominante froide, JPEG flou.', // ko: 90년대 말 플로피 디카의 센서. 좁은 계조, 차가운 톤, 뭉개진 JPEG. · en: A late-90s floppy-disk sensor. Short tonal range, a cool cast, soft JPEG blur.
+  ccd7: 'Un CCD de 7 Mpx du milieu des années 2000 : couleurs éclatantes, peau chaude, accentuation poussée, hautes lumières vite brûlées.', // ko: 2000년대 중반 700만 화소 CCD. 쨍한 색, 따뜻한 피부, 과한 샤프닝, 확 날아가는 하이라이트. · en: A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.
+  vgaphone: 'Le capteur des premiers téléphones photo : couleurs délavées, dominante vert-jaune, ombres bruitées.', // ko: 초기 폰카 센서. 바랜 색, 누르스름한 초록빛, 자글자글한 그림자. · en: An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.
+  phone2mp: 'Le capteur des premiers smartphones : balance des blancs chaude, ciels brûlés, détails doux.', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
+  app10: 'Un filtre d’appli photo du début des années 2010 : noirs mats, hautes lumières jaunes, vignettage marqué.', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
 };

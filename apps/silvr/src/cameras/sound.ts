@@ -100,6 +100,10 @@ export function playShutter(profile: ShutterSound): void {
     case 'cine': // claw advance
       for (let i = 0; i < 3; i++) noise(ac, i * 0.05, 0.03, 0.5, 1400, 1.2);
       break;
+    case 'phone': // recorded shutter sample from a phone speaker: thin, bright double click
+      noise(ac, 0, 0.025, 0.5, 4600, 1.8);
+      noise(ac, 0.07, 0.035, 0.4, 3400, 1.6);
+      break;
     case 'motor': // compact: crisp leaf tick (the winder buzzes after, in playAdvance)
       noise(ac, 0, 0.02, 0.5, 4200, 1.6);
       noise(ac, 0.025, 0.02, 0.3, 2800, 1.4);
@@ -111,7 +115,7 @@ export function playShutter(profile: ShutterSound): void {
 export function playAdvance(profile: ShutterSound): void {
   const ac = audio();
   if (!ac) return;
-  if (profile === 'digital' || profile === 'pixel' || profile === 'instant' || profile === 'quad') return;
+  if (profile === 'digital' || profile === 'phone' || profile === 'pixel' || profile === 'instant' || profile === 'quad') return;
   if (profile === 'motor') {
     // Built-in winder: a short electric whirr instead of a thumb lever.
     tone(ac, 0.12, 0.38, 140, 0.035, 'sawtooth', 190);

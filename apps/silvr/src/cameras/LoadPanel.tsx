@@ -39,19 +39,21 @@ const QUICK_START: { id: string; label: MsgKey }[] = [
   { id: 'snap27', label: 'cam.quick.disposable' },
 ];
 
-type CameraGroup = 'film' | 'instant' | 'digital' | 'toy';
-const GROUPS: CameraGroup[] = ['film', 'instant', 'digital', 'toy'];
-const TOY_BODIES = new Set(['disposable', 'toy', 'quad', 'double', 'pano', 'fish', 'aqua', 'super8', 'sprocket', 'flash', 'kid']);
+type CameraGroup = 'film' | 'instant' | 'digital' | 'phone' | 'toy';
+const GROUPS: CameraGroup[] = ['film', 'instant', 'digital', 'phone', 'toy'];
+const TOY_BODIES = new Set(['disposable', 'toy', 'quad', 'double', 'pano', 'fish', 'aqua', 'super8', 'sprocket', 'flash', 'kid', 'pinhole']);
+const PHONE_BODIES = new Set(['flip', 'smart', 'slab']);
 
-/** Bucket for the "All cameras" sheet: Film · Instant · Digital · Toy/Special. */
+/** Bucket for the "All cameras" sheet: Film · Instant · Digital · Phone · Toy/Special. */
 export function cameraGroup(camera: CameraModel): CameraGroup {
   if (ejectsPrints(camera)) return 'instant';
+  if (PHONE_BODIES.has(camera.body)) return 'phone';
   if (camera.instant) return 'digital';
   if (TOY_BODIES.has(camera.body)) return 'toy';
   return 'film';
 }
 
-/** Every body at once, grouped, for picking without scrolling the strip through 22 cards. */
+/** Every body at once, grouped, for picking without scrolling the strip through every card. */
 function AllCameras({ open, onClose, items, selected, onPick }: { open: boolean; onClose: () => void; items: CameraModel[]; selected: string; onPick: (id: string) => void }) {
   return (
     <Sheet open={open} onClose={onClose} title={t('cam.allCamerasTitle')} testId="all-cameras">

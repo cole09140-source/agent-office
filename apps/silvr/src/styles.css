@@ -3327,6 +3327,46 @@ html.tap-guard * {
   border-radius: 2px;
   background: linear-gradient(90deg, #7cfc00 70%, transparent 70%);
 }
+.vf-phone {
+  font-size: 0.6875rem;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+.vf-phone span {
+  position: absolute;
+}
+.ph-bar {
+  left: 10px;
+  right: 10px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ph-bar .ph-left {
+  position: static;
+}
+/* Four signal bars, rising left to right */
+.ph-sig {
+  width: 16px;
+  height: 10px;
+  background:
+    linear-gradient(#fff, #fff) 0 100% / 3px 30% no-repeat,
+    linear-gradient(#fff, #fff) 4px 100% / 3px 55% no-repeat,
+    linear-gradient(#fff, #fff) 8px 100% / 3px 80% no-repeat,
+    linear-gradient(#fff, #fff) 12px 100% / 3px 100% no-repeat;
+  filter: drop-shadow(0 1px 1px #000);
+}
+.ph-focus {
+  left: 50%;
+  top: 50%;
+  width: 18%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid rgba(255, 214, 10, 0.9);
+  border-radius: 3px;
+}
 .lcd-focus {
   left: 50%;
   top: 50%;
@@ -4086,6 +4126,28 @@ button[aria-disabled='true'] {
     0 4px 6px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
+/* Phone glass: the preview runs almost edge to edge inside a thin black bezel */
+.bp-body[data-win='phone'] {
+  --bp-bez-t: 7px;
+  --bp-bez-x: 7px;
+  --bp-bez-b: 7px;
+  --bp-vf-r: 6px;
+  --bp-win-r: 14px;
+}
+[data-win='phone'] .bp-window {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 30%), #050506;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 1px 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* Wooden box: long grain under a soft varnish sheen */
+[data-mat='wood'] .bp-skin {
+  background:
+    radial-gradient(120% 50% at 30% 0%, rgba(255, 236, 200, 0.22), transparent 60%),
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 7px, rgba(255, 255, 255, 0.04) 7px 9px, transparent 9px 15px),
+    linear-gradient(180deg, var(--bp-body), var(--bp-shade));
+}
 /* Kids' LCD: a chunky coloured rubber frame */
 .bp-body[data-family='kid'] {
   --bp-bez-t: 11px;
@@ -4363,6 +4425,20 @@ button[aria-disabled='true'] {
     0 2px 3px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -2px 2px rgba(0, 0, 0, 0.3);
+}
+/* Phone camera app: a white ring around a white disc */
+.bp-body[data-shutter='touch'] .shutter {
+  background: transparent;
+  box-shadow:
+    inset 0 0 0 4px var(--bp-shutter),
+    0 0 0 1px var(--bp-shutter-rim),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.bp-body[data-shutter='touch'] .shutter span {
+  width: 58px;
+  height: 58px;
+  background: var(--bp-shutter);
+  box-shadow: 0 0 0 1px var(--bp-shutter-rim);
 }
 /* Handheld A-button in a moulded well */
 .bp-body[data-shutter='console'] .shutter {

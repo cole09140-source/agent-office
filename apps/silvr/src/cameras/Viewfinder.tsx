@@ -111,6 +111,17 @@ export function ViewfinderOverlay({ camera, state }: { camera: CameraModel; stat
           <span class="vf-cine-tag mono">18 FPS · 4:3</span>
         </div>
       );
+    case 'phone':
+      return (
+        <div class="vf vf-phone mono" aria-hidden="true">
+          <span class="ph-bar" dir="ltr">
+            <i class="ph-sig" />
+            <span class="ph-left">{String(state.left).padStart(2, '0')}</span>
+            <i class="lcd-batt" />
+          </span>
+          <span class="ph-focus" />
+        </div>
+      );
     case 'pixel':
       return (
         <div class="vf vf-pixel mono" aria-hidden="true">

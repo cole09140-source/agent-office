@@ -271,6 +271,139 @@ export function CameraBody({ camera, width = 96 }: { camera: CameraModel; width?
         </g>
       );
       break;
+    case 'floppy':
+      // Floppy-disk digicam: deep box, the disk slot on the side, lens set in a bulky barrel.
+      shape = (
+        <g>
+          <rect x="8" y="18" width="104" height="50" rx="5" fill={body} />
+          <rect x="8" y="18" width="104" height="9" rx="4" fill={trim} />
+          <rect x="94" y="30" width="14" height="34" rx="2" fill={trim} />
+          <rect x="97" y="34" width="8" height="2.5" rx="1" fill={accent} />
+          <rect x="16" y="31" width="14" height="9" rx="1.5" fill="#f4f4f4" stroke="#999" stroke-width="0.8" />
+          <rect x="18" y="56" width="22" height="6" rx="1" fill={accent} />
+          <circle cx="60" cy="45" r="17" fill={trim} />
+          {lens(60, 45, 13)}
+        </g>
+      );
+      break;
+    case 'slim':
+      // Ultra-slim card camera: thin slab, lens in the top corner behind a sliding cover.
+      shape = (
+        <g>
+          <rect x="10" y="26" width="100" height="36" rx="6" fill={body} />
+          <rect x="10" y="26" width="100" height="36" rx="6" fill="none" stroke={accent} stroke-width="1.2" opacity="0.7" />
+          <rect x="70" y="29" width="36" height="22" rx="4" fill={accent} opacity="0.85" />
+          <rect x="16" y="31" width="10" height="6" rx="1.5" fill="#f4f4f4" stroke="#999" stroke-width="0.6" />
+          <rect x="18" y="55" width="40" height="2" rx="1" fill={accent} opacity="0.8" />
+          {lens(88, 40, 7)}
+        </g>
+      );
+      break;
+    case 'bridge':
+      // Superzoom bridge camera: SLR-like hump and grip, a long lens barrel.
+      shape = (
+        <g>
+          <path d="M34 26 L40 14 L60 14 L66 26 Z" fill={body} />
+          <rect x="6" y="24" width="74" height="44" rx="7" fill={body} />
+          <rect x="6" y="28" width="18" height="40" rx="7" fill={trim} />
+          <rect x="62" y="30" width="52" height="32" rx="4" fill={trim} />
+          <rect x="72" y="30" width="3" height="32" fill={accent} />
+          <rect x="88" y="30" width="2" height="32" fill="#000" opacity="0.35" />
+          <rect x="40" y="18" width="12" height="5" rx="1.5" fill="#2a3440" />
+          {lens(104, 46, 12)}
+        </g>
+      );
+      break;
+    case 'zoomc':
+      // 90s zoom compact: rounded clamshell, telescoping lens barrel, flash window top left.
+      shape = (
+        <g>
+          <rect x="8" y="22" width="104" height="44" rx="18" fill={body} />
+          <rect x="16" y="28" width="20" height="8" rx="2" fill="#f6f6f6" stroke="#bbb" stroke-width="0.8" />
+          <rect x="84" y="28" width="14" height="7" rx="2" fill="#2a3440" />
+          <circle cx="60" cy="46" r="18" fill={trim} />
+          <circle cx="60" cy="46" r="15" fill={body} />
+          <circle cx="60" cy="46" r="15" fill="none" stroke={accent} stroke-width="1" opacity="0.6" />
+          {lens(60, 46, 12)}
+          <rect x="18" y="56" width="16" height="3" rx="1" fill={accent} />
+        </g>
+      );
+      break;
+    case 'mf':
+      // 6×4.5 medium-format SLR: boxy body, film back on the right, folding finder hood on top.
+      shape = (
+        <g>
+          <rect x="30" y="8" width="44" height="14" rx="2" fill={trim} />
+          <rect x="14" y="20" width="76" height="50" rx="4" fill={body} />
+          <rect x="86" y="20" width="22" height="50" rx="3" fill={trim} />
+          <rect x="90" y="30" width="14" height="6" rx="1" fill={accent} />
+          <rect x="14" y="20" width="76" height="6" fill={accent} opacity="0.35" />
+          <circle cx="52" cy="47" r="21" fill={accent} opacity="0.3" />
+          {lens(52, 47, 18)}
+        </g>
+      );
+      break;
+    case 'pinhole':
+      // Wooden pinhole box: grain lines, a sliding shutter over a tiny hole, winding knobs.
+      shape = (
+        <g>
+          <rect x="22" y="14" width="10" height="7" rx="2" fill={trim} />
+          <rect x="88" y="14" width="10" height="7" rx="2" fill={trim} />
+          <rect x="14" y="20" width="92" height="50" rx="4" fill={body} />
+          {[28, 36, 58, 64].map((y) => (
+            <path key={y} d={`M18 ${y} q22 -3 44 0 t40 0`} stroke={trim} stroke-width="0.8" fill="none" opacity="0.35" />
+          ))}
+          <rect x="44" y="34" width="32" height="22" rx="2" fill={accent} />
+          <rect x="44" y="40" width="14" height="10" rx="1" fill={trim} />
+          <circle cx="66" cy="45" r="2" fill="#0b0b0c" />
+        </g>
+      );
+      break;
+    case 'flip':
+      // Flip phone opened: screen half above the hinge, keypad half below, camera on the hinge.
+      shape = (
+        <g>
+          <rect x="40" y="2" width="40" height="34" rx="6" fill={body} />
+          <rect x="45" y="7" width="30" height="22" rx="2" fill="#1b2633" />
+          <rect x="47" y="9" width="26" height="18" fill={accent} opacity="0.55" />
+          <rect x="38" y="35" width="44" height="7" rx="3.5" fill={trim} />
+          <circle cx="60" cy="38.5" r="2.5" fill="#0b0b0c" />
+          <rect x="40" y="42" width="40" height="36" rx="6" fill={body} />
+          <circle cx="60" cy="50" r="4.5" fill={accent} />
+          {Array.from({ length: 12 }, (_, i) => (
+            <rect key={i} x={47 + (i % 3) * 9} y={57 + Math.floor(i / 3) * 5} width="7" height="3.5" rx="1.2" fill={trim} />
+          ))}
+        </g>
+      );
+      break;
+    case 'smart':
+      // First touchscreen phone, seen from the back: metal top, black lower band, lens top left.
+      shape = (
+        <g>
+          <rect x="38" y="4" width="44" height="74" rx="9" fill={accent} />
+          <rect x="38" y="58" width="44" height="20" rx="9" fill={body} />
+          <rect x="38" y="58" width="44" height="8" fill={body} />
+          <circle cx="47" cy="13" r="4" fill={trim} />
+          <circle cx="47" cy="13" r="2.4" fill="#0b0b0c" />
+          <circle cx="46.2" cy="12.2" r="0.7" fill="#fff" opacity="0.6" />
+          <rect x="54" y="30" width="12" height="12" rx="3" fill={body} opacity="0.25" />
+        </g>
+      );
+      break;
+    case 'slab':
+      // 2010 glass-slab phone, back view: flat glass, lens and LED flash in the top corner.
+      shape = (
+        <g>
+          <rect x="38" y="4" width="44" height="74" rx="7" fill={trim} />
+          <rect x="39.5" y="5.5" width="41" height="71" rx="6" fill={body} />
+          <circle cx="47" cy="13" r="4" fill={accent} />
+          <circle cx="47" cy="13" r="2.4" fill="#0b0b0c" />
+          <circle cx="46.2" cy="12.2" r="0.7" fill="#fff" opacity="0.6" />
+          <circle cx="55" cy="13" r="1.8" fill="#fff4cc" stroke={trim} stroke-width="0.6" />
+          <rect x="54" y="34" width="12" height="12" rx="3" fill={accent} opacity="0.12" />
+        </g>
+      );
+      break;
     case 'pixel':
       shape = (
         <g>

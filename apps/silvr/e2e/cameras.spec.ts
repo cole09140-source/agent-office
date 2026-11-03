@@ -25,6 +25,15 @@ const CASES: { id: string; presses: number; ratio: number; tol?: number; check?:
   { id: 'party', presses: 1, ratio: 1.5 },
   { id: 'kidcam', presses: 1, ratio: 4 / 3, check: 'lowres' },
   { id: 'sprocket', presses: 1, ratio: 2.604, tol: 0.05, check: 'sprocket' }, // 65:24 + thin film edges
+  { id: 'floppy98', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'slim06', presses: 1, ratio: 4 / 3 },
+  { id: 'bridge09', presses: 1, ratio: 4 / 3 },
+  { id: 'zoom90', presses: 1, ratio: 1.5 },
+  { id: 'mf645', presses: 1, ratio: 4 / 3 },
+  { id: 'pinhole', presses: 1, ratio: 1 },
+  { id: 'flip03', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'touch07', presses: 1, ratio: 4 / 3 },
+  { id: 'filter10', presses: 1, ratio: 1, tol: 0.05 }, // square inside an even white print border
 ];
 
 async function pixels(page: Page, w: number, h: number) {

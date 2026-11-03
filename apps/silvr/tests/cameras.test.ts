@@ -14,9 +14,9 @@ import { clearAll } from '../src/store/db';
 import { addShot, finishRoll, getPending, inCamera, listPhotos, listRolls, loadRoll, savePending, viewable, type Roll } from '../src/store/rolls';
 
 describe('camera catalogue', () => {
-  it('has 22 distinct, well-formed bodies', () => {
-    expect(CAMERAS).toHaveLength(22);
-    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(22);
+  it('has 31 distinct, well-formed bodies', () => {
+    expect(CAMERAS).toHaveLength(31);
+    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(31);
     for (const c of CAMERAS) {
       expect(canLoad(c, c.defaultStock), `${c.id} default film`).toBe(true);
       expect(c.capacities.length).toBeGreaterThan(0);
@@ -36,7 +36,7 @@ describe('camera catalogue', () => {
     expect(canLoad(getCamera('pro35'), 'ccd')).toBe(false);
     expect(filmsFor(getCamera('kidcam')).map((s) => s.id)).toEqual(['toycmos']);
     expect(filmsFor(getCamera('aqua27')).map((s) => s.id)).toEqual(['aqua400']);
-    for (const id of ['aqua400', 'instawide', 'reel40', 'toycmos']) expect(canLoad(getCamera('pro35'), id), id).toBe(false);
+    for (const id of ['aqua400', 'instawide', 'reel40', 'toycmos', 'vga98', 'ccd7', 'vgaphone', 'phone2mp', 'app10']) expect(canLoad(getCamera('pro35'), id), id).toBe(false);
   });
   it('gives every body its own look (new bodies are not recolours)', () => {
     const sig = (c: (typeof CAMERAS)[number]) => [c.body, c.viewfinder, c.formats.join(), c.border ?? '-', c.defaultStock, c.capture].join('|');
@@ -64,7 +64,7 @@ describe('camera catalogue', () => {
     expect(CAMERAS.some((c) => c.flash === 'charge')).toBe(true);
     expect(CAMERAS.some((c) => c.lens.fisheye)).toBe(true);
     expect(CAMERAS.some((c) => c.lens.streak > 0)).toBe(true);
-    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['ccd03', 'instasq', 'instaw', 'kidcam', 'pixel']);
+    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['bridge09', 'ccd03', 'filter10', 'flip03', 'floppy98', 'instasq', 'instaw', 'kidcam', 'pixel', 'slim06', 'touch07']);
     expect(CAMERAS.filter(ejectsPrints).map((c) => c.id).sort()).toEqual(['instasq', 'instaw']);
   });
   it('has 4-tone palettes ordered dark → light', () => {
