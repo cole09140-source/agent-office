@@ -9,13 +9,14 @@
 //     --locales x,y       default: all 10
 //     --workers N         parallel browsers (default 4)
 //     --port N            preview port (default 4790)
-//     --my 0|1            force the MY-tab frame off/on (default: on when the app has tab-my)
+//     --my 0|1            force the MY-tab frame off/on (default: on when the app has tab-my);
+//                         it is taken on the Vite dev server (--dev-port, default 5297) as a simulated Android app
 //     --home <dir>        also write film-camela-home/assets/shots/*.jpg (ko + en, ≤150 KB)
 //     --skip-capture      only re-frame / re-make graphics from existing raws
 //
 // Output: <out>/<platform>/<locale>/<n>-<scene>.png (framed, store size), …/raw/ (unframed),
 //         <out>/play-feature-graphic/<locale>/feature-graphic.jpg
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -57,7 +58,29 @@ if (!flag('skip-capture')) {
   if (opt('platforms')) env.PLATFORMS = opt('platforms');
   if (opt('locales')) env.LOCALES = opt('locales');
   if (opt('my')) env.MY = opt('my');
-  sh('npx', ['playwright', 'test', '-c', 'scripts/store-shots/store-shots.config.ts', '--output', q(join(work, 'pw-results'))], env);
+  // The MY frame is taken on the Vite dev server in a simulated Android shell (shots.spec.ts).
+  let dev = null;
+  if (opt('my') !== '0') {
+    const devPort = opt('dev-port', '5297');
+    dev = spawn('npx', ['vite', '--port', devPort, '--strictPort'], { cwd: app, shell: process.platform === 'win32', stdio: 'ignore' });
+    const url = `http://localhost:${devPort}/`;
+    // Must be this app's dev server (index.html loads /src/main.tsx), not something else on the port.
+    let ok = false;
+    for (let i = 0; i < 120 && !ok; i++) {
+      ok = await fetch(url).then((r) => r.text(), () => '').then((t) => t.includes('/src/main.tsx'));
+      if (!ok) await new Promise((r) => setTimeout(r, 500));
+    }
+    if (!ok) throw new Error(`dev server for the MY frame did not start on ${url} (port busy? use --dev-port)`);
+    env.MY_DEV = url;
+  }
+  try {
+    sh('npx', ['playwright', 'test', '-c', 'scripts/store-shots/store-shots.config.ts', '--output', q(join(work, 'pw-results'))], env);
+  } finally {
+    if (dev) {
+      if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(dev.pid), '/T', '/F'], { stdio: 'ignore' });
+      else dev.kill();
+    }
+  }
 }
 // 4. caption frames, 5. feature graphics
 execFileSync('node', [join(here, 'frame.mjs'), resolve(out)], { cwd: app, stdio: 'inherit' });
@@ -66,11 +89,13 @@ execFileSync('node', [join(here, 'play-assets.mjs'), resolve(out)], { cwd: app, 
 // 6. homepage screenshots (film-camela-home README table), 645 px wide JPG ≤ 150 KB
 const home = opt('home');
 if (home) {
-  const map = { camera: 'camera', cameras: 'cameras', lab: 'lab', darkroom: 'darkroom', gallery: 'contact', meter: 'analog' };
-  for (const [name, scene] of Object.entries(map))
+  // gallery: the contact sheet, or the developed roll when the MY frame took the contact sheet's slot
+  const map = { camera: ['camera'], cameras: ['cameras'], lab: ['lab'], darkroom: ['darkroom'], gallery: ['contact', 'roll'], meter: ['analog'] };
+  for (const [name, scenes] of Object.entries(map))
     for (const [locale, suf] of [['ko', ''], ['en', '-en']]) {
       const dir = join(resolve(out), 'appstore-6.9', locale, 'raw');
-      const f = existsSync(dir) && readdirSync(dir).find((n) => n.endsWith(`-${scene}.png`));
+      const files = existsSync(dir) ? readdirSync(dir) : [];
+      const f = scenes.map((sc) => files.find((n) => n.endsWith(`-${sc}.png`))).find(Boolean);
       if (!f) continue;
       const dst = join(home, `shot-${name}${suf}.jpg`);
       for (const q of [6, 8, 10, 12, 14]) {

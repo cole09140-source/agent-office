@@ -3,7 +3,7 @@
     "Single source for the store-shot pipeline (config, spec, frame.mjs, play-assets.mjs).",
     "captions: docs/03b_STORE_LISTING_FILM_CAMELA.md (ko, en) and docs/03c_STORE_LISTING_10LANG.md (others), {{CAMERA_COUNT}} = 22.",
     "frame.mjs breaks a caption after its first separator (, 、 ， 。 . ! ? ،) and highlights the first line.",
-    "captions.*.my are DRAFTS for the MY-tab frame (not in the listing docs yet): have them checked before the final run.",
+    "captions.*.my: MY-tab frame (not in the listing docs; drafted 2026-11-02, approved by the coordinator 2026-11-03), naming the tab as each locale's tab.settings does.",
     "names / short: docs/03c section 0 (app name rule '<local film camera> - Film Camela')."
   ],
   "frames": ["camera", "cameras", "lab", "roll", "darkroom", "contact", "analog", "privacy"],
@@ -64,7 +64,7 @@
         "contact": "1本のフィルムを、1枚のベタ焼きに",
         "analog": "露出計と撮影メモを、本物のフィルムにも",
         "privacy": "アカウント不要、写真は手元だけに",
-        "my": "残り枚数とProは、MYで"
+        "my": "残り枚数とProは、マイで"
       }
     },
     "zh": {
@@ -81,7 +81,7 @@
         "contact": "一卷胶卷，一张接触印样",
         "analog": "测光和记录，真胶片机也用得上",
         "privacy": "无需账户，照片只存在本机",
-        "my": "剩余张数和 Pro，都在 MY"
+        "my": "剩余张数和 Pro，尽在“我的”"
       }
     },
     "es": {
@@ -98,7 +98,7 @@
         "contact": "Todo el rollo en una hoja",
         "analog": "Fotómetro y registro de tomas",
         "privacy": "Sin cuenta. Fotos solo tuyas",
-        "my": "Fotos restantes y Pro, en MY"
+        "my": "Fotos restantes y Pro: Mi espacio"
       }
     },
     "fr": {
@@ -115,7 +115,7 @@
         "contact": "Une pellicule, une planche",
         "analog": "Posemètre et carnet de prises",
         "privacy": "Sans compte, sans cloud",
-        "my": "Vues restantes et Pro : MY"
+        "my": "Vues restantes et Pro : Mon espace"
       }
     },
     "pt": {
@@ -132,7 +132,7 @@
         "contact": "Um filme, uma folha de contato",
         "analog": "Fotômetro e caderno de fotos",
         "privacy": "Sem conta, sem nuvem",
-        "my": "Poses restantes e Pro, no MY"
+        "my": "Poses restantes e Pro: Meu espaço"
       }
     },
     "ru": {
@@ -149,7 +149,7 @@
         "contact": "Вся плёнка на одном листе",
         "analog": "Экспонометр и журнал съёмки",
         "privacy": "Без аккаунта и облака",
-        "my": "Остаток кадров и Pro — в MY"
+        "my": "Остаток кадров и Pro — в «Моё»"
       }
     },
     "hi": {
@@ -166,7 +166,7 @@
         "contact": "पूरा रोल, एक कॉन्टैक्ट शीट",
         "analog": "असली फ़िल्म के लिए मीटर और लॉग",
         "privacy": "न अकाउंट, न क्लाउड अपलोड",
-        "my": "बचे शॉट और Pro, सब MY में"
+        "my": "बचे शॉट और Pro, सब मेरा पेज में"
       }
     },
     "ar": {
@@ -183,7 +183,7 @@
         "contact": "فيلم كامل في ورقة تلامس واحدة",
         "analog": "مقياس تعريض وسجل للفيلم",
         "privacy": "بلا حساب، وصورك على جهازك فقط",
-        "my": "اللقطات المتبقية وPro في MY"
+        "my": "اللقطات المتبقية و Pro في صفحتي"
       }
     }
   }

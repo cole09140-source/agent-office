@@ -41,7 +41,7 @@ function html(platform, locale, caption, img) {
     h1 em{font-style:normal;color:#ff8a2b;}
     .phone{margin-top:${90 * s}px;height:${H - 710 * s}px;aspect-ratio:${raw[0]}/${raw[1]};border-radius:${70 * s}px;overflow:hidden;box-shadow:0 ${40 * s}px ${120 * s}px rgba(0,0,0,.6),0 0 0 ${6 * s}px #2b2621;background:#0e0d0c;}
     .phone img{width:100%;height:100%;display:block;}
-  </style></head><body><div class="brand">${icon}<span>Film Camela</span></div><div class="cap"><h1>${lines.map((l) => `<span class="l">${esc(l)}</span>`).join('')}</h1></div><div class="phone">${img ? `<img src="${img}">` : ''}</div></body></html>`;
+  </style></head><body><div class="brand">${icon}<span>Film Camela</span></div><div class="cap"><h1 dir="${L.dir}">${lines.map((l) => `<span class="l">${esc(l)}</span>`).join('')}</h1></div><div class="phone">${img ? `<img src="${img}">` : ''}</div></body></html>`;
 }
 
 /** Shrinks the caption until it is at most two lines and no wider than the frame; highlights line 1. */
@@ -102,6 +102,12 @@ async function fit(page) {
       const e = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
       span.innerHTML = `<em style="display:block">${e(text.slice(0, cut).trimEnd())}</em><span style="display:block">${e(text.slice(cut).trimStart())}</span>`;
     }
+    // RTL: isolate Latin runs (Pro, MY, Film Camela) so they sit in Arabic reading order.
+    if (h.dir === 'rtl')
+      for (const el of h.querySelectorAll('em, span')) {
+        if (el.children.length) continue;
+        el.innerHTML = el.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/[A-Za-z][A-Za-z0-9.'’-]*(?: [A-Za-z][A-Za-z0-9.'’-]*)*/g, '<bdi>$&</bdi>');
+      }
     return { lines: lineCount(), shrink: +(size / base).toFixed(2) };
   });
 }

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { start } from '../../e2e/helpers';
@@ -10,9 +10,9 @@ import { start } from '../../e2e/helpers';
 // files are OUT/<platform>/<locale>/raw/<n>-<scene>.png. MY=1 forces the MY frame, MY=0 skips it.
 // The fake camera loops four scene photos (2 s each); shoot() waits for a fresh scene before
 // each frame, so the roll cycles through all four photos instead of repeating a few.
-const data = JSON.parse(readFileSync(new URL('./store-shots.data.json', import.meta.url), 'utf8')) as { frames: string[]; framesWithMy: string[] };
+const data = JSON.parse(readFileSync(new URL('./store-shots.data.json', import.meta.url), 'utf8')) as { frames: string[]; framesWithMy: string[]; platforms: Record<string, { store: string }> };
 
-test('store screenshots', async ({ page }, info) => {
+test('store screenshots', async ({ page, browser }, info) => {
   const { platform, locale } = info.project.metadata as { platform: string; locale: string };
   const dir = join(process.env.OUT ?? 'store-shots', platform, locale, 'raw');
   mkdirSync(dir, { recursive: true });
@@ -108,6 +108,20 @@ test('store screenshots', async ({ page }, info) => {
     await expect(tid('speed-sheet')).toBeVisible();
   };
 
+  // App Store sets simulate the iOS app (App Store wording in the Pro card), Play sets Android.
+  const os = data.platforms[platform].store === 'appstore' ? 'ios' : 'android';
+  // ONLY=my re-takes just the MY frame (it needs MY_DEV).
+  if (process.env.ONLY === 'my') {
+    frames = data.framesWithMy;
+    const p = await myContextPage(browser, info.project.use, process.env.MY_DEV ?? '', os);
+    await p.getByTestId('tab-settings').click();
+    await p.getByTestId('my-section').waitFor();
+    await p.waitForTimeout(800);
+    await settle(p);
+    await p.screenshot({ path: join(dir, `${frames.indexOf('my') + 1}-my.png`) });
+    await p.context().close();
+    return;
+  }
   await start(page);
   const hasMy = process.env.MY ? process.env.MY === '1' : (await tid('tab-my').count()) > 0;
   if (hasMy) frames = data.framesWithMy;
@@ -145,14 +159,19 @@ test('store screenshots', async ({ page }, info) => {
   await snap('cameras');
 
   // 4. a developed roll (Pro 35 · Muse 400, instant)
-  await tid('load-row').getByRole('radio').nth(1).click(); // Pro 35: 36 · 24 · 12 (labels are localized)
+  // Tablets show 5–6 thumbnails per row: a longer roll so the album is not mostly empty.
+  const tablet = (info.project.use.viewport?.width ?? 0) >= 600;
+  const frameCount = tablet ? 24 : 12;
+  await tid('load-row').getByRole('radio').nth(tablet ? 0 : 1).click(); // Pro 35: 36 · 24 · 12 (labels are localized)
   await tid('btn-load').click();
   await expect(tid('shutter')).toBeEnabled();
-  await shoot(12, 3); // every frame a different scene from the previous three
+  await shoot(frameCount, 3); // every frame a different scene from the previous three
   await rewind();
   await tid('speed-instant').click();
   await expect(tid('roll-screen')).toBeVisible();
-  await expect(page.locator('[data-testid=thumb] img')).toHaveCount(12, { timeout: 90_000 });
+  // At least frameCount (a retried shutter press can add one frame); all thumbnails developed.
+  await expect.poll(() => page.locator('[data-testid=thumb] img').count(), { timeout: 120_000 }).toBeGreaterThanOrEqual(frameCount);
+  await expect.poll(async () => (await page.locator('[data-testid=thumb] img').count()) === (await tid('thumb').count()), { timeout: 60_000 }).toBe(true);
   await closeToasts();
   await snap('roll');
 
@@ -206,20 +225,26 @@ test('store screenshots', async ({ page }, info) => {
   await page.evaluate(() => window.scrollTo(0, 0));
   await snap('analog');
 
-  // MY tab: shots left today, watch an ad for more, Pro (placeholder until the tab lands;
-  // refine the state below once its test ids are known).
+  // MY tab: today's shots card, the "watch an ad" card and the Pro card. Those cards only render in
+  // the native apps, so with MY_DEV (the Vite dev server, started by run.mjs) the frame is taken in a
+  // fresh context that simulates the Android shell (fake Capacitor global, as the MY-tab agent did)
+  // with a realistic quota; App Store sets simulate iOS. Without MY_DEV it is the web build's MY top.
   if (hasMy) {
-    // The MY tab may reuse the settings tab slot (tab-settings labelled "MY"): top of that page.
-    await ((await tid('tab-my').count()) ? tid('tab-my') : tid('tab-settings')).click();
-    await page.evaluate(() => {
+    const myDev = process.env.MY_DEV;
+    const p = myDev ? await myContextPage(browser, info.project.use, myDev, os) : page;
+    await p.getByTestId('tab-settings').click();
+    await p.getByTestId('my-section').waitFor();
+    await p.evaluate(() => {
       window.scrollTo(0, 0);
       document.querySelectorAll<HTMLElement>('*').forEach((el) => {
         if (el.scrollTop) el.scrollTop = 0;
       });
     });
-    await page.waitForTimeout(800);
-    await closeToasts();
-    await snap('my');
+    await p.waitForTimeout(800);
+    await settle(p);
+    const n = frames.indexOf('my');
+    await p.screenshot({ path: join(dir, `${n + 1}-my.png`) });
+    if (p !== page) await p.context().close();
   }
 
   // 8. settings: photos stay on this device (backup card)
@@ -239,6 +264,48 @@ test('store screenshots', async ({ page }, info) => {
   });
   await snap('privacy');
 });
+
+/** A page on the dev server that looks like the Android / iOS app on day one: 7 of 10 free shots left. */
+async function myContextPage(browser: Browser, use: Record<string, unknown>, url: string, os: 'android' | 'ios') {
+  const { viewport, deviceScaleFactor, isMobile, hasTouch, locale } = use as { viewport: { width: number; height: number }; deviceScaleFactor: number; isMobile: boolean; hasTouch: boolean; locale: string };
+  const ctx = await browser.newContext({ viewport, deviceScaleFactor, isMobile, hasTouch, locale, serviceWorkers: 'block' });
+  await ctx.addInitScript((os) => {
+    const w = window as unknown as Record<string, unknown>;
+    if (os === 'ios') w.webkit = { messageHandlers: { bridge: { postMessage: () => undefined } } };
+    else w.androidBridge = { postMessage: () => undefined };
+    w.Capacitor = { isNativePlatform: () => true, getPlatform: () => os };
+  }, os);
+  const p = await ctx.newPage();
+  await p.goto(url, { timeout: 120_000 });
+  await p.getByTestId('onb-skip').click({ timeout: 60_000 });
+  await p.evaluate(async () => {
+    // Store reachable and the three products loaded, as in the store builds: no "can't reach the
+    // store" note and an enabled "Get Pro". The rows show the app's own US$ list prices
+    // (src/monetize/config.ts); the product price strings below are not displayed.
+    const b = await import(/* @vite-ignore */ '/src/monetize/billing.ts');
+    b.canBuy.value = true;
+    const plan = (id: string, kind: string, subscription: boolean, usd: number) => ({ id, kind, subscription, price: `US$${usd}`, priceAmount: usd, currency: 'USD', title: '', description: '' });
+    b.products.value = [plan('filmcamela_pro_week', 'week', true, 4.99), plan('filmcamela_pro_3month', '3month', true, 9.99), plan('filmcamela_pro_lifetime', 'lifetime', false, 19.99)];
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('silvr');
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const d = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const dayKey = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        const tx = open.result.transaction('kv', 'readwrite');
+        tx.objectStore('kv').put({ v: 1, dayKey, freeUsedToday: 3, earnedBalance: 10, adsWatchedToday: 1 }, 'quota');
+        tx.oncomplete = () => {
+          open.result.close();
+          new BroadcastChannel('silvr-quota').postMessage('quota');
+          resolve();
+        };
+      };
+    });
+  });
+  await p.waitForTimeout(500);
+  return p;
+}
 
 /** Waits for animations, fonts and pending images so nothing is caught mid-transition. */
 async function settle(page: Page) {
