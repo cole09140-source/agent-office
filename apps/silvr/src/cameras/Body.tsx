@@ -390,6 +390,21 @@ export function CameraBody({ camera, width = 96 }: { camera: CameraModel; width?
         </g>
       );
       break;
+    case 'qwerty':
+      // QWERTY business phone, front view: wide screen on top, trackball, four rows of thumb keys.
+      shape = (
+        <g>
+          <rect x="36" y="4" width="48" height="74" rx="8" fill={body} />
+          <rect x="41" y="9" width="38" height="28" rx="2" fill="#1b2633" />
+          <rect x="43" y="11" width="34" height="24" fill={accent} opacity="0.5" />
+          <rect x="41" y="40" width="38" height="5" rx="2.5" fill={trim} />
+          <circle cx="60" cy="42.5" r="2.2" fill={accent} />
+          {Array.from({ length: 20 }, (_, i) => (
+            <rect key={i} x={41.5 + (i % 5) * 7.6} y={49 + Math.floor(i / 5) * 6.6} width="6.2" height="5" rx="1.6" fill={trim} />
+          ))}
+        </g>
+      );
+      break;
     case 'slab':
       // 2010 glass-slab phone, back view: flat glass, lens and LED flash in the top corner.
       shape = (

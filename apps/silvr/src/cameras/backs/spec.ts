@@ -139,6 +139,7 @@ export const BACKS: Record<string, BackEntry> = {
   pinhole: { family: 'compact', material: 'wood', buttons: 'chrome', shutterStyle: 'knurl', body: '#8a5a32', shade: '#5c3a1e', band: '#8a5a32', plate: '#d9c39a', plateInk: '#2b1d12', btn: '#d9c39a', btnInk: '#2b1d12', btnOn: '#7c2d12', shutter: '#c9b28a', shutterRim: '#5c3a1e', frame: '#2b1d12', accent: '#d9c39a', details: { grip: false, lugs: false, screws: true } },
   flip03: { family: 'phone', material: 'brushed', window: 'lcd', buttons: 'chrome', shutterStyle: 'console', body: '#aeb4bb', shade: '#7d848c', band: '#aeb4bb', plate: 'transparent', plateInk: '#1b1e22', ...CHROME_BTN, shutter: '#2d6cdf', shutterRim: '#173f8a', frame: '#26292d', accent: '#2d6cdf', print: 'VGA CAMERA', details: { grille: true, led: '#4cc3ff' } },
   touch07: { family: 'phone', body: '#141416', shade: '#060607', band: '#141416', plate: 'transparent', plateInk: '#e8e8ea', btn: '#2a2b2e', btnInk: '#f1f1f3', btnOn: '#ffcc4d', shutter: '#f4f4f6', shutterRim: '#9a9ca0', frame: '#2a2b2e', accent: '#b9bcc1' },
+  curve07: { family: 'phone', material: 'matte', buttons: 'rubber', body: '#1d1f23', shade: '#0d0e10', band: '#1d1f23', plate: 'transparent', plateInk: '#e6e8ec', btn: '#30333a', btnInk: '#f1f2f5', btnOn: '#7fd0ff', shutter: '#d9dde3', shutterRim: '#80868f', frame: '#30333a', accent: '#9aa0a8' },
   filter10: { family: 'phone', body: '#f4f4f2', shade: '#d4d4d0', band: '#f4f4f2', plate: 'transparent', plateInk: '#1b1b1d', btn: '#1b1b1d', btnInk: '#f4f4f2', btnOn: '#ffb36b', shutter: '#ffffff', shutterRim: '#b9b9b5', frame: '#1b1b1d', accent: '#c76b2a' },
   super8: { family: 'cine', body: '#4a4733', shade: '#2b291c', band: '#4a4733', plate: '#d9d6c8', plateInk: '#2b291c', ...RUBBER_BTN, shutter: '#e0a526', shutterRim: '#6e4f0c', frame: '#bdbdbd', accent: '#e0a526', details: { grip: true, screws: true, lugs: true } },
 };
@@ -147,7 +148,7 @@ export const BACKS: Record<string, BackEntry> = {
 const BY_BODY: Partial<Record<CameraModel['body'], string>> = {
   slr: 'pro35', double: 'doublex', range: 'range', tlr: 'twin66', trip: 'slide35', half: 'half72', compact: 'zonelc', toy: 'toy120', pano: 'panox', sprocket: 'sprocket',
   flash: 'party', disposable: 'snap27', instant: 'instasq', wide: 'instaw', digicam: 'ccd03', quad: 'quad4', fish: 'fish180', pixel: 'pixel', kid: 'kidcam', aqua: 'aqua27', cine: 'cine', super8: 'super8',
-  floppy: 'floppy98', slim: 'slim06', bridge: 'bridge09', zoomc: 'zoom90', mf: 'mf645', pinhole: 'pinhole', flip: 'flip03', smart: 'touch07', slab: 'filter10',
+  floppy: 'floppy98', slim: 'slim06', bridge: 'bridge09', zoomc: 'zoom90', mf: 'mf645', pinhole: 'pinhole', flip: 'flip03', smart: 'touch07', slab: 'filter10', qwerty: 'curve07',
 };
 
 export function backFor(camera: Pick<CameraModel, 'id' | 'body'>): BackSpec {

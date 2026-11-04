@@ -280,8 +280,8 @@ async function myContextPage(browser: Browser, use: Record<string, unknown>, url
   await p.getByTestId('onb-skip').click({ timeout: 60_000 });
   await p.evaluate(async () => {
     // Store reachable and the three products loaded, as in the store builds: no "can't reach the
-    // store" note and an enabled "Get Pro". The rows show the app's own US$ list prices
-    // (src/monetize/config.ts); the product price strings below are not displayed.
+    // store" note and an enabled "Get Pro". The rows show these store price strings, as the app shows
+    // Play's localized prices (Play policy: no hard-coded currency) — keep MY frames out of store listings.
     const b = await import(/* @vite-ignore */ '/src/monetize/billing.ts');
     b.canBuy.value = true;
     const plan = (id: string, kind: string, subscription: boolean, usd: number) => ({ id, kind, subscription, price: `US$${usd}`, priceAmount: usd, currency: 'USD', title: '', description: '' });

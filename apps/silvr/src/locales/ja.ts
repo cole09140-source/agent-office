@@ -470,7 +470,6 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': '3か月ごとに自動更新',
   'my.plan.lifetime.d': '1回の購入で、ずっと使えます',
   'my.plan.best': 'いちばんお得',
-  'my.price.note': '価格は米ドル表示です。お支払い画面では、お住まいの国の通貨で請求されます。',
   'my.buy': 'Proをはじめる',
   'my.restore': '購入を復元',
   'my.manage': 'サブスクリプションを管理',
@@ -529,9 +528,10 @@ export const cameraText: LocaleCameraText = {
     zoom90: '90年代のズームコンパクト。2倍ズーム、モーター巻き上げ、オレンジ色の日付。', // ko: 90년대 자동 줌 카메라. 2배 줌, 모터 감기, 주황색 날짜 각인. · en: A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.
     mf645: '6×4.5の中判フィルム。1本15枚、とても鋭いレンズと広い階調。', // ko: 6×4.5 중형 필름. 롤 하나에 15장, 아주 선명한 렌즈와 넓은 계조. · en: 6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.
     pinhole: 'レンズの代わりに針穴ひとつの木の箱。全体がやわらかく、四隅は深く暗く落ちます。', // ko: 렌즈 대신 바늘구멍 하나로 찍는 나무 상자. 전체가 부드럽고 가장자리는 깊게 어두워요. · en: A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.
-    flip03: '2003年の折りたたみケータイの30万画素カメラ。640ピクセル、あせた色、つぶれたディテール。', // ko: 2003년 폴더폰의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.
-    touch07: '初期のタッチスクリーンフォンの200万画素カメラ。固定フォーカス、暖かいトーン、白く飛んだ空。', // ko: 초기 터치스크린 폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.
-    filter10: '2010年の写真アプリの雰囲気。正方形の写真、浮いた黒、黄色いハイライト、白いフチ。', // ko: 2010년 사진 앱 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.
+    flip03: '2004年のモトローラ RAZR V3の30万画素カメラ。640ピクセル、色あせた色、つぶれたディテール。', // ko: 2004년 모토로라 RAZR V3의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of the 2004 Motorola RAZR V3. 640 px, faded color, smeared detail.
+    touch07: '初代iPhone（2007年）の200万画素カメラ。固定フォーカス、暖かいトーン、白く飛んだ空。', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
+    curve07: '2007年のBlackBerry Curveの200万画素カメラ。冷たいホワイトバランス、強いシャープネス、ざらついたノイズ。', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
+    filter10: 'iPhone 4と2010年の写真アプリのフィルター。正方形の写真、浮いた黒、黄色いハイライト、白いフチ。', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -566,6 +566,7 @@ export const cameraText: LocaleCameraText = {
     'Flip phone': '折りたたみケータイ',
     Smartphone: 'スマートフォン',
     'Filter app': 'フィルターアプリ',
+    'QWERTY phone': 'QWERTYフォン',
   },
 };
 
@@ -595,5 +596,6 @@ export const stockText: LocaleStockText = {
   ccd7: '2000年代半ばの700万画素CCD。鮮やかな色、暖かい肌、強いシャープネス、すぐ白飛びするハイライト。', // ko: 2000년대 중반 700만 화소 CCD. 쨍한 색, 따뜻한 피부, 과한 샤프닝, 확 날아가는 하이라이트. · en: A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.
   vgaphone: '初期のカメラ付きケータイのセンサー。あせた色、黄緑の色かぶり、ざらついた影。', // ko: 초기 폰카 센서. 바랜 색, 누르스름한 초록빛, 자글자글한 그림자. · en: An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.
   phone2mp: '第1世代スマートフォンのセンサー。暖かいホワイトバランス、白く飛んだ空、やわらかいディテール。', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
+  bbcurve: 'QWERTYフォンのセンサー。青みがかったトーン、強すぎるシャープネス、粗いシャドウノイズ。', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: '2010年代初めの写真アプリのフィルター。マットな黒、黄色いハイライト、強い周辺減光。', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
 };

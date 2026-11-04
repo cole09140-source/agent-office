@@ -2,12 +2,12 @@
 
 Play Console에서 앱을 만들 때 그대로 옮겨 적으면 되는 값입니다. 스토어 문안 원문은 `docs/03b_STORE_LISTING_FILM_CAMELA.md`, 빌드·서명은 `docs/04_LAUNCH_GUIDE.md`의 C.
 
-## 현재 상태 (2026-11-03 확인)
+## 현재 상태 (2026-11-04 확인)
 | 항목 | 상태 |
 |------|------|
-| 앱 | `com.filmcamela.app` · versionName **1.1.0** · Play 앱 ID `4974786066979399323` (계정 `atiumcompany@gmail.com`, 개발자 "Muzig AI" `5890194990164154086`) |
+| 앱 | `com.filmcamela.app` · versionName **1.1.1** (versionCode 4) · Play 앱 ID `4974786066979399323` (계정 `atiumcompany@gmail.com`, 개발자 "Muzig AI" `5890194990164154086`) |
 | 빌드 2 | ✅ **내부 테스트** 트랙에 출시(테스터 목록 "Muzig 내부 테스터") |
-| 빌드 3 | ⏳ 프로덕션 제출용으로 빌드 중 — MY 탭 정가를 USD로만 표시(US$4.99 / 9.99 / 19.99) + 안내 "결제창에서는 현지 통화" |
+| 빌드 3 | ❌ 11/4 거부 — ① 정기 결제 정책: MY 탭 US$ 고정 가격이 현지 통화와 달라 "통화 불일치" ② 손상된 기능: 상품을 못 불러오면 "Pro 시작하기"·광고 버튼이 비활성(응답 없음). → **빌드 4(1.1.1)**: Play가 준 현지 가격만 표시(US$·안내 문구 삭제), 구매·복원·광고 버튼은 항상 눌리고 누르면 스토어 재연결 또는 이유 안내. 스토어 스크린샷 6(MY)도 US$가 보여 삭제 |
 | 스토어 등록정보 | ✅ 11개 언어(en-US 기본, ko-KR, ja-JP, zh-CN, es-419, es-ES, fr-FR, pt-BR, ru-RU, hi-IN, ar), 앱 이름 "<현지어 필름 카메라> - Film Camela" |
 | 앱 콘텐츠 | ✅ 광고 있음 · 로그인 없음 · 타깃 13세 이상 · IARC 3+/Everyone · 광고 ID(분석·광고·사기 방지) · 데이터 보안(대략적 위치·앱 상호작용·진단·기기 ID — 수집+공유, 선택, 임시 처리 아님) · 정부·금융·건강 해당 없음 |
 | 개인정보처리방침 URL | 지금은 `https://silvr-three.vercel.app/privacy.html` (가비아 A 레코드 `silvr` → `76.76.21.21` 11/3 추가, HTTPS 되면 `https://silvr.muzig.ai/privacy.html`로 교체) |

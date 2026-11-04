@@ -33,6 +33,7 @@ const CASES: { id: string; presses: number; ratio: number; tol?: number; check?:
   { id: 'pinhole', presses: 1, ratio: 1 },
   { id: 'flip03', presses: 1, ratio: 4 / 3, check: 'lowres' },
   { id: 'touch07', presses: 1, ratio: 4 / 3 },
+  { id: 'curve07', presses: 1, ratio: 4 / 3 },
   { id: 'filter10', presses: 1, ratio: 1, tol: 0.05 }, // square inside an even white print border
 ];
 

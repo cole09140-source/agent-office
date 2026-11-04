@@ -39,7 +39,8 @@ export type BodyStyle =
   | 'pinhole'
   | 'flip'
   | 'smart'
-  | 'slab';
+  | 'slab'
+  | 'qwerty';
 export type ViewfinderStyle =
   | 'slr'
   | 'range'
@@ -67,6 +68,8 @@ export type StampStyle = 'led' | 'digital' | 'none';
 export interface CameraModel {
   id: string;
   name: string;
+  /** Shorter name for the camera toolbar chip when `name` would not fit on one row. */
+  chip?: string;
   /** Era/marketing line shown under the name. */
   era: string;
   body: BodyStyle;
@@ -831,8 +834,9 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'flip03',
-    name: 'Flip VGA',
-    era: '2003 · Flip phone',
+    name: 'Motorola RAZR V3',
+    chip: 'RAZR V3',
+    era: '2004 · Flip phone',
     body: 'flip',
     colors: ['#aeb4bb', '#2d6cdf', '#26292d'],
     films: ['vgaphone'],
@@ -856,7 +860,7 @@ export const CAMERAS: CameraModel[] = [
   },
   {
     id: 'touch07',
-    name: 'Touch 2M',
+    name: 'iPhone 2G',
     era: '2007 · Smartphone',
     body: 'smart',
     colors: ['#1a1a1c', '#b9bcc1', '#3a3b3f'],
@@ -880,8 +884,34 @@ export const CAMERAS: CameraModel[] = [
     pro: false,
   },
   {
+    id: 'curve07',
+    name: 'BlackBerry Curve',
+    chip: 'BlackBerry',
+    era: '2007 · QWERTY phone',
+    body: 'qwerty',
+    colors: ['#1d1f23', '#9aa0a8', '#3a3c40'],
+    films: ['bbcurve'],
+    defaultStock: 'bbcurve',
+    capacities: [99],
+    formats: ['4:3'],
+    capture: 'single',
+    // 2 MP fixed-focus module over a full keyboard: crisp centre, hard sharpening, digital zoom.
+    lens: lens({ soft: 0.2, vignette: 0.22, chroma: 0.6 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'phone',
+    viewfinder: 'phone',
+    instant: true,
+    zoom: [1, 2, 4],
+    ev: false,
+    maxLong: 1600, // 2 MP: 1600×1200
+    pro: false,
+  },
+  {
     id: 'filter10',
-    name: 'Square 5M',
+    name: 'iPhone 4',
     era: '2010 · Filter app',
     body: 'slab',
     colors: ['#f4f4f2', '#1b1b1d', '#c9c9c6'],

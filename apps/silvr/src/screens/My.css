@@ -181,9 +181,6 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.my-price-note {
-  margin: 10px 0 0;
-}
 .my-plans:disabled .my-plan {
   opacity: 0.6;
   cursor: default;

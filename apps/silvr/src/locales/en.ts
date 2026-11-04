@@ -458,7 +458,6 @@ export const messages: Messages = {
   'my.plan.3month.d': 'Renews every 3 months',
   'my.plan.lifetime.d': 'Pay once, keep it forever',
   'my.plan.best': 'Best value',
-  'my.price.note': 'Prices are shown in US dollars. At checkout you’ll be charged in your local currency.',
   'my.buy': 'Get Pro',
   'my.restore': 'Restore purchases',
   'my.manage': 'Manage subscription',
@@ -516,9 +515,10 @@ export const cameraText: CameraText = {
     zoom90: 'A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.',
     mf645: '6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.',
     pinhole: 'A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.',
-    flip03: 'The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.',
-    touch07: 'The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.',
-    filter10: 'A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.',
+    flip03: 'The 0.3 MP camera of the 2004 Motorola RAZR V3. 640 px, faded color, smeared detail.',
+    touch07: 'The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.',
+    curve07: 'The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.',
+    filter10: 'The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.',
   },
   era: {
     SLR: 'SLR',
@@ -552,6 +552,7 @@ export const cameraText: CameraText = {
     'Flip phone': 'Flip phone',
     Smartphone: 'Smartphone',
     'Filter app': 'Filter app',
+    'QWERTY phone': 'QWERTY phone',
   },
 };
 
@@ -580,5 +581,6 @@ export const stockText: StockText = {
   ccd7: 'A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.',
   vgaphone: 'An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.',
   phone2mp: 'A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.',
+  bbcurve: 'A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.',
   app10: 'An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.',
 };

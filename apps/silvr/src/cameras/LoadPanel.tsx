@@ -42,7 +42,7 @@ const QUICK_START: { id: string; label: MsgKey }[] = [
 type CameraGroup = 'film' | 'instant' | 'digital' | 'phone' | 'toy';
 const GROUPS: CameraGroup[] = ['film', 'instant', 'digital', 'phone', 'toy'];
 const TOY_BODIES = new Set(['disposable', 'toy', 'quad', 'double', 'pano', 'fish', 'aqua', 'super8', 'sprocket', 'flash', 'kid', 'pinhole']);
-const PHONE_BODIES = new Set(['flip', 'smart', 'slab']);
+const PHONE_BODIES = new Set(['flip', 'smart', 'slab', 'qwerty']);
 
 /** Bucket for the "All cameras" sheet: Film · Instant · Digital · Phone · Toy/Special. */
 export function cameraGroup(camera: CameraModel): CameraGroup {

@@ -475,7 +475,6 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': 'Автопродление каждые 3 месяца',
   'my.plan.lifetime.d': 'Один платёж — навсегда',
   'my.plan.best': 'Выгоднее всего',
-  'my.price.note': 'Цены указаны в долларах США. При оплате списание происходит в вашей местной валюте.',
   'my.buy': 'Оформить Pro',
   'my.restore': 'Восстановить покупки',
   'my.manage': 'Управлять подпиской',
@@ -534,9 +533,10 @@ export const cameraText: LocaleCameraText = {
     zoom90: 'Компактная камера с зумом из 90-х. Двукратный зум, моторная протяжка, оранжевая дата.', // ko: 90년대 자동 줌 카메라. 2배 줌, 모터 감기, 주황색 날짜 각인. · en: A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.
     mf645: 'Средний формат 6×4,5. 15 кадров на плёнку, очень резкий объектив и широкий тональный диапазон.', // ko: 6×4.5 중형 필름. 롤 하나에 15장, 아주 선명한 렌즈와 넓은 계조. · en: 6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.
     pinhole: 'Деревянная коробка с булавочным отверстием вместо объектива. Мягко повсюду, с глубокими тёмными углами.', // ko: 렌즈 대신 바늘구멍 하나로 찍는 나무 상자. 전체가 부드럽고 가장자리는 깊게 어두워요. · en: A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.
-    flip03: 'Камера на 0,3 Мп в телефоне-раскладушке 2003 года. 640 пикселей, выцветший цвет, смазанные детали.', // ko: 2003년 폴더폰의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.
-    touch07: 'Камера на 2 Мп первых сенсорных телефонов. Фиксированный фокус, тёплые тона, выбитое небо.', // ko: 초기 터치스크린 폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.
-    filter10: 'Стиль фотоприложения 2010 года. Квадратные снимки, приподнятые чёрные, жёлтые света, белая рамка.', // ko: 2010년 사진 앱 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.
+    flip03: 'Камера на 0,3 Мп в Motorola RAZR V3 2004 года. 640 пикселей, выцветший цвет, смазанные детали.', // ko: 2004년 모토로라 RAZR V3의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of the 2004 Motorola RAZR V3. 640 px, faded color, smeared detail.
+    touch07: 'Камера на 2 Мп первого iPhone (2007). Фиксированный фокус, тёплые тона, выбитое небо.', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
+    curve07: 'Камера на 2 Мп в BlackBerry Curve 2007 года. Холодный баланс белого, сильная резкость, зернистый шум.', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
+    filter10: 'iPhone 4 и фильтры фотоприложений 2010 года. Квадратные снимки, приподнятый чёрный, жёлтые света, белая рамка.', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -571,6 +571,7 @@ export const cameraText: LocaleCameraText = {
     'Flip phone': 'Раскладушка',
     Smartphone: 'Смартфон',
     'Filter app': 'Приложение с фильтрами',
+    'QWERTY phone': 'QWERTY-телефон',
   },
 };
 
@@ -600,5 +601,6 @@ export const stockText: LocaleStockText = {
   ccd7: 'ПЗС-матрица на 7 Мп середины 2000-х: сочный цвет, тёплая кожа, жёсткое повышение резкости, резко выбитые света.', // ko: 2000년대 중반 700만 화소 CCD. 쨍한 색, 따뜻한 피부, 과한 샤프닝, 확 날아가는 하이라이트. · en: A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.
   vgaphone: 'Сенсор первых камерофонов: блёклый цвет, жёлто-зелёный оттенок, шумные тени.', // ko: 초기 폰카 센서. 바랜 색, 누르스름한 초록빛, 자글자글한 그림자. · en: An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.
   phone2mp: 'Сенсор первых смартфонов: тёплый баланс белого, выбитое небо, мягкая детализация.', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
+  bbcurve: 'Сенсор телефона с QWERTY-клавиатурой: синеватые тона, пересушенные края, грубый шум в тенях.', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: 'Фильтр фотоприложения начала 2010-х: матовые чёрные, жёлтые света, сильное виньетирование.', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
 };

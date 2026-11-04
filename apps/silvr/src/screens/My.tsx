@@ -155,7 +155,8 @@ export function AdAction({ onRewarded, guard, testId = 'btn-watch-ad', primary =
   const loading = adShowing.value;
   const none = q.adsLeftToday <= 0;
   const blocked = !adsAvailable.value && !none;
-  const disabled = loading || none || !online || blocked;
+  // Only an ad already loading disables the button: every other state still answers a tap
+  // (it tries the ad, or says why there is none), so the button is never dead.
   const note = loading
     ? t('my.ad.loading')
     : none
@@ -170,12 +171,16 @@ export function AdAction({ onRewarded, guard, testId = 'btn-watch-ad', primary =
     <div class="my-ad" data-state={state}>
       <button
         class={`btn ${primary ? 'primary' : ''} wide my-ad-btn`}
-        disabled={disabled}
+        disabled={loading}
         aria-describedby={noteId}
         aria-busy={loading || undefined}
         data-testid={testId}
         onClick={async () => {
           if (guard?.()) return;
+          if (none) {
+            toast(t('my.ad.none'));
+            return;
+          }
           const r = await watchAd();
           if (r === 'rewarded') onRewarded?.();
         }}
@@ -214,9 +219,6 @@ export function GetAppCard({ compact = false }: { compact?: boolean }) {
 }
 
 // ---------------------------------------------------------------- Pro
-
-/** List prices are shown in US dollars only (owner's call); the store sheet shows the local currency. */
-const usdPrice = (usd: number) => `US$${usd.toFixed(2)}`;
 
 const PLAN_KEYS: Record<ProductKind, { name: 'my.plan.week' | 'my.plan.3month' | 'my.plan.lifetime'; d: 'my.plan.week.d' | 'my.plan.3month.d' | 'my.plan.lifetime.d' }> = {
   week: { name: 'my.plan.week', d: 'my.plan.week.d' },
@@ -306,14 +308,14 @@ function ProCard() {
                     </span>
                     <small class="muted">{t(k.d)}</small>
                   </span>
+                  {/* Google Play policy: only the store's own localized price, the same currency as checkout. */}
                   <bdi class="my-plan-price" data-testid={`price-${def.kind}`}>
-                    {usdPrice(def.usd)}
+                    {price(def.kind) ?? '—'}
                   </bdi>
                 </label>
               );
             })}
           </fieldset>
-          <p class="muted small my-price-note">{t('my.price.note')}</p>
           {purchasePending.value && (
             <p class="small my-pro-pending" role="status">
               {t('my.pro.pending')}
@@ -324,12 +326,13 @@ function ProCard() {
               {t('my.pro.noStore')}
             </p>
           )}
-          <button class="btn primary wide" disabled={!store || busy || !price(plan)} aria-busy={busy || undefined} onClick={() => void buy(plan)} data-testid="btn-buy">
+          {/* Always tappable: if the store was out of reach at start-up, the tap reconnects (or says why not). */}
+          <button class="btn primary wide" disabled={busy} aria-busy={busy || undefined} onClick={() => void buy(plan)} data-testid="btn-buy">
             {t('my.buy')}
           </button>
         </>
       )}
-      <button class="link-btn my-restore" disabled={!store || busy} onClick={() => void doRestore()} data-testid="btn-restore-purchases">
+      <button class="link-btn my-restore" disabled={busy} onClick={() => void doRestore()} data-testid="btn-restore-purchases">
         {t('my.restore')}
       </button>
       {!pro && (

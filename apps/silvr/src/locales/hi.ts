@@ -471,7 +471,6 @@ export const messages: LocaleMessages = {
   'my.plan.3month.d': 'हर 3 महीने में अपने-आप रिन्यू',
   'my.plan.lifetime.d': 'एक बार पेमेंट, हमेशा के लिए',
   'my.plan.best': 'सबसे किफ़ायती',
-  'my.price.note': 'कीमतें अमेरिकी डॉलर में दिखाई गई हैं। भुगतान के समय आपकी स्थानीय मुद्रा में शुल्क लगेगा।',
   'my.buy': 'Pro लें',
   'my.restore': 'ख़रीदारी रीस्टोर करें',
   'my.manage': 'सब्सक्रिप्शन मैनेज करें',
@@ -530,9 +529,10 @@ export const cameraText: LocaleCameraText = {
     zoom90: '90 के दशक का ज़ूम कॉम्पैक्ट। 2× ज़ूम, मोटर वाइंड और नारंगी तारीख़।', // ko: 90년대 자동 줌 카메라. 2배 줌, 모터 감기, 주황색 날짜 각인. · en: A 90s auto zoom compact. 2× zoom, motor wind, orange date imprint.
     mf645: '6×4.5 मीडियम फ़ॉर्मैट। हर रोल में 15 फ़्रेम, बेहद शार्प लेंस और चौड़ी टोनल रेंज।', // ko: 6×4.5 중형 필름. 롤 하나에 15장, 아주 선명한 렌즈와 넓은 계조. · en: 6×4.5 medium format. 15 frames a roll, a very sharp lens and a long tonal range.
     pinhole: 'लेंस की जगह एक पिनहोल वाला लकड़ी का डिब्बा। हर तरफ़ नरमी और गहरे, अँधेरे कोने।', // ko: 렌즈 대신 바늘구멍 하나로 찍는 나무 상자. 전체가 부드럽고 가장자리는 깊게 어두워요. · en: A wooden box with a pinhole instead of a lens. Soft all over, with deep, dark corners.
-    flip03: '2003 के फ़्लिप फ़ोन का 0.3 MP कैमरा। 640 px, फीके रंग और धुंधली डिटेल।', // ko: 2003년 폴더폰의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of a 2003 flip phone. 640 px, faded color, smeared detail.
-    touch07: 'शुरुआती टचस्क्रीन फ़ोनों का 2 MP कैमरा। फ़िक्स्ड फ़ोकस, गर्म टोन और सफ़ेद पड़ा आसमान।', // ko: 초기 터치스크린 폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first touchscreen phones. Fixed focus, warm tones, blown-out skies.
-    filter10: '2010 के फ़ोटो ऐप का अंदाज़। चौकोर फ़ोटो, हल्के पड़े काले, पीली हाइलाइट्स और सफ़ेद बॉर्डर।', // ko: 2010년 사진 앱 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: A 2010 photo-app look. Square shots, lifted blacks, yellow highlights, a white border.
+    flip03: '2004 के Motorola RAZR V3 का 0.3 MP कैमरा। 640 px, फीके रंग और धुंधली डिटेल।', // ko: 2004년 모토로라 RAZR V3의 30만 화소 카메라. 640픽셀, 바랜 색, 뭉개진 디테일. · en: The 0.3 MP camera of the 2004 Motorola RAZR V3. 640 px, faded color, smeared detail.
+    touch07: 'पहले iPhone (2007) का 2 MP कैमरा। फ़िक्स्ड फ़ोकस, गर्म टोन और सफ़ेद पड़ा आसमान।', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
+    curve07: '2007 के BlackBerry Curve का 2 MP कैमरा। ठंडा व्हाइट बैलेंस, ज़्यादा शार्पनिंग और खुरदरा नॉइज़।', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
+    filter10: 'iPhone 4 और 2010 के फ़ोटो ऐप फ़िल्टर। चौकोर फ़ोटो, हल्का काला, पीली हाइलाइट और सफ़ेद बॉर्डर।', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -567,6 +567,7 @@ export const cameraText: LocaleCameraText = {
     'Flip phone': 'फ़्लिप फ़ोन',
     Smartphone: 'स्मार्टफ़ोन',
     'Filter app': 'फ़िल्टर ऐप',
+    'QWERTY phone': 'QWERTY फ़ोन',
   },
 };
 
@@ -596,5 +597,6 @@ export const stockText: LocaleStockText = {
   ccd7: '2000 के दशक के मध्य का 7 MP CCD: चटक रंग, गर्म स्किन टोन, ज़्यादा शार्पनिंग और जल्दी उड़ने वाली हाइलाइट्स।', // ko: 2000년대 중반 700만 화소 CCD. 쨍한 색, 따뜻한 피부, 과한 샤프닝, 확 날아가는 하이라이트. · en: A mid-2000s 7 MP CCD. Punchy color, warm skin, crunchy sharpening, hard-clipped highlights.
   vgaphone: 'शुरुआती कैमरा फ़ोन का सेंसर: फीके रंग, पीला-हरा टिंट और नॉइज़ भरी छायाएँ।', // ko: 초기 폰카 센서. 바랜 색, 누르스름한 초록빛, 자글자글한 그림자. · en: An early camera-phone sensor. Washed out, a green-yellow cast, noisy shadows.
   phone2mp: 'पहली पीढ़ी के स्मार्टफ़ोन का सेंसर: गर्म व्हाइट बैलेंस, सफ़ेद पड़ा आसमान और नरम डिटेल।', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
+  bbcurve: 'QWERTY फ़ोन का सेंसर: नीला टोन, ज़रूरत से ज़्यादा शार्प किनारे और छायाओं में मोटा नॉइज़।', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: '2010 के दशक की शुरुआत का फ़ोटो ऐप फ़िल्टर: मैट काले, पीली हाइलाइट्स और गहरा विनेट।', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
 };

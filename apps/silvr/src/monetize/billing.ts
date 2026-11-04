@@ -200,13 +200,35 @@ export function initBilling(): Promise<void> {
   return initPromise;
 }
 
+/**
+ * Called from a buy / restore tap: if the store was unreachable at start-up (offline, Play services
+ * still updating), connect again and reload prices now, so the tap never just does nothing.
+ */
+async function ensureStore(): Promise<boolean> {
+  if (!platform) return false;
+  try {
+    const { NativePurchases } = await plugin();
+    if (!canBuy.value) {
+      const { isBillingSupported } = await NativePurchases.isBillingSupported();
+      if (!isBillingSupported) return false;
+      canBuy.value = true;
+    }
+    if (products.value.length === 0) await loadProducts();
+    return true;
+  } catch (err) {
+    console.warn('[silvr] store still unavailable', err);
+    return canBuy.value;
+  }
+}
+
 /** Buys a Pro product through the store sheet. Resolves after the store answers. */
 export async function purchase(id: ProductId): Promise<PurchaseResult> {
   const def = productDef(id);
-  if (!platform || !canBuy.value || !def) return 'unavailable';
+  if (!platform || !def) return 'unavailable';
   if (billingBusy.value) return 'failed';
   billingBusy.value = true;
   try {
+    if (!(await ensureStore())) return 'unavailable';
     const { NativePurchases, PURCHASE_TYPE } = await plugin();
     const tx = await NativePurchases.purchaseProduct({
       productIdentifier: id,
@@ -250,10 +272,11 @@ export async function purchase(id: ProductId): Promise<PurchaseResult> {
 
 /** "Restore purchases": syncs with the store account (may ask the user to sign in on iOS). */
 export async function restore(): Promise<RestoreResult> {
-  if (!platform || !canBuy.value) return 'unavailable';
+  if (!platform) return 'unavailable';
   if (billingBusy.value) return 'failed';
   billingBusy.value = true;
   try {
+    if (!(await ensureStore())) return 'unavailable';
     const { NativePurchases } = await plugin();
     await NativePurchases.restorePurchases();
     await refreshEntitlement();
