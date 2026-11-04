@@ -1,0 +1,2 @@
+/* Korean Info.plist strings (Film Camela). Keys not listed here use ios/App/App/Info.plist. */
+"NSUserTrackingUsageDescription" = "허용하면 Google AdMob이 이 기기의 광고 식별자로 나에게 더 맞는 광고를 보여 줄 수 있어요. 허용하지 않아도 광고 보상과 모든 무료 기능은 똑같아요. 사진은 기기 밖으로 나가지 않아요.";
