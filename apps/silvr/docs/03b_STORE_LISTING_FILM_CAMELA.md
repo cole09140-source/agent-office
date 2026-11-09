@@ -9,8 +9,8 @@
 
 | 토큰 | 뜻 | 세는 법 | 작성 시점 값 (2026-11-01) |
 |------|----|---------|------------------|
-| `{{CAMERA_COUNT}}` | 카메라 바디 수 | `CAMERAS.length` (`src/cameras/models.ts`) | 22 |
-| `{{FILM_COUNT}}` | 필름 + 디지털 센서 수 | `STOCKS.length` (`src/film/stocks.ts`) — 필름 17 + 센서 3(CCD·Pixel·Toy CMOS) | 20 |
+| `{{CAMERA_COUNT}}` | 카메라 바디 수 | `CAMERAS.length` (`src/cameras/models.ts`) | 32 |
+| `{{FILM_COUNT}}` | 필름 + 디지털 센서 수 | `STOCKS.length` (`src/film/stocks.ts`) — 필름 18 + 센서 8(디카·폰·픽셀·토이) | 26 |
 
 - 아래 글자 수는 **두 토큰을 두 자리 숫자로 바꿨을 때** 기준입니다(예: 22, 20). 숫자가 한 자리가 되면 1자씩 줄어요.
 - 다른 에이전트가 바디를 추가하는 중이라, 출시 직전에 위 두 값을 다시 세어 문서 전체를 일괄 치환하세요.

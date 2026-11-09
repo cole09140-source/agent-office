@@ -11,9 +11,16 @@ async function clipped(page: Page): Promise<string[]> {
       const style = getComputedStyle(el);
       if (style.display === 'none' || el.offsetParent === null) continue;
       // Measure the content itself: scrollWidth also counts the chips' ::after hit area (inset −2px).
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      const content = range.getBoundingClientRect().width;
+      // Screen-reader-only text (.sr-only, 1px and clipped) is not part of the visible label.
+      const rects = Array.from(el.childNodes)
+        .filter((n) => !(n instanceof HTMLElement && n.classList.contains('sr-only')))
+        .map((n) => {
+          const range = document.createRange();
+          range.selectNodeContents(n);
+          return range.getBoundingClientRect();
+        })
+        .filter((r) => r.width > 0);
+      const content = rects.length ? Math.max(...rects.map((r) => r.right)) - Math.min(...rects.map((r) => r.left)) : 0;
       const box = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       if (content > box + 1 && style.overflowX !== 'auto' && !el.classList.contains('stock-strip')) {
         out.push(`${el.tagName.toLowerCase()}.${el.className}: "${el.textContent?.trim().slice(0, 30)}"`);

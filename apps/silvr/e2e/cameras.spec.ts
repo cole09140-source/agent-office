@@ -57,6 +57,11 @@ for (const cse of CASES) {
     const errors = await start(page);
     await loadCamera(page, cse.id);
     await page.waitForTimeout(600);
+    // The top toolbar stays on one row on a 360px phone (Tele 20 once wrapped there).
+    const vp = page.viewportSize()!;
+    await page.setViewportSize({ width: 360, height: vp.height });
+    expect(await page.locator('.cam-top').evaluate((el) => el.getBoundingClientRect().height), 'toolbar on one row at 360px').toBeLessThan(70);
+    await page.setViewportSize(vp);
     await page.screenshot({ path: `e2e/.shots/cam-${cse.id}-vf.png` });
     for (let i = 0; i < cse.presses; i++) {
       if (cse.id === 'doublex' && i === 0) {

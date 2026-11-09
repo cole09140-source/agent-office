@@ -48,7 +48,8 @@ test('works offline after first load (service worker)', async ({ page, context }
   await page.reload();
   await expect(page.getByTestId('camera-screen')).toBeVisible();
   await page.goto('./privacy.html');
-  await expect(page.getByRole('heading', { name: '개인정보 처리방침' })).toBeVisible();
+  // The 10-language page shows the browser's language (English here, Korean on a Korean phone).
+  await expect(page.locator('h1:visible').first()).toHaveText(/개인정보 처리방침|Privacy Policy/);
   // Visiting a legal page must not replace the cached app shell.
   await page.goto('./');
   await expect(page.getByTestId('camera-screen')).toBeVisible();

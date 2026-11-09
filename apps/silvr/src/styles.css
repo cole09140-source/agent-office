@@ -66,6 +66,14 @@ button:disabled {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+::selection {
+  background: rgba(255, 138, 43, 0.38);
+  color: var(--fg);
+}
+input,
+textarea {
+  caret-color: var(--accent);
+}
 /* Headings get focus only so screen readers start there after a screen change: they are not controls. */
 h1[tabindex='-1']:focus,
 h2[tabindex='-1']:focus {
@@ -178,6 +186,13 @@ a {
 }
 .hdr-spacer + .hdr-title {
   padding-inline-start: 4px;
+}
+/* Top-level tab screens (no back button): an iOS-style large title. Pushed screens keep the compact one. */
+.hdr-spacer + .hdr-title h1 {
+  font-size: 1.75rem;
+  font-weight: 760;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
 }
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -605,6 +620,10 @@ a {
   font-size: 0.8125rem;
   font-weight: 750;
 }
+/* "3 shots" above "Send to lab": never under 11pt (Apple's smallest caption size). */
+.roll-btn-txt small {
+  font-size: 0.6875rem;
+}
 .roll-btn.has-shots {
   background: rgba(255, 138, 43, 0.14);
   box-shadow: inset 0 0 0 1px rgba(255, 138, 43, 0.35);
@@ -902,10 +921,12 @@ input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   display: block;
-  margin: 0;
+  /* 44px touch target for the thumb (Apple HIG); the negative margin keeps the old 28px in the layout. */
+  margin: -8px 0;
   width: 100%;
-  height: 28px;
+  height: 44px;
   background: transparent;
+  touch-action: pan-y;
 }
 input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
@@ -947,6 +968,12 @@ input[type='range']::-moz-range-thumb {
   background: var(--bg-3);
   font-family: var(--mono);
   font-size: 0.875rem;
+}
+/* Touch-down highlight, as iOS controls dim under the finger (the .btn / .icon-btn rules already do this). */
+.chip:active:not(:disabled),
+.seg button:active:not(:disabled),
+.pills button:active:not(:disabled) {
+  opacity: 0.7;
 }
 .pills button.on {
   background: var(--accent);
@@ -3098,6 +3125,13 @@ html.tap-guard * {
   }
   .cam-top .chip {
     padding: 0 8px;
+  }
+  /* Name + six controls (Tele 20: flash, timer, format, zoom, ±EV, more): tighter still, one row. */
+  .cam-top:has(> :nth-child(7)),
+  .bp-body .cam-top:has(> :nth-child(7)) {
+    gap: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
   }
 }
 /* Frame advance: the counter ticks with each shot. */
