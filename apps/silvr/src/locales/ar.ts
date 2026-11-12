@@ -34,6 +34,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': 'كاميرا فيلم تحفظ صورك الأصلية كما هي', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
   'tab.camera': 'الكاميرا', // from guide §8.3 · en: Camera
+  'tab.models': 'الطرازات',
+  'models.sub': '{n} كاميرا · اضغط على واحدة لتلتقط بها',
+  'models.inUse': 'قيد الاستخدام',
   'tab.lab': 'المعمل', // from guide §8.3 · en: Lab
   'tab.gallery': 'الألبوم', // from guide §8.3 · en: Album
   'tab.analog': 'تناظري', // from guide §8.3 · en: Analog

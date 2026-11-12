@@ -7,6 +7,9 @@ import type { CameraText, Messages, StockText } from './types';
 export const messages: Messages = {
   'app.tagline': 'The film camera that keeps every original',
   'tab.camera': 'Camera',
+  'tab.models': 'Models',
+  'models.sub': '{n} cameras · tap one to shoot with it',
+  'models.inUse': 'In use',
   'tab.lab': 'Lab',
   'tab.gallery': 'Album',
   'tab.analog': 'Analog',

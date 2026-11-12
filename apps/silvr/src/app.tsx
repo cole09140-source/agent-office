@@ -15,6 +15,7 @@ import { AnalogScreen, LogScreen } from './screens/Analog';
 import { CameraScreen } from './screens/Camera';
 import { DarkroomScreen } from './screens/Darkroom';
 import { GalleryScreen } from './screens/Gallery';
+import { ModelsScreen } from './screens/Models';
 import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
@@ -26,6 +27,7 @@ import { addImportBatch, developAllNow, finishImport, IMPORT_BATCH, newImportRol
 
 const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
   { name: 'camera', icon: 'camera', label: 'tab.camera' },
+  { name: 'models', icon: 'models', label: 'tab.models' },
   { name: 'gallery', icon: 'gallery', label: 'tab.gallery' },
   { name: 'analog', icon: 'analog', label: 'tab.analog' },
   { name: 'settings', icon: 'settings', label: 'tab.settings' },
@@ -33,6 +35,7 @@ const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
 
 const TAB_OF: Record<Route['name'], Route['name']> = {
   camera: 'camera',
+  models: 'models',
   gallery: 'gallery',
   roll: 'gallery',
   photo: 'gallery',
@@ -455,6 +458,9 @@ export function App() {
       // Once shown it stays (onboarding replayed from another tab must not drop a shot).
       if (settings.value.onboarded) cameraShown.current = true;
       screen = cameraShown.current ? <CameraScreen onImport={openImport} /> : null;
+      break;
+    case 'models':
+      screen = <ModelsScreen />;
       break;
     case 'gallery':
       screen = <GalleryScreen onImport={openImport} />;

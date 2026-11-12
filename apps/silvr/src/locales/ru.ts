@@ -36,6 +36,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': 'Плёночная камера, которая бережёт каждый оригинал',
   'tab.camera': 'Камера',
+  'tab.models': 'Модели',
+  'models.sub': 'Камер: {n} · нажмите, чтобы снимать ею',
+  'models.inUse': 'Сейчас',
   'tab.lab': 'Проявка',
   'tab.gallery': 'Альбом',
   'tab.analog': 'Аналог',

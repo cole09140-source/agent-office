@@ -211,3 +211,25 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   await expect(page.getByTestId('onboarding')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('Models tab: every camera at a glance, a tap shoots with it at once; the tab bar is centred', async ({ page }) => {
+  const errors = await start(page);
+  // Five tabs, Models right next to Camera, spread evenly across the bar.
+  const tabs = page.locator('.tabbar button');
+  await expect(tabs).toHaveCount(5);
+  await expect(tabs.nth(1)).toHaveAttribute('data-testid', 'tab-models');
+  const xs = await tabs.evaluateAll((els) => els.map((el) => el.getBoundingClientRect()).map((r) => [r.left, r.right]));
+  const vw = page.viewportSize()!.width;
+  expect(Math.abs(xs[0][0] - (vw - xs[4][1]))).toBeLessThanOrEqual(2);
+  await page.getByTestId('tab-models').click();
+  await expect(page.getByTestId('models-screen')).toBeVisible();
+  await expect(page.locator('[data-testid^="model-"]')).toHaveCount(32);
+  await page.getByTestId('model-instasq').click();
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'instasq');
+  await expect(page.getByTestId('camera-instasq')).toHaveAttribute('aria-pressed', 'true');
+  await shoot(page, 1);
+  // Back in Models, the camera in use is marked.
+  await page.getByTestId('tab-models').click();
+  await expect(page.getByTestId('model-instasq')).toHaveAttribute('aria-current', 'true');
+  expect(errors).toEqual([]);
+});

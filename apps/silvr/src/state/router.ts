@@ -2,6 +2,7 @@ import { signal } from '@preact/signals';
 
 export type Route =
   | { name: 'camera' }
+  | { name: 'models' }
   | { name: 'gallery' }
   | { name: 'roll'; id: string }
   | { name: 'photo'; id: string }
@@ -24,6 +25,7 @@ export function parseHash(hash: string): Route {
   switch (head) {
     case 'lab': // the lab tab is gone: old links and shortcuts open the album
       return { name: 'gallery' };
+    case 'models':
     case 'gallery':
     case 'analog':
     case 'settings':

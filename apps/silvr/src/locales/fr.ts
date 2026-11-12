@@ -32,6 +32,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': 'L’appareil argentique qui garde vos originaux',
   'tab.camera': 'Appareil',
+  'tab.models': 'Modèles',
+  'models.sub': '{n} appareils · touchez-en un pour photographier avec',
+  'models.inUse': 'Utilisé',
   'tab.lab': 'Labo',
   'tab.gallery': 'Album',
   'tab.analog': 'Argentique',

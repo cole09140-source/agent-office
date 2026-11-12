@@ -10,6 +10,9 @@
 export const messages = {
   'app.tagline': '원본이 그대로 남는 필름 카메라',
   'tab.camera': '카메라',
+  'tab.models': 'Models',
+  'models.sub': '카메라 {n}대 · 누르면 바로 찍을 수 있어요',
+  'models.inUse': '사용 중',
   'tab.lab': '현상소',
   'tab.gallery': '앨범',
   'tab.analog': '아날로그',

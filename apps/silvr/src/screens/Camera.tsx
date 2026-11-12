@@ -1,3 +1,4 @@
+import { signal } from '@preact/signals';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CameraController, classifyError, type CameraError } from '../camera/camera';
 import { snapshotVideo } from '../camera/capture';
@@ -53,6 +54,9 @@ type Charge = 'empty' | 'charging' | 'ready';
  */
 const ROLL_RACE = ['An exposure is already pending', 'Pending exposure already used', 'Roll is full', 'Roll is not loaded'];
 const isRollRace = (err: unknown): boolean => ROLL_RACE.includes(String((err as Error)?.message));
+
+/** Set by the Models tab: the camera to shoot with next (taken when the camera screen shows). */
+export const cameraRequest = signal<string | null>(null);
 
 function defaultAspect(camera: CameraModel, stock: FilmStock, rollAspect?: Aspect): Aspect {
   if (rollAspect && camera.formats.includes(rollAspect)) return rollAspect;
@@ -1003,6 +1007,14 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   reconcileRef.current = reconcile;
   const reconcileTimer = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => () => clearTimeout(reconcileTimer.current), []);
+
+  // A camera picked in the Models tab: shoot with it now (once the last camera has been read back).
+  useEffect(() => {
+    const id = cameraRequest.value;
+    if (!id || !restored) return;
+    cameraRequest.value = null;
+    switchTo(id);
+  }, [cameraRequest.value, restored]);
 
   // A roll changed (loaded, closed, loaded in another tab, restored): follow it, or replace it with the pick.
   useEffect(() => {

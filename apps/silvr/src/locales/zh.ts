@@ -38,6 +38,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': '保留每一张原图的胶片相机', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
   'tab.camera': '相机', // from guide §8.3 · en: Camera
+  'tab.models': '机型',
+  'models.sub': '{n} 台相机 · 点一下就能拍',
+  'models.inUse': '使用中',
   'tab.lab': '冲洗店', // from guide §8.3 · en: Lab
   'tab.gallery': '相册', // from guide §8.3 · en: Album
   'tab.analog': '胶片机', // from guide §8.3 · en: Analog

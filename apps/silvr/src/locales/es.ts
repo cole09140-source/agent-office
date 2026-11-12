@@ -37,6 +37,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': 'La cámara de película que conserva tus originales',
   'tab.camera': 'Cámara',
+  'tab.models': 'Modelos',
+  'models.sub': '{n} cámaras · toca una para disparar con ella',
+  'models.inUse': 'En uso',
   'tab.lab': 'Revelado',
   'tab.gallery': 'Álbum',
   'tab.analog': 'Analógico',

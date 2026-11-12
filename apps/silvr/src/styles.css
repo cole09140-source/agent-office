@@ -290,7 +290,11 @@ a {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* As many equal columns as there are tabs, the group centred (and kept together on wide screens). */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  justify-content: center;
+  padding-inline: max(0px, calc((100% - 600px) / 2));
   /* Grows with large text; TabBar writes its real height to --tab-h so the page padding follows. */
   min-height: calc(64px + var(--safe-b));
   padding-bottom: var(--safe-b);
@@ -4697,3 +4701,101 @@ button[aria-disabled='true'] {
   }
 }
 /* ---------- end camera back plates ---------- */
+
+/* ---------- Models tab: every camera at a glance ---------- */
+.models-group {
+  padding: 0;
+}
+.models-group h2 {
+  margin: 18px 0 10px;
+  font-size: 1rem;
+  font-weight: 750;
+}
+.models-group h2 .muted {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.model-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 12px 12px;
+  border-radius: 16px;
+  background: var(--bg-2);
+  border: 1px solid transparent;
+  text-align: start;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.model-card:active {
+  transform: scale(0.97);
+}
+.model-card.on {
+  border-color: var(--accent);
+  background: rgba(255, 138, 43, 0.08);
+}
+.model-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 78px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.07), transparent 70%);
+}
+.model-name {
+  font-size: 0.9375rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+.model-era {
+  font-size: 0.75rem;
+  color: var(--fg-2);
+}
+.model-desc {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--fg-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.model-film {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.6875rem;
+  color: var(--fg-3);
+}
+.model-badges {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  display: flex;
+  gap: 4px;
+}
+.model-badges .badge {
+  margin: 0;
+}
+.model-badges .badge.ghost {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--fg-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .model-card {
+    transition: none;
+  }
+}

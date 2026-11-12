@@ -59,13 +59,13 @@ test('works offline after first load (service worker)', async ({ page, context }
 test('tablet / desktop layout has no horizontal overflow on every tab', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await start(page);
-  for (const tab of ['camera', 'gallery', 'analog', 'settings']) {
+  for (const tab of ['camera', 'models', 'gallery', 'analog', 'settings']) {
     await page.getByTestId(`tab-${tab}`).click();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, tab).toBeLessThanOrEqual(0);
   }
   await page.setViewportSize({ width: 320, height: 640 });
-  for (const tab of ['camera', 'gallery', 'analog', 'settings']) {
+  for (const tab of ['camera', 'models', 'gallery', 'analog', 'settings']) {
     await page.getByTestId(`tab-${tab}`).click();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, `${tab}@320`).toBeLessThanOrEqual(0);

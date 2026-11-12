@@ -32,6 +32,9 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 export const messages: LocaleMessages = {
   'app.tagline': 'हर ओरिजिनल सँभालकर रखने वाला फ़िल्म कैमरा', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
   'tab.camera': 'कैमरा', // from guide §8.3 · en: Camera
+  'tab.models': 'मॉडल',
+  'models.sub': '{n} कैमरे · किसी पर टैप करें और तुरंत तस्वीर लें',
+  'models.inUse': 'चालू',
   'tab.lab': 'लैब', // from guide §8.3 · en: Lab
   'tab.gallery': 'एल्बम', // from guide §8.3 · en: Album
   'tab.analog': 'एनालॉग', // from guide §8.3 · en: Analog
