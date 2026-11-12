@@ -93,7 +93,7 @@ export const messages: LocaleMessages = {
   'cam.shutter': 'फ़ोटो लें', // ko: 촬영 · en: Take photo
   'cam.noCamera.title': 'कैमरा उपलब्ध नहीं है', // ko: 카메라를 사용할 수 없어요 · en: Camera unavailable
   'cam.noCamera.body': 'ब्राउज़र या डिवाइस की सेटिंग्ज़ में कैमरे की अनुमति दें। तब तक आप डिवाइस की तस्वीरें इंपोर्ट करके भी डेवलप कर सकते हैं।', // ko: 브라우저나 기기 설정에서 카메라 권한을 허용해 주세요. 그동안 기기에 있는 사진을 불러와 현상할 수도 있어요. · en: Allow camera access in your browser or device settings. In the meantime, you can import photos and develop them.
-  'cam.noCamera.import': 'फ़ोटो इंपोर्ट करके डेवलप करें', // ko: 사진 불러와 현상하기 · en: Import & develop photos
+  'cam.noCamera.import': 'फ़ोटो इंपोर्ट करें',
   'cam.starting': 'कैमरा तैयार हो रहा है…', // ko: 카메라 준비 중… · en: Starting camera…
   'cam.saved': 'फ़्रेम {n}', // ko: {n}번째 컷 · en: Frame {n}
   'cam.rewindConfirm': 'आपने {shots} {n, plural, one {खींच ली है} other {खींच ली हैं}}। बाकी {left} खाली छोड़कर रोल लैब भेजें?', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
@@ -151,7 +151,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': 'अगली फ़ोटो दाएँ आधे हिस्से में आएगी', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': 'पहला एक्सपोज़र हो गया · अब दूसरा सीन ढूँढिए', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': 'एक बार दबाएँ, चारों लेंस बारी-बारी से खींचेंगे', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
-  'cam.inCamera': 'कैमरे में', // ko: 카메라 안 · en: In camera
+  'cam.inCamera': 'चालू',
   'cam.lastShot': 'आख़िरी फ़ोटो', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': 'पैक ख़त्म हो गया। आपकी तस्वीरें एल्बम में इंतज़ार कर रही हैं।', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
   'cam.nShots': '{n, plural, one {# फ़ोटो} other {# फ़ोटो}}', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
@@ -220,7 +220,7 @@ export const messages: LocaleMessages = {
   'gal.openLab': 'लैब देखें', // ko: 현상소 보기 · en: Open the lab
   'gal.import': 'फ़ोटो इंपोर्ट करें', // ko: 사진 불러오기 · en: Import photos
   'gal.restore': 'बैकअप रीस्टोर करें', // ko: 이전 폰 백업 불러오기 · en: Restore a backup
-  'gal.importing': 'डेवलप हो रहा है… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
+  'gal.importing': 'इंपोर्ट हो रहा है… {n}/{total}',
   'gal.imported': 'इंपोर्ट की गई फ़ोटो', // ko: 불러온 사진 · en: Imported
   'gal.new': 'नया', // ko: 새 롤 · en: NEW
   'gal.frames': '{n, plural, one {# फ़्रेम} other {# फ़्रेम}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}

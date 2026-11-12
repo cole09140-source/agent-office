@@ -3681,6 +3681,8 @@ html.tap-guard * {
 }
 .gal-restore {
   margin-top: 6px;
+  min-height: 44px;
+  padding: 0 8px;
 }
 /* Album "Help" link (FAQ / contact page): quiet, but a full touch target. */
 .help-link {
@@ -4769,7 +4771,7 @@ button[aria-disabled='true'] {
   line-height: 1.35;
   color: var(--fg-2);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -4798,4 +4800,11 @@ button[aria-disabled='true'] {
   .model-card {
     transition: none;
   }
+}
+
+/* The automatic roll could not be saved: one clear retry where the shutter row would be. */
+.cam-retry {
+  display: flex;
+  justify-content: center;
+  padding: 14px 16px 18px;
 }

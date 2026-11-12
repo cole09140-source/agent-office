@@ -142,7 +142,8 @@ export function RollScreen({ id }: { id: string }) {
       }
       const blob = await contactSheet(frames, {
         title: `${isolate(stock.name)} · ${formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)}`,
-        subtitle: `${ltr('FILM CAMELA')}  ·  ${ltr(`ISO ${stock.iso}`)}  ·  ${t('gal.frames', { n: photos.length })}`,
+        // A long day can hold more than one sheet's worth: say how many are on it out of how many.
+        subtitle: `${ltr('FILM CAMELA')}  ·  ${ltr(`ISO ${stock.iso}`)}  ·  ${t('gal.frames', { n: frames.length })}${photos.length > frames.length ? ltr(` / ${photos.length}`) : ''}`,
         rtl: isRtl(),
         camera: hasCamera(roll.cameraId) ? getCamera(roll.cameraId).name : undefined,
         instant: hasCamera(roll.cameraId) && ejectsPrints(getCamera(roll.cameraId)),

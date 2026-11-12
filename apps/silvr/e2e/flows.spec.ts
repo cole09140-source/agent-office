@@ -233,3 +233,47 @@ test('Models tab: every camera at a glance, a tap shoots with it at once; the ta
   await expect(page.getByTestId('model-instasq')).toHaveAttribute('aria-current', 'true');
   expect(errors).toEqual([]);
 });
+
+test('GPT QA fixes: same camera from Models keeps its film; a sheet open blocks the Space shutter; pins keep the ring on the camera in use', async ({ page }) => {
+  const errors = await start(page);
+  await loadRoll(page, 'mono400');
+  await page.getByTestId('tab-models').click();
+  await page.getByTestId('model-pro35').click();
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'pro35');
+  await page.getByTestId('roll-btn').click();
+  await expect(page.getByTestId('roll-sheet').getByTestId('stock-mono400')).toHaveAttribute('aria-checked', 'true');
+  // Space while a sheet is open does not take a picture.
+  await page.locator('[data-testid=roll-sheet] .muted').first().click();
+  await page.keyboard.press(' ');
+  await page.waitForTimeout(800);
+  await expect(page.getByTestId('counter')).toContainText('00');
+  // Pinning reorders the strip; the camera in use stays under the centre ring.
+  await page.getByTestId('roll-sheet').getByTestId('pin-pro35').click();
+  await page.keyboard.press('Escape');
+  await loadCamera(page, 'curve07');
+  await page.getByTestId('roll-btn').click();
+  await page.getByTestId('roll-sheet').getByTestId('pin-curve07').click();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  const off = await page.evaluate(() => {
+    const s = document.querySelector('.cam-rail-strip')!.getBoundingClientRect();
+    const c = document.querySelector('.cam-rail-cell.on')!.getBoundingClientRect();
+    return Math.abs(c.left + c.width / 2 - (s.left + s.width / 2));
+  });
+  expect(off).toBeLessThan(4);
+  expect(errors).toEqual([]);
+});
+
+test('a new day starts a new album group for the same camera', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-12T22:00:00') });
+  const errors = await start(page);
+  await loadRoll(page, 'sunny200');
+  await shoot(page, 2);
+  await page.clock.fastForward(12 * 3600_000); // the next morning, app left open
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.getByTestId('counter')).toContainText('00', { timeout: 10_000 });
+  await shoot(page, 1);
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toHaveCount(2);
+  expect(errors).toEqual([]);
+});

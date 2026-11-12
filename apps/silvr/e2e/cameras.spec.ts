@@ -196,7 +196,7 @@ test('instant camera: print ejects, develops, and is viewable in the camera', as
   await expect(page.locator('.eject-print')).toBeVisible();
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('tab-gallery').click();
-  await expect(page.getByTestId('roll-card')).toContainText('In camera');
+  await expect(page.getByTestId('roll-card')).toContainText('Shooting');
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);

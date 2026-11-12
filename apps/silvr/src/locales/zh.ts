@@ -99,7 +99,7 @@ export const messages: LocaleMessages = {
   'cam.shutter': '拍照', // ko: 촬영 · en: Take photo
   'cam.noCamera.title': '无法使用相机', // ko: 카메라를 사용할 수 없어요 · en: Camera unavailable
   'cam.noCamera.body': '请在浏览器或设备设置中允许访问相机。现在也可以先导入设备里的照片来冲洗。', // ko: 브라우저나 기기 설정에서 카메라 권한을 허용해 주세요. 그동안 기기에 있는 사진을 불러와 현상할 수도 있어요. · en: Allow camera access in your browser or device settings. In the meantime, you can import photos and develop them.
-  'cam.noCamera.import': '导入照片来冲洗', // ko: 사진 불러와 현상하기 · en: Import & develop photos
+  'cam.noCamera.import': '导入照片',
   'cam.starting': '正在启动相机…', // ko: 카메라 준비 중… · en: Starting camera…
   'cam.saved': '第 {n} 张', // ko: {n}번째 컷 · en: Frame {n}
   'cam.rewindConfirm': '已拍 {shots}。剩下的 {left}将留空，现在送去冲洗吗？', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
@@ -157,7 +157,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': '下一张会拍在右半格', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': '第一次曝光完成 · 再找一个要叠加的画面', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': '按一次，4 个镜头依次拍摄', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
-  'cam.inCamera': '相机内', // ko: 카메라 안 · en: In camera
+  'cam.inCamera': '拍摄中',
   'cam.lastShot': '最近一张', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': '这盒相纸用完了。照片正在相册里等你。', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
   'cam.nShots': '{n}\u00A0张', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
@@ -226,7 +226,7 @@ export const messages: LocaleMessages = {
   'gal.openLab': '前往冲洗店', // ko: 현상소 보기 · en: Open the lab
   'gal.import': '导入照片', // ko: 사진 불러오기 · en: Import photos
   'gal.restore': '恢复旧手机的备份', // ko: 이전 폰 백업 불러오기 · en: Restore a backup
-  'gal.importing': '正在冲洗… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
+  'gal.importing': '正在导入… {n}/{total}',
   'gal.imported': '导入的照片', // ko: 불러온 사진 · en: Imported
   'gal.new': '新', // ko: 새 롤 · en: NEW
   'gal.frames': '{n}\u00A0张', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}

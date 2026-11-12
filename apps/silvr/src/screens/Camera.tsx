@@ -12,7 +12,7 @@ import { BackDecor, BackWindow } from '../cameras/backs/Back';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
-import { Canister, formatSigned, Sheet, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
+import { Canister, formatSigned, Sheet, sheetOpen, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -883,7 +883,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         cancelTimer();
         return;
       }
-      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'INPUT' && state !== 'error' && !filmOpen && !confirmReq.value) {
+      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'INPUT' && tag !== 'TEXTAREA' && !e.defaultPrevented && state !== 'error' && !filmOpen && !sheetOpen() && !confirmReq.value) {
         e.preventDefault();
         onShutter();
       }
@@ -905,6 +905,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       await Promise.all([put('kv', stock.id, LAST_STOCK_KEY), put('kv', camera.id, LAST_CAMERA_KEY)]);
       loadFailed.current = '';
       closedHere.current = false;
+      setLoadError(false);
     } catch (err) {
       // Another tab put a roll in first: not a failure (the pick, if different, replaces it next).
       const raced = String((err as Error)?.message) === 'A roll is already loaded';
@@ -915,6 +916,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       } catch {
         storageError.value = true;
       }
+      if (!activeRoll.value && !raced && mountedRef.current) setLoadError(true);
       if (!activeRoll.value) {
         const quota = (err as Error)?.name === 'QuotaExceededError';
         toast(quota ? t('err.storage') : storageError.value ? t('err.noStorage') : t('common.error'), undefined, 6000);
@@ -926,6 +928,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   };
   /** The camera + film whose automatic load failed: not retried until something else is picked. */
   const loadFailed = useRef('');
+  /** The automatic load failed (storage): the camera shows a retry button instead of an empty bottom bar. */
+  const [loadError, setLoadError] = useState(false);
   /** Bumped when a camera change finishes, so the load below runs again (it skips while switching). */
   const [switched, setSwitched] = useState(0);
   /** This screen has seen a roll in the camera, and whether this screen took the last one out. */
@@ -956,7 +960,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const switchTo = (id: string, stockId?: string) => {
     if (countdown > 0) return;
     const next = getCamera(id);
-    const nextStock = stockId && canLoad(next, stockId) ? stockId : next.defaultStock;
+    // The same camera again (Models, a tap on the strip) keeps its film; another camera brings its own.
+    const nextStock = stockId && canLoad(next, stockId) ? stockId : next.id === pickCamera && canLoad(next, pickStock) ? pickStock : next.defaultStock;
     if (next.id === pickCamera && nextStock === pickStock && !wanted.current) {
       const r = activeRoll.value;
       if (!r || (r.cameraId === next.id && r.stockId === nextStock)) return;
@@ -1015,6 +1020,28 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     cameraRequest.value = null;
     switchTo(id);
   }, [cameraRequest.value, restored]);
+
+  // One album group per camera per day: the first shot on a new day (the app left open overnight, or
+  // opened again days later) starts a fresh group. A half / first exposure still waiting is kept.
+  const lastPhotoRef = useRef(lastPhoto);
+  lastPhotoRef.current = lastPhoto;
+  useEffect(() => {
+    const check = () => {
+      const r = activeRoll.value;
+      const last = lastPhotoRef.current;
+      if (!r || r.pending || !last || last.rollId !== r.id || document.hidden) return;
+      if (shootingRef.current || switchingRef.current || wanted.current) return;
+      if (new Date(last.takenAt).toDateString() === new Date().toDateString()) return;
+      switchingRef.current = true;
+      void closeRoll(r).finally(() => {
+        switchingRef.current = false;
+        if (mountedRef.current) setSwitched((n) => n + 1);
+      });
+    };
+    check();
+    document.addEventListener('visibilitychange', check);
+    return () => document.removeEventListener('visibilitychange', check);
+  }, [roll?.id, lastPhoto?.id]);
 
   // A roll changed (loaded, closed, loaded in another tab, restored): follow it, or replace it with the pick.
   useEffect(() => {
@@ -1299,6 +1326,21 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </div>
       )}
       </div>
+      {!roll && loadError && !storageError.value && (
+        <div class="cam-retry">
+          <button
+            class="btn primary"
+            onClick={() => {
+              loadFailed.current = '';
+              setLoadError(false);
+              void onLoad();
+            }}
+            data-testid="btn-load-retry"
+          >
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
       {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
       {roll && camera.capture === 'double' && (
         <p class="cam-hint" data-testid="double-hint">

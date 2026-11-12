@@ -136,7 +136,7 @@ test('R19 instant camera keeps shooting past a pack; its photos are in the album
   await expect(page.getByTestId('counter')).toContainText('11');
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
-  await expect(page.getByTestId('roll-card')).toContainText('In camera');
+  await expect(page.getByTestId('roll-card')).toContainText('Shooting');
   await expect(page.getByTestId('roll-card')).not.toContainText('NEW');
 });
 

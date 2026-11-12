@@ -113,6 +113,16 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
     glideTo(selected, !first.current);
     first.current = false;
   }, [selected]);
+  // Pinning reorders the cards: the camera in use goes straight back under the ring.
+  const orderKey = ordered.items.map((c) => c.id).join(',');
+  const firstOrder = useRef(true);
+  useLayoutEffect(() => {
+    if (firstOrder.current) {
+      firstOrder.current = false;
+      return;
+    }
+    glideTo(selectedRef.current, false);
+  }, [orderKey]);
 
   /** The card nearest the middle of the strip. */
   const centred = (): string | null => {

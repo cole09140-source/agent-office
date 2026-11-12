@@ -95,7 +95,7 @@ export const messages: LocaleMessages = {
   'cam.shutter': 'التقاط صورة', // ko: 촬영 · en: Take photo
   'cam.noCamera.title': 'الكاميرا غير متاحة', // ko: 카메라를 사용할 수 없어요 · en: Camera unavailable
   'cam.noCamera.body': 'اسمح بالوصول إلى الكاميرا من إعدادات المتصفح أو الجهاز. وحتى ذلك الحين، يمكنك استيراد صور من جهازك وتحميضها.', // ko: 브라우저나 기기 설정에서 카메라 권한을 허용해 주세요. 그동안 기기에 있는 사진을 불러와 현상할 수도 있어요. · en: Allow camera access in your browser or device settings. In the meantime, you can import photos and develop them.
-  'cam.noCamera.import': 'استيراد صور وتحميضها', // ko: 사진 불러와 현상하기 · en: Import & develop photos
+  'cam.noCamera.import': 'استيراد الصور',
   'cam.starting': 'جارٍ تشغيل الكاميرا…', // ko: 카메라 준비 중… · en: Starting camera…
   'cam.saved': 'اللقطة {n}', // ko: {n}번째 컷 · en: Frame {n}
   'cam.rewindConfirm': '{n, plural, zero {لم تلتقط أي صورة بعد} one {التقطت {shots}} two {التقطت لقطتين} few {التقطت {shots}} many {التقطت {shots}} other {التقطت {shots}}}. {m, plural, zero {هل تريد إرسال الفيلم للتحميض؟} one {هل تريد إرسال الفيلم للتحميض مع ترك اللقطة المتبقية فارغة؟} two {هل تريد إرسال الفيلم للتحميض مع ترك اللقطتين المتبقيتين فارغتين؟} few {هل تريد إرسال الفيلم للتحميض مع ترك اللقطات المتبقية ({left}) فارغة؟} many {هل تريد إرسال الفيلم للتحميض مع ترك اللقطات المتبقية ({left}) فارغة؟} other {هل تريد إرسال الفيلم للتحميض مع ترك اللقطات المتبقية ({left}) فارغة؟}}', // ko: {shots} 찍었어요. 남은 {left}은 비워 둔 채 현상소로 보낼까요? · en: You’ve taken {shots}. Send this roll to the lab? The remaining {left} will stay blank. [+ counts: n, m]
@@ -153,7 +153,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': 'اللقطة التالية تملأ النصف الأيمن', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': 'اكتمل التعريض الأول · ابحث الآن عن المشهد الثاني', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': 'ضغطة واحدة، وأربع عدسات تلتقط بالتتابع', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
-  'cam.inCamera': 'في الكاميرا', // ko: 카메라 안 · en: In camera
+  'cam.inCamera': 'قيد التصوير',
   'cam.lastShot': 'آخر لقطة', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': 'انتهت العبوة. صورك تنتظرك في الألبوم.', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
   'cam.nShots': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n, plural, one {# shot} other {# shots}}
@@ -222,7 +222,7 @@ export const messages: LocaleMessages = {
   'gal.openLab': 'فتح المعمل', // ko: 현상소 보기 · en: Open the lab
   'gal.import': 'استيراد الصور', // ko: 사진 불러오기 · en: Import photos
   'gal.restore': 'استعادة نسخة احتياطية', // ko: 이전 폰 백업 불러오기 · en: Restore a backup
-  'gal.importing': 'جارٍ التحميض… {n}/{total}', // ko: 현상 중… {n}/{total} · en: Developing… {n}/{total}
+  'gal.importing': 'جارٍ الاستيراد… {n}/{total}',
   'gal.imported': 'صور مستوردة', // ko: 불러온 사진 · en: Imported
   'gal.new': 'جديد', // ko: 새 롤 · en: NEW
   'gal.frames': '{n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {n}장 · en: {n, plural, one {# frame} other {# frames}}
