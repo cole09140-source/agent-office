@@ -11,7 +11,7 @@ import { getStock, STOCKS } from '../src/film/stocks';
 import { cameraDescription, cameraEra, stockDescription } from '../src/i18n';
 import { signalLang } from '../src/state/lang';
 import { clearAll } from '../src/store/db';
-import { addShot, finishRoll, getPending, inCamera, listPhotos, listRolls, loadRoll, savePending, viewable, type Roll } from '../src/store/rolls';
+import { addShot, developAllNow, finishRoll, getPending, getRoll, inCamera, listPhotos, listRolls, loadRoll, OPEN_CAPACITY, savePending, viewable, type Roll } from '../src/store/rolls';
 
 describe('camera catalogue', () => {
   it('has 32 distinct, well-formed bodies', () => {
@@ -263,9 +263,10 @@ describe('roll mechanics per camera', () => {
     expect(await finishRoll(r.id, 'instant')).toBeNull();
     expect(await getPending(r.id)).toBeUndefined();
   });
-  it('instant & digital rolls are viewable while still in the camera', async () => {
+  it('every camera roll (film too) is viewable while still in the camera', async () => {
     const film = await loadRoll('sunny200', 12, '3:2', Date.now(), 'pro35');
-    expect(viewable(film)).toBe(false);
+    // No lab wait any more: a loaded film roll already shows its photos.
+    expect(viewable(film)).toBe(true);
     await finishRoll(film.id, 'instant');
     const r = await loadRoll('ccd', 99, '4:3', Date.now(), 'ccd03');
     await addShot(r.id, neg(), dev(), { width: 4, height: 3 });
@@ -273,6 +274,22 @@ describe('roll mechanics per camera', () => {
     expect(inCamera(roll)).toBe(true);
     expect(viewable(roll)).toBe(true);
     expect(await listPhotos(r.id)).toHaveLength(1);
+  });
+  it('rolls left in the old lab are developed at once (unseen, so they show as new)', async () => {
+    const r = await loadRoll('sunny200', 12, '3:2', Date.now(), 'pro35');
+    await addShot(r.id, neg(), dev(), { width: 3, height: 2 });
+    await finishRoll(r.id, '3d');
+    expect((await getRoll(r.id))?.status).toBe('developing');
+    expect(await developAllNow()).toBe(1);
+    const done = await getRoll(r.id);
+    expect(done?.status).toBe('developed');
+    expect(done?.seenAt).toBeUndefined();
+    expect(viewable(done as Roll)).toBe(true);
+    expect(await developAllNow()).toBe(0);
+  });
+  it('open-ended camera rolls fit the backup limit for camera rolls', () => {
+    expect(OPEN_CAPACITY).toBeGreaterThan(36);
+    expect(OPEN_CAPACITY).toBeLessThanOrEqual(1000);
   });
 });
 

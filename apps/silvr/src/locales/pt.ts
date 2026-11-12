@@ -66,9 +66,9 @@ export const messages: LocaleMessages = {
   'gal.importHint': 'Suas fotos são reveladas com este filme. Você pode trocá-lo no quarto escuro quando quiser.', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': 'Veio de outro celular? Restaurar backup', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
   'onb.1.title': 'Como no analógico, uma foto por vez', // ko: 필름처럼, 한 장씩 · en: Shoot like film
-  'onb.1.body': 'Escolha uma câmera e coloque um filme. Com as poses contadas, faça cada clique valer a pena.', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
-  'onb.2.title': 'A expectativa da revelação', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': 'Terminou o filme? Mande revelar e escolha quanto quer esperar: na hora, 1\u00a0hora, às 9h ou 3\u00a0dias.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.1.body': 'Escolha uma câmera e fotografe na hora. Cada foto vai para o álbum assim que você clica.',
+  'onb.2.title': 'Deslize para trocar de câmera',
+  'onb.2.body': 'Arraste a fileira de câmeras abaixo do visor. Fotografe com a que parar no meio: cada uma vê o mundo com as próprias cores.',
   'onb.3.title': 'Revele de novo no quarto escuro', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'Seu original fica sempre guardado. Troque filme, brilho, envelhecimento e halo quantas vezes quiser.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '{n, plural, one {# foto grátis por dia} other {# fotos grátis por dia}}. Sem cadastro. Todas as fotos ficam só neste dispositivo.',
@@ -210,8 +210,9 @@ export const messages: LocaleMessages = {
   'lab.developedToast': 'Seu filme {stock} foi revelado', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
   'lab.open': 'Ver fotos', // ko: 사진 보기 · en: View photos
   'gal.title': 'Álbum', // ko: 앨범 · en: Album
-  'gal.empty': 'Nenhuma foto revelada ainda.', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
-  'gal.emptyHint': 'Seu primeiro filme começa na câmera.', // ko: 첫 롤은 카메라에서 시작돼요. · en: Your first roll starts in the camera.
+  'gal.empty': 'Nenhuma foto ainda.',
+  'gal.emptyHint': 'Tire uma na câmera e ela aparece aqui na hora.',
+  'gal.shoot': 'Tirar uma foto',
   'gal.emptyHintLab': '{n, plural, one {# filme está sendo revelado.} other {# filmes estão sendo revelados.}}', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': 'Ver laboratório', // ko: 현상소 보기 · en: Open the lab
   'gal.import': 'Importar fotos', // ko: 사진 불러오기 · en: Import photos

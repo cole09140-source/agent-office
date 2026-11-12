@@ -9,7 +9,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { loadCamera, loadRoll, rewindAndDevelop, shoot, start } from './helpers';
 
-const TABS = ['camera', 'lab', 'gallery', 'analog', 'settings'];
+const TABS = ['camera', 'gallery', 'analog', 'settings'];
 const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket', 'floppy98', 'slim06', 'bridge09', 'zoom90', 'mf645', 'pinhole', 'flip03', 'touch07', 'curve07', 'filter10'];
 
 async function overflowX(page: Page) {
@@ -62,7 +62,6 @@ test('R31 six viewports: no sideways scroll, shutter and tab bar on screen', asy
 test('R32 landscape phone: camera stays usable', async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 390 });
   const errors = await start(page);
-  await page.getByTestId('btn-load').scrollIntoViewIfNeeded();
   await loadRoll(page, 'mono400', '12');
   expect(await inViewport(page, 'shutter')).toBe(true);
   expect(await overflowX(page)).toBeLessThanOrEqual(0);
@@ -99,8 +98,7 @@ test('R34 keyboard only: onboarding → load → shoot → develop → photo', a
   await tabTo('onb-skip');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('onboarding')).toBeHidden();
-  await tabTo('btn-load');
-  await page.keyboard.press('Enter');
+  // The camera is ready by itself: no roll to load first.
   await expect(page.getByTestId('shutter')).toBeEnabled();
   await page.locator('body').click({ position: { x: 1, y: 1 } }).catch(() => undefined);
   for (let i = 1; i <= 2; i++) {
@@ -110,11 +108,7 @@ test('R34 keyboard only: onboarding → load → shoot → develop → photo', a
   }
   await tabTo('roll-btn');
   await page.keyboard.press('Enter');
-  await tabTo('btn-rewind');
-  await page.keyboard.press('Enter');
-  await tabTo('confirm-ok');
-  await page.keyboard.press('Enter');
-  await tabTo('speed-instant');
+  await tabTo('btn-open-roll');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('roll-screen')).toBeVisible();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(2, { timeout: 45_000 });
@@ -134,8 +128,6 @@ test('R35 axe WCAG 2.1 AA on every camera body (load panel + viewfinder)', async
     issues.push(...res.violations.map((v) => `${name}: ${v.id} × ${v.nodes.length} — ${v.nodes[0]?.target.join(' ')}`));
   };
   for (const id of CAMS) {
-    await page.getByTestId(`camera-${id}`).click();
-    await audit(`${id} load`);
     await loadCamera(page, id);
     await audit(`${id} viewfinder`);
     await wipe(page);
@@ -197,9 +189,9 @@ test('R37 no IndexedDB (locked-down private mode): app explains instead of crash
   await expect(page.getByTestId('onboarding').or(page.getByTestId('camera-screen')).first()).toBeVisible();
   if (await page.getByTestId('onb-skip').isVisible().catch(() => false)) await page.getByTestId('onb-skip').click();
   await expect(page.getByTestId('storage-banner')).toBeVisible();
-  await page.getByTestId('btn-load').click();
-  await expect(page.locator('.toast').first()).toContainText(/private|사생활/);
-  await expect(page.getByTestId('btn-load')).toBeEnabled();
+  await expect(page.getByTestId('storage-banner')).toContainText(/private|사생활/);
+  // The camera strip still works (nothing can be saved, so no roll goes in).
+  await expect(page.getByTestId('camera-rail')).toBeVisible();
   expect(uncaught).toEqual([]);
 });
 

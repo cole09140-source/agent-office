@@ -10,7 +10,6 @@ import { ENDONYMS, HTML_LANG, LOCALES } from '../intl/locales';
 import { broadcastReset, confirm, settings, toast, updateSettings } from '../state/app';
 import { BackupError, createBackup, restoreBackup } from '../store/backup';
 import { clearAll } from '../store/db';
-import { ROLL_SIZES, type DevelopSpeed } from '../store/rolls';
 import type { Lang } from '../store/settings';
 import { holdCapture, installPrompt, promptInstall } from '../platform/pwa';
 import { clearShareCache, fileName, isIos, isNative, saveFile } from '../platform/share';
@@ -281,28 +280,6 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
               { value: 'MDY', label: "10 24 '26", dir: 'ltr' },
               { value: 'DMY', label: "24 10 '26", dir: 'ltr' },
             ]}
-          />
-        </div>
-        <div class="field">
-          <span>{t('set.rollSize')}</span>
-          <Segmented<number>
-            label={t('set.rollSize')}
-            value={s.defaultRollSize}
-            onChange={(defaultRollSize) => updateSettings({ defaultRollSize })}
-            options={ROLL_SIZES.map((n) => ({ value: n, label: t('cam.exposures', { n }) }))}
-          />
-        </div>
-        <div class="field">
-          <span>{t('set.speed')}</span>
-          <p class="muted small field-hint">
-            {t('set.speed.hint')}
-          </p>
-          <Segmented<DevelopSpeed>
-            grid
-            label={t('set.speed')}
-            value={s.defaultSpeed}
-            onChange={(defaultSpeed) => updateSettings({ defaultSpeed })}
-            options={(['instant', '1h', 'morning', '3d'] as DevelopSpeed[]).map((v) => ({ value: v, label: t(`speed.${v}` as const) }))}
           />
         </div>
       </section>

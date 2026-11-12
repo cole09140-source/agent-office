@@ -2830,6 +2830,150 @@ html.tap-guard * {
   justify-self: start;
   width: 56px;
 }
+.last-shot-empty {
+  justify-self: start;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.14);
+}
+
+/* ---------- camera strip (under the viewfinder) ----------
+   A dial of cameras: drag sideways, the one that stops in the middle is the camera in use.
+   Sits on the body's back plate, so it carries its own dark track for contrast on light bodies. */
+.cam-rail {
+  position: relative;
+  margin: 10px 10px 0;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* The middle slot: a fixed ring the cameras slide under. */
+.cam-rail::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 50%;
+  width: 72px;
+  transform: translateX(-50%);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  pointer-events: none;
+}
+.cam-rail-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /* half the strip on each side: the first and last cameras can reach the middle */
+  padding: 4px calc(50% - 36px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.cam-rail-strip::-webkit-scrollbar {
+  display: none;
+}
+.cam-rail-cell {
+  flex: 0 0 72px;
+  scroll-snap-align: center;
+  display: flex;
+}
+.cam-rail-card {
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px 5px;
+  border-radius: 12px;
+  color: var(--fg-2);
+  opacity: 0.62;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.cam-rail-cell.on .cam-rail-card {
+  color: var(--fg);
+  opacity: 1;
+}
+.cam-rail-card .camera-body {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+.cam-rail-name {
+  max-width: 100%;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cam-rail-card .badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  margin: 0;
+  font-size: 0.5625rem;
+}
+.cam-rail-card:active {
+  transform: scale(0.94);
+}
+.cam-rail-divider {
+  flex: 0 0 1px;
+  margin: 12px 3px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.cam-rail-all {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 64px;
+  min-height: 44px;
+  margin-inline-start: 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+  font-size: 0.75rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.cam-rail-all small {
+  font-size: 0.6875rem;
+  color: var(--fg-2);
+}
+.cam-rail.locked .cam-rail-strip {
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-rail-card {
+    transition: none;
+  }
+}
+/* Short screens: a slimmer strip keeps the viewfinder large. */
+@media (max-height: 700px) {
+  .cam-rail {
+    margin-top: 6px;
+  }
+  .cam-rail-card {
+    min-height: 50px;
+    padding: 4px 2px 3px;
+  }
+  .cam-rail-card .camera-body {
+    width: 34px;
+    height: auto;
+  }
+}
 .last-shot .thumb {
   border-radius: 6px;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);

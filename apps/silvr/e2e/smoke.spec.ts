@@ -10,7 +10,8 @@ test('boots, onboarding, camera preview renders with WebGL', async ({ page }) =>
   await page.getByTestId('onb-next').click();
   await page.getByTestId('onb-next').click();
   await expect(page.getByTestId('onboarding')).toBeHidden();
-  await expect(page.getByTestId('load-panel')).toBeVisible();
+  await expect(page.getByTestId('camera-rail')).toBeVisible();
+  await expect(page.getByTestId('shutter')).toBeEnabled();
   await expect(page.getByTestId('preview')).toBeVisible();
   await page.waitForTimeout(1500);
   await page.screenshot({ path: 'e2e/.shots/01-camera-load.png' });

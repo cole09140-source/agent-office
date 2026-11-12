@@ -25,9 +25,11 @@ test('two tabs stay in sync', async ({ context }) => {
   await start(a);
   const b = await context.newPage();
   await b.goto('./');
-  await expect(b.getByTestId('load-panel')).toBeVisible();
+  await expect(b.getByTestId('camera-rail')).toBeVisible();
   await loadRoll(a, 'mono400', '12');
   await expect(b.getByTestId('counter')).toBeVisible(); // B learns about A's roll
+  // A changing film shows up in B as well.
+  await expect(b.getByTestId('camera-chip')).toBeVisible();
   await shoot(a, 1);
   await expect(b.getByTestId('counter')).toContainText('01');
 });
@@ -49,16 +51,21 @@ test('a corrupt negative shows an error state instead of hanging', async ({ page
           keys.onsuccess = () => {
             const k = (keys.result as string[]).find((x) => x.endsWith(':neg'))!;
             s.put(new Blob(['garbage'], { type: 'image/jpeg' }), k);
+            // Shots are developed right away now: drop that photo's print and thumbnail too.
+            const id = k.slice(0, -':neg'.length);
+            s.delete(`${id}:print`);
+            s.delete(`${id}:thumb`);
           };
           t.oncomplete = () => resolve();
           t.onerror = () => reject(t.error);
         };
       }),
   );
+  // Nothing of it may stay in memory either (the shot was shown next to the shutter).
+  await page.reload();
+  await expect(page.getByTestId('shutter')).toBeEnabled();
   await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
+  await page.getByTestId('btn-open-roll').click();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.locator('.thumb-wait.err')).toHaveCount(1);
 });

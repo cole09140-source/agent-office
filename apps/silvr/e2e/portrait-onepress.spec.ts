@@ -10,6 +10,6 @@ for (const id of ['ccd03', 'pixel', 'kidcam', 'instasq']) {
     await page.getByTestId('shutter').click();
     await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
     await page.waitForTimeout(2500);
-    await expect(page.getByTestId('counter')).toContainText(/(^|\D)0?1\//);
+    await expect(page.getByTestId('counter')).toContainText(/(^|\D)0?1(\D|$)/);
   });
 }

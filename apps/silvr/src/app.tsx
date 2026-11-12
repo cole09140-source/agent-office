@@ -15,7 +15,6 @@ import { AnalogScreen, LogScreen } from './screens/Analog';
 import { CameraScreen } from './screens/Camera';
 import { DarkroomScreen } from './screens/Darkroom';
 import { GalleryScreen } from './screens/Gallery';
-import { LabScreen } from './screens/Lab';
 import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
@@ -23,11 +22,10 @@ import { PaywallSheet, proRequest } from './screens/My';
 import { restoreRequest, SettingsScreen } from './screens/Settings';
 import { activeRoll, announce, confirmReq, developingRolls, newRollCount, now, ready, refreshRolls, rolls, settings, storageError, toast, updateSettings } from './state/app';
 import { go, goTab, route, routeToHash, type Route } from './state/router';
-import { addImportBatch, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem, type RollStatus } from './store/rolls';
+import { addImportBatch, developAllNow, finishImport, IMPORT_BATCH, newImportRoll, type ImportItem, type RollStatus } from './store/rolls';
 
 const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
   { name: 'camera', icon: 'camera', label: 'tab.camera' },
-  { name: 'lab', icon: 'lab', label: 'tab.lab' },
   { name: 'gallery', icon: 'gallery', label: 'tab.gallery' },
   { name: 'analog', icon: 'analog', label: 'tab.analog' },
   { name: 'settings', icon: 'settings', label: 'tab.settings' },
@@ -35,7 +33,6 @@ const TABS: { name: Route['name']; icon: IconName; label: MsgKey }[] = [
 
 const TAB_OF: Record<Route['name'], Route['name']> = {
   camera: 'camera',
-  lab: 'lab',
   gallery: 'gallery',
   roll: 'gallery',
   photo: 'gallery',
@@ -47,7 +44,7 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
 
 function TabBar() {
   const current = TAB_OF[route.value.name];
-  const badges: Partial<Record<Route['name'], number>> = { lab: developingRolls.value.length, gallery: newRollCount.value };
+  const badges: Partial<Record<Route['name'], number>> = { gallery: newRollCount.value };
   // Large text makes the bar taller: publish its real height (without the safe area) as --tab-h,
   // which the page padding, the camera layout and the floating bars below use.
   const ref = useRef<HTMLElement>(null);
@@ -200,6 +197,11 @@ function useLabClock() {
   const known = useRef<Set<string> | null>(null);
   /** Rolls this session saw in the lab: only they get a "developed" toast (a restore's old rolls don't). */
   const inLab = useRef(new Set<string>());
+  // The lab tab is gone: a roll still waiting there from an older version is developed at once
+  // (the "developed" toast below then points to it).
+  useEffect(() => {
+    if (ready.value && developingRolls.value.length) void developAllNow().catch(() => undefined);
+  }, [ready.value, developingRolls.value.length]);
   useEffect(() => {
     const tick = () => {
       now.value = Date.now();
@@ -248,10 +250,8 @@ function useRollAnnouncements() {
     const active = activeRoll.value;
     prev.current = { active: active?.id, status };
     if (!before) return; // first read after start: nothing changed in front of the user
-    if (active && active.id !== before.active && !before.status.has(active.id)) {
-      announce(t('a11y.rollLoaded', { stock: getStock(active.stockId).name, n: active.capacity }));
-      return;
-    }
+    // A new roll starts silently whenever the camera changes: the camera strip says which camera it is.
+    if (active && active.id !== before.active && !before.status.has(active.id)) return;
     for (const x of rolls.value) {
       // Sent to the lab with a wait (instant development opens the roll, which speaks for itself).
       if (before.status.get(x.id) === 'loaded' && x.status === 'developing' && x.readyAt && x.readyAt - Date.now() > 30_000) {
@@ -455,9 +455,6 @@ export function App() {
       // Once shown it stays (onboarding replayed from another tab must not drop a shot).
       if (settings.value.onboarded) cameraShown.current = true;
       screen = cameraShown.current ? <CameraScreen onImport={openImport} /> : null;
-      break;
-    case 'lab':
-      screen = <LabScreen />;
       break;
     case 'gallery':
       screen = <GalleryScreen onImport={openImport} />;

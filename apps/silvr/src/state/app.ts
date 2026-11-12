@@ -14,8 +14,9 @@ export const ready = signal(false);
 export const storageError = signal(false);
 
 export const developingRolls = computed(() => rolls.value.filter((r) => r.status === 'developing'));
-/** Rolls shown in the album: developed, plus instant/digital cameras' rolls still in the camera. */
-export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && (r.negatives ?? r.shots) > 0)));
+/** Rolls shown in the album: developed ones, plus the roll still in the camera. */
+/** A roll still in the camera shows once it holds a photo (all of them deleted again: hidden). */
+export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && (r.negatives ?? r.shots) > 0 && !!r.coverPhotoId)));
 export const newRollCount = computed(() => developedRolls.value.filter((r) => r.status === 'developed' && !r.seenAt).length);
 
 let langSeq = 0;

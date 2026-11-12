@@ -36,9 +36,7 @@ test('no WebGL context or object-URL leaks while navigating', async ({ page }) =
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 3);
   await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
+  await page.getByTestId('btn-open-roll').click();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 30_000 });
   const rollUrl = page.url();
   for (let i = 0; i < 8; i++) {
@@ -87,9 +85,7 @@ test('in-app navigation (no reloads) keeps contexts and URLs bounded', async ({ 
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 2);
   await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
+  await page.getByTestId('btn-open-roll').click();
   for (let i = 0; i < 20; i++) {
     await page.getByTestId('tab-camera').click();
     await expect(page.getByTestId('preview')).toBeVisible();

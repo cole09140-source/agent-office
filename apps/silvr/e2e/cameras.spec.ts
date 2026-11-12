@@ -146,32 +146,26 @@ test('disposable: the flash must be charged before every flash shot', async ({ p
   await shoot(page, 1);
   await expect(flash).toHaveAttribute('data-charge', 'empty');
   await expect(page.getByTestId('counter')).toContainText('01');
-  await expect(page.getByTestId('counter')).toContainText('/27');
 });
 
 test('half-frame: a pending half survives a reload and pairs up', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'half72');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('01/72');
+  await expect(page.getByTestId('counter')).toContainText('01');
   await expect(page.locator('.cam-hint')).toHaveText('Next shot fills the right half');
   await page.reload();
-  await expect(page.getByTestId('counter')).toContainText('01/72');
+  await expect(page.getByTestId('counter')).toContainText('01');
   await expect(page.locator('.vf-half-tag')).toHaveText('B');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('02/72');
-  // Starting a rewind and cancelling the lab sheet must not commit the pending half.
+  await expect(page.getByTestId('counter')).toContainText('02');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('03/72');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await expect(page.getByTestId('speed-sheet')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('counter')).toContainText('03/72');
+  await expect(page.getByTestId('counter')).toContainText('03');
   await expect(page.locator('.vf-half-tag')).toHaveText('B');
-  // A lone first half is kept (with a blank B side) when the roll really goes to the lab.
-  await rewindAndDevelop(page);
+  // Changing cameras keeps a lone first half (with a blank B side) as a frame of its own.
+  await loadCamera(page, 'pro35');
+  await page.getByTestId('tab-gallery').click();
+  await page.getByTestId('roll-card').filter({ hasText: 'Half' }).locator('.roll-meta').click();
   await expect(page.getByTestId('thumb')).toHaveCount(2);
 });
 
@@ -208,22 +202,18 @@ test('instant camera: print ejects, develops, and is viewable in the camera', as
   await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);
   await page.getByTestId('tab-camera').click();
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'instasq');
-  await expect(page.getByTestId('counter')).toContainText('01/10');
+  await expect(page.getByTestId('counter')).toContainText('01');
 });
 
-test('pack finishes on its own: CCD card full → album, no lab', async ({ page }) => {
+test('digital camera: the shot is in the album right away, nothing to finish', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'pixel');
   await page.getByTestId('btn-palette').click();
   await expect(page.getByTestId('btn-palette')).toHaveAttribute('data-palette', 'mono');
   await shoot(page, 1);
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await expect(page.getByTestId('roll-screen')).toBeVisible();
-  await page.getByTestId('tab-lab').click();
-  await expect(page.getByTestId('lab-item')).toHaveCount(0);
+  await rewindAndDevelop(page);
+  await expect(page.getByTestId('thumb')).toHaveCount(1);
 });
 
 test('exposure dial and pixel darkroom palette', async ({ page }) => {
@@ -232,10 +222,6 @@ test('exposure dial and pixel darkroom palette', async ({ page }) => {
   await page.getByTestId('btn-ev').click();
   await page.getByTestId('sl-ev').fill('1');
   await expect(page.getByTestId('btn-ev')).toContainText('+1.0');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click(); // empty roll → unload
-  await expect(page.getByTestId('load-panel')).toBeVisible();
 
   await loadCamera(page, 'pixel');
   await shoot(page, 1);
@@ -251,12 +237,15 @@ test('exposure dial and pixel darkroom palette', async ({ page }) => {
 
 test('camera choice is remembered and film choices follow the body', async ({ page }) => {
   await start(page);
-  await page.getByTestId('camera-cine').click();
-  await expect(page.getByTestId('stock-neon800t')).toBeVisible();
-  await expect(page.getByTestId('stock-sunny200')).toHaveCount(0);
-  await page.getByTestId('camera-ccd03').click();
-  await expect(page.getByText('Built-in film')).toBeVisible();
-  await page.getByTestId('btn-load').click();
+  await loadCamera(page, 'cine');
+  await page.getByTestId('roll-btn').click();
+  await expect(page.getByTestId('roll-sheet').getByTestId('stock-neon800t')).toBeVisible();
+  await expect(page.getByTestId('roll-sheet').getByTestId('stock-sunny200')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await loadCamera(page, 'ccd03');
+  await page.getByTestId('roll-btn').click();
+  await expect(page.getByTestId('roll-sheet').getByText('Built-in film')).toBeVisible();
+  await page.keyboard.press('Escape');
   await page.reload();
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'ccd03');
 });

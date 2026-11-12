@@ -56,12 +56,9 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
     await page.getByTestId('btn-timer').click(); // off
     if (presses(id) === 2) await page.getByTestId('shutter').click();
     await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
-    await page.getByTestId(id === 'instasq' || id === 'ccd03' ? 'roll-btn' : 'roll-btn').click();
-    await page.getByTestId('btn-rewind').click();
-    await page.getByTestId('confirm-ok').click();
-    const speed = page.getByTestId('speed-instant');
-    await expect(speed.or(page.getByTestId('roll-screen'))).toBeVisible();
-    if (await speed.isVisible()) await speed.click();
+    await page.getByTestId('roll-btn').click();
+    await page.getByTestId('btn-open-roll').click();
+    await expect(page.getByTestId('roll-screen')).toBeVisible();
     await expect(page.getByTestId('thumb').first()).toBeVisible();
   }
 });
@@ -69,12 +66,8 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
 test('R15 flash: only bodies with a flash show it, and the darkroom reflects whether it fired', async ({ page }) => {
   await start(page);
   for (const id of ['quad4', 'panox', 'cine', 'pixel', 'range']) {
-    await page.getByTestId(`camera-${id}`).click();
-    await page.getByTestId('btn-load').click();
+    await loadCamera(page, id);
     await expect(page.getByTestId('btn-flash')).toHaveCount(0);
-    await page.getByTestId('camera-chip').click();
-    await page.getByTestId('btn-rewind').click();
-    await page.getByTestId('confirm-ok').click();
   }
   await loadCamera(page, 'pro35');
   await page.getByTestId('btn-flash').click(); // on
@@ -96,19 +89,17 @@ test('R15 flash: only bodies with a flash show it, and the darkroom reflects whe
   }
 });
 
-test('R16 half-frame roll shot to the end pairs every half and asks for the lab', async ({ page }) => {
+test('R16 half-frame: 24 presses pair up into 12 frames, all in the album', async ({ page }) => {
   test.setTimeout(300_000);
   await start(page);
-  await page.getByTestId('camera-half72').click();
-  await page.getByRole('radio', { name: /^Half 24|^24 half/ }).click();
-  await page.getByTestId('btn-load').click();
-  for (let i = 0; i < 23; i++) {
+  await loadCamera(page, 'half72');
+  for (let i = 0; i < 24; i++) {
     await page.getByTestId('shutter').click();
-    await expect(page.getByTestId('counter')).toContainText(`${String(i + 1).padStart(2, '0')}/24`);
+    await expect(page.getByTestId('counter')).toContainText(String(i + 1).padStart(2, '0'));
   }
-  await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('speed-sheet')).toBeVisible();
-  await page.getByTestId('speed-instant').click();
+  await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
+  await page.getByTestId('roll-btn').click();
+  await page.getByTestId('btn-open-roll').click();
   await expect(page.getByTestId('thumb')).toHaveCount(12);
 });
 
@@ -123,34 +114,30 @@ test('R17 quad lenses fire in sequence (~0.6 s) and announce progress', async ({
   await expect(page.getByTestId('announcer')).toContainText(/Frame 1|Lens 4\/4/);
 });
 
-test('R18 double exposure: ghost survives reload; rewinding keeps the lone first exposure', async ({ page }) => {
+test('R18 double exposure: ghost survives reload; changing cameras keeps the lone first exposure', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'doublex');
   await page.getByTestId('shutter').click();
   await expect(page.locator('.vf-ghost')).toBeVisible();
-  await expect(page.getByTestId('counter')).toContainText('00/');
+  await expect(page.getByTestId('counter')).toContainText('00');
   await page.reload();
   await expect(page.locator('.vf-ghost')).toBeVisible();
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
+  await loadCamera(page, 'pro35');
+  await page.getByTestId('tab-gallery').click();
+  await page.getByTestId('roll-card').first().locator('.roll-meta').click();
   await expect(page.getByTestId('thumb')).toHaveCount(1);
 });
 
-test('R19 instant pack shot to the end goes straight to the album, already seen', async ({ page }) => {
+test('R19 instant camera keeps shooting past a pack; its photos are in the album, not marked new', async ({ page }) => {
   test.setTimeout(300_000);
   await start(page);
   await loadCamera(page, 'instasq');
-  await shoot(page, 9);
-  await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('roll-screen')).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByTestId('thumb')).toHaveCount(10);
+  await shoot(page, 11);
+  await expect(page.getByTestId('counter')).toContainText('11');
   await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toHaveCount(1);
+  await expect(page.getByTestId('roll-card')).toContainText('In camera');
   await expect(page.getByTestId('roll-card')).not.toContainText('NEW');
-  await expect(page.getByTestId('roll-card')).not.toContainText('새 롤');
-  await page.getByTestId('tab-lab').click();
-  await expect(page.getByTestId('lab-item')).toHaveCount(0);
 });
 
 test('R20 monkey test: 300 random actions keep every invariant', async ({ page }) => {

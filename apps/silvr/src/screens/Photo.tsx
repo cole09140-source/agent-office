@@ -76,7 +76,7 @@ export function PhotoScreen({ id }: { id: string }) {
 
   const undeveloped = !!roll && !viewable(roll);
   useEffect(() => {
-    if (undeveloped) go({ name: 'lab' }, true);
+    if (undeveloped) go({ name: 'gallery' }, true);
   }, [undeveloped]);
 
   if (photo === null) {

@@ -11,9 +11,7 @@ test('no CSP violations during a full session', async ({ page }) => {
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 1);
   await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
+  await page.getByTestId('btn-open-roll').click();
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
   await page.getByTestId('btn-darkroom').click();

@@ -3,26 +3,13 @@ import { Icon } from '../components/Icon';
 import { Empty, formatDate, Header, Thumb } from '../components/ui';
 import { getStock } from '../film/stocks';
 import { t, legalLang, rollName } from '../i18n';
-import { activeRoll, developedRolls, developingRolls } from '../state/app';
+import { developedRolls } from '../state/app';
 import { signalLang } from '../state/lang';
 import { go, goTab } from '../state/router';
 import { getCamera, hasCamera } from '../cameras/models';
 import { isNative } from '../platform/share';
 import { getPhoto, inCamera, type Photo, type Roll } from '../store/rolls';
-import { hasShots, rollSheetRequest, shotCount, shotsText } from './Camera';
 import { restoreRequest } from './Settings';
-
-/** A film roll in the camera with shots on it (instant/digital rolls already show in the album). */
-export function filmInCamera(): Roll | undefined {
-  const r = activeRoll.value;
-  return r && r.status === 'loaded' && !inCamera(r) && hasShots(r) ? r : undefined;
-}
-
-/** Back to the camera with its roll sheet (finish & develop) open. */
-export function developFromCamera(): void {
-  rollSheetRequest.value = true;
-  goTab({ name: 'camera' });
-}
 
 /**
  * "12장", or for half-frame rolls "3프레임 (5컷)" (frames on the film, presses taken), like the camera.
@@ -80,8 +67,6 @@ function RollCard({ roll }: { roll: Roll }) {
 
 export function GalleryScreen({ onImport }: { onImport: () => void }) {
   const list = developedRolls.value;
-  const developing = developingRolls.value.length;
-  const camRoll = filmInCamera();
   return (
     <div class="page" data-testid="gallery-screen">
       <Header
@@ -93,40 +78,15 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
           </button>
         }
       />
-      {developing > 0 && (
-        <button class="banner" onClick={() => go({ name: 'lab' }, true)}>
-          <Icon name="lab" size={18} /> {t('gal.developing')} · {developing}
-          <Icon name="chevron" size={16} />
-        </button>
-      )}
-      {camRoll && list.length > 0 && (
-        <button class="banner" onClick={developFromCamera} data-testid="banner-in-camera">
-          <Icon name="camera" size={18} /> {t('gal.inCameraBanner', { shots: shotsText(camRoll), n: shotCount(camRoll) })}
-          <Icon name="chevron" size={16} />
-        </button>
-      )}
       {list.length === 0 ? (
-        <Empty
-          title={t('gal.empty')}
-          hint={camRoll ? t('gal.emptyHintCamera', { shots: shotsText(camRoll), n: shotCount(camRoll) }) : developing > 0 ? t('gal.emptyHintLab', { n: developing }) : t('gal.emptyHint')}
-        >
-          {camRoll && developing > 0 && <p class="empty-hint">{t('gal.emptyHintLab', { n: developing })}</p>}
-          {camRoll && (
-            <button class="btn primary" onClick={developFromCamera} data-testid="btn-develop-now">
-              <Icon name="lab" size={18} /> {t('gal.developNow')}
-            </button>
-          )}
-          {developing > 0 && (
-            <button class={`btn ${camRoll ? 'ghost' : 'primary'}`} onClick={() => go({ name: 'lab' }, true)} data-testid="btn-open-lab">
-              <Icon name="lab" size={18} /> {t('gal.openLab')}
-            </button>
-          )}
+        <Empty title={t('gal.empty')} hint={t('gal.emptyHint')}>
+          <button class="btn primary" onClick={() => goTab({ name: 'camera' })} data-testid="btn-gal-shoot">
+            <Icon name="camera" size={18} /> {t('gal.shoot')}
+          </button>
           {/* Fresh install, nothing anywhere yet: the way back to an old phone's photos. */}
-          {!camRoll && developing === 0 && (
-            <button class="link-btn gal-restore" onClick={openRestore} data-testid="btn-gal-restore">
-              {t('gal.restore')}
-            </button>
-          )}
+          <button class="link-btn gal-restore" onClick={openRestore} data-testid="btn-gal-restore">
+            {t('gal.restore')}
+          </button>
           <HelpLink />
         </Empty>
       ) : (

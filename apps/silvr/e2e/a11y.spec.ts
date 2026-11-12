@@ -29,13 +29,8 @@ test('every screen passes axe WCAG 2.1 AA', async ({ page }) => {
   await shoot(page, 2);
   await page.getByTestId('roll-btn').click();
   issues.push(...(await audit(page, 'roll-sheet')));
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  issues.push(...(await audit(page, 'speed-sheet')));
-  await page.getByTestId('speed-1h').click();
-  issues.push(...(await audit(page, 'lab')));
-  await page.getByTestId('btn-rush').click();
-  await page.getByTestId('confirm-ok').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('roll-sheet')).toBeHidden();
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   issues.push(...(await audit(page, 'gallery')));

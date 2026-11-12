@@ -1,18 +1,17 @@
-import { signal } from '@preact/signals';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CameraController, classifyError, type CameraError } from '../camera/camera';
 import { snapshotVideo } from '../camera/capture';
 import { captureRotation, requestOrientationPermission, startOrientation } from '../camera/orientation';
 import { blankLike, blobToCanvas, composeDouble, composeHalf, composeQuad, cropExposure, exposureSpec, previewBlob, toNegative } from '../cameras/compose';
-import { LoadPanel, QUICK_START_KEY } from '../cameras/LoadPanel';
-import { canLoad, DEFAULT_CAMERA_ID, defaultCapacity, ejectsPrints, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
+import { CameraRail } from '../cameras/CameraRail';
+import { canLoad, DEFAULT_CAMERA_ID, ejectsPrints, filmsFor, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { BackDecor, BackWindow } from '../cameras/backs/Back';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
-import { Canister, formatSigned, Ltr, Sheet, Slider, Thumb, useObjectUrl } from '../components/ui';
+import { Canister, formatSigned, Sheet, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -20,16 +19,14 @@ import { randomSeed } from '../film/random';
 import { defaultBorderFor, defaultDevelop, resolveLook } from '../film/resolve';
 import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
-import { cameraDescription, isolate, ltr, rollName, t, type MsgKey } from '../i18n';
+import { cameraDescription, isolate, ltr, stockDescription, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
-import { activeRoll, confirm, confirmReq, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
+import { activeRoll, confirmReq, ready, refreshRolls, setCameraPinned, settings, storageError, toast, updateSettings } from '../state/app';
 import { holdCapture } from '../platform/pwa';
 import { consumeShot, refundShot } from '../monetize/quota';
-import { go, goTab, isCurrent } from '../state/router';
+import { go, goTab } from '../state/router';
 import { get, put } from '../store/db';
-import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, readyAtFor, savePending, type DevelopSpeed, type Photo, type Roll } from '../store/rolls';
-import { formatArrival } from '../components/arrival';
-import { signalLang } from '../state/lang';
+import { addShot, dropPending, finishRoll, framesLeft, getPending, getRoll, listPhotos, loadRoll, markSeen, OPEN_CAPACITY, savePending, type Photo, type Roll } from '../store/rolls';
 
 let controller: CameraController | null = null;
 const cam = () => (controller ??= new CameraController());
@@ -61,16 +58,6 @@ function defaultAspect(camera: CameraModel, stock: FilmStock, rollAspect?: Aspec
   if (rollAspect && camera.formats.includes(rollAspect)) return rollAspect;
   return camera.formats.includes(stock.defaultAspect) ? stock.defaultAspect : camera.formats[0];
 }
-
-/**
- * Set by other screens ("develop now" in the album / lab) to open the roll sheet
- * the next time the camera screen shows.
- */
-export const rollSheetRequest = signal(false);
-
-/** How a body ends its roll: film goes to the lab, instant packs and memory cards are already viewable. */
-export type FinishKind = 'film' | 'pack' | 'card';
-export const finishKind = (c: CameraModel): FinishKind => (!c.instant ? 'film' : ejectsPrints(c) ? 'pack' : 'card');
 
 /** Something was shot on this roll (a pending first half / first exposure counts). */
 export const hasShots = (r: Roll): boolean => r.shots > 0 || (r.negatives ?? 0) > 0 || !!r.pending;
@@ -105,10 +92,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [pickStock, setPickStock] = useState(getCamera(DEFAULT_CAMERA_ID).defaultStock);
   const camera = getCamera(roll ? roll.cameraId : pickCamera);
   const stock = getStock(roll?.stockId ?? (canLoad(camera, pickStock) ? pickStock : camera.defaultStock));
-  // The "default roll size" setting is a 35mm film habit; packs, cards and half-frame rolls keep their own default.
-  const sizeFor = (c: CameraModel) =>
-    !c.instant && c.capture !== 'half' && c.capacities.includes(settings.value.defaultRollSize) ? settings.value.defaultRollSize : defaultCapacity(c);
-  const [rollSize, setRollSize] = useState(sizeFor(camera));
 
   const [state, setState] = useState<'starting' | 'live' | 'error'>('starting');
   const [error, setError] = useState<CameraError>('unknown');
@@ -130,11 +113,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [blink, setBlink] = useState(false);
   const [quadIndex, setQuadIndex] = useState<number | undefined>(undefined);
   const [screenFlash, setScreenFlash] = useState(false);
-  const [speedOpen, setSpeedOpen] = useState(false);
-  const [rollInfoOpen, setRollInfoOpen] = useState(false);
+  /** The camera sheet: film choice, pin, the way to this camera's photos. */
+  const [filmOpen, setFilmOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
-  /** The roll is being finished to change bodies: stay here (the picker) instead of opening the lab. */
+  /** A camera change is closing the current roll: no second change (or auto-load) meanwhile. */
   const switchingRef = useRef(false);
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [facing, setFacing] = useState(cam().facing);
@@ -180,22 +163,27 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     return () => clearInterval(id);
   }, [camera.stamp]);
 
-  // Restore the last camera/film the user loaded.
+  // Restore the last camera/film the user shot with (before the first roll goes in by itself).
+  const [restored, setRestored] = useState(false);
   useEffect(() => {
     Promise.all([get<string>('kv', LAST_CAMERA_KEY), get<string>('kv', LAST_STOCK_KEY)])
       .then(([c, st]) => {
+        // A roll already in the camera wins: the strip shows the camera that is really loaded.
+        const r = activeRoll.value;
+        if (r) {
+          setPickCamera(getCamera(r.cameraId).id);
+          setPickStock(r.stockId);
+          return;
+        }
         if (c) setPickCamera(getCamera(c).id);
         if (st) setPickStock(st);
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setRestored(true));
   }, []);
 
-  // "Develop now" from the album / lab: open the roll sheet with its finish button.
-  useEffect(() => {
-    if (!rollSheetRequest.value) return;
-    rollSheetRequest.value = false;
-    if (roll) setRollInfoOpen(true);
-  }, [rollSheetRequest.value, roll?.id]);
+  /** The camera + film the user asked for and does not have yet: wins over whatever roll is in. */
+  const wanted = useRef<{ camera: string; stock: string } | null>(null);
 
   // The "more" popover (date imprint, grid) closes on an outside tap or Escape.
   useEffect(() => {
@@ -223,13 +211,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     setFormatPick(null);
     setEv(0);
     setEvOpen(false);
-    setRollSize(sizeFor(camera));
   }, [camera.id]);
 
   // Last shot (instant/digital review) and the pending first exposure (double exposure ghost).
   useEffect(() => {
     let alive = true;
-    if (roll && camera.instant) {
+    if (roll) {
       listPhotos(roll.id)
         .then((ps) => alive && setLastPhoto(ps[ps.length - 1]))
         .catch(() => undefined);
@@ -242,7 +229,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     return () => {
       alive = false;
     };
-  }, [roll?.id, roll?.shots, roll?.negatives, roll?.pending?.takenAt, camera.instant]);
+  }, [roll?.id, roll?.shots, roll?.negatives, roll?.pending?.takenAt]);
 
   // ----- camera lifecycle -----
   const startCamera = async (facingMode = cam().facing) => {
@@ -450,23 +437,47 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   const storageToast = (err: unknown) => toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'), undefined, 6000);
 
-  const afterRollFull = async (r: Roll) => {
-    haptic([20, 60, 20]);
-    if (camera.instant) {
+  /**
+   * Closes the roll in the camera without a word: its photos are already in the album, so this only
+   * ends the album group (a camera change, a full roll). A pending half / first exposure becomes a
+   * frame of its own first. False if it could not be saved (the roll then stays in the camera).
+   */
+  const closeRoll = async (stale: Roll): Promise<boolean> => {
+    // Lock the shutter while the pending exposure is committed, or a shot could pair with it twice.
+    shootingRef.current = true;
+    pressesLeftRef.current = 0;
+    setBusy(true);
+    const release = holdCapture();
+    try {
+      // Read it fresh: the signal can lag a just-saved pending exposure, or an empty roll already removed.
+      const r = await getRoll(stale.id);
+      if (!r || r.status !== 'loaded') return true;
       try {
-        const done = await finishRoll(r.id, 'instant');
-        toast(t('cam.packDone'));
-        if (done) {
-          await markSeen(done.id);
-          if (isCurrent({ name: 'camera' })) go({ name: 'roll', id: done.id }); // not if the user moved on meanwhile
-        }
+        await flushPending(r);
       } catch (err) {
-        console.error('[silvr] could not finish the pack', err);
+        // finishRoll would drop the pending blob: keep the roll loaded instead of losing that frame.
+        console.error('[silvr] could not keep the pending exposure', err);
         storageToast(err);
+        return false;
       }
-    } else {
-      setSpeedOpen(true);
+      closedHere.current = true; // the next roll goes in straight away (see the load effect)
+      const done = await finishRoll(r.id, 'instant');
+      if (done) await markSeen(done.id); // its shots were already seen in the camera
+      return true;
+    } catch (err) {
+      console.error('[silvr] could not close the roll', err);
+      storageToast(err);
+      return false;
+    } finally {
+      release();
+      shootingRef.current = false;
+      if (mountedRef.current) setBusy(false);
     }
+  };
+
+  /** A roll this long is closed and a fresh one starts on the same camera (only the album notices). */
+  const afterRollFull = async (r: Roll) => {
+    await closeRoll(r);
   };
 
   /** Shutter feedback: a press dip for every accepted press, a small shake for one that is ignored. */
@@ -499,6 +510,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   };
 
   /** The shutter button / Space / Enter. Presses during a capture queue up instead of being dropped. */
+  /** The first shutter press asked for what needs a user gesture. */
+  const gestureDone = useRef(false);
   const onShutter = () => {
     if (countdown > 0) {
       cancelTimer();
@@ -507,6 +520,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     }
     if (state === 'error' || !activeRoll.value) return;
     if (s.sound) unlockAudio();
+    if (!gestureDone.current) {
+      // Inside the first tap: iOS motion permission (for sideways shots) and durable storage.
+      gestureDone.current = true;
+      void requestOrientationPermission();
+      void navigator.storage?.persist?.().catch(() => undefined);
+    }
     if (state === 'starting') {
       // Remembered and taken as soon as the stream is live.
       if (startPressRef.current) {
@@ -711,7 +730,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               const pd = rr.pending;
               const first = (await loadPending(rr.id)) ?? blankLike(exposures[0]);
               const composite = camera.capture === 'half' ? composeHalf(first, exposures[0]) : composeDouble(first, exposures[0]);
-              if (camera.instant) quickBlob = previewBlob(composite, rotate).catch(() => null);
+              quickBlob = previewBlob(composite, rotate).catch(() => null);
               const neg = await toNegative(composite);
               result = await addShot(rr.id, neg.blob, developFor(rr, { flash: fire, rotate }), { width: neg.width, height: neg.height }, pd.takenAt, 1, pd.takenAt);
             }
@@ -726,7 +745,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         }
       } else {
         const composite = camera.capture === 'quad' ? composeQuad(exposures) : exposures[0];
-        if (camera.instant) quickBlob = previewBlob(composite, rotate).catch(() => null);
+        quickBlob = previewBlob(composite, rotate).catch(() => null);
         const neg = await toNegative(composite);
         result = await addShot(r.id, neg.blob, developFor(r, { flash: fire, rotate }), { width: neg.width, height: neg.height }, takenAt, 1);
       }
@@ -737,7 +756,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       if (s.sound) playAdvance(camera.sound);
       if (result) setAnnounce(t('cam.saved', { n: result.photo.frame }));
       else if (camera.capture === 'half') setAnnounce(t('cam.halfNext'));
-      if (result && camera.instant) {
+      if (result) {
         const blob = quickBlob ? await quickBlob : null;
         if (mountedRef.current) {
           const url = blob ? URL.createObjectURL(blob) : undefined;
@@ -747,7 +766,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           setLastPhoto(result.photo);
           if (ejectsPrints(camera)) {
             if (url && !reduceMotion()) setEject({ url, key: Date.now() });
-          } else if (s.sound && camera.sound !== 'digital' && camera.sound !== 'phone') playBeep();
+          } else if (camera.instant && s.sound && camera.sound !== 'digital' && camera.sound !== 'phone') playBeep();
         }
       }
       if (result?.finished) {
@@ -860,7 +879,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         cancelTimer();
         return;
       }
-      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'INPUT' && state !== 'error' && !speedOpen && !rollInfoOpen && !confirmReq.value) {
+      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'INPUT' && state !== 'error' && !filmOpen && !confirmReq.value) {
         e.preventDefault();
         onShutter();
       }
@@ -870,22 +889,23 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   });
 
   const [loadingRoll, setLoadingRoll] = useState(false);
+  /** loadingRoll, current even inside an older render's callback. */
+  const loadingRef = useRef(false);
+  /** The camera is always ready: a roll goes in by itself for the picked camera and film. */
   const onLoad = async () => {
-    if (loadingRoll) return;
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoadingRoll(true);
-    if (s.sound) unlockAudio();
-    // Runs inside the tap gesture: iOS motion permission (for sideways shots) and durable storage.
-    void requestOrientationPermission();
-    void navigator.storage?.persist?.().catch(() => undefined);
     try {
-      const size = camera.capacities.includes(rollSize) ? rollSize : defaultCapacity(camera);
-      await loadRoll(stock.id, size, aspect, Date.now(), camera.id);
-      await Promise.all([put('kv', stock.id, LAST_STOCK_KEY), put('kv', camera.id, LAST_CAMERA_KEY), put('kv', true, QUICK_START_KEY)]);
-      if (s.haptics) haptic(25);
-      if (s.sound) playAdvance(camera.sound === 'digital' || camera.sound === 'phone' || camera.sound === 'pixel' || camera.sound === 'instant' ? 'slr' : camera.sound);
+      await loadRoll(stock.id, OPEN_CAPACITY, aspect, Date.now(), camera.id);
+      await Promise.all([put('kv', stock.id, LAST_STOCK_KEY), put('kv', camera.id, LAST_CAMERA_KEY)]);
+      loadFailed.current = '';
+      closedHere.current = false;
     } catch (err) {
-      console.error(err);
-      // Most likely a roll was loaded in another tab meanwhile; show it.
+      // Another tab put a roll in first: not a failure (the pick, if different, replaces it next).
+      const raced = String((err as Error)?.message) === 'A roll is already loaded';
+      if (raced) loadFailed.current = '';
+      else console.error(err);
       try {
         await refreshRolls();
       } catch {
@@ -896,143 +916,110 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         toast(quota ? t('err.storage') : storageError.value ? t('err.noStorage') : t('common.error'), undefined, 6000);
       }
     } finally {
+      loadingRef.current = false;
       if (mountedRef.current) setLoadingRoll(false);
     }
   };
+  /** The camera + film whose automatic load failed: not retried until something else is picked. */
+  const loadFailed = useRef('');
+  /** Bumped when a camera change finishes, so the load below runs again (it skips while switching). */
+  const [switched, setSwitched] = useState(0);
+  /** This screen has seen a roll in the camera, and whether this screen took the last one out. */
+  const hadRoll = useRef(false);
+  const closedHere = useRef(false);
+  if (roll) hadRoll.current = true;
+  useEffect(() => {
+    if (roll || !restored || !ready.value || storageError.value || loadingRoll || switchingRef.current) return;
+    const key = `${camera.id}|${stock.id}`;
+    if (loadFailed.current === key) return;
+    const go = () => {
+      loadFailed.current = key; // cleared again once the load succeeds
+      void onLoad();
+    };
+    // The roll went away elsewhere (another tab changing cameras, the album deleting it): give that
+    // tab a moment to put its own roll in instead of racing it with this screen's camera.
+    if (hadRoll.current && !closedHere.current) {
+      const id = setTimeout(() => !activeRoll.value && go(), 700);
+      return () => clearTimeout(id);
+    }
+    go();
+  }, [roll?.id, restored, ready.value, storageError.value, loadingRoll, camera.id, stock.id, switched]);
 
-  const onRewind = async () => {
-    if (shootingRef.current) return;
-    const r = activeRoll.value;
-    if (!r) return;
-    setRollInfoOpen(false);
-    if (!hasShots(r)) {
-      // Titled with the roll's name: the OK label stays a short verb, not the dialog title too.
-      if (!(await confirm(t('cam.emptyRewind'), t('cam.unload'), true, rollName(camera.name, stock.name)))) return;
-      try {
-        await finishRoll(r.id, 'instant');
-      } catch (err) {
-        console.error('[silvr] could not unload the roll', err);
-        storageToast(err);
-      }
-      return;
+  /**
+   * Another camera (or another film for this one): the current roll is closed (its photos are already
+   * in the album) and the next one goes in. Dragging the camera strip lands here.
+   */
+  const switchTo = (id: string, stockId?: string) => {
+    if (countdown > 0) return;
+    const next = getCamera(id);
+    const nextStock = stockId && canLoad(next, stockId) ? stockId : next.defaultStock;
+    if (next.id === pickCamera && nextStock === pickStock && !wanted.current) {
+      const r = activeRoll.value;
+      if (!r || (r.cameraId === next.id && r.stockId === nextStock)) return;
     }
-    const kind = finishKind(camera);
-    if (r.shots < r.capacity) {
-      const left = framesLeft(r);
-      const leftText = camera.capture === 'half' ? t('cam.nHalfShots', { n: left }) : t('cam.nShots', { n: left });
-      const text = t(kind === 'film' ? 'cam.rewindConfirm' : kind === 'pack' ? 'cam.finishPackConfirm' : 'cam.finishCardConfirm', { shots: shotsText(r), left: leftText, n: shotCount(r), m: left });
-      const ok = kind === 'film' ? t('cam.sendToLab') : kind === 'pack' ? t('cam.finishPack') : t('cam.finishCard');
-      if (!(await confirm(text, ok, false, rollName(camera.name, stock.name)))) return;
-    }
-    if (camera.instant) {
-      await finishWithPending(r, 'instant');
-      return;
-    }
-    // The pending half/exposure is only committed once a lab speed is picked (cancel keeps shooting).
-    setSpeedOpen(true);
+    if (s.haptics) haptic(8);
+    wanted.current = { camera: next.id, stock: nextStock };
+    setPickCamera(next.id);
+    setPickStock(nextStock);
+    void reconcile();
   };
 
-  /** Commits any pending exposure, then sends the roll off. */
-  const finishWithPending = async (stale: Roll, speed: DevelopSpeed) => {
-    const switching = switchingRef.current;
-    switchingRef.current = false;
-    if (shootingRef.current) return;
-    // Lock the shutter while the pending exposure is committed, or a shot could pair with it twice.
-    shootingRef.current = true;
-    pressesLeftRef.current = 0;
-    setBusy(true);
-    const release = holdCapture();
-    let done: Roll | null;
-    try {
-      const r = (await getRoll(stale.id)) ?? stale; // the signal can lag a just-saved pending exposure
-      try {
-        await flushPending(r);
-      } catch (err) {
-        // finishRoll would drop the pending blob, so keep the roll loaded instead of losing that frame.
-        console.error('[silvr] could not keep the pending exposure', err);
-        storageToast(err);
-        return;
-      }
-      done = await finishRoll(r.id, speed);
-      if (done && camera.instant) await markSeen(done.id); // its shots were already seen in the camera
-    } catch (err) {
-      console.error('[silvr] could not send the roll', err);
-      storageToast(err);
-      return;
-    } finally {
-      release();
-      shootingRef.current = false;
-      if (mountedRef.current) setBusy(false);
-    }
-    if (!done || !isCurrent({ name: 'camera' })) return; // the user switched tabs while it was saving
-    if (switching) {
-      // Changing bodies: stay on the picker, and say where the roll went.
-      const developed = done.status === 'developed';
-      const id = done.id;
-      toast(developed ? t('cam.switchedAlbum') : t('cam.switchedLab'), {
-        label: developed ? t('lab.open') : t('gal.openLab'),
-        run: () => go(developed ? { name: 'roll', id } : { name: 'lab' }),
-      });
+  /**
+   * Brings the roll in line with the pick: a roll for another camera or film is closed, and the load
+   * effect puts in the wanted one. Runs again after a load or a shot that was still going on, so a
+   * pick made meanwhile (even while the very first roll was loading) is never undone.
+   */
+  const reconcile = async () => {
+    const w = wanted.current;
+    if (!w) return;
+    if (switchingRef.current || shootingRef.current || loadingRef.current) {
+      // Something is still saving or loading: look again shortly (never drop the pick).
+      clearTimeout(reconcileTimer.current);
+      reconcileTimer.current = setTimeout(() => mountedRef.current && void reconcileRef.current(), 120);
       return;
     }
-    if (done.status === 'developed') go({ name: 'roll', id: done.id });
-    else go({ name: 'lab' });
-  };
-
-  /** Changing bodies mid-roll: the roll is finished first (lab for film), then the picker shows. */
-  const onSwitchBody = async () => {
-    if (shootingRef.current) return;
     const r = activeRoll.value;
-    if (!r) return;
-    setRollInfoOpen(false);
-    if (!hasShots(r)) {
-      // Nothing shot: just take the roll out.
-      try {
-        await finishRoll(r.id, 'instant');
-      } catch (err) {
-        console.error('[silvr] could not unload the roll', err);
-        storageToast(err);
-      }
+    if (!r) return; // the load effect puts in the wanted camera
+    if (r.cameraId === w.camera && r.stockId === w.stock) {
+      wanted.current = null;
       return;
     }
-    const kind = finishKind(camera);
-    // Say what happens to both: the shots taken and the frames that will never be used.
-    // A pending first exposure (double) becomes a frame of its own, so it is not "left".
-    const unused = Math.max(0, framesLeft(r) - (r.pending?.kind === 'double' ? 1 : 0));
-    const leftText = camera.capture === 'half' ? t('cam.nHalfShots', { n: unused }) : t('cam.nShots', { n: unused });
-    const text =
-      unused > 0
-        ? t(kind === 'film' ? 'cam.switchConfirmFilm2' : kind === 'pack' ? 'cam.switchConfirmPack2' : 'cam.switchConfirmCard2', {
-            shots: shotsText(r),
-            left: leftText,
-            // English verbs agree with the counts ("1 shot gets developed").
-            n: shotCount(r),
-            m: unused,
-          })
-        : t(kind === 'film' ? 'cam.switchConfirm' : kind === 'pack' ? 'cam.switchConfirmPack' : 'cam.switchConfirmCard', { shots: shotsText(r), n: shotCount(r) });
-    if (!(await confirm(text, kind === 'film' ? t('cam.switchOkFilm') : t('cam.switchOkDone'), false, t('cam.switchBody')))) return;
     switchingRef.current = true;
-    if (camera.instant) await finishWithPending(r, 'instant');
-    else setSpeedOpen(true); // the lab speed sheet; cancelling it keeps the roll (and the body)
+    let ok = false;
+    try {
+      ok = await closeRoll(r);
+    } finally {
+      switchingRef.current = false;
+      if (mountedRef.current) setSwitched((n) => n + 1); // the next roll goes in now
+    }
+    if (!ok && wanted.current === w) {
+      // Could not close it (storage): stay with the camera that is in.
+      wanted.current = null;
+      setPickCamera(getCamera(r.cameraId).id);
+      setPickStock(r.stockId);
+    }
   };
+  const reconcileRef = useRef(reconcile);
+  reconcileRef.current = reconcile;
+  const reconcileTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(reconcileTimer.current), []);
 
-  const closeSpeed = () => {
-    switchingRef.current = false;
-    setSpeedOpen(false);
-  };
+  // A roll changed (loaded, closed, loaded in another tab, restored): follow it, or replace it with the pick.
+  useEffect(() => {
+    if (!roll || switchingRef.current) return;
+    if (wanted.current) {
+      void reconcileRef.current();
+      return;
+    }
+    if (roll.cameraId && roll.cameraId !== pickCamera) setPickCamera(getCamera(roll.cameraId).id);
+    if (roll.stockId !== pickStock) setPickStock(roll.stockId);
+  }, [roll?.id, loadingRoll, busy]);
 
   const toggleFlash = () => {
     const on = !flashOn;
     setFlashOn(on);
     // Said out loud and shown: the icon alone is easy to miss. The front camera lights the screen instead.
     toast(on ? (facing === 'user' ? t('cam.flashOnScreen') : t('cam.flashOnSay')) : t('cam.flashOffSay'), undefined, 1600);
-  };
-
-  const onSpeed = async (speed: DevelopSpeed) => {
-    const r = activeRoll.value;
-    setSpeedOpen(false);
-    if (!r) return;
-    await finishWithPending(r, speed);
   };
 
   const flip = async () => {
@@ -1044,14 +1031,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   };
 
   const left = roll ? framesLeft(roll) : 0;
-  const kind = finishKind(camera);
   const shot = !!roll && hasShots(roll);
-  // The pill names the way to the photos ("5장 · 현상하기"), not just the frames left.
-  const pillCount = roll ? (camera.capture === 'half' ? t('cam.nHalfShots', { n: roll.shots }) : t('cam.nShots', { n: roll.shots + (roll.pending?.kind === 'double' ? 1 : 0) })) : '';
-  // Accessible name starts with the visible text (WCAG 2.5.3), the film name follows.
-  const rollBtnLabel = shot
-    ? `${pillCount} ${t(kind === 'film' ? 'cam.develop' : kind === 'pack' ? 'cam.finishPack' : 'cam.finishCard')} · ${isolate(stock.name)}`
-    : `${t('cam.left', { n: left })} · ${isolate(stock.name)}`;
+  const shotsSaid = roll ? (camera.capture === 'half' ? t('cam.nHalfShots', { n: roll.shots }) : t('cam.nShots', { n: shotCount(roll) })) : '';
+  /** The camera sheet button: this camera and its film. */
+  const sheetLabel = `${camera.name} · ${isolate(stock.name)}`;
+  const films = filmsFor(camera);
+  const pinned = s.pinnedCameras.includes(camera.id);
   const flashLabel =
     camera.flash === 'charge' ? (charge === 'ready' ? t('cam.flashReady') : charge === 'charging' ? t('cam.flashCharging') : t('cam.flashCharge')) : t('cam.flash');
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
@@ -1063,7 +1048,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const back = useMemo(() => backFor(camera), [camera.id]);
 
   return (
-    <div class={`camera cam-${camera.id}${roll ? '' : ' unloaded'}`} data-testid="camera-screen" data-camera={camera.id}>
+    <div class={`camera cam-${camera.id}`} data-testid="camera-screen" data-camera={camera.id}>
       <div
         class="bp-body"
         data-family={back.family}
@@ -1079,7 +1064,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       >
       <BackDecor key={camera.id} spec={back} />
       <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
-        <button class="chip cam-name" onClick={() => setRollInfoOpen(true)} disabled={!roll || counting} aria-label={`${camera.name} · ${t('cam.rollInfo')}`} data-testid="camera-chip">
+        <button class="chip cam-name" onClick={() => setFilmOpen(true)} disabled={!roll || counting} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="camera-chip">
           <span class="chip-txt" dir="auto">{camera.chip ?? camera.name}</span>
         </button>
         {camera.flash === 'standard' && (
@@ -1202,19 +1187,18 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           )}
           {blink && <div class="blink" />}
           {roll && camera.viewfinder !== 'lcd' && camera.viewfinder !== 'pixel' && (
-            <div class="counter mono" data-testid="counter" role="img" aria-label={t('cam.left', { n: left })}>
+            <div class="counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
               {/* Re-keyed per frame: a short tick shows the film advanced. */}
               <span key={counterText} class="counter-tick">
                 {counterText}
               </span>
-              <small>/{roll.capacity}</small>
             </div>
           )}
           {/* Today's free shots, in the corner opposite the frame counter (hidden for Pro / unlimited and while counting down). */}
           {roll && !counting && <ShotsLeftBadge class="vf-shots" onClick={() => goTab({ name: 'settings' })} />}
           {roll && (camera.viewfinder === 'lcd' || camera.viewfinder === 'pixel') && (
             <span class="sr-only" data-testid="counter">
-              {String(roll.shots).padStart(2, '0')}/{roll.capacity}
+              {String(roll.shots).padStart(2, '0')}
             </span>
           )}
           {dateOn && camera.stamp === 'led' && <div class="vf-date mono" aria-hidden="true">DATE</div>}
@@ -1260,31 +1244,19 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         )}
       </div>
 
+      {/* Drag sideways: the camera that stops in the middle is the one you shoot with. */}
+      <CameraRail selected={pickCamera} onPick={(id) => switchTo(id)} locked={busy || counting} />
+
       {roll && (
         <div class="cam-bottom">
-          {camera.instant && lastPhoto ? (
+          {lastPhoto ? (
             <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
               {/* Shown under the thumbnail until its developed print is ready: never a black square. */}
               {quick?.id === lastPhoto.id && <img class="last-shot-quick" src={quick.url} alt="" aria-hidden="true" />}
               <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
             </div>
           ) : (
-            <button class={`roll-btn ${shot ? 'has-shots' : ''}`} onClick={() => setRollInfoOpen(true)} disabled={busy} aria-label={rollBtnLabel} data-testid="roll-btn">
-              {/* The canister's ISO digits are decoration, not part of the button's name. */}
-              <span class="roll-btn-can" aria-hidden="true">
-                <Canister stock={stock} size={26} />
-              </span>
-              {shot ? (
-                <span class="roll-btn-txt">
-                  <small class="mono">{pillCount}</small>
-                  <b>{t(kind === 'film' ? 'cam.develop' : kind === 'pack' ? 'cam.finishPack' : 'cam.finishCard')}</b>
-                </span>
-              ) : (
-                <span class="roll-btn-txt">
-                  <span class="mono">{t('cam.left', { n: left })}</span>
-                </span>
-              )}
-            </button>
+            <span class="last-shot-empty" aria-hidden="true" />
           )}
           {/* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */}
           <button
@@ -1305,11 +1277,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             )}
           </button>
           <div class="cam-right">
-            {camera.instant && lastPhoto && (
-              <button class="icon-btn" onClick={() => setRollInfoOpen(true)} aria-label={rollBtnLabel} data-testid="roll-btn">
-                <Canister stock={stock} size={22} />
-              </button>
-            )}
+            <button class="icon-btn" onClick={() => setFilmOpen(true)} disabled={counting} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="roll-btn">
+              <Canister stock={stock} size={22} />
+            </button>
             <button class="icon-btn big" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
               <Icon name="flip" size={26} />
             </button>
@@ -1317,23 +1287,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </div>
       )}
       </div>
-      {!roll && (
-        <LoadPanel
-          cameraId={camera.id}
-          stockId={stock.id}
-          size={camera.capacities.includes(rollSize) ? rollSize : defaultCapacity(camera)}
-          onCamera={(id) => {
-            // Each body comes with its signature film; the user can still change it.
-            setPickCamera(id);
-            setPickStock(getCamera(id).defaultStock);
-          }}
-          onStock={setPickStock}
-          onSize={setRollSize}
-          onLoad={onLoad}
-          loading={loadingRoll}
-        />
-      )}
-
       {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
       {roll && camera.capture === 'double' && (
         <p class="cam-hint" data-testid="double-hint">
@@ -1351,104 +1304,46 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {announce}
       </div>
 
-      <Sheet open={rollInfoOpen} onClose={() => setRollInfoOpen(false)} title={rollName(camera.name, stock.name)} testId="roll-sheet">
+      <Sheet open={filmOpen} onClose={() => setFilmOpen(false)} title={camera.name} testId="roll-sheet">
         <p class="muted">{cameraDescription(camera.id)}</p>
-        <p class="mono big-num">
-          <Ltr>
-            {roll?.shots ?? 0} / {roll?.capacity ?? 0}
-          </Ltr>
-        </p>
-        {/* "5 / 27" already says the roll size. Half-frame: the counter counts halves, the album counts frames. Say both. */}
-        {roll && shot && camera.capture === 'half' && <p class="muted small">{shotsText(roll)}</p>}
-        <button class="btn primary wide" onClick={onRewind} aria-describedby={shot ? 'finish-sub' : undefined} data-testid="btn-rewind">
-          <Icon name="rewind" size={18} /> {shot ? t(kind === 'film' ? 'cam.rewind' : kind === 'pack' ? 'cam.finishPack' : 'cam.finishCard') : t('cam.unload')}
-        </button>
-        {shot && (
-          <p class="muted small sheet-sub" id="finish-sub">
-            {t(kind === 'film' ? 'cam.rewindSub' : 'cam.finishSubViewable')}
-          </p>
-        )}
-        <button class="btn ghost wide" onClick={onSwitchBody} aria-describedby="switch-sub" data-testid="btn-switch-body">
-          <Icon name="camera" size={18} /> {t('cam.switchBody')}
-        </button>
-        <p class="muted small sheet-sub" id="switch-sub">
-          {shot ? t(kind === 'film' ? 'cam.switchSub' : 'cam.switchSubViewable') : t('cam.switchSubEmpty')}
-        </p>
-      </Sheet>
-
-      <SpeedSheet open={speedOpen} onClose={closeSpeed} onPick={onSpeed} full={!!roll && framesLeft(roll) === 0} />
-    </div>
-  );
-}
-
-/**
- * Slowest first, so "Instant" ends bottom-right: exactly where the previous confirm's OK button was.
- * A double-tap on "Send to lab" then lands on Instant, never on "3 days".
- */
-const SPEEDS: DevelopSpeed[] = ['3d', 'morning', '1h', 'instant'];
-/** How long after the sheet opens a tap on the spot of the opening tap is treated as its repeat. */
-const REPEAT_TAP_MS = 900;
-
-/** The last pointer press anywhere (capture phase): where the tap that opened the sheet landed. */
-let lastPress = { x: -1, y: -1, at: 0 };
-if (typeof window !== 'undefined') {
-  window.addEventListener('pointerdown', (e) => (lastPress = { x: e.clientX, y: e.clientY, at: performance.now() }), { capture: true, passive: true });
-}
-
-export function SpeedSheet({ open, onClose, onPick, full }: { open: boolean; onClose: () => void; onPick: (s: DevelopSpeed) => void; full: boolean }) {
-  const def = settings.value.defaultSpeed;
-  // Read on every render: the sheet re-renders when it opens, so arrival times are current.
-  const at = Date.now();
-  /** When the sheet opened and where the tap that opened it was (a confirm's OK, the shutter). */
-  const opened = useRef<{ at: number; x: number; y: number } | null>(null);
-  useLayoutEffect(() => {
-    if (!open) return;
-    const now = performance.now();
-    opened.current = now - lastPress.at < 1500 ? { at: now, x: lastPress.x, y: lastPress.y } : null;
-  }, [open]);
-  /**
-   * The 2nd tap of a double-tap (350–700 ms later) lands where the 1st one did. Instant sits there by
-   * design; any other speed under that spot ignores pointer taps for a moment. Keyboard picks always count.
-   */
-  const repeatTap = (e: MouseEvent, sp: DevelopSpeed): boolean => {
-    const o = opened.current;
-    if (!o || sp === 'instant' || e.detail === 0 || performance.now() - o.at > REPEAT_TAP_MS) return false;
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    return o.x >= r.left && o.x <= r.right && o.y >= r.top && o.y <= r.bottom;
-  };
-  return (
-    <Sheet open={open} onClose={onClose} title={full ? t('cam.rollFull') : t('speed.title')} testId="speed-sheet">
-      {full && <p class="muted">{t('speed.title')}</p>}
-      <p class="muted small speed-why">{t('speed.why')}</p>
-      <div class="speed-list">
-        {SPEEDS.map((sp) => (
-          <button
-            key={sp}
-            class={`speed ${sp === def ? 'def' : ''}`}
-            onClick={(e) => {
-              if (repeatTap(e, sp)) return;
-              onPick(sp);
-            }}
-            // Focus starts on the default speed (Enter keeps the usual choice), not on the first card.
-            data-autofocus={sp === def ? '' : undefined}
-            data-testid={`speed-${sp}`}
-          >
-            <strong>
-              {t(`speed.${sp}` as const)}
-              {sp === def && (
-                <small class="speed-def">
-                  <span class="sr-only"> · </span>
-                  {t('speed.default')}
-                </small>
-              )}
-            </strong>
-            <span class="speed-at tnum" data-testid={`speed-at-${sp}`}>
-              {formatArrival(readyAtFor(sp, at), at, signalLang.value)}
+        {films.length > 1 ? (
+          <>
+            <div class="load-sub">
+              <span>{t('cam.film')}</span>
+              <span class="muted small">{stockDescription(stock.id)}</span>
+            </div>
+            <StockStrip key={camera.id} stocks={films} value={stock.id} onChange={(id) => switchTo(camera.id, id)} label={t('cam.chooseFilm')} />
+          </>
+        ) : (
+          <div class="load-sub">
+            <span>{t('cam.fixedFilm')}</span>
+            <span class="muted small">
+              <bdi>{stock.name}</bdi> · {stockDescription(stock.id)}
             </span>
-            <span>{t(`speed.${sp}.d` as const)}</span>
+          </div>
+        )}
+        {roll && shot && (
+          <button
+            class="btn primary wide"
+            onClick={() => {
+              setFilmOpen(false);
+              go({ name: 'roll', id: roll.id });
+            }}
+            data-testid="btn-open-roll"
+          >
+            <Icon name="gallery" size={18} /> {t('lab.open')} · {shotsSaid}
           </button>
-        ))}
-      </div>
-    </Sheet>
+        )}
+        <button
+          class={`btn ghost wide ${pinned ? 'on' : ''}`}
+          onClick={() => void setCameraPinned(camera.id, !pinned)}
+          aria-pressed={pinned}
+          data-testid={`pin-${camera.id}`}
+        >
+          <Icon name="pin" size={18} /> {t('cam.pin', { name: camera.name })}
+        </button>
+        <p class="muted small sheet-sub">{t('cam.pinHint')}</p>
+      </Sheet>
+    </div>
   );
 }

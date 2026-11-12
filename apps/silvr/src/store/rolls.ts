@@ -1,4 +1,3 @@
-import { getCamera } from '../cameras/models';
 import { cancelQueued, develop, promote, type DevelopOutput } from '../film/develop';
 import type { DateFormat } from '../film/overlays';
 import { developKey } from '../film/resolve';
@@ -10,6 +9,12 @@ export type RollStatus = 'loaded' | 'developing' | 'developed';
 export type RollKind = 'camera' | 'import';
 
 export const ROLL_SIZES = [12, 24, 36] as const;
+/**
+ * Camera rolls are no longer a fixed 12/24/36: the camera is always ready and each shot goes straight
+ * to the album. The roll is only the album's "this camera, this session" group, so it is open-ended
+ * (backup validation allows camera rolls up to 1000). A full one is closed and a new one starts.
+ */
+export const OPEN_CAPACITY = 999;
 
 export interface Roll {
   id: string;
@@ -103,9 +108,9 @@ export function framesLeft(roll: Roll): number {
   return Math.max(0, roll.capacity - roll.shots);
 }
 
-/** Instant film and memory-card cameras show shots while the roll is still in the camera. */
+/** Every camera shows its shots right away (no lab wait): the loaded roll is already in the album. */
 export function inCamera(roll: Roll): boolean {
-  return roll.status === 'loaded' && roll.kind === 'camera' && getCamera(roll.cameraId).instant;
+  return roll.status === 'loaded' && roll.kind === 'camera';
 }
 
 /** Whether the roll's photos can be looked at (developed, or an instant camera). */
@@ -293,6 +298,27 @@ export async function rushRoll(rollId: string, now = Date.now()): Promise<void> 
     await rq(t.objectStore('rolls').put(roll));
   });
   notify();
+}
+
+/**
+ * The lab is gone: rolls still waiting there (sent before the update) are developed now.
+ * Left unseen, so they show as new in the album. Returns how many were waiting.
+ */
+export async function developAllNow(now = Date.now()): Promise<number> {
+  const n = await atomic(['rolls'], async (t) => {
+    const all = (await rq(t.objectStore('rolls').getAll())) as Roll[];
+    let count = 0;
+    for (const roll of all) {
+      if (roll.status !== 'developing') continue;
+      roll.status = 'developed';
+      roll.readyAt = Math.min(roll.readyAt ?? now, now);
+      await rq(t.objectStore('rolls').put(roll));
+      count++;
+    }
+    return count;
+  });
+  if (n) notify();
+  return n;
 }
 
 export async function markSeen(rollId: string, now = Date.now()): Promise<void> {

@@ -1,16 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start } from './helpers';
 
-test('full roll: shoot 12 → instant develop → view → darkroom → contact sheet → delete', async ({ page }) => {
+test('shoot 12 → straight to the album → view → darkroom → contact sheet → delete', async ({ page }) => {
   const errors = await start(page);
-  await loadRoll(page, 'sunny200', '12');
+  await loadRoll(page, 'sunny200');
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'e2e/.shots/02-camera-loaded.png' });
-  await shoot(page, 11);
-  await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('speed-sheet')).toBeVisible();
-  await page.screenshot({ path: 'e2e/.shots/03-roll-full.png' });
-  await page.getByTestId('speed-instant').click();
+  await shoot(page, 12);
+  // No roll size and no lab: the last shot is already a thumbnail next to the shutter.
+  await expect(page.getByTestId('last-shot').locator('img').first()).toBeVisible({ timeout: 30_000 });
+  await page.screenshot({ path: 'e2e/.shots/03-after-12.png' });
+  await page.getByTestId('roll-btn').click();
+  await page.getByTestId('btn-open-roll').click();
 
   await expect(page.getByTestId('roll-screen')).toBeVisible();
   const thumbs = page.getByTestId('thumb');
@@ -75,61 +76,39 @@ test('full roll: shoot 12 → instant develop → view → darkroom → contact 
   expect(errors).toEqual([]);
 });
 
-test('lab: rewind early → 1 hour → countdown → rush develop → album badge', async ({ page }) => {
+test('camera strip: photos are in the album at once, a new camera starts a new group, #/lab opens the album', async ({ page }) => {
   const errors = await start(page);
-  await loadRoll(page, 'mono400', '24');
+  await expect(page.getByTestId('tab-lab')).toHaveCount(0);
+  await loadRoll(page, 'mono400');
   await shoot(page, 3);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  // the sheet says why you'd wait and when each speed arrives
-  await expect(page.getByTestId('speed-sheet')).toContainText('Instant shows them now');
-  await expect(page.getByTestId('speed-at-instant')).toHaveText('In your album right away');
-  await expect(page.getByTestId('speed-at-1h')).toHaveText(/^Arrives (today|tomorrow) at \d{1,2}:\d{2}\s[AP]M$/);
-  await expect(page.getByTestId('speed-at-morning')).toHaveText(/^Arrives (today|tomorrow) at 9:00\sAM$/);
-  // dates and model names glue their inner space with a no-break space (U+00A0) so they never wrap: \s matches both
-  await expect(page.getByTestId('speed-at-3d')).toHaveText(/^Arrives [A-Z][a-z]{2}\s\d{1,2}$/);
-  await page.getByTestId('speed-1h').click();
-  await expect(page.getByTestId('lab-screen')).toBeVisible();
-  await expect(page.getByTestId('lab-item')).toHaveCount(1);
-  await expect(page.getByTestId('lab-item')).toContainText(/Ready in (59m|1h)/);
-  await expect(page.getByTestId('lab-eta')).toContainText(/Arrives (today|tomorrow) at /);
-  await expect(page.getByTestId('lab-intro')).toContainText('Develop now');
-  // an empty album points to the lab while a roll develops
-  await page.getByTestId('tab-gallery').click();
-  await expect(page.getByTestId('gallery-screen')).toContainText('1 roll is developing in the lab.');
-  await page.getByTestId('btn-open-lab').click();
-  await expect(page.getByTestId('lab-screen')).toBeVisible();
-  await page.screenshot({ path: 'e2e/.shots/09-lab.png' });
-  // camera is free for a new roll
-  await page.getByTestId('tab-camera').click();
-  await expect(page.getByTestId('load-panel')).toBeVisible();
-  await page.getByTestId('tab-lab').click();
-  await page.getByTestId('btn-rush').click();
-  await page.getByTestId('confirm-ok').click();
-  await expect(page.getByTestId('lab-item')).toHaveCount(0);
-  await expect(page.getByText(/Mono\s400 roll is developed/)).toBeVisible();
+  // Already in the album, while the camera keeps shooting.
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
-  await expect(page.getByTestId('roll-card')).toContainText('NEW');
-  await page.getByTestId('roll-card').locator('.roll-meta').click();
-  await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 30_000 });
+  await expect(page.getByTestId('roll-card')).toContainText(/Mono\s400/);
+  await page.getByTestId('tab-camera').click();
+  await expect(page.getByTestId('counter')).toContainText('03');
+  // Another camera on the strip: shots go to a new group, the first one stays as it was.
+  await loadCamera(page, 'snap27');
+  await expect(page.getByTestId('counter')).toContainText('00');
+  await shoot(page, 2);
   await page.getByTestId('tab-gallery').click();
-  await expect(page.getByTestId('roll-card')).not.toContainText('NEW');
+  await expect(page.getByTestId('roll-card')).toHaveCount(2);
+  await expect(page.getByTestId('roll-card').first()).toContainText('Snap');
+  await page.getByTestId('roll-card').last().locator('.roll-meta').click();
+  await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 30_000 });
+  // Old lab links land in the album.
+  await page.goto('./#/lab');
+  await expect(page.getByTestId('gallery-screen')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('data persists across reloads and the empty roll is discarded on unload', async ({ page }) => {
+test('data persists across reloads and an unused camera leaves no empty album entry', async ({ page }) => {
   const errors = await start(page);
-  await loadRoll(page, 'sunny200', '12');
+  await loadRoll(page, 'sunny200');
   await shoot(page, 2);
   await page.reload();
   await expect(page.getByTestId('counter')).toContainText('02');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-instant').click();
-  await expect(page.getByTestId('roll-screen')).toBeVisible();
+  await rewindAndDevelop(page);
   // a 3:2 frame from the landscape test sensor comes back landscape
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
@@ -137,13 +116,13 @@ test('data persists across reloads and the empty roll is discarded on unload', a
   expect(w).toBeGreaterThan(h);
   await page.waitForTimeout(1300);
   await page.screenshot({ path: 'e2e/.shots/10-instant.png' });
-  // unloading an empty roll
+  // passing through cameras without shooting adds nothing to the album
   await page.getByTestId('tab-camera').click();
-  await loadRoll(page, 'sunny200', '12');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await expect(page.getByTestId('load-panel')).toBeVisible();
+  await loadCamera(page, 'snap27');
+  await loadCamera(page, 'instasq');
+  await loadCamera(page, 'pro35');
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toHaveCount(1);
   expect(errors).toEqual([]);
 });
 
@@ -223,7 +202,7 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
   await page.screenshot({ path: 'e2e/.shots/12-settings-ko.png', fullPage: true });
   await page.getByTestId('tab-camera').click();
-  await expect(page.getByText('카메라를 고르세요')).toBeVisible();
+  await expect(page.getByRole('group', { name: '카메라를 고르세요' })).toBeVisible();
   await page.reload();
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
   await page.getByTestId('tab-settings').click();

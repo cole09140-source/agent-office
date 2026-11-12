@@ -72,9 +72,9 @@ export const messages: LocaleMessages = {
   'gal.importHint': '照片会用这款胶卷冲洗，之后随时可以在暗房里更换。', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': '换了新手机？恢复备份', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
   'onb.1.title': '像胶片一样，一张一张拍', // ko: 필름처럼, 한 장씩 · en: Shoot like film
-  'onb.1.body': '选一台相机，装上一卷胶卷。数着剩下的张数，用心按下每一次快门。', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
-  'onb.2.title': '等待冲洗的心动', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': '拍完一卷，就送去冲洗。立即、1\u00A0小时、早上 9\u00A0点或 3\u00A0天，想等多久，由你决定。', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.1.body': '选一台相机，马上就能拍。拍下的照片立刻进入相册。',
+  'onb.2.title': '滑动切换相机',
+  'onb.2.body': '左右滑动取景器下方的相机栏，停在中间的那台就能直接拍。每台相机都有自己的色彩。',
   'onb.3.title': '在暗房重新冲洗', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': '原图始终完好保留。胶卷、亮度、过期胶卷质感和光晕，想重选几次都可以。', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '每天免费拍 {n}\u00A0张 · 无需注册账号。每一张照片都只留在这台设备上。',
@@ -216,8 +216,9 @@ export const messages: LocaleMessages = {
   'lab.developedToast': '你的 {stock} 胶卷冲洗好了', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
   'lab.open': '查看照片', // ko: 사진 보기 · en: View photos
   'gal.title': '相册', // ko: 앨범 · en: Album
-  'gal.empty': '还没有冲洗好的照片。', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
-  'gal.emptyHint': '你的第一卷，从相机开始。', // ko: 첫 롤은 카메라에서 시작돼요. · en: Your first roll starts in the camera.
+  'gal.empty': '还没有照片。',
+  'gal.emptyHint': '在相机里拍一张，它会马上出现在这里。',
+  'gal.shoot': '去拍照',
   'gal.emptyHintLab': '冲洗店里有 {n} 卷正在冲洗。', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': '前往冲洗店', // ko: 현상소 보기 · en: Open the lab
   'gal.import': '导入照片', // ko: 사진 불러오기 · en: Import photos

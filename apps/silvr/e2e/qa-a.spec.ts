@@ -50,33 +50,38 @@ test('R1 settings: date format re-develops prints, sound off creates no audio, m
   expect(errors).toEqual([]);
 });
 
-test('R2 lab clock: tomorrow 9 AM and 3 days develop on their own', async ({ page }) => {
-  await page.clock.install({ time: new Date('2026-10-25T21:30:00') });
+test('R2 a roll still in the old lab is developed as soon as the app opens', async ({ page }) => {
   await start(page);
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 1);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-morning').click();
-  await expect(page.getByTestId('lab-item')).toContainText(/Ready in 11h 30m|Ready in 11h 29m/);
-  await page.clock.fastForward(11.5 * 3600_000 + 60_000);
-  // model names glue their inner space with U+00A0 so "Sunny 200" never wraps: \s matches it
+  // What an older version left behind: the roll sent to the lab for 3 days.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('silvr');
+        open.onsuccess = () => {
+          const t = open.result.transaction('rolls', 'readwrite');
+          const s = t.objectStore('rolls');
+          const all = s.getAll();
+          all.onsuccess = () => {
+            for (const r of all.result as { status: string; finishedAt?: number; readyAt?: number }[]) {
+              if (r.status !== 'loaded') continue;
+              r.status = 'developing';
+              r.finishedAt = Date.now();
+              r.readyAt = Date.now() + 72 * 3600_000;
+              s.put(r);
+            }
+          };
+          t.oncomplete = () => resolve();
+          t.onerror = () => reject(t.error);
+        };
+      }),
+  );
+  await page.reload();
   await expect(page.getByText(/Sunny\s200 roll is developed/)).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByTestId('lab-item')).toHaveCount(0);
-
-  await page.getByTestId('tab-camera').click();
-  await loadRoll(page, 'mono400', '12');
-  await shoot(page, 1);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('speed-3d').click();
-  await expect(page.getByTestId('lab-item')).toContainText(/Ready in (3d|2d 23h)/);
-  await page.clock.fastForward(71 * 3600_000);
-  await expect(page.getByTestId('lab-item')).toHaveCount(1);
-  await page.clock.fastForward(61 * 60_000);
-  await expect(page.getByTestId('lab-item')).toHaveCount(0, { timeout: 10_000 });
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toHaveCount(1);
+  await expect(page.getByTestId('roll-card')).toContainText('NEW');
 });
 
 test('R3 import edge cases: alpha PNG, tiny, ultra-wide, empty, fake and SVG files', async ({ page }) => {
@@ -230,7 +235,7 @@ test('R8 onboarding replay, language persistence, reset wipes pending exposures'
   await start(page);
   await loadCamera(page, 'half72');
   await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('counter')).toContainText('01/72');
+  await expect(page.getByTestId('counter')).toContainText('01');
   await page.getByTestId('tab-settings').click();
   await page.getByRole('button', { name: 'Replay intro' }).click();
   await expect(page.getByTestId('onboarding')).toBeVisible();
@@ -279,19 +284,12 @@ test('R9 navigation: back walks darkroom → photo → roll → album; bad deep 
   expect(errors.filter((e) => /URIError/.test(e))).toEqual([]);
 });
 
-test('R10 lifecycle: a 12-exposure toy roll fills up and asks for the lab; instant camera unloads empty', async ({ page }) => {
+test('R10 lifecycle: a toy camera keeps shooting past its old 12 frames; every frame is in the album', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'toy120');
-  await shoot(page, 11);
-  await page.getByTestId('shutter').click();
-  await expect(page.getByTestId('speed-sheet')).toBeVisible();
-  await expect(page.getByTestId('speed-sheet')).toContainText('Roll finished');
-  await page.getByTestId('speed-instant').click();
-  await expect(page.getByTestId('thumb')).toHaveCount(12);
-  await page.getByTestId('tab-camera').click();
-  await loadCamera(page, 'instasq');
+  await shoot(page, 13);
+  await expect(page.getByTestId('counter')).toContainText('13');
   await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-rewind').click();
-  await page.getByTestId('confirm-ok').click();
-  await expect(page.getByTestId('load-panel')).toBeVisible();
+  await page.getByTestId('btn-open-roll').click();
+  await expect(page.getByTestId('thumb')).toHaveCount(13);
 });

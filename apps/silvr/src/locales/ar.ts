@@ -68,9 +68,9 @@ export const messages: LocaleMessages = {
   'gal.importHint': 'تُحمَّض صورك بالفيلم الذي اخترته، ويمكنك تغييره في الغرفة المظلمة متى شئت.', // ko: 고른 필름으로 현상해요. 다크룸에서 언제든 바꿀 수 있어요. · en: Your photos develop with this film. You can change it in the darkroom any time.
   'onb.restore': 'هل انتقلت من هاتف آخر؟ استعادة نسخة احتياطية', // ko: 이전 폰에서 옮겨 오셨나요? 백업 불러오기 · en: Coming from another phone? Restore a backup
   'onb.1.title': 'كالفيلم، لقطة تلو الأخرى', // ko: 필름처럼, 한 장씩 · en: Shoot like film
-  'onb.1.body': 'اختر كاميرا وأدخِل فيلمًا. اللقطات معدودة، فاجعل لكل ضغطة على الغالق معنى.', // ko: 카메라를 고르고 롤을 넣어 보세요. 남은 장수를 세어 가며, 셔터 한 번에 마음을 담아요. · en: Pick a camera, load a roll, and make every frame count.
-  'onb.2.title': 'متعة الترقّب في المعمل', // ko: 현상소에서 기다리는 설렘 · en: Let the lab take its time
-  'onb.2.body': 'أرسل الفيلم إلى المعمل، واختر مدة انتظارك: فورًا، أو ساعة، أو حتى 9 صباحًا، أو 3 أيام.', // ko: 다 찍은 롤은 현상소로 보내요. 즉시, 1시간, 아침 9시, 3일 중에서 기다림의 길이를 골라 보세요. · en: Send finished rolls to the lab and choose your wait: Instant, 1 hour, next 9 AM, or 3 days.
+  'onb.1.body': 'اختر كاميرا والتقط فورًا. تصل كل صورة إلى ألبومك لحظة التقاطها.',
+  'onb.2.title': 'اسحب لتغيير الكاميرا',
+  'onb.2.body': 'اسحب صف الكاميرات أسفل منظار الرؤية. التقط بالكاميرا التي تتوقف في المنتصف، فلكل كاميرا ألوانها الخاصة.',
   'onb.3.title': 'أعد التحميض في الغرفة المظلمة متى شئت', // ko: 다크룸에서 언제든 다시 현상 · en: Re-develop in the darkroom
   'onb.3.body': 'صورتك الأصلية محفوظة دائمًا. جرّب فيلمًا آخر، أو سطوعًا مختلفًا، أو مظهر الفيلم القديم، أو الوهج، كلما أردت.', // ko: 찍은 원본은 언제나 그대로 남아요. 필름, 밝기, 오래된 필름 느낌, 빛 번짐까지 몇 번이고 다시 골라 보세요. · en: Your original is always kept. Try another film, brightness, aged-film look, or glow, as often as you like.
   'onb.privacy': '{n, plural, zero {لا لقطات مجانية يوميًا} one {لقطة مجانية واحدة يوميًا} two {لقطتان مجانيتان يوميًا} few {# لقطات مجانية يوميًا} many {# لقطة مجانية يوميًا} other {# لقطة مجانية يوميًا}}. بلا حساب. تبقى كل صورك على هذا الجهاز فقط.',
@@ -212,8 +212,9 @@ export const messages: LocaleMessages = {
   'lab.developedToast': 'اكتمل تحميض {stock}', // ko: {stock} 롤 현상이 끝났어요 · en: Your {stock} roll is developed
   'lab.open': 'عرض الصور', // ko: 사진 보기 · en: View photos
   'gal.title': 'الألبوم', // ko: 앨범 · en: Album
-  'gal.empty': 'لا توجد صور محمّضة بعد.', // ko: 아직 현상된 사진이 없어요. · en: No developed photos yet.
-  'gal.emptyHint': 'يبدأ فيلمك الأول في الكاميرا.', // ko: 첫 롤은 카메라에서 시작돼요. · en: Your first roll starts in the camera.
+  'gal.empty': 'لا توجد صور بعد.',
+  'gal.emptyHint': 'التقط صورة بالكاميرا وستظهر هنا فورًا.',
+  'gal.shoot': 'التقط صورة',
   'gal.emptyHintLab': '{n, plural, zero {لا أفلام قيد التحميض في المعمل.} one {فيلم واحد قيد التحميض في المعمل.} two {فيلمان قيد التحميض في المعمل.} few {# أفلام قيد التحميض في المعمل.} many {# فيلمًا قيد التحميض في المعمل.} other {# فيلم قيد التحميض في المعمل.}}', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': 'فتح المعمل', // ko: 현상소 보기 · en: Open the lab
   'gal.import': 'استيراد الصور', // ko: 사진 불러오기 · en: Import photos
