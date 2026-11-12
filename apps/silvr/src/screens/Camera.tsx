@@ -138,6 +138,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [queued, setQueued] = useState(0);
   /** A press made while the camera was still starting: taken once the stream is live. */
   const startPressRef = useRef(false);
+  /** A press made while cameras were being changed (no roll for a moment): taken as soon as the new one is in. */
+  const rollPressRef = useRef(false);
   /** Presses the roll can still take, read when the current capture started. */
   const pressesLeftRef = useRef(0);
   /** Presses lost because the app went to the background: said once when it comes back. */
@@ -257,8 +259,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const onVis = () => {
       if (document.hidden) {
         // A press made while starting must not fire minutes later when the app comes back.
-        if (startPressRef.current) droppedRef.current += 1;
+        if (startPressRef.current || rollPressRef.current) droppedRef.current += 1;
         startPressRef.current = false;
+        rollPressRef.current = false;
         setQueued(0);
         cam().stop();
       } else {
@@ -522,8 +525,20 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       pulse('press');
       return;
     }
-    if (state === 'error' || !activeRoll.value) return;
+    if (state === 'error') return;
     if (s.sound) unlockAudio();
+    if (!activeRoll.value || switchingRef.current) {
+      // Between two cameras: remember the press, take it with the new camera.
+      if (rollPressRef.current) {
+        pulse('nudge');
+        return;
+      }
+      rollPressRef.current = true;
+      setQueued(1);
+      pulse('press');
+      if (s.haptics) haptic(6);
+      return;
+    }
     if (!gestureDone.current) {
       // Inside the first tap: iOS motion permission (for sideways shots) and durable storage.
       gestureDone.current = true;
@@ -826,6 +841,16 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (state === 'live' && activeRoll.value && !shootingRef.current) void captureRef.current();
   }, [state]);
 
+  // A press made between two cameras is taken once the wanted camera's roll is in and the stream is live.
+  useEffect(() => {
+    if (!rollPressRef.current || !roll || state !== 'live' || busy || switchingRef.current || shootingRef.current) return;
+    const w = wanted.current;
+    if (w && (roll.cameraId !== w.camera || roll.stockId !== w.stock)) return; // not the picked camera yet
+    rollPressRef.current = false;
+    setQueued(0);
+    void captureRef.current();
+  }, [roll?.id, state, busy]);
+
   // Quick previews are object URLs: free the last one when the screen goes away.
   useEffect(
     () => () => {
@@ -968,6 +993,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     }
     if (s.haptics) haptic(8);
     wanted.current = { camera: next.id, stock: nextStock };
+    // Remembered at once: leaving the tab mid-change must not bring the old camera back.
+    void Promise.all([put('kv', nextStock, LAST_STOCK_KEY), put('kv', next.id, LAST_CAMERA_KEY)]).catch(() => undefined);
     setPickCamera(next.id);
     setPickStock(nextStock);
     void reconcile();
@@ -1029,9 +1056,15 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const check = () => {
       const r = activeRoll.value;
       const last = lastPhotoRef.current;
-      if (!r || r.pending || !last || last.rollId !== r.id || document.hidden) return;
+      if (!r || r.pending || document.hidden) return;
       if (shootingRef.current || switchingRef.current || wanted.current) return;
-      if (new Date(last.takenAt).toDateString() === new Date().toDateString()) return;
+      // Its last photo's day; an unused roll counts from the day it went in (so the album dates it today).
+      let stamp: number;
+      if (hasShots(r)) {
+        if (!last || last.rollId !== r.id) return; // its photos are not read yet
+        stamp = last.takenAt;
+      } else stamp = r.createdAt;
+      if (new Date(stamp).toDateString() === new Date().toDateString()) return;
       switchingRef.current = true;
       void closeRoll(r).finally(() => {
         switchingRef.current = false;
@@ -1069,7 +1102,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (mountedRef.current && cam().facing === 'user' && flashLook) toast(t('cam.flashOnScreen'), undefined, 2200);
   };
 
-  const left = roll ? framesLeft(roll) : 0;
   const shot = !!roll && hasShots(roll);
   const shotsSaid = roll ? (camera.capture === 'half' ? t('cam.nHalfShots', { n: roll.shots }) : t('cam.nShots', { n: shotCount(roll) })) : '';
   /** The camera sheet button: this camera and its film. */
@@ -1206,7 +1238,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           <ViewfinderOverlay
             camera={camera}
             state={{
-              left,
+              // The LCD / phone / pixel readout: shots taken with this camera today (there is no roll to run out).
+              left: roll ? roll.shots : 0,
               half: roll?.pending?.kind === 'half' ? 1 : 0,
               quadIndex,
               ghost: ghostUrl,
@@ -1242,20 +1275,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           )}
           {dateOn && camera.stamp === 'led' && <div class="vf-date mono" aria-hidden="true">DATE</div>}
         </div>
-        {!roll && state !== 'error' && frame.width > 0 && (
-          // Check selfie framing before loading: the same control the loaded camera has next to the shutter.
-          <button
-            class="icon-btn vf-flip"
-            onClick={flip}
-            disabled={starting}
-            aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')}
-            data-testid="btn-flip"
-            data-facing={facing}
-            style={{ top: `calc(var(--bp-pad-t, 0px) + ${(box.h - frame.height) / 2 + 10}px)`, right: `calc(var(--bp-pad-x, 0px) + ${(box.w - frame.width) / 2 + 10}px)` }}
-          >
-            <Icon name="flip" size={22} />
-          </button>
-        )}
         {state === 'error' && (
           <div class="cam-error" data-testid="camera-error">
             <h2>{t('cam.noCamera.title')}</h2>
@@ -1286,7 +1305,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       {/* Drag sideways: the camera that stops in the middle is the one you shoot with. */}
       <CameraRail selected={pickCamera} onPick={(id) => switchTo(id)} locked={busy || counting} />
 
-      {roll && (
+      {(roll || (!loadError && !storageError.value)) && (
         <div class="cam-bottom">
           {lastPhoto ? (
             <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
@@ -1295,7 +1314,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
               <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
             </div>
           ) : (
-            <span class="last-shot-empty" aria-hidden="true" />
+            // Nothing shot with this camera yet: the slot leads to the album (earlier photos live there).
+            <button class="last-shot-empty" onClick={() => goTab({ name: 'gallery' })} aria-label={t('tab.gallery')} data-testid="btn-last-album">
+              <Icon name="gallery" size={22} />
+            </button>
           )}
           {/* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */}
           <button
@@ -1316,7 +1338,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             )}
           </button>
           <div class="cam-right">
-            <button class="icon-btn" onClick={() => setFilmOpen(true)} disabled={counting} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="roll-btn">
+            <button class="icon-btn" onClick={() => setFilmOpen(true)} disabled={counting || !roll} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="roll-btn">
               <Canister stock={stock} size={22} />
             </button>
             <button class="icon-btn big" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>

@@ -36,6 +36,8 @@ export interface Roll {
   negatives?: number;
   /** First half / first exposure waiting for its partner (half-frame, double exposure). */
   pending?: PendingExposure;
+  /** Photos deleted while the roll was still in the camera (its counters keep counting up). */
+  gone?: number;
 }
 
 export interface PendingExposure {
@@ -102,6 +104,11 @@ export function readyAtFor(speed: DevelopSpeed, now: number): number {
 export function effectiveStatus(roll: Roll, now: number): RollStatus {
   if (roll.status === 'developing' && roll.readyAt !== undefined && roll.readyAt <= now) return 'developed';
   return roll.status;
+}
+
+/** Photos the roll holds now: frames taken, minus the ones deleted while it was still in the camera. */
+export function photoCount(roll: Roll): number {
+  return Math.max(0, (roll.negatives ?? roll.shots) - (roll.gone ?? 0));
 }
 
 export function framesLeft(roll: Roll): number {
@@ -278,6 +285,9 @@ export async function finishRoll(rollId: string, speed: DevelopSpeed, now = Date
       await rq(t.objectStore('rolls').delete(rollId));
       return null;
     }
+    // Photos deleted while it was in the camera: a finished roll counts what it holds.
+    if (roll.gone || photos !== (roll.negatives ?? roll.shots)) roll.shots = roll.negatives = photos;
+    delete roll.gone;
     roll.finishedAt = now;
     roll.readyAt = readyAtFor(speed, now);
     roll.status = speed === 'instant' ? 'developed' : 'developing';
@@ -563,8 +573,10 @@ export async function deletePhoto(photoId: string): Promise<DeletedPhoto | undef
       return { photo, blobs, roll: before, rollRemoved: true };
     }
     if (roll.coverPhotoId === photoId) roll.coverPhotoId = remaining[0]?.id;
-    // Frames on a loaded roll stay consumed; finished rolls show what is left.
+    // The counter of a roll still in the camera keeps counting (frame numbers stay unique): the
+    // deleted photo is only noted. Finished rolls show what is left.
     if (roll.status !== 'loaded') roll.shots = roll.negatives = remaining.length;
+    else roll.gone = (roll.gone ?? 0) + 1;
     await rq(t.objectStore('rolls').put(roll));
     return { photo, blobs, roll: before, rollRemoved: false };
   });
@@ -590,6 +602,8 @@ export async function restorePhoto(snap: DeletedPhoto): Promise<boolean> {
     if (roll.status !== 'loaded') {
       const count = ((await rq(t.objectStore('photos').index('rollId').getAll(roll.id))) as Photo[]).length;
       roll.shots = roll.negatives = count;
+    } else if (roll.gone) {
+      roll.gone = Math.max(0, roll.gone - 1);
     }
     if (snap.roll?.coverPhotoId === snap.photo.id) roll.coverPhotoId = snap.photo.id;
     await rq(t.objectStore('rolls').put(roll));
@@ -636,11 +650,16 @@ export async function deleteRoll(rollId: string): Promise<DeletedRoll | undefine
 export async function restoreRoll(snap: DeletedRoll): Promise<boolean> {
   const ok = await atomic(['photos', 'blobs', 'rolls'], async (t) => {
     if (await readRoll(t, snap.roll.id)) return false;
-    if (snap.roll.kind === 'camera' && snap.roll.status === 'loaded') {
+    let roll = snap.roll;
+    if (roll.kind === 'camera' && roll.status === 'loaded') {
+      // The camera took a new roll meanwhile: the deleted one comes back as a finished album group.
       const all = (await rq(t.objectStore('rolls').getAll())) as Roll[];
-      if (all.some((r) => r.kind === 'camera' && r.status === 'loaded')) return false;
+      if (all.some((r) => r.kind === 'camera' && r.status === 'loaded')) {
+        const now = Date.now();
+        roll = { ...roll, status: 'developed', pending: undefined, finishedAt: now, readyAt: now, seenAt: now, shots: snap.photos.length, negatives: snap.photos.length };
+      }
     }
-    await rq(t.objectStore('rolls').put(snap.roll));
+    await rq(t.objectStore('rolls').put(roll));
     for (const p of snap.photos) await rq(t.objectStore('photos').put(p));
     for (const [key, blob] of snap.blobs) await rq(t.objectStore('blobs').put(blob, key));
     return true;

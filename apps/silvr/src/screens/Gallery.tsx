@@ -8,7 +8,7 @@ import { signalLang } from '../state/lang';
 import { go, goTab } from '../state/router';
 import { getCamera, hasCamera } from '../cameras/models';
 import { isNative } from '../platform/share';
-import { getPhoto, inCamera, type Photo, type Roll } from '../store/rolls';
+import { getPhoto, inCamera, photoCount, type Photo, type Roll } from '../store/rolls';
 import { restoreRequest } from './Settings';
 
 /**
@@ -16,9 +16,18 @@ import { restoreRequest } from './Settings';
  * `count`: photos actually on the roll when known (a deleted photo leaves frames = photos).
  */
 export function framesText(r: Roll, count?: number): string {
-  const frames = count ?? r.negatives ?? r.shots;
+  const frames = count ?? photoCount(r);
   const half = r.kind === 'camera' && hasCamera(r.cameraId) && getCamera(r.cameraId).capture === 'half';
   return half && r.shots > frames && frames === (r.negatives ?? frames) ? t('gal.framesHalf', { f: frames, n: r.shots }) : t('gal.frames', { n: frames });
+}
+
+/**
+ * The day shown for an album group: when its photos were taken (camera groups are closed later, by a
+ * camera change or the next day, so "finished" is not their date). Imports keep their import date.
+ */
+export function rollDate(r: Roll, first?: { takenAt: number }): number {
+  if (r.kind === 'camera') return first?.takenAt ?? r.createdAt;
+  return r.finishedAt ?? r.createdAt;
 }
 
 /** The help page (FAQ, contact) in the current language. */
@@ -52,7 +61,7 @@ function RollCard({ roll }: { roll: Roll }) {
           {inCamera(roll) ? <span class="badge">{t('cam.inCamera')}</span> : !roll.seenAt && <span class="badge new">{t('gal.new')}</span>}
         </strong>
         <span class="muted small">
-          {formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · {framesText(roll)}
+          {formatDate(rollDate(roll, cover), signalLang.value)} · {framesText(roll)}
           {roll.kind === 'import' && (
             <>
               {' · '}

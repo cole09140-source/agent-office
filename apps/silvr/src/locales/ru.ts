@@ -412,7 +412,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': 'Камера',
   'a11y.rollLoaded': 'Плёнка {stock} заряжена · {n, plural, one {# кадр} few {# кадра} many {# кадров} other {# кадра}}',
   'a11y.sentToLab': 'Плёнка отдана в проявку · будет готова через {wait}',
-  'a11y.cameraKeys': 'Выбирайте камеру клавишами ← →, клавиша Tab переводит к кнопке закрепления',
+  'a11y.cameraKeys': 'Меняйте камеру клавишами ← →',
   'cam.timerSay': 'Снимок через {n, plural, one {# секунду} few {# секунды} many {# секунд} other {# секунды}} · нажмите на затвор ещё раз, чтобы отменить',
   'cam.timerCancelled': 'Таймер отменён',
   'cam.tapToCancel': 'Нажмите для отмены',

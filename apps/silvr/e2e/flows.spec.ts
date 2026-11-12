@@ -275,5 +275,61 @@ test('a new day starts a new album group for the same camera', async ({ page }) 
   await shoot(page, 1);
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(2);
+  // Each group is dated by the day its photos were taken (not the day it was closed).
+  await expect(page.getByTestId('roll-card').last()).toContainText('Nov 12');
+  await expect(page.getByTestId('roll-card').first()).toContainText('Nov 13');
+  expect(errors).toEqual([]);
+});
+
+test('QA: the all-cameras button changes nothing by itself; a press right after a switch is taken with the new camera; the shutter row stays', async ({ page }) => {
+  const errors = await start(page);
+  await loadCamera(page, 'zonelc');
+  // Opening "all cameras" (fixed at the end of the rail) leaves the camera alone.
+  await page.getByTestId('btn-all-cameras').click();
+  await expect(page.getByTestId('all-cameras')).toBeVisible();
+  await page.waitForTimeout(600);
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'zonelc');
+  await page.getByTestId('allcam-toy120').click();
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'toy120');
+  // Switch and press at once: the shutter row never goes away, and the press lands on the new camera.
+  const seen = await page.evaluate(async () => {
+    let missing = 0;
+    (document.querySelector('[data-testid=camera-pro35]') as HTMLElement).click();
+    await new Promise((r) => setTimeout(r, 30));
+    (document.querySelector('[data-testid=shutter]') as HTMLElement | null)?.click();
+    const t0 = performance.now();
+    while (performance.now() - t0 < 1500) {
+      if (!document.querySelector('[data-testid=shutter]')) missing++;
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return missing;
+  });
+  expect(seen, 'frames without a shutter during the switch').toBe(0);
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'pro35');
+  await expect(page.getByTestId('counter')).toContainText('01', { timeout: 15_000 });
+  expect(errors).toEqual([]);
+});
+
+test('QA: the digicam readout counts shots (never 999); deleting a photo updates the album card of the camera in use', async ({ page }) => {
+  const errors = await start(page);
+  await loadCamera(page, 'ccd03');
+  await expect(page.locator('.lcd-tr')).toContainText('00');
+  await shoot(page, 2);
+  await expect(page.locator('.lcd-tr')).toContainText('02');
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toContainText('2 frames');
+  await page.getByTestId('roll-card').locator('.roll-meta').click();
+  await expect(page.locator('[data-testid=thumb] img').first()).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('thumb').first().click();
+  await page.getByTestId('btn-delete').click();
+  await page.getByTestId('confirm-ok').click();
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('roll-card')).toContainText('1 frame');
+  await expect(page.getByTestId('roll-card')).not.toContainText('2 frames');
+  // The empty thumbnail slot of a camera with no shots leads to the album.
+  await page.getByTestId('tab-camera').click();
+  await loadCamera(page, 'pro35');
+  await page.getByTestId('btn-last-album').click();
+  await expect(page.getByTestId('gallery-screen')).toBeVisible();
   expect(errors).toEqual([]);
 });

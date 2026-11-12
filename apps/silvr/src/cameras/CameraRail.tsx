@@ -1,5 +1,6 @@
 import { Fragment } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
 import { Sheet } from '../components/ui';
 import { SHOW_PRO_BADGES } from '../entitlements';
 import { eraText, t, type MsgKey } from '../i18n';
@@ -191,6 +192,7 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
       <p id="camera-rail-keys" class="sr-only">
         {t('a11y.cameraKeys')}
       </p>
+      <div class="cam-rail-track">
       <div
         class="cam-rail-strip"
         role="group"
@@ -211,11 +213,18 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
           touching.current = false;
           settle();
         }}
-        onPointerCancel={() => {
+        onPointerCancel={(e) => {
+          // A touch pointer is cancelled the moment the browser starts scrolling: the finger is still down
+          // (touchend / touchcancel say when it lifts).
+          if (e.pointerType === 'touch') return;
           touching.current = false;
           settle();
         }}
         onTouchEnd={() => {
+          touching.current = false;
+          settle();
+        }}
+        onTouchCancel={() => {
           touching.current = false;
           settle();
         }}
@@ -243,11 +252,14 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
             </div>
           </Fragment>
         ))}
-        <button type="button" class="cam-rail-all" onClick={() => setAllOpen(true)} aria-haspopup="dialog" data-testid="btn-all-cameras">
-          {t('cam.allCameras')}
-          <small class="mono">{CAMERAS.length}</small>
-        </button>
       </div>
+      </div>
+      <button type="button" class="cam-rail-all" onClick={() => setAllOpen(true)} aria-haspopup="dialog" aria-label={`${t('cam.allCameras')} (${CAMERAS.length})`} data-testid="btn-all-cameras">
+        <Icon name="models" size={20} />
+        <small class="mono" aria-hidden="true">
+          {CAMERAS.length}
+        </small>
+      </button>
       <AllCameras
         open={allOpen}
         onClose={() => setAllOpen(false)}

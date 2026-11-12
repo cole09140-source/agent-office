@@ -410,7 +410,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': 'الكاميرا', // ko: 카메라 · en: Camera
   'a11y.rollLoaded': 'تم إدخال فيلم {stock} · {n, plural, zero {0 لقطة} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
   'a11y.sentToLab': 'أُرسل إلى المعمل · جاهز بعد {wait}', // ko: 현상소로 보냈어요 · {wait} 뒤 도착 · en: Sent to the lab · ready in {wait}
-  'a11y.cameraKeys': 'اختر كاميرا بمفتاحي الأسهم، وانتقل بمفتاح Tab إلى زر التثبيت', // ko: ← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요 · en: Use the arrow keys to choose a camera; Tab reaches its pin button
+  'a11y.cameraKeys': 'غيّر الكاميرا بمفتاحي الأسهم',
   'cam.timerSay': '{n, plural, zero {الالتقاط الآن} one {الالتقاط بعد ثانية} two {الالتقاط بعد ثانيتين} few {الالتقاط بعد # ثوانٍ} many {الالتقاط بعد # ثانية} other {الالتقاط بعد # ثانية}} · اضغط زر الغالق مرة أخرى للإلغاء', // ko: {n}초 뒤 촬영 · 셔터를 다시 누르면 취소 · en: Taking the photo in {n} seconds · press the shutter again to cancel
   'cam.timerCancelled': 'أُلغي المؤقت', // ko: 타이머를 취소했어요 · en: Timer cancelled
   'cam.tapToCancel': 'اضغط للإلغاء', // ko: 탭하면 취소 · en: Tap to cancel

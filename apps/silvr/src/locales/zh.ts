@@ -414,7 +414,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': '相机', // ko: 카메라 · en: Camera
   'a11y.rollLoaded': '已装入 {stock} · {n} 张', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
   'a11y.sentToLab': '已送去冲洗 · {wait}后送达', // ko: 현상소로 보냈어요 · {wait} 뒤 도착 · en: Sent to the lab · ready in {wait}
-  'a11y.cameraKeys': '用 ← → 键选择相机，按 Tab 键前往置顶按钮', // ko: ← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요 · en: Use the arrow keys to choose a camera; Tab reaches its pin button
+  'a11y.cameraKeys': '用 ← → 键切换相机',
   'cam.timerSay': '{n} 秒后拍摄 · 再按一次快门可取消', // ko: {n}초 뒤 촬영 · 셔터를 다시 누르면 취소 · en: Taking the photo in {n} seconds · press the shutter again to cancel
   'cam.timerCancelled': '已取消定时', // ko: 타이머를 취소했어요 · en: Timer cancelled
   'cam.tapToCancel': '轻点取消', // ko: 탭하면 취소 · en: Tap to cancel

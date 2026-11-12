@@ -419,7 +419,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': 'Appareil photo',
   'a11y.rollLoaded': 'Pellicule {stock} chargée · {n, plural, one {# vue} other {# vues}}',
   'a11y.sentToLab': 'Envoyée au labo · prête dans {wait}',
-  'a11y.cameraKeys': 'Flèches pour choisir un appareil, Tab pour atteindre son bouton Épingler',
+  'a11y.cameraKeys': 'Utilisez les flèches pour changer d’appareil',
   'cam.timerSay': '{n, plural, one {Photo dans # seconde} other {Photo dans # secondes}} · appuyez à nouveau sur le déclencheur pour annuler',
   'cam.timerCancelled': 'Retardateur annulé',
   'cam.tapToCancel': 'Touchez pour annuler',

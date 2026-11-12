@@ -398,7 +398,7 @@ export const messages = {
   'a11y.cameraTitle': '카메라',
   'a11y.rollLoaded': '{stock} · {n}장 넣었어요',
   'a11y.sentToLab': '현상소로 보냈어요 · {wait} 뒤 도착',
-  'a11y.cameraKeys': '← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요',
+  'a11y.cameraKeys': '← → 키로 카메라를 바꿔요',
   'cam.timerSay': '{n}초 뒤 촬영 · 셔터를 다시 누르면 취소',
   'cam.timerCancelled': '타이머를 취소했어요',
   'cam.tapToCancel': '탭하면 취소',

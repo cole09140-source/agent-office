@@ -2838,8 +2838,21 @@ html.tap-guard * {
   justify-self: start;
   width: 56px;
   height: 56px;
+  display: grid;
+  place-items: center;
   border-radius: 6px;
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.7);
+}
+.last-shot-empty:active {
+  transform: scale(0.94);
+}
+/* The pin toggle in the camera sheet shows its state, not just announces it. */
+.btn.ghost.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 138, 43, 0.1);
 }
 
 /* ---------- camera strip (under the viewfinder) ----------
@@ -2847,13 +2860,20 @@ html.tap-guard * {
    Sits on the body's back plate, so it carries its own dark track for contrast on light bodies. */
 .cam-rail {
   position: relative;
+  display: flex;
+  align-items: stretch;
   margin: 10px 10px 0;
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.42);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
+.cam-rail-track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
 /* The middle slot: a fixed ring the cameras slide under. */
-.cam-rail::after {
+.cam-rail-track::after {
   content: '';
   position: absolute;
   top: 4px;
@@ -2934,27 +2954,34 @@ html.tap-guard * {
   margin: 12px 3px;
   background: rgba(255, 255, 255, 0.16);
 }
+/* Every camera at once: fixed over the end of the rail, never part of the dial (reaching it changes
+   nothing). It floats on the strip so the ring stays in the middle of the rail, above the shutter. */
 .cam-rail-all {
-  flex: 0 0 auto;
-  align-self: center;
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  inset-inline-end: 4px;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1px;
-  min-width: 64px;
+  width: 48px;
   min-height: 44px;
-  margin-inline-start: 6px;
-  padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(46, 42, 38, 0.94);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), -6px 0 10px rgba(0, 0, 0, 0.35);
   color: var(--fg);
-  font-size: 0.75rem;
-  font-weight: 650;
-  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 .cam-rail-all small {
   font-size: 0.6875rem;
+  font-weight: 650;
   color: var(--fg-2);
+}
+.cam-rail-all:active {
+  transform: scale(0.94);
 }
 .cam-rail.locked .cam-rail-strip {
   opacity: 0.55;
@@ -4807,4 +4834,26 @@ button[aria-disabled='true'] {
   display: flex;
   justify-content: center;
   padding: 14px 16px 18px;
+}
+
+/* Landscape phones: the strip shows the cameras without their names, the viewfinder keeps the height. */
+@media (max-height: 430px) {
+  .cam-rail {
+    margin-top: 4px;
+  }
+  .cam-rail-card {
+    min-height: 38px;
+    padding: 2px;
+  }
+  /* Still the button's name for screen readers: hidden from sight only. */
+  .cam-rail-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .cam-rail-all {
+    min-height: 0;
+  }
 }

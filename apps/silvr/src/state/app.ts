@@ -1,6 +1,6 @@
 import { computed, signal } from '@preact/signals';
 import { detectLang, isLocaleLoaded, loadLocale, setDocumentLang } from '../i18n';
-import { getActiveRoll, inCamera, listRolls, subscribe, type Roll } from '../store/rolls';
+import { getActiveRoll, inCamera, listRolls, photoCount, subscribe, type Roll } from '../store/rolls';
 import { setPinned } from '../cameras/pins';
 import { DEFAULT_SETTINGS, loadSettings, patchSettingsWith, type Settings } from '../store/settings';
 import { signalLang } from './lang';
@@ -16,7 +16,7 @@ export const storageError = signal(false);
 export const developingRolls = computed(() => rolls.value.filter((r) => r.status === 'developing'));
 /** Rolls shown in the album: developed ones, plus the roll still in the camera. */
 /** A roll still in the camera shows once it holds a photo (all of them deleted again: hidden). */
-export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && (r.negatives ?? r.shots) > 0 && !!r.coverPhotoId)));
+export const developedRolls = computed(() => rolls.value.filter((r) => r.status === 'developed' || (inCamera(r) && photoCount(r) > 0)));
 export const newRollCount = computed(() => developedRolls.value.filter((r) => r.status === 'developed' && !r.seenAt).length);
 
 let langSeq = 0;

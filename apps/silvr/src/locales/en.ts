@@ -395,7 +395,7 @@ export const messages: Messages = {
   'a11y.cameraTitle': 'Camera',
   'a11y.rollLoaded': '{stock} loaded · {n, plural, one {# shot} other {# shots}}',
   'a11y.sentToLab': 'Sent to the lab · ready in {wait}',
-  'a11y.cameraKeys': 'Use the arrow keys to choose a camera; Tab reaches its pin button',
+  'a11y.cameraKeys': 'Use the arrow keys to change cameras',
   'cam.timerSay': 'Taking the photo in {n} seconds · press the shutter again to cancel',
   'cam.timerCancelled': 'Timer cancelled',
   'cam.tapToCancel': 'Tap to cancel',

@@ -165,6 +165,7 @@ function sanitizeRoll(r: Roll): Roll {
     delete roll.pending;
   }
   for (const k of ['finishedAt', 'readyAt', 'seenAt'] as const) if (roll[k] !== undefined && !isTime(roll[k])) delete roll[k];
+  if (roll.gone !== undefined && !(isNum(roll.gone) && roll.gone >= 0)) delete roll.gone;
   // A roll in the lab needs a ready time, or the lab clock would poll it forever.
   if (roll.status === 'developing' && roll.readyAt === undefined) roll.readyAt = Date.now();
   return roll;

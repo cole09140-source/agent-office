@@ -413,7 +413,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': 'Cámara',
   'a11y.rollLoaded': 'Rollo {stock} cargado · {n, plural, one {# foto} other {# fotos}}',
   'a11y.sentToLab': 'Enviado a revelar · listo en {wait}',
-  'a11y.cameraKeys': 'Usa las flechas para elegir una cámara; con Tab llegas a su botón de fijar',
+  'a11y.cameraKeys': 'Usa las flechas para cambiar de cámara',
   'cam.timerSay': '{n, plural, one {Foto en # segundo} other {Foto en # segundos}} · vuelve a presionar el obturador para cancelar',
   'cam.timerCancelled': 'Temporizador cancelado',
   'cam.tapToCancel': 'Toca para cancelar',

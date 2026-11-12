@@ -408,7 +408,7 @@ export const messages: LocaleMessages = {
   'a11y.cameraTitle': 'कैमरा', // ko: 카메라 · en: Camera
   'a11y.rollLoaded': '{stock} डाला गया · {n, plural, one {# फ़ोटो} other {# फ़ोटो}}', // ko: {stock} · {n}장 넣었어요 · en: {stock} loaded · {n, plural, one {# shot} other {# shots}}
   'a11y.sentToLab': 'लैब भेज दिया गया · {wait} में तैयार', // ko: 현상소로 보냈어요 · {wait} 뒤 도착 · en: Sent to the lab · ready in {wait}
-  'a11y.cameraKeys': '← → कीज़ से कैमरा चुनें, Tab से उसके पिन बटन पर जाएँ', // ko: ← → 키로 카메라를 고르고, Tab으로 고정 버튼으로 가요 · en: Use the arrow keys to choose a camera; Tab reaches its pin button
+  'a11y.cameraKeys': '← → कीज़ से कैमरा बदलें',
   'cam.timerSay': '{n} सेकंड में फ़ोटो खिंचेगी · रद्द करने के लिए शटर फिर दबाएँ', // ko: {n}초 뒤 촬영 · 셔터를 다시 누르면 취소 · en: Taking the photo in {n} seconds · press the shutter again to cancel
   'cam.timerCancelled': 'टाइमर रद्द हो गया', // ko: 타이머를 취소했어요 · en: Timer cancelled
   'cam.tapToCancel': 'रद्द करने के लिए टैप करें', // ko: 탭하면 취소 · en: Tap to cancel

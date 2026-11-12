@@ -13,7 +13,7 @@ import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent, route } from '../state/router';
 import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
 import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, restoreRoll, subscribe, viewable, type DeletedRoll, type Photo } from '../store/rolls';
-import { framesText } from './Gallery';
+import { framesText, rollDate } from './Gallery';
 
 const SHEET_MAX_FRAMES = 72;
 const LONG_PRESS_MS = 480;
@@ -141,14 +141,14 @@ export function RollScreen({ id }: { id: string }) {
         frames.push({ image: bmp, width: bmp.width, height: bmp.height, frame: p.frame, crop: pictureRect(p) });
       }
       const blob = await contactSheet(frames, {
-        title: `${isolate(stock.name)} · ${formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)}`,
+        title: `${isolate(stock.name)} · ${formatDate(rollDate(roll, photos[0]), signalLang.value)}`,
         // A long day can hold more than one sheet's worth: say how many are on it out of how many.
         subtitle: `${ltr('FILM CAMELA')}  ·  ${ltr(`ISO ${stock.iso}`)}  ·  ${t('gal.frames', { n: frames.length })}${photos.length > frames.length ? ltr(` / ${photos.length}`) : ''}`,
         rtl: isRtl(),
         camera: hasCamera(roll.cameraId) ? getCamera(roll.cameraId).name : undefined,
         instant: hasCamera(roll.cameraId) && ejectsPrints(getCamera(roll.cameraId)),
       });
-      const file = { blob, name: fileName('FilmCamela_contact', roll.finishedAt ?? roll.createdAt) };
+      const file = { blob, name: fileName('FilmCamela_contact', rollDate(roll, photos[0])) };
       // Building takes seconds, so the original tap no longer counts as a user gesture
       // for navigator.share; offer the share from a fresh tap instead.
       setSheet(file);
@@ -283,7 +283,7 @@ export function RollScreen({ id }: { id: string }) {
       ) : (
         <Header
           title={roll.kind === 'import' ? t('gal.imported') : rollName(camName, stock.name)}
-          sub={`${inCamera(roll) ? t('cam.inCamera') : formatDate(roll.finishedAt ?? roll.createdAt, signalLang.value)} · ${framesText(roll, photos?.length)}`}
+          sub={`${inCamera(roll) ? t('cam.inCamera') : formatDate(rollDate(roll, photos?.[0]), signalLang.value)} · ${framesText(roll, photos?.length)}`}
           onBack={() => back({ name: 'gallery' })}
           wrap
           right={

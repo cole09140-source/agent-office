@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultDevelop } from '../src/film/resolve';
 import { getStock } from '../src/film/stocks';
 import { clearAll } from '../src/store/db';
-import { addShot, blobKey, deletePhoto, deleteRoll, finishRoll, getActiveRoll, getBlob, getPhoto, listPhotos, listRolls, loadRoll, restorePhoto, restoreRoll, savePending } from '../src/store/rolls';
+import { addShot, blobKey, deletePhoto, deleteRoll, finishRoll, getActiveRoll, getBlob, getPhoto, listPhotos, listRolls, loadRoll, photoCount, restorePhoto, restoreRoll, savePending } from '../src/store/rolls';
 
 const neg = () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/jpeg' });
 const dev = () => defaultDevelop(getStock('sunny200'), 1);
@@ -110,12 +110,39 @@ describe('roll delete undo', () => {
     expect(await getBlob(`pending:${roll.id}`)).toBeDefined();
   });
 
-  it('does not restore a loaded roll once another roll is in the camera', async () => {
+  it('a deleted in-camera roll comes back as a finished album group once another roll is in the camera', async () => {
     const roll = await loadRoll('sunny200', 12, '3:2');
     await addShot(roll.id, neg(), dev(), { width: 3, height: 2 });
     const snap = await deleteRoll(roll.id);
     const other = await loadRoll('sunny200', 24, '3:2');
-    expect(await restoreRoll(snap!)).toBe(false);
-    expect((await listRolls()).map((r) => r.id)).toEqual([other.id]);
+    expect(await restoreRoll(snap!)).toBe(true);
+    const all = await listRolls();
+    expect(all.map((r) => r.id).sort()).toEqual([other.id, roll.id].sort());
+    const back = all.find((r) => r.id === roll.id)!;
+    expect(back.status).toBe('developed');
+    expect(back.shots).toBe(1);
+    // Still exactly one roll in the camera.
+    expect(all.filter((r) => r.status === 'loaded').map((r) => r.id)).toEqual([other.id]);
+  });
+
+  it('a photo deleted while the roll is in the camera: the counter keeps counting, the album count follows', async () => {
+    const roll = await loadRoll('sunny200', 999, '3:2');
+    const a = await addShot(roll.id, neg(), dev(), { width: 3, height: 2 });
+    await addShot(roll.id, neg(), dev(), { width: 3, height: 2 });
+    const snap = await deletePhoto(a.photo.id);
+    let r = (await listRolls())[0];
+    expect(r.shots).toBe(2); // frame numbers stay unique: the next shot is frame 3
+    expect(photoCount(r)).toBe(1);
+    // Undo puts it back.
+    expect(await restorePhoto(snap!)).toBe(true);
+    r = (await listRolls())[0];
+    expect(photoCount(r)).toBe(2);
+    // Deleted again, then the roll is closed: a finished roll counts what it holds.
+    await deletePhoto(a.photo.id);
+    const done = await finishRoll(roll.id, 'instant');
+    expect(done?.shots).toBe(1);
+    expect(done?.negatives).toBe(1);
+    expect(done?.gone).toBeUndefined();
+    expect(photoCount(done!)).toBe(1);
   });
 });
