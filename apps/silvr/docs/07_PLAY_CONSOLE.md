@@ -2,14 +2,15 @@
 
 Play Console에서 앱을 만들 때 그대로 옮겨 적으면 되는 값입니다. 스토어 문안 원문은 `docs/03b_STORE_LISTING_FILM_CAMELA.md`, 빌드·서명은 `docs/04_LAUNCH_GUIDE.md`의 C.
 
-## 현재 상태 (2026-11-09 확인)
+## 현재 상태 (2026-11-13 확인)
 | 항목 | 상태 |
 |------|------|
-| 앱 | `com.filmcamela.app` · versionName **1.1.2** (versionCode 5) · Play 앱 ID `4974786066979399323` (계정 `atiumcompany@gmail.com`, 개발자 "Muzig AI" `5890194990164154086`) |
+| 앱 | `com.filmcamela.app` · versionName **1.1.3** (versionCode 6) · Play 앱 ID `4974786066979399323` (계정 `atiumcompany@gmail.com`, 개발자 "Muzig AI" `5890194990164154086`) |
 | 빌드 2 | ✅ **내부 테스트** 트랙에 출시(테스터 목록 "Muzig 내부 테스터") |
 | 빌드 3 | ❌ 11/4 거부 — ① 정기 결제 정책: MY 탭 US$ 고정 가격이 현지 통화와 달라 "통화 불일치" ② 손상된 기능: 상품을 못 불러오면 "Pro 시작하기"·광고 버튼이 비활성(응답 없음). → **빌드 4(1.1.1)**: Play가 준 현지 가격만 표시(US$·안내 문구 삭제), 구매·복원·광고 버튼은 항상 눌리고 누르면 스토어 재연결 또는 이유 안내. 스토어 스크린샷 6(MY)도 US$가 보여 11개 언어 모두 삭제(7장 남음) |
 | 빌드 4 (1.1.1) | ✅ 11/4 승인·공개(정책 상태 "문제 없음", 11/9 확인). 11/4 프로덕션 검토 재제출(변경 13개: 빌드 4 전체 출시 + 스크린샷 11개 언어 + 개인정보 URL `https://silvr.muzig.ai/privacy.html`). 업로드용 AAB `FilmCamela-1.1.1-b4-release-upload.aab`(proguard.map 빼고 같은 키로 재서명). mapping.txt 는 아직 안 올림(경고만) |
-| 빌드 5 (1.1.2) | ⏳ 11/9 검토 제출(변경 23개: 빌드 5 전체 출시 + 11개 언어 전체 설명 22→32대·20→26종 + 스크린샷 2번 32대판). Codex QA 지적 반영(Tele 20 툴바 줄바꿈, 앱 버전 1.0.0 표시) + 애플 HIG 다듬기(큰 제목, 11pt 최소 글씨, 슬라이더 44px, 눌림 표시). 업로드용 AAB `FilmCamela-1.1.2-b5-release-upload.aab`, mapping.txt 업로드 완료. 새 스크린샷 2번은 AI 생성 애셋 라벨 지정함 |
+| 빌드 5 (1.1.2) | ✅ 승인·게시(11/10 게시 알림, 11/13 프로덕션 활성 확인) · 11/9 검토 제출(변경 23개: 빌드 5 전체 출시 + 11개 언어 전체 설명 22→32대·20→26종 + 스크린샷 2번 32대판). Codex QA 지적 반영(Tele 20 툴바 줄바꿈, 앱 버전 1.0.0 표시) + 애플 HIG 다듬기(큰 제목, 11pt 최소 글씨, 슬라이더 44px, 눌림 표시). 업로드용 AAB `FilmCamela-1.1.2-b5-release-upload.aab`, mapping.txt 업로드 완료. 새 스크린샷 2번은 AI 생성 애셋 라벨 지정함 |
+| 빌드 6 (1.1.3) | ⏳ 11/13 검토 제출(변경 34개: 빌드 6 전체 출시 + 11개 언어 간단한 설명·전체 설명 앞부분·휴대전화 스크린샷 7장 전부 교체). 새 흐름: 롤 장수·현상소 없음(찍으면 바로 앨범), 미리보기 아래 카메라 줄, Models 탭. 스토어 문구·출시 노트 원문은 `docs/03d_STORE_LISTING_1.1.3.json`. 스크린샷 프레임은 camera·cameras(Models)·roll·darkroom·contact·analog·privacy 7장(`<lang>-v113-<n>-<scene>.png`), AI 장면이 들어간 1·3·4·5번에 AI 생성 애셋 라벨. 업로드용 AAB `FilmCamela-1.1.3-b6-release-upload.aab`(매핑을 뺀 뒤 같은 업로드 키로 재서명), mapping.txt 업로드. 에뮬레이터 검수 10/10 |
 | 스토어 등록정보 | ✅ 11개 언어(en-US 기본, ko-KR, ja-JP, zh-CN, es-419, es-ES, fr-FR, pt-BR, ru-RU, hi-IN, ar), 앱 이름 "<현지어 필름 카메라> - Film Camela" |
 | 앱 콘텐츠 | ✅ 광고 있음 · 로그인 없음 · 타깃 13세 이상 · IARC 3+/Everyone · 광고 ID(분석·광고·사기 방지) · 데이터 보안(대략적 위치·앱 상호작용·진단·기기 ID — 수집+공유, 선택, 임시 처리 아님) · 정부·금융·건강 해당 없음 |
 | 개인정보처리방침 URL | 지금은 `https://silvr-three.vercel.app/privacy.html` (가비아 A 레코드 `silvr` → `76.76.21.21` 11/3 추가, HTTPS 되면 `https://silvr.muzig.ai/privacy.html`로 교체) |
