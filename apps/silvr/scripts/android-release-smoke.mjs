@@ -64,11 +64,11 @@ async function tap(re, opts = {}) {
   await sleep(900);
   return n.label;
 }
-// The frame counter in the viewfinder reads "3 shots" (Camera.tsx shotsSaid, en); the camera sheet
-// button next to the shutter is named "<camera> · <film>" (sheetLabel).
+// The frame counter in the viewfinder reads "3 shots" (Camera.tsx shotsSaid, en); the album folder of a
+// camera reads "<camera> <n> frames".
 // uiautomator reads it as text "03" + description "3 shots" → "03 3 shots".
 const SHOTS = /^\d+ \d+ shots?$/;
-const SHEET_BTN = /^Pro 35 · /;
+const FOLDER = /^Pro 35 \d+ frames?$/;
 const galleryCount = () => {
   try {
     return sh("ls '/sdcard/Pictures/Film Camela'").split(/\s+/).filter((f) => /\.(jpg|png)$/.test(f)).length;
@@ -145,9 +145,11 @@ await step('shoot 3 frames', async () => {
   shot('r2-shooting');
   return (await find(SHOTS)).label;
 });
-await step('photos are in the album already (camera sheet → View photos)', async () => {
-  await tap(SHEET_BTN); // the film button next to the shutter
-  await tap(/^View photos/);
+await step('photos are in the album already (Album tab → the camera folder)', async () => {
+  await tap(/^Album$/);
+  await sleep(2500);
+  // The camera's folder ("Pro 35 3 frames"); uiautomator's WebView snapshot can lag on the group list below it.
+  await tap(FOLDER);
   await sleep(4000);
   shot('r3-roll');
 });
