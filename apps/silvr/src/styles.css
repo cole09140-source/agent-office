@@ -4857,3 +4857,90 @@ button[aria-disabled='true'] {
     min-height: 0;
   }
 }
+
+/* Top bar without the camera name (the strip under the viewfinder names the camera): the controls
+   sit centred with room between them. Narrow phones step the spacing down so one row still fits. */
+.cam-top,
+.bp-body .cam-top {
+  justify-content: center;
+  gap: 14px;
+}
+@media (max-width: 400px) {
+  .cam-top,
+  .bp-body .cam-top {
+    gap: 10px;
+  }
+}
+@media (max-width: 374px) {
+  .cam-top,
+  .bp-body .cam-top,
+  .cam-top:has(> :nth-child(7)),
+  .bp-body .cam-top:has(> :nth-child(7)) {
+    gap: 6px;
+  }
+}
+
+/* ---------- album folders: all photos + one per camera ---------- */
+.gal-section {
+  margin: 6px 0 10px;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  color: var(--fg-2);
+}
+.gal-section + .roll-grid {
+  margin-bottom: 8px;
+}
+.folder-row {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 22px;
+  padding: 0 0 4px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.folder-row::-webkit-scrollbar {
+  display: none;
+}
+.folder-card {
+  flex: 0 0 auto;
+  width: 112px;
+  scroll-snap-align: start;
+}
+.folder-card .thumb {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* "All photos": the same card with a quiet stacked edge, so it reads as the folder of folders. */
+.folder-card.all .thumb {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 4px -4px 0 -1px var(--bg-2), 4px -4px 0 0 rgba(255, 255, 255, 0.1);
+}
+.folder-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 6px 2px 0;
+  text-align: start;
+}
+.folder-meta strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+.folder-day {
+  margin-bottom: 18px;
+}
+.folder-day-title {
+  margin: 4px 0 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.folder-day-title .muted {
+  font-weight: 600;
+  font-size: 0.8125rem;
+}

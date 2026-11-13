@@ -214,6 +214,9 @@ export const messages: LocaleMessages = {
   'gal.title': 'アルバム', // ko: 앨범 · en: Album
   'gal.empty': 'まだ写真がありません。',
   'gal.emptyHint': 'カメラで1枚撮ると、すぐここに入ります。',
+  'gal.folders': 'フォルダ',
+  'gal.allPhotos': 'すべての写真',
+  'gal.groups': '撮影ごと',
   'gal.shoot': '撮りに行く',
   'gal.emptyHintLab': '現像所で、フィルム{n}本を現像しています。', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': '現像所を見る', // ko: 현상소 보기 · en: Open the lab
@@ -476,6 +479,10 @@ export const messages: LocaleMessages = {
   'my.plan.best': 'いちばんお得',
   'my.buy': 'Proをはじめる',
   'my.restore': '購入を復元',
+  'my.redeem': 'プロモーションコードを使う',
+  'my.redeemHint': '受け取ったコードを入力して、Google Playで使ってください。アプリに戻るとProが有効になります。',
+  'my.redeemCode': 'コード',
+  'my.redeemGo': 'Google Playで使う',
   'my.manage': 'サブスクリプションを管理',
   'my.pro.on': 'Proをご利用中です',
   'my.pro.lifetimeOn': '買い切り・無制限の撮影、広告なし',

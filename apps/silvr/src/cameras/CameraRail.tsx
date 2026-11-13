@@ -1,6 +1,5 @@
 import { Fragment } from 'preact';
-import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
-import { Icon } from '../components/Icon';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { Sheet } from '../components/ui';
 import { SHOW_PRO_BADGES } from '../entitlements';
 import { eraText, t, type MsgKey } from '../i18n';
@@ -66,7 +65,6 @@ const reduceMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(pre
 export function CameraRail({ selected, onPick, locked }: { selected: string; onPick: (id: string) => void; locked?: boolean }) {
   const ordered = orderByPins(CAMERAS, settings.value.pinnedCameras);
   const stripRef = useRef<HTMLDivElement>(null);
-  const [allOpen, setAllOpen] = useState(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>();
   /** Picks are refused while shooting: the strip glides back to the camera in use. */
   const lockedRef = useRef(locked);
@@ -254,22 +252,6 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
         ))}
       </div>
       </div>
-      <button type="button" class="cam-rail-all" onClick={() => setAllOpen(true)} aria-haspopup="dialog" aria-label={`${t('cam.allCameras')} (${CAMERAS.length})`} data-testid="btn-all-cameras">
-        <Icon name="models" size={20} />
-        <small class="mono" aria-hidden="true">
-          {CAMERAS.length}
-        </small>
-      </button>
-      <AllCameras
-        open={allOpen}
-        onClose={() => setAllOpen(false)}
-        items={ordered.items}
-        selected={selected}
-        onPick={(id) => {
-          setAllOpen(false);
-          pick(id);
-        }}
-      />
     </div>
   );
 }

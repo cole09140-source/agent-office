@@ -244,6 +244,53 @@ async function doRestore(): Promise<void> {
   toast(r === 'restored' ? t('my.restore.done') : r === 'none' ? t('my.restore.none') : r === 'unavailable' ? t('my.pro.noStore') : t('my.restore.failed'));
 }
 
+/**
+ * A Google Play promo code (friends' lifetime Pro): typed here, redeemed on Play's own page.
+ * Coming back to the app re-checks purchases on resume, so Pro turns on by itself.
+ */
+function RedeemCode() {
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const id = useId();
+  const clean = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  return (
+    <div class="my-redeem">
+      <button class="link-btn" aria-expanded={open} aria-controls={`${id}-form`} onClick={() => setOpen(!open)} data-testid="btn-redeem">
+        {t('my.redeem')}
+      </button>
+      {open && (
+        <div class="my-redeem-form" id={`${id}-form`}>
+          <p class="muted small">{t('my.redeemHint')}</p>
+          <label class="my-redeem-row">
+            <span class="sr-only">{t('my.redeemCode')}</span>
+            <input
+              type="text"
+              inputMode="text"
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellcheck={false}
+              placeholder={t('my.redeemCode')}
+              value={code}
+              onInput={(e) => setCode((e.target as HTMLInputElement).value)}
+              data-testid="redeem-input"
+            />
+          </label>
+          <a
+            class={`btn primary wide ${clean.length < 8 ? 'disabled' : ''}`}
+            aria-disabled={clean.length < 8 || undefined}
+            href={clean.length >= 8 ? `https://play.google.com/redeem?code=${encodeURIComponent(clean)}` : undefined}
+            target="_blank"
+            rel="noopener"
+            data-testid="redeem-go"
+          >
+            {t('my.redeemGo')}
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProCard() {
   const [plan, setPlan] = useState<ProductKind>('3month');
   const busy = billingBusy.value;
@@ -335,6 +382,7 @@ function ProCard() {
       <button class="link-btn my-restore" disabled={busy} onClick={() => void doRestore()} data-testid="btn-restore-purchases">
         {t('my.restore')}
       </button>
+      {!pro && nativePlatform() === 'android' && <RedeemCode />}
       {!pro && (
         <p class="muted small my-legal" data-testid="sub-disclosure">
           {t('my.pro.legal', { store: storeName() })}{' '}

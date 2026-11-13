@@ -1135,9 +1135,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       >
       <BackDecor key={camera.id} spec={back} />
       <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
-        <button class="chip cam-name" onClick={() => setFilmOpen(true)} disabled={!roll || counting} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="camera-chip">
-          <span class="chip-txt" dir="auto">{camera.chip ?? camera.name}</span>
-        </button>
         {camera.flash === 'standard' && (
           <button class={`chip ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={chipLock} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
             <Icon name={flashOn ? 'flash' : 'flashOff'} size={20} />

@@ -16,6 +16,7 @@ import { CameraScreen } from './screens/Camera';
 import { DarkroomScreen } from './screens/Darkroom';
 import { GalleryScreen } from './screens/Gallery';
 import { ModelsScreen } from './screens/Models';
+import { FolderScreen } from './screens/Folder';
 import { Onboarding } from './screens/Onboarding';
 import { PhotoScreen } from './screens/Photo';
 import { RollScreen } from './screens/Roll';
@@ -38,6 +39,7 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
   models: 'models',
   gallery: 'gallery',
   roll: 'gallery',
+  folder: 'gallery',
   photo: 'gallery',
   darkroom: 'gallery',
   analog: 'analog',
@@ -464,6 +466,9 @@ export function App() {
       break;
     case 'gallery':
       screen = <GalleryScreen onImport={openImport} />;
+      break;
+    case 'folder':
+      screen = <FolderScreen id={r.id} key={r.id} />;
       break;
     case 'roll':
       screen = <RollScreen id={r.id} key={r.id} />;

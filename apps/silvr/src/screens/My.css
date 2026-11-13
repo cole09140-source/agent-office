@@ -232,3 +232,35 @@
 .pw-reset {
   margin: 8px 0 0;
 }
+
+/* Promo code (lifetime Pro for friends): a quiet link that opens a one-field form. */
+.my-redeem {
+  margin-top: 4px;
+  text-align: center;
+}
+.my-redeem .link-btn {
+  min-height: 44px;
+}
+.my-redeem-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+  text-align: start;
+}
+.my-redeem-row input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-3);
+  color: var(--fg);
+  font: inherit;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.my-redeem-form .btn.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}

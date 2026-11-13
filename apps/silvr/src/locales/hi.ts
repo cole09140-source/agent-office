@@ -215,6 +215,9 @@ export const messages: LocaleMessages = {
   'gal.title': 'एल्बम', // ko: 앨범 · en: Album
   'gal.empty': 'अभी तक कोई तस्वीर नहीं है।',
   'gal.emptyHint': 'कैमरे में एक तस्वीर लीजिए, वह तुरंत यहाँ दिखेगी।',
+  'gal.folders': 'फ़ोल्डर',
+  'gal.allPhotos': 'सभी तस्वीरें',
+  'gal.groups': 'शूट',
   'gal.shoot': 'तस्वीर लीजिए',
   'gal.emptyHintLab': '{n, plural, one {लैब में # रोल डेवलप हो रहा है।} other {लैब में # रोल डेवलप हो रहे हैं।}}', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': 'लैब देखें', // ko: 현상소 보기 · en: Open the lab
@@ -477,6 +480,10 @@ export const messages: LocaleMessages = {
   'my.plan.best': 'सबसे किफ़ायती',
   'my.buy': 'Pro लें',
   'my.restore': 'ख़रीदारी रीस्टोर करें',
+  'my.redeem': 'प्रोमो कोड इस्तेमाल करें',
+  'my.redeemHint': 'अपना कोड डालें और Google Play पर इस्तेमाल करें। ऐप में लौटते ही Pro चालू हो जाएगा।',
+  'my.redeemCode': 'कोड',
+  'my.redeemGo': 'Google Play पर इस्तेमाल करें',
   'my.manage': 'सब्सक्रिप्शन मैनेज करें',
   'my.pro.on': 'Pro चालू है',
   'my.pro.lifetimeOn': 'लाइफ़टाइम · अनलिमिटेड फ़ोटो, कोई विज्ञापन नहीं',

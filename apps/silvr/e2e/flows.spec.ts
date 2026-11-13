@@ -281,16 +281,13 @@ test('a new day starts a new album group for the same camera', async ({ page }) 
   expect(errors).toEqual([]);
 });
 
-test('QA: the all-cameras button changes nothing by itself; a press right after a switch is taken with the new camera; the shutter row stays', async ({ page }) => {
+test('QA: no duplicate camera name or all-cameras button; a press right after a switch is taken with the new camera; the shutter row stays', async ({ page }) => {
   const errors = await start(page);
   await loadCamera(page, 'zonelc');
-  // Opening "all cameras" (fixed at the end of the rail) leaves the camera alone.
-  await page.getByTestId('btn-all-cameras').click();
-  await expect(page.getByTestId('all-cameras')).toBeVisible();
-  await page.waitForTimeout(600);
-  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'zonelc');
-  await page.getByTestId('allcam-toy120').click();
-  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'toy120');
+  // No camera name in the top bar and no "all cameras" button on the strip (Models covers it).
+  await expect(page.getByTestId('camera-chip')).toHaveCount(0);
+  await expect(page.getByTestId('btn-all-cameras')).toHaveCount(0);
+  await loadCamera(page, 'toy120');
   // Switch and press at once: the shutter row never goes away, and the press lands on the new camera.
   const seen = await page.evaluate(async () => {
     let missing = 0;
@@ -331,5 +328,26 @@ test('QA: the digicam readout counts shots (never 999); deleting a photo updates
   await loadCamera(page, 'pro35');
   await page.getByTestId('btn-last-album').click();
   await expect(page.getByTestId('gallery-screen')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('album folders: all photos and one folder per camera, newest first, grouped by day', async ({ page }) => {
+  const errors = await start(page);
+  await shoot(page, 2);
+  await loadCamera(page, 'ccd03');
+  await shoot(page, 1);
+  await page.getByTestId('tab-gallery').click();
+  await expect(page.getByTestId('folder-all')).toContainText('3 frames');
+  await expect(page.getByTestId('folder-pro35')).toContainText('2 frames');
+  await expect(page.getByTestId('folder-ccd03')).toContainText('1 frame');
+  await page.getByTestId('folder-all').locator('.folder-meta').click();
+  await expect(page.getByTestId('folder-screen')).toBeVisible();
+  await expect(page.locator('.folder-day')).toHaveCount(1);
+  await expect(page.getByTestId('thumb')).toHaveCount(3);
+  await page.goBack();
+  await page.getByTestId('folder-ccd03').locator('.folder-meta').click();
+  await expect(page.getByTestId('thumb')).toHaveCount(1);
+  await page.getByTestId('thumb').first().click();
+  await expect(page.getByTestId('print')).toBeVisible({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });

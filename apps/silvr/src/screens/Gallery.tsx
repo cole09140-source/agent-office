@@ -10,6 +10,7 @@ import { getCamera, hasCamera } from '../cameras/models';
 import { isNative } from '../platform/share';
 import { getPhoto, inCamera, photoCount, type Photo, type Roll } from '../store/rolls';
 import { restoreRequest } from './Settings';
+import { buildFolders, FolderCard } from './Folder';
 
 /**
  * "12장", or for half-frame rolls "3프레임 (5컷)" (frames on the film, presses taken), like the camera.
@@ -100,6 +101,14 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
         </Empty>
       ) : (
         <>
+          {/* Folders: every photo at once, and one per camera. */}
+          <h2 class="gal-section">{t('gal.folders')}</h2>
+          <ul class="folder-row" data-testid="folder-row">
+            {buildFolders(list).map((f) => (
+              <FolderCard key={f.id} folder={f} />
+            ))}
+          </ul>
+          <h2 class="gal-section">{t('gal.groups')}</h2>
           <ul class="roll-grid">
             {list.map((r) => (
               <RollCard key={r.id} roll={r} />

@@ -5,6 +5,7 @@ export type Route =
   | { name: 'models' }
   | { name: 'gallery' }
   | { name: 'roll'; id: string }
+  | { name: 'folder'; id: string }
   | { name: 'photo'; id: string }
   | { name: 'darkroom'; id: string }
   | { name: 'analog' }
@@ -31,6 +32,7 @@ export function parseHash(hash: string): Route {
     case 'settings':
       return { name: head };
     case 'roll':
+    case 'folder':
     case 'photo':
     case 'darkroom':
     case 'log':

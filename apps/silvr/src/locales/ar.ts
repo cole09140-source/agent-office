@@ -217,6 +217,9 @@ export const messages: LocaleMessages = {
   'gal.title': 'الألبوم', // ko: 앨범 · en: Album
   'gal.empty': 'لا توجد صور بعد.',
   'gal.emptyHint': 'التقط صورة بالكاميرا وستظهر هنا فورًا.',
+  'gal.folders': 'المجلدات',
+  'gal.allPhotos': 'كل الصور',
+  'gal.groups': 'جلسات التصوير',
   'gal.shoot': 'التقط صورة',
   'gal.emptyHintLab': '{n, plural, zero {لا أفلام قيد التحميض في المعمل.} one {فيلم واحد قيد التحميض في المعمل.} two {فيلمان قيد التحميض في المعمل.} few {# أفلام قيد التحميض في المعمل.} many {# فيلمًا قيد التحميض في المعمل.} other {# فيلم قيد التحميض في المعمل.}}', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': 'فتح المعمل', // ko: 현상소 보기 · en: Open the lab
@@ -479,6 +482,10 @@ export const messages: LocaleMessages = {
   'my.plan.best': 'الأوفر',
   'my.buy': 'الحصول على Pro',
   'my.restore': 'استعادة المشتريات',
+  'my.redeem': 'استرداد رمز ترويجي',
+  'my.redeemHint': 'أدخل رمزك واستخدمه في Google Play. يتفعّل Pro عند عودتك إلى التطبيق.',
+  'my.redeemCode': 'الرمز',
+  'my.redeemGo': 'الاسترداد في Google Play',
   'my.manage': 'إدارة الاشتراك',
   'my.pro.on': 'Pro مفعّل لديك',
   'my.pro.lifetimeOn': 'مدى الحياة · تصوير بلا حدود، بلا إعلانات',

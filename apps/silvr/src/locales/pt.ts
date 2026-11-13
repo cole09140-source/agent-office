@@ -215,6 +215,9 @@ export const messages: LocaleMessages = {
   'gal.title': 'Álbum', // ko: 앨범 · en: Album
   'gal.empty': 'Nenhuma foto ainda.',
   'gal.emptyHint': 'Tire uma na câmera e ela aparece aqui na hora.',
+  'gal.folders': 'Pastas',
+  'gal.allPhotos': 'Todas as fotos',
+  'gal.groups': 'Sessões',
   'gal.shoot': 'Tirar uma foto',
   'gal.emptyHintLab': '{n, plural, one {# filme está sendo revelado.} other {# filmes estão sendo revelados.}}', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': 'Ver laboratório', // ko: 현상소 보기 · en: Open the lab
@@ -477,6 +480,10 @@ export const messages: LocaleMessages = {
   'my.plan.best': 'Mais vantajoso',
   'my.buy': 'Obter o Pro',
   'my.restore': 'Restaurar compras',
+  'my.redeem': 'Resgatar um código',
+  'my.redeemHint': 'Digite seu código e resgate no Google Play. O Pro é ativado quando você voltar ao app.',
+  'my.redeemCode': 'Código',
+  'my.redeemGo': 'Resgatar no Google Play',
   'my.manage': 'Gerenciar assinatura',
   'my.pro.on': 'Você tem o Pro',
   'my.pro.lifetimeOn': 'Vitalício · fotos ilimitadas, sem anúncios',

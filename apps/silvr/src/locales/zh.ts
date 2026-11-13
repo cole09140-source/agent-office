@@ -221,6 +221,9 @@ export const messages: LocaleMessages = {
   'gal.title': '相册', // ko: 앨범 · en: Album
   'gal.empty': '还没有照片。',
   'gal.emptyHint': '在相机里拍一张，它会马上出现在这里。',
+  'gal.folders': '文件夹',
+  'gal.allPhotos': '全部照片',
+  'gal.groups': '按拍摄',
   'gal.shoot': '去拍照',
   'gal.emptyHintLab': '冲洗店里有 {n} 卷正在冲洗。', // ko: 현상소에서 {n}롤이 현상 중이에요. · en: {n, plural, one {# roll is} other {# rolls are}} developing in the lab.
   'gal.openLab': '前往冲洗店', // ko: 현상소 보기 · en: Open the lab
@@ -483,6 +486,10 @@ export const messages: LocaleMessages = {
   'my.plan.best': '最划算',
   'my.buy': '开通 Pro',
   'my.restore': '恢复购买',
+  'my.redeem': '使用兑换码',
+  'my.redeemHint': '输入收到的兑换码并在 Google Play 中使用。回到应用后即可开启 Pro。',
+  'my.redeemCode': '兑换码',
+  'my.redeemGo': '在 Google Play 中使用',
   'my.manage': '管理订阅',
   'my.pro.on': '你正在使用 Pro',
   'my.pro.lifetimeOn': '永久版 · 无限拍摄，无广告',

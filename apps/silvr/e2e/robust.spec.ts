@@ -29,7 +29,7 @@ test('two tabs stay in sync', async ({ context }) => {
   await loadRoll(a, 'mono400', '12');
   await expect(b.getByTestId('counter')).toBeVisible(); // B learns about A's roll
   // A changing film shows up in B as well.
-  await expect(b.getByTestId('camera-chip')).toBeVisible();
+  await expect(b.getByTestId('roll-btn')).toBeVisible();
   await shoot(a, 1);
   await expect(b.getByTestId('counter')).toContainText('01');
 });
