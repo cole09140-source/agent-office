@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
 
 /** Phones deliver portrait frames; the whole pipeline must keep portrait orientation. */
 test('portrait camera → portrait viewfinder and portrait prints for every format', async ({ page }) => {
@@ -15,8 +15,7 @@ test('portrait camera → portrait viewfinder and portrait prints for every form
   await shoot(page, 1);
   await page.getByTestId('btn-aspect').click(); // 1:1
   await shoot(page, 1);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 30_000 });
   const ratios: number[] = [];
   for (let i = 0; i < 3; i++) {
@@ -38,8 +37,7 @@ for (const [w, h] of [[360, 640], [375, 667]]) {
     await start(page);
     await loadRoll(page, 'sunny200', '12');
     await shoot(page, 1);
-    await page.getByTestId('roll-btn').click();
-    await page.getByTestId('btn-open-roll').click();
+    await openCurrentRoll(page);
     await expect(page.locator('[data-testid=thumb] img')).toHaveCount(1, { timeout: 30_000 });
     await page.getByTestId('thumb').first().click();
     await expect(page.getByTestId('print')).toBeVisible();

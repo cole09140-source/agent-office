@@ -56,7 +56,7 @@ function RollCard({ roll }: { roll: Roll }) {
   return (
     <li class="roll-card" data-testid="roll-card">
       {cover ? <Thumb photo={cover} onClick={open} label={stock.name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={stock.name} tabIndex={-1} />}
-      <button class="roll-meta" onClick={open}>
+      <button class="roll-meta" onClick={open} data-testid="roll-open">
         <strong>
           {roll.kind === 'import' ? t('gal.imported') : rollName(getCamera(roll.cameraId).name, stock.name)}
           {inCamera(roll) ? <span class="badge">{t('cam.inCamera')}</span> : !roll.seenAt && <span class="badge new">{t('gal.new')}</span>}

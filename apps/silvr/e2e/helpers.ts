@@ -62,7 +62,8 @@ export async function shoot(page: Page, n: number) {
 
 /** Picks a camera on the strip under the viewfinder (and optionally its film); it is ready at once. */
 export async function loadCamera(page: Page, cameraId: string, opts: { stock?: string; size?: string } = {}) {
-  await page.getByTestId(`camera-${cameraId}`).click();
+  // Tapping the camera already in use opens its film sheet instead, so only tap another one.
+  if ((await page.getByTestId(`camera-${cameraId}`).getAttribute('aria-pressed')) !== 'true') await page.getByTestId(`camera-${cameraId}`).click();
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', cameraId);
   await expect(page.getByTestId(`camera-${cameraId}`)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('shutter')).toBeEnabled();
@@ -72,10 +73,27 @@ export async function loadCamera(page: Page, cameraId: string, opts: { stock?: s
   if (opts.stock) await pickFilm(page, opts.stock);
 }
 
+/** Opens the photos of the camera in use: the newest group in the album. */
+export async function openCurrentRoll(page: Page) {
+  await page.getByTestId('tab-gallery').click();
+  await page.getByTestId('roll-card').first().locator('.roll-meta').click();
+  await expect(page.getByTestId('roll-screen')).toBeVisible();
+}
+
+/** Opens one settings group (MY tab) as its sheet. */
+export async function openSetting(page: Page, key: 'lang' | 'shoot' | 'date' | 'backup' | 'storage' | 'about') {
+  await page.getByTestId('tab-settings').click();
+  await page.getByTestId(`set-row-${key}`).click();
+  await expect(page.getByTestId(`sheet-${key}`)).toBeVisible();
+}
+
+export async function closeSheet(page: Page) {
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+}
+
 /** Opens the photos of the camera in use (they are in the album as soon as they are taken). */
 export async function rewindAndDevelop(page: Page) {
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
-  await expect(page.getByTestId('roll-screen')).toBeVisible();
+  await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img').first()).toBeVisible({ timeout: 45_000 });
 }

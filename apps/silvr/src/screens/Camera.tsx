@@ -12,7 +12,7 @@ import { BackDecor, BackWindow } from '../cameras/backs/Back';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
-import { Canister, formatSigned, Sheet, sheetOpen, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
+import { formatSigned, Sheet, sheetOpen, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -20,9 +20,9 @@ import { randomSeed } from '../film/random';
 import { defaultBorderFor, defaultDevelop, resolveLook } from '../film/resolve';
 import { getStock } from '../film/stocks';
 import type { Aspect, DevelopSettings, FilmStock } from '../film/types';
-import { cameraDescription, isolate, ltr, stockDescription, t, type MsgKey } from '../i18n';
+import { isolate, ltr, t, type MsgKey } from '../i18n';
 import { haptic } from '../platform/feedback';
-import { activeRoll, confirmReq, ready, refreshRolls, setCameraPinned, settings, storageError, toast, updateSettings } from '../state/app';
+import { activeRoll, confirmReq, ready, refreshRolls, settings, storageError, toast, updateSettings } from '../state/app';
 import { holdCapture } from '../platform/pwa';
 import { consumeShot, refundShot } from '../monetize/quota';
 import { go, goTab } from '../state/router';
@@ -1102,12 +1102,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     if (mountedRef.current && cam().facing === 'user' && flashLook) toast(t('cam.flashOnScreen'), undefined, 2200);
   };
 
-  const shot = !!roll && hasShots(roll);
   const shotsSaid = roll ? (camera.capture === 'half' ? t('cam.nHalfShots', { n: roll.shots }) : t('cam.nShots', { n: shotCount(roll) })) : '';
   /** The camera sheet button: this camera and its film. */
   const sheetLabel = `${camera.name} · ${isolate(stock.name)}`;
   const films = filmsFor(camera);
-  const pinned = s.pinnedCameras.includes(camera.id);
   const flashLabel =
     camera.flash === 'charge' ? (charge === 'ready' ? t('cam.flashReady') : charge === 'charging' ? t('cam.flashCharging') : t('cam.flashCharge')) : t('cam.flash');
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
@@ -1300,7 +1298,14 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       </div>
 
       {/* Drag sideways: the camera that stops in the middle is the one you shoot with. */}
-      <CameraRail selected={pickCamera} onPick={(id) => switchTo(id)} locked={busy || counting} />
+      <CameraRail
+        selected={pickCamera}
+        onPick={(id) => switchTo(id)}
+        locked={busy || counting}
+        film={stock.name}
+        filmLabel={sheetLabel}
+        onFilm={() => !counting && roll && setFilmOpen(true)}
+      />
 
       {(roll || (!loadError && !storageError.value)) && (
         <div class="cam-bottom">
@@ -1335,9 +1340,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             )}
           </button>
           <div class="cam-right">
-            <button class="icon-btn" onClick={() => setFilmOpen(true)} disabled={counting || !roll} aria-label={sheetLabel} aria-haspopup="dialog" data-testid="roll-btn">
-              <Canister stock={stock} size={22} />
-            </button>
             <button class="icon-btn big" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
               <Icon name="flip" size={26} />
             </button>
@@ -1377,45 +1379,18 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {announce}
       </div>
 
+      {/* Only the film: the description lives in Models, the photos in the album, pinning on a long press. */}
       <Sheet open={filmOpen} onClose={() => setFilmOpen(false)} title={camera.name} testId="roll-sheet">
-        <p class="muted">{cameraDescription(camera.id)}</p>
         {films.length > 1 ? (
-          <>
-            <div class="load-sub">
-              <span>{t('cam.film')}</span>
-              <span class="muted small">{stockDescription(stock.id)}</span>
-            </div>
-            <StockStrip key={camera.id} stocks={films} value={stock.id} onChange={(id) => switchTo(camera.id, id)} label={t('cam.chooseFilm')} />
-          </>
+          <StockStrip key={camera.id} stocks={films} value={stock.id} onChange={(id) => switchTo(camera.id, id)} label={t('cam.chooseFilm')} />
         ) : (
           <div class="load-sub">
             <span>{t('cam.fixedFilm')}</span>
             <span class="muted small">
-              <bdi>{stock.name}</bdi> · {stockDescription(stock.id)}
+              <bdi>{stock.name}</bdi>
             </span>
           </div>
         )}
-        {roll && shot && (
-          <button
-            class="btn primary wide"
-            onClick={() => {
-              setFilmOpen(false);
-              go({ name: 'roll', id: roll.id });
-            }}
-            data-testid="btn-open-roll"
-          >
-            <Icon name="gallery" size={18} /> {t('lab.open')} · {shotsSaid}
-          </button>
-        )}
-        <button
-          class={`btn ghost wide ${pinned ? 'on' : ''}`}
-          onClick={() => void setCameraPinned(camera.id, !pinned)}
-          aria-pressed={pinned}
-          data-testid={`pin-${camera.id}`}
-        >
-          <Icon name="pin" size={18} /> {t('cam.pin', { name: camera.name })}
-        </button>
-        <p class="muted small sheet-sub">{t('cam.pinHint')}</p>
       </Sheet>
     </div>
   );

@@ -1,9 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
 
 async function finishInstant(page: Page) {
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img').first()).toBeVisible({ timeout: 40_000 });
 }
 
@@ -105,7 +104,6 @@ test('rapid shutter taps: every saved frame is in the album, the counter agrees'
   await page.waitForTimeout(500);
   const n = Number((await page.getByTestId('counter').first().textContent())?.replace(/\D/g, ''));
   expect(n).toBeGreaterThanOrEqual(11);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.getByTestId('thumb')).toHaveCount(n);
 });

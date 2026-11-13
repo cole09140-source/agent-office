@@ -344,6 +344,9 @@ export const messages: LocaleMessages = {
   'an.log.full': 'このフィルムのコマをすべて記録しました', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': '1コマ撮るたびに、ここに記録しておきましょう。行をタップすれば、いつでも直せます。', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': '設定', // ko: 설정 · en: Settings
+  'set.shooting': '撮影',
+  'set.shooting.sum': '音・振動・グリッド',
+  'set.about': '情報',
   'set.lang': '言語', // ko: 언어 · en: Language
   'set.lang.auto': 'システム', // ko: 시스템 · en: System
   'set.sound': 'シャッター音', // ko: 셔터 소리 · en: Shutter sound

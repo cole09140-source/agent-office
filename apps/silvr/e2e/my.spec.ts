@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openSetting, closeSheet } from './helpers';
 
 const PLAY = 'https://play.google.com/store/apps/details?id=com.filmcamela.app';
 
@@ -72,12 +72,14 @@ test('free tier: shoot 10 → paywall → close → MY shows 0/10 and, on the we
   await expect(page.getByTestId('my-pro')).toHaveCount(0);
   await expect(page.getByTestId('btn-ad-privacy')).toHaveCount(0);
   // The settings are all still there, below.
-  await expect(page.getByTestId('lang-picker')).toBeVisible();
-  await expect(page.getByTestId('btn-backup')).toBeVisible();
+  await expect(page.getByTestId('set-row-lang')).toBeVisible();
+  await expect(page.getByTestId('set-row-backup')).toBeVisible();
   issues.push(...(await axe(page, 'my-empty')));
 
   // Korean: the same states in 해요체.
+  await openSetting(page, 'lang');
   await page.getByTestId('lang-picker').locator('[data-value="ko"]').click();
+  await closeSheet(page);
   await expect(page.getByTestId('tab-settings')).toHaveText('MY');
   await expect(shots).toContainText('오늘 무료 10장 중 0장 남았어요');
   await expect(app).toContainText('Google Play에서 받기');

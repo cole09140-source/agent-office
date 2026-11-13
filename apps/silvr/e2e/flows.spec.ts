@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet } from './helpers';
 
 test('shoot 12 → straight to the album → view → darkroom → contact sheet → delete', async ({ page }) => {
   const errors = await start(page);
@@ -10,8 +10,7 @@ test('shoot 12 → straight to the album → view → darkroom → contact sheet
   // No roll size and no lab: the last shot is already a thumbnail next to the shutter.
   await expect(page.getByTestId('last-shot').locator('img').first()).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: 'e2e/.shots/03-after-12.png' });
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
 
   await expect(page.getByTestId('roll-screen')).toBeVisible();
   const thumbs = page.getByTestId('thumb');
@@ -196,8 +195,9 @@ test('analog companion: Sunny 16 and film log CSV', async ({ page }) => {
 
 test('settings: Korean UI, date stamp toggle, delete all data', async ({ page }) => {
   const errors = await start(page);
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'lang');
   await page.getByRole('radio', { name: '한국어' }).click();
+  await closeSheet(page);
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
   await page.screenshot({ path: 'e2e/.shots/12-settings-ko.png', fullPage: true });
@@ -205,7 +205,7 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   await expect(page.getByRole('group', { name: '카메라를 고르세요' })).toBeVisible();
   await page.reload();
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'about');
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('onboarding')).toBeVisible();
@@ -243,17 +243,15 @@ test('GPT QA fixes: same camera from Models keeps its film; a sheet open blocks 
   await page.getByTestId('roll-btn').click();
   await expect(page.getByTestId('roll-sheet').getByTestId('stock-mono400')).toHaveAttribute('aria-checked', 'true');
   // Space while a sheet is open does not take a picture.
-  await page.locator('[data-testid=roll-sheet] .muted').first().click();
+  await page.getByTestId('roll-sheet').click({ position: { x: 12, y: 12 } });
   await page.keyboard.press(' ');
   await page.waitForTimeout(800);
   await expect(page.getByTestId('counter')).toContainText('00');
   // Pinning reorders the strip; the camera in use stays under the centre ring.
-  await page.getByTestId('roll-sheet').getByTestId('pin-pro35').click();
   await page.keyboard.press('Escape');
+  await page.getByTestId('camera-pro35').click({ delay: 800 }); // long press pins
   await loadCamera(page, 'curve07');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('roll-sheet').getByTestId('pin-curve07').click();
-  await page.keyboard.press('Escape');
+  await page.getByTestId('camera-curve07').click({ delay: 800 });
   await page.waitForTimeout(400);
   const off = await page.evaluate(() => {
     const s = document.querySelector('.cam-rail-strip')!.getBoundingClientRect();

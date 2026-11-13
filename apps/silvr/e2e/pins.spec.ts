@@ -8,16 +8,12 @@ async function order(page: Page): Promise<string[]> {
     .evaluateAll((els) => els.map((el) => (el.getAttribute('data-testid') ?? '').replace(/^camera-/, '')));
 }
 
-/** Pins or unpins the camera in use from its sheet. */
+/** Pins or unpins a camera with a long press on its strip card. */
 async function togglePin(page: Page, id: string, on: boolean) {
-  await page.getByTestId('roll-btn').click();
-  const pin = page.getByTestId('roll-sheet').getByTestId(`pin-${id}`);
-  await expect(pin).toHaveAccessibleName(/^Pin .+|^.+ 고정$/);
-  await expect(pin).toHaveAttribute('aria-pressed', on ? 'false' : 'true');
-  await pin.click();
-  await expect(pin).toHaveAttribute('aria-pressed', on ? 'true' : 'false');
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('roll-sheet')).toBeHidden();
+  const before = await order(page);
+  await page.getByTestId(`camera-${id}`).click({ delay: 800 });
+  await expect(page.getByTestId('toast').first()).toContainText(on ? /pinned|고정/i : /unpinned|풀었/i);
+  await expect.poll(async () => (await order(page)).join(',')).not.toBe(before.join(','));
 }
 
 test('pinned cameras move to the front of the strip, persist across reloads and can be unpinned', async ({ page }) => {

@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 import { Sheet } from '../components/ui';
 import { SHOW_PRO_BADGES } from '../entitlements';
 import { eraText, t, type MsgKey } from '../i18n';
-import { settings } from '../state/app';
+import { setCameraPinned, settings, toast } from '../state/app';
 import { arrowStep, centerInStrip } from '../platform/dir';
 import { CameraBody } from './Body';
 import { CAMERAS, ejectsPrints, type CameraModel } from './models';
@@ -62,7 +62,22 @@ const reduceMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(pre
  * middle is the one you shoot with (like a camera-mode dial). A tap picks a camera directly.
  * Pinned cameras come first. The last item opens every camera at once, grouped.
  */
-export function CameraRail({ selected, onPick, locked }: { selected: string; onPick: (id: string) => void; locked?: boolean }) {
+export function CameraRail({
+  selected,
+  onPick,
+  locked,
+  film,
+  filmLabel,
+  onFilm,
+}: {
+  selected: string;
+  onPick: (id: string) => void;
+  locked?: boolean;
+  /** The film in the camera in use: shown under its card, which then opens the film choice. */
+  film?: string;
+  filmLabel?: string;
+  onFilm?: () => void;
+}) {
   const ordered = orderByPins(CAMERAS, settings.value.pinnedCameras);
   const stripRef = useRef<HTMLDivElement>(null);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -164,10 +179,35 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
   };
   useEffect(() => () => clearTimeout(settleTimer.current), []);
 
+  /** A long press pins (or unpins) a camera: pinned ones come first on the strip. */
+  const press = useRef<{ id: string; x: number; timer: ReturnType<typeof setTimeout>; fired: boolean } | null>(null);
+  const startPress = (id: string, x: number) => {
+    if (press.current) clearTimeout(press.current.timer);
+    const p = { id, x, fired: false, timer: setTimeout(() => {
+      p.fired = true;
+      const pinned = settings.value.pinnedCameras.includes(id);
+      void setCameraPinned(id, !pinned);
+      const name = CAMERAS.find((c) => c.id === id)?.name ?? '';
+      toast(t(pinned ? 'cam.unpinnedSay' : 'cam.pinnedToast', { name }), undefined, 2400, undefined, { group: 'camera-pin' });
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 550) };
+    press.current = p;
+  };
+  const endPress = () => {
+    if (press.current && !press.current.fired) clearTimeout(press.current.timer);
+  };
+
   const pick = (id: string) => {
+    if (press.current?.fired && press.current.id === id) {
+      press.current = null; // the long press already pinned it: this click is its release
+      return;
+    }
     dragged.current = false; // a tap, not a drag: the glide that follows picks nothing else
     glideTo(id, true);
-    if (id === selected) return;
+    if (id === selected) {
+      onFilm?.(); // the camera in use: its card opens the film choice
+      return;
+    }
     if (locked) waiting.current = id;
     else onPick(id);
   };
@@ -235,6 +275,11 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
                 type="button"
                 class="cam-rail-card"
                 onClick={() => pick(c.id)}
+                onPointerDown={(e) => startPress(c.id, e.clientX)}
+                onPointerMove={(e) => press.current && Math.abs(e.clientX - press.current.x) > 8 && endPress()}
+                onPointerUp={endPress}
+                onPointerLeave={endPress}
+                onContextMenu={(e) => e.preventDefault()}
                 aria-pressed={c.id === selected}
                 aria-describedby="camera-rail-keys"
                 tabIndex={c.id === selected ? 0 : -1}
@@ -244,6 +289,11 @@ export function CameraRail({ selected, onPick, locked }: { selected: string; onP
                 <span class="cam-rail-name">
                   <bdi>{c.name}</bdi>
                 </span>
+                {c.id === selected && film && (
+                  <span class="cam-rail-film" data-testid="roll-btn" aria-label={filmLabel}>
+                    <bdi>{film}</bdi>
+                  </span>
+                )}
                 {SHOW_PRO_BADGES && c.pro && <span class="badge">{t('common.pro')}</span>}
                 {i < ordered.pinnedCount && <span class="sr-only">{t('cam.pinned')}</span>}
               </button>

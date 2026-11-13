@@ -2,7 +2,7 @@
  * QA block A (rounds 1-10): functional deep tests.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet } from './helpers';
 
 const printSrc = (page: Page) => page.getByTestId('print').getAttribute('src');
 async function openFirstPrint(page: Page) {
@@ -32,8 +32,9 @@ test('R1 settings: date format re-develops prints, sound off creates no audio, m
     };
   });
   const errors = await start(page);
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'shoot');
   await page.getByRole('switch', { name: /Shutter sound/ }).uncheck({ force: true });
+  await closeSheet(page);
   await page.getByTestId('tab-camera').click();
   await loadCamera(page, 'snap27'); // date imprint on by default
   await shoot(page, 1);
@@ -41,8 +42,9 @@ test('R1 settings: date format re-develops prints, sound off creates no audio, m
   await rewindAndDevelop(page);
   await openFirstPrint(page);
   const a = await printSrc(page);
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'date');
   await page.getByRole('radio', { name: "10 24 '26" }).click();
+  await closeSheet(page);
   await page.getByTestId('tab-gallery').click();
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await openFirstPrint(page);
@@ -236,14 +238,16 @@ test('R8 onboarding replay, language persistence, reset wipes pending exposures'
   await loadCamera(page, 'half72');
   await page.getByTestId('shutter').click();
   await expect(page.getByTestId('counter')).toContainText('01');
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'about');
   await page.getByRole('button', { name: 'Replay intro' }).click();
   await expect(page.getByTestId('onboarding')).toBeVisible();
   await page.getByTestId('onb-skip').click();
+  await closeSheet(page);
+  await openSetting(page, 'lang');
   await page.getByRole('radio', { name: '한국어' }).click();
   await page.reload();
   await expect(page.getByTestId('tab-camera')).toContainText('카메라'); // Korean survived the reload (ko and en both label the MY tab "MY")
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'about');
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('onboarding')).toBeVisible();
@@ -289,7 +293,6 @@ test('R10 lifecycle: a toy camera keeps shooting past its old 12 frames; every f
   await loadCamera(page, 'toy120');
   await shoot(page, 13);
   await expect(page.getByTestId('counter')).toContainText('13');
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.getByTestId('thumb')).toHaveCount(13);
 });

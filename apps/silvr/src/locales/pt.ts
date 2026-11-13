@@ -345,6 +345,9 @@ export const messages: LocaleMessages = {
   'an.log.full': 'Todas as poses deste filme foram registradas', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': 'Registre aqui cada pose enquanto fotografa. Toque numa linha para editar quando quiser.', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': 'Ajustes', // ko: 설정 · en: Settings
+  'set.shooting': 'Captura',
+  'set.shooting.sum': 'Som · Vibração · Grade',
+  'set.about': 'Sobre',
   'set.lang': 'Idioma', // ko: 언어 · en: Language
   'set.lang.auto': 'Sistema', // ko: 시스템 · en: System
   'set.sound': 'Som do obturador', // ko: 셔터 소리 · en: Shutter sound

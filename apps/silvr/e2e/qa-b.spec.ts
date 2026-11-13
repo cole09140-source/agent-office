@@ -2,7 +2,7 @@
  * QA block B (rounds 11-20): camera deep tests.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, rewindAndDevelop, shoot, start, openCurrentRoll } from './helpers';
 
 const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket', 'floppy98', 'slim06', 'bridge09', 'zoom90', 'mf645', 'pinhole', 'flip03', 'touch07', 'curve07', 'filter10'];
 const presses = (id: string) => (id === 'half72' || id === 'doublex' ? 2 : 1);
@@ -56,8 +56,7 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
     await page.getByTestId('btn-timer').click(); // off
     if (presses(id) === 2) await page.getByTestId('shutter').click();
     await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
-    await page.getByTestId('roll-btn').click();
-    await page.getByTestId('btn-open-roll').click();
+    await openCurrentRoll(page);
     await expect(page.getByTestId('roll-screen')).toBeVisible();
     await expect(page.getByTestId('thumb').first()).toBeVisible();
   }
@@ -98,8 +97,7 @@ test('R16 half-frame: 24 presses pair up into 12 frames, all in the album', asyn
     await expect(page.getByTestId('counter')).toContainText(String(i + 1).padStart(2, '0'));
   }
   await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.getByTestId('thumb')).toHaveCount(12);
 });
 

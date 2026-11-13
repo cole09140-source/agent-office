@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
 
 test('storage full: the shot fails gracefully with a clear message and nothing is half-saved', async ({ page }) => {
   await start(page);
@@ -64,8 +64,7 @@ test('a corrupt negative shows an error state instead of hanging', async ({ page
   // Nothing of it may stay in memory either (the shot was shown next to the shutter).
   await page.reload();
   await expect(page.getByTestId('shutter')).toBeEnabled();
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.locator('.thumb-wait.err')).toHaveCount(1);
 });

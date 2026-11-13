@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, rewindAndDevelop, shoot, start } from './helpers';
+import { loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet } from './helpers';
 
 /** The 10 UI languages: picker value, <html lang>, endonym in the picker. */
 const LANGS: [code: string, htmlLang: string, endonym: string][] = [
@@ -34,12 +34,13 @@ async function leaks(page: Page, where: string): Promise<string[]> {
 }
 
 async function pickLang(page: Page, code: string, htmlLang: string) {
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'lang');
   const option = page.getByTestId('lang-picker').locator(`[data-value="${code}"]`);
   await option.click();
   await expect(option).toHaveAttribute('aria-checked', 'true');
   await expect(page.locator('html')).toHaveAttribute('lang', htmlLang);
   await expect(page.locator('html')).toHaveAttribute('dir', code === 'ar' ? 'rtl' : 'ltr');
+  await closeSheet(page);
 }
 
 test('all 10 languages: picker, lang/dir, every screen without raw keys or console errors', async ({ page }) => {
@@ -59,13 +60,14 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
   };
 
   // The picker lists the endonyms, each marked with its own language.
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'lang');
   for (const [code, htmlLang, endonym] of LANGS) {
     const option = page.getByTestId('lang-picker').locator(`[data-value="${code}"]`);
     await expect(option).toHaveText(endonym);
     await expect(option.locator('.seg-label')).toHaveAttribute('lang', htmlLang);
   }
   await expect(page.getByTestId('lang-picker').getByRole('radio')).toHaveCount(11);
+  await closeSheet(page);
 
   for (const [code, htmlLang] of LANGS) {
     await pickLang(page, code, htmlLang);
@@ -97,7 +99,7 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
     problems.push(...(await leaks(page, `${code}/roll-sheet`)));
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('roll-sheet')).toBeHidden();
-    await page.getByTestId('tab-settings').click();
+    await openSetting(page, 'about');
     await page.getByTestId('btn-replay-intro').click();
     await expect(page.getByTestId('onboarding')).toBeVisible();
     problems.push(...(await leaks(page, `${code}/onboarding`)));
@@ -106,13 +108,13 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
   }
 
   // "System" follows the device language again (en-US here) and survives a reload.
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'lang');
   await page.getByTestId('lang-picker').locator('[data-value="ru"]').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   await expect(page.getByTestId('tab-camera')).toHaveText('Камера');
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'lang');
   await page.getByTestId('lang-picker').locator('[data-value="auto"]').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 

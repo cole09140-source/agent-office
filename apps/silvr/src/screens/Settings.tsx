@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { HelpLink } from './Gallery';
 import { MySection } from './My';
-import { formatBytes, Header, Segmented, Toggle } from '../components/ui';
+import { formatBytes, Header, Segmented, Sheet, Toggle } from '../components/ui';
 import type { DateFormat } from '../film/overlays';
 import { bidi, isRtl, legalLang, LICENSES_LANG, ltr, t } from '../i18n';
 import { ENDONYMS, HTML_LANG, LOCALES } from '../intl/locales';
@@ -38,6 +38,8 @@ function canSendFile(file: { blob: Blob; name: string }): boolean {
 
 export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () => void }) {
   const s = settings.value;
+  /** One settings group at a time opens as a sheet; the page itself stays a short list. */
+  const [group, setGroup] = useState<null | 'lang' | 'shoot' | 'date' | 'backup' | 'storage' | 'about'>(null);
   const [usage, setUsage] = useState<number | null>(null);
   // 'refused' stays visible: the toast alone left the button looking untouched.
   const [persisted, setPersisted] = useState<boolean | 'refused'>(false);
@@ -56,6 +58,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
     if (!wantRestore) return;
     restoreRequest.value = false;
     setRestoreFirst(true);
+    setGroup('backup');
     // After the screen-change focus (the heading) has run.
     const id = setTimeout(() => {
       restoreRef.current?.scrollIntoView({ block: 'center' });
@@ -196,7 +199,34 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
       <Header title={t('tab.settings')} />
       <MySection />
       <h2 class="my-settings-h">{t('set.title')}</h2>
-      <section class="card">
+      {/* iOS-style list: each row names its group and its current value, and opens it as a sheet. */}
+      <section class="card set-list" data-testid="settings-list">
+        <button class="row link" onClick={() => setGroup('lang')} aria-haspopup="dialog" data-testid="set-row-lang">
+          <span>{t('set.lang')}</span>
+          <span class="row-val">{s.lang === 'auto' ? t('set.lang.auto') : ENDONYMS[s.lang]}<Icon name="chevron" size={18} /></span>
+        </button>
+        <button class="row link" onClick={() => setGroup('shoot')} aria-haspopup="dialog" data-testid="set-row-shoot">
+          <span>{t('set.shooting')}</span>
+          <span class="row-val">{t('set.shooting.sum')}<Icon name="chevron" size={18} /></span>
+        </button>
+        <button class="row link" onClick={() => setGroup('date')} aria-haspopup="dialog" data-testid="set-row-date">
+          <span>{t('set.dateStamp')}</span>
+          <span class="row-val">{s.dateStamp ? t('common.on') : t('common.off')}<Icon name="chevron" size={18} /></span>
+        </button>
+        <button class="row link" onClick={() => setGroup('backup')} aria-haspopup="dialog" data-testid="set-row-backup">
+          <span>{t('set.backup')}</span>
+          <span class="row-val"><Icon name="chevron" size={18} /></span>
+        </button>
+        <button class="row link" onClick={() => setGroup('storage')} aria-haspopup="dialog" data-testid="set-row-storage">
+          <span>{t('set.storage')}</span>
+          <span class="row-val mono">{usage === null ? '' : ltr(formatBytes(usage))}<Icon name="chevron" size={18} /></span>
+        </button>
+        <button class="row link" onClick={() => setGroup('about')} aria-haspopup="dialog" data-testid="set-row-about">
+          <span>{t('set.about')}</span>
+          <span class="row-val mono" dir="ltr">{__APP_VERSION__}<Icon name="chevron" size={18} /></span>
+        </button>
+      </section>
+      <Sheet open={group === 'lang'} onClose={() => setGroup(null)} title={t('set.lang')} testId="sheet-lang">
         <div class="field">
           <span id="lang-h">{t('set.lang')}</span>
           {/* Language names are endonyms (never translated), each marked with its own lang/dir. */}
@@ -212,13 +242,35 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
             ]}
           />
         </div>
+      </Sheet>
+      <Sheet open={group === 'shoot'} onClose={() => setGroup(null)} title={t('set.shooting')} testId="sheet-shoot">
+        <div class="set-sheet">
         <Toggle label={t('set.sound')} checked={s.sound} onChange={(sound) => updateSettings({ sound })} />
         <Toggle label={t('set.haptics')} checked={s.haptics} onChange={(haptics) => updateSettings({ haptics })} />
         <Toggle label={t('set.grid')} checked={s.grid} onChange={(grid) => updateSettings({ grid })} />
         <Toggle label={t('set.mirror')} checked={s.mirrorFront} onChange={(mirrorFront) => updateSettings({ mirrorFront })} />
-      </section>
-      {/* Backup right after the basics: photos live only on this device. */}
-      <section class="card" aria-labelledby="backup-h">
+        </div>
+      </Sheet>
+      <Sheet open={group === 'date'} onClose={() => setGroup(null)} title={t('set.dateStamp')} testId="sheet-date">
+      <div class="set-sheet">
+        <Toggle label={t('set.dateStamp')} checked={s.dateStamp} onChange={(dateStamp) => updateSettings({ dateStamp })} testId="set-date" />
+        <div class="field">
+          <span>{t('set.dateFormat')}</span>
+          <Segmented<DateFormat>
+            label={t('set.dateFormat')}
+            value={s.dateFormat}
+            onChange={(dateFormat) => updateSettings({ dateFormat })}
+            options={[
+              { value: 'YMD', label: "'26 10 24", dir: 'ltr' },
+              { value: 'MDY', label: "10 24 '26", dir: 'ltr' },
+              { value: 'DMY', label: "24 10 '26", dir: 'ltr' },
+            ]}
+          />
+        </div>
+      </div>
+      </Sheet>
+      <Sheet open={group === 'backup'} onClose={() => setGroup(null)} title={t('set.backup')} testId="sheet-backup">
+      <div class="set-sheet">
         <div class="field">
           <span id="backup-h">{t('set.backup')}</span>
           <p class="muted small backup-hint">{bidi(t('set.backup.hint'))}</p>
@@ -266,24 +318,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           data-testid="restore-input"
           onChange={(e) => void importBackup((e.currentTarget as HTMLInputElement).files?.[0])}
         />
-      </section>
-      <section class="card">
-        <Toggle label={t('set.dateStamp')} checked={s.dateStamp} onChange={(dateStamp) => updateSettings({ dateStamp })} testId="set-date" />
-        <div class="field">
-          <span>{t('set.dateFormat')}</span>
-          <Segmented<DateFormat>
-            label={t('set.dateFormat')}
-            value={s.dateFormat}
-            onChange={(dateFormat) => updateSettings({ dateFormat })}
-            options={[
-              { value: 'YMD', label: "'26 10 24", dir: 'ltr' },
-              { value: 'MDY', label: "10 24 '26", dir: 'ltr' },
-              { value: 'DMY', label: "24 10 '26", dir: 'ltr' },
-            ]}
-          />
-        </div>
-      </section>
-      <section class="card">
+      </div>
+      </Sheet>
+      <Sheet open={group === 'storage'} onClose={() => setGroup(null)} title={t('set.storage')} testId="sheet-storage">
+      <div class="set-sheet">
         <div class="row">
           <span>{t('set.storage')}</span>
           <span class="muted mono">{usage === null ? '—' : t('set.storage.used', { used: ltr(formatBytes(usage)) })}</span>
@@ -328,8 +366,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
             <Icon name="chevron" size={18} />
           </button>
         )}
-      </section>
-      <section class="card">
+      </div>
+      </Sheet>
+      <Sheet open={group === 'about'} onClose={() => setGroup(null)} title={t('set.about')} testId="sheet-about">
+      <div class="set-sheet">
         <a class="row link" href={`./privacy.html?lang=${legalLang()}`} {...legalLink}>
           <span>{t('set.privacy')}</span>
           <Icon name="chevron" size={18} />
@@ -346,7 +386,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.licenses')}</span>
           <Icon name="chevron" size={18} />
         </a>
-        <button class="row link" onClick={onReplayOnboarding} data-testid="btn-replay-intro">
+        <button class="row link" onClick={() => { setGroup(null); onReplayOnboarding(); }} data-testid="btn-replay-intro">
           <span>{t('set.replayOnb')}</span>
           <Icon name="chevron" size={18} />
         </button>
@@ -354,10 +394,11 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
           <span>{t('set.version')}</span>
           <span class="muted mono" dir="ltr">{__APP_VERSION__}</span>
         </div>
-      </section>
+      </div>
       <button class="btn danger wide" onClick={reset} data-testid="btn-reset">
         {t('set.reset')}
       </button>
+      </Sheet>
       {/* Same operator name as terms.html: 아티움그룹 주식회사 / ATIUM GROUP Co., Ltd. */}
       <p class="muted small app-credit">{bidi(t('set.credit'))}</p>
     </div>

@@ -351,6 +351,9 @@ export const messages: LocaleMessages = {
   'an.log.full': '这一卷的每一张都记录好了', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': '每拍一张，就在这里记一笔。轻点某一行，随时可以修改。', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': '设置', // ko: 설정 · en: Settings
+  'set.shooting': '拍摄',
+  'set.shooting.sum': '声音 · 振动 · 网格',
+  'set.about': '关于',
   'set.lang': '语言', // ko: 언어 · en: Language
   'set.lang.auto': '跟随系统', // ko: 시스템 · en: System
   'set.sound': '快门声', // ko: 셔터 소리 · en: Shutter sound

@@ -331,6 +331,12 @@ export const messages: Messages = {
   'an.log.firstHint': 'Log each frame here as you shoot. Tap a row any time to edit it.',
 
   'set.title': 'Settings',
+
+  'set.shooting': 'Shooting',
+
+  'set.shooting.sum': 'Sound · Haptics · Grid',
+
+  'set.about': 'About',
   'set.lang': 'Language',
   'set.lang.auto': 'System',
   'set.sound': 'Shutter sound',

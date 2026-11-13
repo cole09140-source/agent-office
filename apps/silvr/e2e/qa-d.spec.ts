@@ -7,7 +7,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet } from './helpers';
 
 const TABS = ['camera', 'models', 'gallery', 'analog', 'settings'];
 const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket', 'floppy98', 'slim06', 'bridge09', 'zoom90', 'mf645', 'pinhole', 'flip03', 'touch07', 'curve07', 'filter10'];
@@ -106,9 +106,10 @@ test('R34 keyboard only: onboarding → load → shoot → develop → photo', a
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('counter')).toContainText(`0${i}`);
   }
-  await tabTo('roll-btn');
+  // The photos are in the album already: Tab to the album tab, then to the newest group.
+  await tabTo('tab-gallery');
   await page.keyboard.press('Enter');
-  await tabTo('btn-open-roll');
+  await tabTo('roll-open');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('roll-screen')).toBeVisible();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(2, { timeout: 45_000 });
@@ -147,8 +148,9 @@ test('R36 both languages: no raw keys or unfilled placeholders on any screen', a
     for (const m of [...raw, ...holes]) leaks.push(`${where}: ${m}`);
   };
   for (const lang of ['English', '한국어']) {
-    await page.getByTestId('tab-settings').click();
+    await openSetting(page, 'lang');
     await page.getByRole('radio', { name: lang }).click();
+    await closeSheet(page);
     for (const tab of TABS) {
       await page.getByTestId(`tab-${tab}`).click();
       await scan(`${lang}/${tab}`);
@@ -208,7 +210,7 @@ test('R38 offline: shoot, develop and back up with no network', async ({ page, c
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(2);
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'backup');
   await page.getByTestId('btn-backup').click();
   const dl = page.waitForEvent('download');
   await page.getByTestId('btn-backup-save').click();
@@ -285,9 +287,10 @@ test('R40 hostile backups and names: rendered as text, no prototype pollution', 
     const blob = new Blob([lh.buffer, name, data, cd.buffer, name, end.buffer]);
     return [...new Uint8Array(await blob.arrayBuffer())];
   }, json);
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'backup');
   await page.getByTestId('restore-input').setInputFiles({ name: 'evil.zip', mimeType: 'application/zip', buffer: Buffer.from(buf) });
   await expect(page.getByTestId('backup-status')).not.toHaveText(/…|^$/);
+  await closeSheet(page);
   await page.getByTestId('tab-gallery').click();
   await page.getByTestId('tab-analog').click();
   await expect(page.getByText(evil).first()).toBeVisible();
@@ -306,13 +309,15 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('log-camera').fill('Nikon FM2');
   await page.getByTestId('log-film').fill('HP5+');
   await page.getByTestId('log-create').click();
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'backup');
   // One tap builds the backup and saves it right away.
   const dl = page.waitForEvent('download');
   await page.getByTestId('btn-backup').click();
   await expect(page.getByTestId('backup-status')).toContainText(/FilmCamela_backup_/);
   const file = await (await dl).path();
   const bytes = readFileSync(file!);
+  await closeSheet(page);
+  await openSetting(page, 'about');
   await page.getByTestId('btn-reset').click();
   await page.getByTestId('confirm-ok').click();
   // Reset wipes settings too, so onboarding comes back.
@@ -320,9 +325,10 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('onb-skip').click();
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(0);
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'backup');
   await page.getByTestId('restore-input').setInputFiles({ name: 'backup.zip', mimeType: 'application/zip', buffer: bytes });
   await expect(page.getByTestId('backup-status')).toContainText(/3/);
+  await closeSheet(page);
   await page.getByTestId('tab-gallery').click();
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await page.getByTestId('roll-card').locator('.roll-meta').click();
@@ -330,7 +336,7 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('tab-analog').click();
   await expect(page.getByText('Nikon FM2').first()).toBeVisible();
   // Restoring the same file again adds nothing.
-  await page.getByTestId('tab-settings').click();
+  await openSetting(page, 'backup');
   await page.getByTestId('restore-input').setInputFiles({ name: 'backup.zip', mimeType: 'application/zip', buffer: bytes });
   await expect(page.getByTestId('backup-status')).toContainText(/0/);
   expect(errors).toEqual([]);

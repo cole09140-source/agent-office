@@ -121,10 +121,8 @@ test('store screenshots', async ({ page, browser }, info) => {
     await tid(`camera-${id}`).click();
     await expect(tid('camera-screen')).toHaveAttribute('data-camera', id);
     await page.waitForTimeout(400);
-    await tid('roll-btn').click();
-    await tid('roll-sheet').getByTestId(`pin-${id}`).click();
-    await page.keyboard.press('Escape');
-    await expect(tid('roll-sheet')).toBeHidden();
+    await tid(`camera-${id}`).click({ delay: 800 }); // a long press pins
+    await page.waitForTimeout(400);
   };
   await pin('zonelc');
   await pin('pro35');
@@ -163,8 +161,8 @@ test('store screenshots', async ({ page, browser }, info) => {
   await expect(tid('roll-sheet')).toBeHidden();
   await expect(tid('shutter')).toBeEnabled();
   await shoot(frameCount, 3); // every frame a different scene from the previous three
-  await tid('roll-btn').click();
-  await tid('btn-open-roll').click();
+  await tid('tab-gallery').click();
+  await tid('roll-card').first().locator('.roll-meta').click();
   await expect(tid('roll-screen')).toBeVisible();
   // At least frameCount (a retried shutter press can add one frame); all thumbnails developed.
   await expect.poll(() => page.locator('[data-testid=thumb] img').count(), { timeout: 120_000 }).toBeGreaterThanOrEqual(frameCount);
@@ -244,21 +242,11 @@ test('store screenshots', async ({ page, browser }, info) => {
     if (p !== page) await p.context().close();
   }
 
-  // 8. settings: photos stay on this device (backup card)
+  // 8. settings: photos stay on this device (the backup sheet, opened from the settings list)
   await ((await tid('tab-settings').count()) ? tid('tab-settings') : tid('tab-my')).click();
-  await expect(tid('btn-backup')).toBeAttached();
-  // Backup card ("photos and records stay on this device") just under the sticky title.
-  await tid('btn-backup').evaluate((el) => {
-    const card = (el.closest('section') ?? el) as HTMLElement;
-    card.scrollIntoView({ block: 'start' });
-    const h1 = document.querySelector('h1');
-    const head = h1?.parentElement?.getBoundingClientRect().bottom ?? 0;
-    const delta = card.getBoundingClientRect().top - (head + 12);
-    let box: HTMLElement | null = card.parentElement;
-    while (box && !(box.scrollHeight > box.clientHeight && /auto|scroll/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
-    if (box) box.scrollTop += delta;
-    else window.scrollBy(0, delta);
-  });
+  await tid('set-row-backup').click();
+  await expect(tid('btn-backup')).toBeVisible();
+  await page.waitForTimeout(500);
   await snap('privacy');
 });
 

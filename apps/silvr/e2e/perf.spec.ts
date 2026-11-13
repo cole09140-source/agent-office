@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
 
 test('no WebGL context or object-URL leaks while navigating', async ({ page }) => {
   await page.addInitScript(() => {
@@ -35,8 +35,7 @@ test('no WebGL context or object-URL leaks while navigating', async ({ page }) =
   await start(page);
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 3);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 30_000 });
   const rollUrl = page.url();
   for (let i = 0; i < 8; i++) {
@@ -84,8 +83,7 @@ test('in-app navigation (no reloads) keeps contexts and URLs bounded', async ({ 
   await start(page);
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 2);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   for (let i = 0; i < 20; i++) {
     await page.getByTestId('tab-camera').click();
     await expect(page.getByTestId('preview')).toBeVisible();

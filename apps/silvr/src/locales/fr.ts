@@ -355,6 +355,12 @@ export const messages: LocaleMessages = {
   'an.log.firstHint': 'Notez ici chaque vue au fil de vos prises. Touchez une ligne à tout moment pour la modifier.',
 
   'set.title': 'Réglages',
+
+  'set.shooting': 'Prise de vue',
+
+  'set.shooting.sum': 'Son · Vibrations · Grille',
+
+  'set.about': 'À propos',
   'set.lang': 'Langue',
   'set.lang.auto': 'Système',
   'set.sound': 'Son de l’obturateur',

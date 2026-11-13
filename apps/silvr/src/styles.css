@@ -4944,3 +4944,124 @@ button[aria-disabled='true'] {
   font-weight: 600;
   font-size: 0.8125rem;
 }
+
+/* The film in the camera in use, under its card (the card opens the film choice). */
+.cam-rail-film {
+  max-width: 100%;
+  margin-top: -1px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--fg-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-touch-callout: none;
+}
+.cam-rail-card {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Colour with restraint: orange stays on the shutter and the tab you are on; the ring, the frame
+   counter, today's-shots chip and badges speak in white and greys. */
+.cam-rail-track::after {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.86);
+}
+.counter,
+.counter-tick {
+  color: #f2ede7;
+}
+.vf-shots {
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.85);
+}
+.badge,
+.badge.new {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fg-2);
+}
+.tabbar button.on {
+  color: var(--fg);
+}
+.tabbar button.on svg {
+  color: var(--accent);
+}
+
+/* The picture alone (tap the photo): bars and tab bar step aside. */
+.viewer .hdr,
+.viewer .viewer-actions,
+.viewer .nav,
+.tabbar {
+  transition: opacity 0.2s ease;
+}
+.viewer.bare .hdr,
+.viewer.bare .viewer-actions,
+.viewer.bare .nav,
+html.viewer-bare .tabbar {
+  opacity: 0;
+  pointer-events: none;
+}
+.viewer.bare {
+  background: #000;
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer .hdr,
+  .viewer .viewer-actions,
+  .viewer .nav,
+  .tabbar {
+    transition: none;
+  }
+}
+
+/* One heading weight, and figures that line up (dates, counts, sizes). */
+h1,
+h2,
+.gal-section,
+.roll-meta strong,
+.folder-meta strong,
+.model-name {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gal-section {
+  color: var(--fg);
+}
+.roll-meta .muted,
+.folder-meta .muted,
+.folder-day-title .muted,
+.row-val,
+.hdr-title p {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Settings as a list: label left, current value and chevron right. */
+.set-list {
+  padding: 0;
+  overflow: hidden;
+}
+.set-list .row {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  font-weight: 600;
+}
+.set-list .row + .row {
+  border-top: 1px solid var(--line);
+}
+.row-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--fg-2);
+  font-weight: 500;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.set-sheet {
+  display: grid;
+  gap: 10px;
+}

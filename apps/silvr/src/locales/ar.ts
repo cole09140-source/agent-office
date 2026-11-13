@@ -347,6 +347,9 @@ export const messages: LocaleMessages = {
   'an.log.full': 'سُجّلت كل لقطات هذا الفيلم', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': 'سجّل هنا كل لقطة تلتقطها. ويمكنك الضغط على أي سطر في أي وقت لتعديله.', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': 'الإعدادات', // ko: 설정 · en: Settings
+  'set.shooting': 'التصوير',
+  'set.shooting.sum': 'الصوت · الاهتزاز · الشبكة',
+  'set.about': 'حول التطبيق',
   'set.lang': 'اللغة', // ko: 언어 · en: Language
   'set.lang.auto': 'النظام', // ko: 시스템 · en: System
   'set.sound': 'صوت الغالق', // ko: 셔터 소리 · en: Shutter sound

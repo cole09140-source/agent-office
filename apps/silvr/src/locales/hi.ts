@@ -345,6 +345,9 @@ export const messages: LocaleMessages = {
   'an.log.full': 'इस रोल के सभी फ़्रेम लॉग हो गए', // ko: 이 롤의 컷을 모두 기록했어요 · en: Every frame on this roll is logged
   'an.log.firstHint': 'हर फ़्रेम खींचते ही उसे यहाँ लॉग कीजिए। किसी भी लाइन पर टैप करके उसे कभी भी बदल सकते हैं।', // ko: 한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요. · en: Log each frame here as you shoot. Tap a row any time to edit it.
   'set.title': 'सेटिंग्ज़', // ko: 설정 · en: Settings
+  'set.shooting': 'शूटिंग',
+  'set.shooting.sum': 'आवाज़ · वाइब्रेशन · ग्रिड',
+  'set.about': 'जानकारी',
   'set.lang': 'भाषा', // ko: 언어 · en: Language
   'set.lang.auto': 'सिस्टम', // ko: 시스템 · en: System
   'set.sound': 'शटर की आवाज़', // ko: 셔터 소리 · en: Shutter sound

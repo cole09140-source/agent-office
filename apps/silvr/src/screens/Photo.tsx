@@ -27,6 +27,12 @@ export function PhotoScreen({ id }: { id: string }) {
   const [photo, setPhoto] = useState<Photo | null | undefined>(undefined);
   const [siblings, setSiblings] = useState<Photo[]>([]);
   const [info, setInfo] = useState(false);
+  /** The picture alone: a tap on it hides the bars and the tab bar, another tap brings them back. */
+  const [bare, setBare] = useState(false);
+  useEffect(() => {
+    document.documentElement.classList.toggle('viewer-bare', bare);
+    return () => document.documentElement.classList.remove('viewer-bare');
+  }, [bare]);
   const touch = useRef<{ x: number; y: number } | null>(null);
   // One share/save at a time: a double tap saved the print twice, or the second share
   // was refused and its cleanup deleted the file the first share sheet was still reading.
@@ -142,7 +148,7 @@ export function PhotoScreen({ id }: { id: string }) {
   };
 
   return (
-    <div class="viewer" data-testid="photo-screen">
+    <div class={`viewer${bare ? ' bare' : ''}`} data-testid="photo-screen" data-bare={bare || undefined}>
       <Header
         // Same "camera · film" naming as the roll and the album.
         title={stock ? rollName(camera?.name, stock.name) : ''}
@@ -156,6 +162,10 @@ export function PhotoScreen({ id }: { id: string }) {
       />
       <div
         class="viewer-stage"
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('button')) return;
+          setBare(!bare);
+        }}
         onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
         onTouchEnd={(e) => {
           const s = touch.current;

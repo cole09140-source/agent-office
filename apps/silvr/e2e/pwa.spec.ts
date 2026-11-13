@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
 
 test('no CSP violations during a full session', async ({ page }) => {
   await page.addInitScript(() => {
@@ -10,8 +10,7 @@ test('no CSP violations during a full session', async ({ page }) => {
   await start(page);
   await loadRoll(page, 'sunny200', '12');
   await shoot(page, 1);
-  await page.getByTestId('roll-btn').click();
-  await page.getByTestId('btn-open-roll').click();
+  await openCurrentRoll(page);
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
   await page.getByTestId('btn-darkroom').click();

@@ -334,6 +334,12 @@ export const messages = {
   'an.log.firstHint': '한 컷 찍을 때마다 여기에 남겨 두세요. 줄을 누르면 언제든 고칠 수 있어요.',
 
   'set.title': '설정',
+
+  'set.shooting': '촬영',
+
+  'set.shooting.sum': '소리 · 진동 · 격자',
+
+  'set.about': '정보',
   'set.lang': '언어',
   'set.lang.auto': '시스템',
   'set.sound': '셔터 소리',
