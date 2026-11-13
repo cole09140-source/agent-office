@@ -6,26 +6,100 @@
     "captions.*.my: MY-tab frame (not in the listing docs; drafted 2026-11-02, approved by the coordinator 2026-11-03), naming the tab as each locale's tab.settings does.",
     "names / short: docs/03c section 0 (app name rule '<local film camera> - Film Camela')."
   ],
-  "frames": ["camera", "cameras", "lab", "roll", "darkroom", "contact", "analog", "privacy"],
-  "framesWithMy": ["camera", "cameras", "lab", "roll", "darkroom", "my", "analog", "privacy"],
+  "frames": [
+    "camera",
+    "cameras",
+    "roll",
+    "darkroom",
+    "contact",
+    "analog",
+    "privacy"
+  ],
+  "framesWithMy": [
+    "camera",
+    "cameras",
+    "roll",
+    "darkroom",
+    "my",
+    "analog",
+    "privacy"
+  ],
   "platforms": {
-    "play-phone": { "store": "play", "viewport": [360, 640], "scale": 3, "size": [1080, 1920] },
-    "play-tablet-7": { "store": "play", "viewport": [600, 960], "scale": 2, "size": [1200, 1920] },
-    "play-tablet-10": { "store": "play", "viewport": [800, 1280], "scale": 2, "size": [1600, 2560] },
-    "appstore-6.9": { "store": "appstore", "viewport": [440, 956], "scale": 3, "size": [1320, 2868] },
-    "appstore-6.5": { "store": "appstore", "viewport": [428, 926], "scale": 3, "size": [1284, 2778] }
+    "play-phone": {
+      "store": "play",
+      "viewport": [
+        360,
+        640
+      ],
+      "scale": 3,
+      "size": [
+        1080,
+        1920
+      ]
+    },
+    "play-tablet-7": {
+      "store": "play",
+      "viewport": [
+        600,
+        960
+      ],
+      "scale": 2,
+      "size": [
+        1200,
+        1920
+      ]
+    },
+    "play-tablet-10": {
+      "store": "play",
+      "viewport": [
+        800,
+        1280
+      ],
+      "scale": 2,
+      "size": [
+        1600,
+        2560
+      ]
+    },
+    "appstore-6.9": {
+      "store": "appstore",
+      "viewport": [
+        440,
+        956
+      ],
+      "scale": 3,
+      "size": [
+        1320,
+        2868
+      ]
+    },
+    "appstore-6.5": {
+      "store": "appstore",
+      "viewport": [
+        428,
+        926
+      ],
+      "scale": 3,
+      "size": [
+        1284,
+        2778
+      ]
+    }
   },
   "locales": {
     "ko": {
-      "browser": "ko-KR", "dir": "ltr",
+      "browser": "ko-KR",
+      "dir": "ltr",
       "font": "'Malgun Gothic','Noto Sans KR',sans-serif",
-      "name": ["필름 카메라", "Film Camela"],
-      "short": "롤로 아껴 찍고, 현상소에서 기다리고, 다크룸에서 다시 현상하는 필름 카메라예요.",
+      "name": [
+        "필름 카메라",
+        "Film Camela"
+      ],
+      "short": "카메라 32대를 밀어서 바꾸고 바로 찍어요. 원본이 남아 언제든 다시 현상하는 필름 카메라.",
       "captions": {
         "camera": "뷰파인더로 보고, 한 장씩 아껴서",
         "cameras": "카메라 32대, 아끼는 건 맨 앞에",
-        "lab": "언제 받아볼지 직접 골라요",
-        "roll": "현상 완료! 롤을 열어 봐요",
+        "roll": "찍는 순간, 앨범에 바로",
         "darkroom": "찍은 뒤에도 필름을 바꿔 다시 현상",
         "contact": "한 롤을 밀착 인화 한 장으로",
         "analog": "진짜 필카엔 노출계와 촬영 노트",
@@ -34,15 +108,18 @@
       }
     },
     "en": {
-      "browser": "en-US", "dir": "ltr",
+      "browser": "en-US",
+      "dir": "ltr",
       "font": "'Segoe UI',sans-serif",
-      "name": ["Film Camera", "Film Camela"],
-      "short": "Shoot a roll, wait for the lab, re-develop anytime. Your negatives are kept.",
+      "name": [
+        "Film Camera",
+        "Film Camela"
+      ],
+      "short": "Swipe between 32 film cameras and shoot. Negatives are kept: re-develop anytime.",
       "captions": {
         "camera": "Frame it. Make it count.",
         "cameras": "32 cameras. Pin your favorites",
-        "lab": "You choose when prints arrive",
-        "roll": "Your roll is back from the lab",
+        "roll": "Shots land in your album",
         "darkroom": "Change the film after the shot",
         "contact": "One roll, one contact sheet",
         "analog": "A meter and log for real film",
@@ -51,15 +128,18 @@
       }
     },
     "ja": {
-      "browser": "ja-JP", "dir": "ltr",
+      "browser": "ja-JP",
+      "dir": "ltr",
       "font": "'Yu Gothic UI','Yu Gothic','Meiryo',sans-serif",
-      "name": ["フィルムカメラ", "Film Camela"],
-      "short": "一枚ずつ大切に撮って、現像所で待つ。撮ったあとも暗室で何度でも再現像できるフィルムカメラ。",
+      "name": [
+        "フィルムカメラ",
+        "Film Camela"
+      ],
+      "short": "32台のカメラをスワイプで切り替えてすぐ撮影。ネガが残るから、いつでも現像し直せます。",
       "captions": {
         "camera": "ファインダーをのぞいて、一枚ずつ",
         "cameras": "カメラ32台、お気に入りは先頭に",
-        "lab": "受け取る日は、自分で決める",
-        "roll": "現像できました。開けてみよう",
+        "roll": "撮ったらすぐアルバムへ",
         "darkroom": "撮ったあとでも、フィルムを替えて",
         "contact": "1本のフィルムを、1枚のベタ焼きに",
         "analog": "露出計と撮影メモを、本物のフィルムにも",
@@ -68,15 +148,18 @@
       }
     },
     "zh": {
-      "browser": "zh-CN", "dir": "ltr",
+      "browser": "zh-CN",
+      "dir": "ltr",
       "font": "'Microsoft YaHei UI','Microsoft YaHei',sans-serif",
-      "name": ["胶片相机", "Film Camela"],
-      "short": "一张一张珍惜地拍，在冲洗店慢慢等待。拍完也能随时在暗房重新冲洗，底片永远都在。",
+      "name": [
+        "胶片相机",
+        "Film Camela"
+      ],
+      "short": "滑动切换 32 台胶片相机，随手就拍。底片一直保留，随时可以重新冲洗。",
       "captions": {
         "camera": "透过取景器，珍惜每一张",
         "cameras": "32 台相机，心爱的放最前",
-        "lab": "什么时候拿照片，你来定",
-        "roll": "冲洗好了！打开这卷看看",
+        "roll": "拍完立刻进相册",
         "darkroom": "拍完也能换胶卷重新冲洗",
         "contact": "一卷胶卷，一张接触印样",
         "analog": "测光和记录，真胶片机也用得上",
@@ -85,15 +168,18 @@
       }
     },
     "es": {
-      "browser": "es-419", "dir": "ltr",
+      "browser": "es-419",
+      "dir": "ltr",
       "font": "'Segoe UI',sans-serif",
-      "name": ["Cámara analógica", "Film Camela"],
-      "short": "Cada foto cuenta. Espera el revelado y vuelve a revelar cuando quieras.",
+      "name": [
+        "Cámara analógica",
+        "Film Camela"
+      ],
+      "short": "Desliza entre 32 cámaras y dispara. Conserva tus negativos y vuelve a revelar.",
       "captions": {
         "camera": "Encuadra. Haz que cuente.",
         "cameras": "32 cámaras. Fija tus favoritas",
-        "lab": "Tú eliges cuándo llegan",
-        "roll": "Tu rollo ya está revelado",
+        "roll": "Cada foto, directa al álbum",
         "darkroom": "Cambia la película después",
         "contact": "Todo el rollo en una hoja",
         "analog": "Fotómetro y registro de tomas",
@@ -102,15 +188,18 @@
       }
     },
     "fr": {
-      "browser": "fr-FR", "dir": "ltr",
+      "browser": "fr-FR",
+      "dir": "ltr",
       "font": "'Segoe UI',sans-serif",
-      "name": ["Photo argentique", "Film Camela"],
-      "short": "Chaque vue compte. Attendez le labo, puis redéveloppez quand vous voulez.",
+      "name": [
+        "Photo argentique",
+        "Film Camela"
+      ],
+      "short": "Glissez entre 32 appareils et déclenchez. Négatifs conservés, à redévelopper.",
       "captions": {
         "camera": "Cadrez. Chaque vue compte.",
         "cameras": "32 appareils. Épinglez-les",
-        "lab": "Choisissez quand ils arrivent",
-        "roll": "Votre pellicule est revenue",
+        "roll": "Chaque photo, direct à l’album",
         "darkroom": "Changez de film après coup",
         "contact": "Une pellicule, une planche",
         "analog": "Posemètre et carnet de prises",
@@ -119,15 +208,18 @@
       }
     },
     "pt": {
-      "browser": "pt-BR", "dir": "ltr",
+      "browser": "pt-BR",
+      "dir": "ltr",
       "font": "'Segoe UI',sans-serif",
-      "name": ["Câmera analógica", "Film Camela"],
-      "short": "Cada pose conta. Espere a revelação e revele de novo quando quiser.",
+      "name": [
+        "Câmera analógica",
+        "Film Camela"
+      ],
+      "short": "Deslize entre 32 câmeras e fotografe. Negativos guardados para revelar de novo.",
       "captions": {
         "camera": "Enquadre. Faça valer.",
         "cameras": "32 câmeras. Fixe as favoritas",
-        "lab": "Você escolhe quando chegam",
-        "roll": "Seu filme voltou da revelação",
+        "roll": "Cada foto direto no álbum",
         "darkroom": "Troque o filme depois da foto",
         "contact": "Um filme, uma folha de contato",
         "analog": "Fotômetro e caderno de fotos",
@@ -136,15 +228,18 @@
       }
     },
     "ru": {
-      "browser": "ru-RU", "dir": "ltr",
+      "browser": "ru-RU",
+      "dir": "ltr",
       "font": "'Segoe UI',sans-serif",
-      "name": ["Плёночная камера", "Film Camela"],
-      "short": "Каждый кадр на счету. Ждите проявку и проявляйте заново, когда захотите.",
+      "name": [
+        "Плёночная камера",
+        "Film Camela"
+      ],
+      "short": "Листайте 32 камеры и снимайте сразу. Негативы хранятся: проявляйте заново.",
       "captions": {
         "camera": "Кадрируйте. Каждый на счету.",
         "cameras": "Камер: 32. Любимые — в начале",
-        "lab": "Сами решите, когда получить",
-        "roll": "Плёнка вернулась из проявки",
+        "roll": "Снимки сразу в альбоме",
         "darkroom": "Смените плёнку после съёмки",
         "contact": "Вся плёнка на одном листе",
         "analog": "Экспонометр и журнал съёмки",
@@ -153,15 +248,18 @@
       }
     },
     "hi": {
-      "browser": "hi-IN", "dir": "ltr",
+      "browser": "hi-IN",
+      "dir": "ltr",
       "font": "'Nirmala UI','Segoe UI',sans-serif",
-      "name": ["फ़िल्म कैमरा", "Film Camela"],
-      "short": "हर तस्वीर दिल से खींचिए, लैब का इंतज़ार कीजिए, जब चाहें फिर से डेवलप कीजिए।",
+      "name": [
+        "फ़िल्म कैमरा",
+        "Film Camela"
+      ],
+      "short": "32 कैमरे स्वाइप से बदलें, तुरंत तस्वीर लें। नेगेटिव सुरक्षित, फिर से डेवलप करें।",
       "captions": {
         "camera": "फ़्रेम कीजिए, दिल से क्लिक",
         "cameras": "32 कैमरे, पसंदीदा सबसे आगे",
-        "lab": "तस्वीरें कब मिलें, आप चुनें",
-        "roll": "रोल डेवलप हो गया!",
+        "roll": "हर तस्वीर सीधे एल्बम में",
         "darkroom": "क्लिक के बाद भी फ़िल्म बदलें",
         "contact": "पूरा रोल, एक कॉन्टैक्ट शीट",
         "analog": "असली फ़िल्म के लिए मीटर और लॉग",
@@ -170,15 +268,18 @@
       }
     },
     "ar": {
-      "browser": "ar", "dir": "rtl",
+      "browser": "ar",
+      "dir": "rtl",
       "font": "'Segoe UI','Tahoma',sans-serif",
-      "name": ["كاميرا فيلم", "Film Camela"],
-      "short": "اجعل لكل لقطة معنى، وانتظر التحميض، ثم أعد التحميض متى شئت.",
+      "name": [
+        "كاميرا فيلم",
+        "Film Camela"
+      ],
+      "short": "تنقّل بين 32 كاميرا بالسحب والتقط فورًا. تبقى النيجاتيف لتعيد التحميض متى شئت.",
       "captions": {
         "camera": "من المعين، لقطة تلو الأخرى",
         "cameras": "32 كاميرا، والمفضلة في المقدمة",
-        "lab": "أنت تختار موعد وصول صورك",
-        "roll": "عاد الفيلم من المعمل!",
+        "roll": "كل صورة مباشرة إلى الألبوم",
         "darkroom": "غيّر الفيلم حتى بعد التصوير",
         "contact": "فيلم كامل في ورقة تلامس واحدة",
         "analog": "مقياس تعريض وسجل للفيلم",

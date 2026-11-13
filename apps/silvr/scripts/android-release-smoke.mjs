@@ -64,9 +64,11 @@ async function tap(re, opts = {}) {
   await sleep(900);
   return n.label;
 }
-// Roll button in the reskinned camera: "12 left · Sunny 200" before the first shot,
-// "3 shots Send to lab · Sunny 200" after (Camera.tsx rollBtnLabel, en).
-const ROLL_BTN = /(\d+ left|\d+ shots? .*Send to lab|Finish (pack|card)) · /;
+// The frame counter in the viewfinder reads "3 shots" (Camera.tsx shotsSaid, en); the camera sheet
+// button next to the shutter is named "<camera> · <film>" (sheetLabel).
+// uiautomator reads it as text "03" + description "3 shots" → "03 3 shots".
+const SHOTS = /^\d+ \d+ shots?$/;
+const SHEET_BTN = /^Pro 35 · /;
 const galleryCount = () => {
   try {
     return sh("ls '/sdcard/Pictures/Film Camela'").split(/\s+/).filter((f) => /\.(jpg|png)$/.test(f)).length;
@@ -123,15 +125,15 @@ await step('app starts (onboarding)', async () => {
   await tap(/^Skip$/);
   shot('r1-start');
 });
-await step('load a roll', async () => {
-  await tap(/^Load this film$/);
+await step('camera is ready at once (no roll to load)', async () => {
   await find(/Take photo/);
+  return (await find(SHOTS)).label;
 });
 await step('shoot 3 frames', async () => {
   // A capture takes 5–13 s on an x86 emulator and the shutter ignores presses while one is running (and
   // reads "Take photo · Starting camera…" until the preview is up), so press, then wait for the roll
   // button's count to move; press again only if it did not.
-  const taken = async () => Number((await find(ROLL_BTN)).label.match(/^(\d+) shots?/)?.[1] ?? 0);
+  const taken = async () => Number((await find(SHOTS)).label.match(/(\d+) shots?$/)?.[1] ?? 0);
   for (let i = 1; i <= 3; i++) {
     for (const until = Date.now() + 90000; (await taken()) < i; ) {
       if (Date.now() > until) throw new Error(`stuck at ${await taken()} shots`);
@@ -141,14 +143,12 @@ await step('shoot 3 frames', async () => {
     }
   }
   shot('r2-shooting');
-  return (await find(ROLL_BTN)).label;
+  return (await find(SHOTS)).label;
 });
-await step('rewind and develop instantly', async () => {
-  await tap(ROLL_BTN); // the roll button ("3 shots Send to lab · Sunny 200"), not the viewfinder counter
-  await tap(/^Send to lab$/); // roll sheet
-  await tap(/^Send to lab$/, { last: true, fallback: [798, 2224] }); // confirm dialog
-  await tap(/^Instant/, { fallback: [285, 1976] });
-  await sleep(4000); // instant develop
+await step('photos are in the album already (camera sheet → View photos)', async () => {
+  await tap(SHEET_BTN); // the film button next to the shutter
+  await tap(/^View photos/);
+  await sleep(4000);
   shot('r3-roll');
 });
 await step('open photo and Save to the gallery', async () => {

@@ -99,15 +99,6 @@ test('store screenshots', async ({ page, browser }, info) => {
     for (const c of await tid('toast-close').all()) await c.click().catch(() => undefined);
     await expect(tid('toast')).toHaveCount(0, { timeout: 6000 }).catch(() => undefined);
   };
-  const rewind = async () => {
-    await tid('roll-btn').click();
-    await tid('btn-rewind').click();
-    const ok = tid('confirm-ok');
-    await expect(ok.or(tid('speed-sheet'))).toBeVisible();
-    if (await ok.isVisible()) await ok.click();
-    await expect(tid('speed-sheet')).toBeVisible();
-  };
-
   // App Store sets simulate the iOS app (App Store wording in the Pro card), Play sets Android.
   const os = data.platforms[platform].store === 'appstore' ? 'ios' : 'android';
   // ONLY=my re-takes just the MY frame (it needs MY_DEV).
@@ -125,14 +116,23 @@ test('store screenshots', async ({ page, browser }, info) => {
   await start(page);
   const hasMy = process.env.MY ? process.env.MY === '1' : (await tid('tab-my').count()) > 0;
   if (hasMy) frames = data.framesWithMy;
-  // Pin two favourites: they jump to the front of the picker.
-  await tid('pin-fish180').click();
-  await tid('pin-instasq').click();
+  // Pin two favourites (camera sheet): they come first on the strip and wear a badge in Models.
+  const pin = async (id: string) => {
+    await tid(`camera-${id}`).click();
+    await expect(tid('camera-screen')).toHaveAttribute('data-camera', id);
+    await page.waitForTimeout(400);
+    await tid('roll-btn').click();
+    await tid('roll-sheet').getByTestId(`pin-${id}`).click();
+    await page.keyboard.press('Escape');
+    await expect(tid('roll-sheet')).toBeHidden();
+  };
+  await pin('zonelc');
+  await pin('pro35');
   await closeToasts();
 
-  // 1. a fun body: Fish 180's round viewfinder, a few frames in.
+  // 1. a fun body: Fish 180's round viewfinder, a few frames in, the camera strip under it.
   await tid('camera-fish180').click();
-  await tid('btn-load').click();
+  await expect(tid('camera-screen')).toHaveAttribute('data-camera', 'fish180');
   await expect(tid('shutter')).toBeEnabled();
   await shoot(5);
   await closeToasts();
@@ -141,33 +141,30 @@ test('store screenshots', async ({ page, browser }, info) => {
   await snap('camera');
   await shoot(3);
 
-  // 3. lab speed sheet with arrival times
-  await rewind();
-  await expect(tid('speed-at-3d')).toBeVisible();
-  await afterCut();
-  await snap('lab');
-  await tid('speed-morning').click();
-  await expect(tid('lab-item')).toHaveCount(1);
-
-  // 2. camera picker: pinned bodies first, "All cameras (22)"
-  await tid('tab-camera').click();
-  await expect(tid('load-panel')).toBeVisible();
-  await tid('camera-pro35').click();
-  await tid('stock-muse400').first().click();
-  await page.locator('.camera-strip').evaluate((el) => (el.scrollLeft = 0));
+  // 2. Models: every camera by kind, pinned ones first
+  await tid('tab-models').click();
+  await expect(tid('models-screen')).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 0));
   await closeToasts();
   await snap('cameras');
 
-  // 4. a developed roll (Pro 35 · Muse 400, instant)
-  // Tablets show 5–6 thumbnails per row: a longer roll so the album is not mostly empty.
+  // 3. an album group (Pro 35 · Muse 400): every shot is there the moment it is taken
+  // Tablets show 5–6 thumbnails per row: more shots so the album is not mostly empty.
   const tablet = (info.project.use.viewport?.width ?? 0) >= 600;
   const frameCount = tablet ? 24 : 12;
-  await tid('load-row').getByRole('radio').nth(tablet ? 0 : 1).click(); // Pro 35: 36 · 24 · 12 (labels are localized)
-  await tid('btn-load').click();
+  await tid('model-pro35').click();
+  await expect(tid('camera-screen')).toHaveAttribute('data-camera', 'pro35');
+  await page.waitForTimeout(500);
+  await tid('roll-btn').click();
+  const muse = tid('roll-sheet').getByTestId('stock-muse400');
+  await muse.click();
+  await expect(muse).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('Escape');
+  await expect(tid('roll-sheet')).toBeHidden();
   await expect(tid('shutter')).toBeEnabled();
   await shoot(frameCount, 3); // every frame a different scene from the previous three
-  await rewind();
-  await tid('speed-instant').click();
+  await tid('roll-btn').click();
+  await tid('btn-open-roll').click();
   await expect(tid('roll-screen')).toBeVisible();
   // At least frameCount (a retried shutter press can add one frame); all thumbnails developed.
   await expect.poll(() => page.locator('[data-testid=thumb] img').count(), { timeout: 120_000 }).toBeGreaterThanOrEqual(frameCount);
