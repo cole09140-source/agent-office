@@ -60,7 +60,7 @@
       d.className = `layer ${l.kind}`;
       d.style.opacity = l.op;
       if (l.kind === 'still') {
-        const im = (await img(broll + l.src)).cloneNode();
+        const im = (await img(l.src.startsWith('file:') ? l.src : broll + l.src)).cloneNode();
         const cap = Object.assign(document.createElement('div'), { className: 'cap', textContent: copy.caps[l.cap] });
         rise(cap, l.lt);
         d.append(im, Object.assign(document.createElement('div'), { className: 'shade' }), cap);

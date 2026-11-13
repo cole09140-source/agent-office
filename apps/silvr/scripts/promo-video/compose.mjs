@@ -1,13 +1,15 @@
 // Composes the promo video (1080×1920, 30 fps) per language from:
 //   --clips <dir>   record.spec.ts output: <lang>/{switch,shoot}/NNNN.jpg + frames.json
-//   --broll <dir>   a_alley.png, b_cafe.png, c_beach.png (scene photos, no text)
+//   --broll <dir>   a_alley.png, b_cafe.png, c_beach.png (scene photos, no text); a_alley.mp4 etc.
+//                   next to a photo (e.g. image-to-video from it) is played instead of the photo
 //   --out <dir>     FilmCamela_promo_<LANG>.mp4
 //   [--langs ko,en]
 // Every frame is drawn by a headless page (stage.html) and piped to ffmpeg, so timing is exact.
 // The camera never moves (no zoom or pan on the photos): cuts and short cross-fades only.
 import { chromium } from '@playwright/test';
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { execFileSync, spawn } from 'node:child_process';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -38,18 +40,31 @@ const COPY = {
 };
 
 const SEGMENTS = [
-  { kind: 'still', src: 'a_alley.png', from: 0, to: 2.6, cap: 0 },
-  { kind: 'app', clip: 'switch', from: 2.6, to: 7.6, cap: 1, speed: 1.5 },
-  { kind: 'still', src: 'b_cafe.png', from: 7.6, to: 10.0, cap: 2 },
-  { kind: 'app', clip: 'shoot', from: 10.0, to: 15.4, cap: 3 },
-  { kind: 'still', src: 'c_beach.png', from: 15.4, to: 18.0, cap: 4 },
-  { kind: 'end', from: 18.0, to: 21.0 },
+  { kind: 'still', src: 'a_alley.png', from: 0, to: 3.0, cap: 0 },
+  { kind: 'app', clip: 'switch', from: 3.0, to: 8.0, cap: 1, speed: 1.5 },
+  { kind: 'still', src: 'b_cafe.png', from: 8.0, to: 11.0, cap: 2 },
+  { kind: 'app', clip: 'shoot', from: 11.0, to: 16.4, cap: 3 },
+  { kind: 'still', src: 'c_beach.png', from: 16.4, to: 19.4, cap: 4 },
+  { kind: 'end', from: 19.4, to: 22.4 },
 ];
 const TOTAL = SEGMENTS[SEGMENTS.length - 1].to;
 
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg';
 mkdirSync(out, { recursive: true });
 for (const f of ['a_alley.png', 'b_cafe.png', 'c_beach.png']) if (!existsSync(join(broll, f))) throw new Error(`missing ${join(broll, f)}`);
+
+// Scene videos: decoded once to 1080×1920 JPEG frames (cover crop), shown frame by frame.
+const sceneFrames = {};
+for (const s of SEGMENTS.filter((x) => x.kind === 'still')) {
+  const mp4 = join(broll, s.src.replace(/\.png$/, '.mp4'));
+  if (!existsSync(mp4)) continue;
+  const dir = join(tmpdir(), 'fc-promo-scenes', s.src.replace(/\.png$/, ''));
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  execFileSync(ffmpeg, ['-loglevel', 'error', '-i', mp4, '-vf', `fps=${FPS},scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920`, '-q:v', '2', join(dir, '%04d.jpg')]);
+  sceneFrames[s.src] = readdirSync(dir).filter((f) => f.endsWith('.jpg')).sort().map((f) => pathToFileURL(join(dir, f)).href);
+  console.log('scene video', s.src, sceneFrames[s.src].length, 'frames');
+}
 
 const browser = await chromium.launch();
 for (const lang of langs) {
@@ -84,7 +99,11 @@ for (const lang of langs) {
       // Fade in (not the first), and stay under the next segment while it fades in over it.
       const op = s.from === 0 ? 1 : Math.min(1, lt / FADE);
       const layer = { kind: s.kind, op, lt, cap: s.cap };
-      if (s.kind === 'still') layer.src = s.src;
+      if (s.kind === 'still') {
+        const v = sceneFrames[s.src];
+        // A scene video plays from its first frame and holds its last one.
+        layer.src = v ? v[Math.min(v.length - 1, Math.floor(lt * FPS))] : s.src;
+      }
       if (s.kind === 'app') {
         const c = clipData[s.clip];
         const slot = s.to - s.from;
