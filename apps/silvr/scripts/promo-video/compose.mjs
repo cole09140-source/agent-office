@@ -39,7 +39,7 @@ const COPY = {
 
 const SEGMENTS = [
   { kind: 'still', src: 'a_alley.png', from: 0, to: 2.6, cap: 0 },
-  { kind: 'app', clip: 'switch', from: 2.6, to: 7.6, cap: 1 },
+  { kind: 'app', clip: 'switch', from: 2.6, to: 7.6, cap: 1, speed: 1.5 },
   { kind: 'still', src: 'b_cafe.png', from: 7.6, to: 10.0, cap: 2 },
   { kind: 'app', clip: 'shoot', from: 10.0, to: 15.4, cap: 3 },
   { kind: 'still', src: 'c_beach.png', from: 15.4, to: 18.0, cap: 4 },
@@ -88,7 +88,8 @@ for (const lang of langs) {
       if (s.kind === 'app') {
         const c = clipData[s.clip];
         const slot = s.to - s.from;
-        const speed = Math.max(1, (c.dur - 0.2) / slot);
+        // Fixed speed (the clip may run past the slot), or just fast enough to fit the whole clip.
+        const speed = s.speed ?? Math.max(1, (c.dur - 0.2) / slot);
         const ct = 0.2 + lt * speed;
         let f = c.frames[0];
         for (const fr of c.frames) if (fr.t <= ct) f = fr;
