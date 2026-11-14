@@ -1,0 +1,17 @@
+{
+  "_comment": [
+    "Release notes for 1.1.5 (versionCode 8, 2026-11-14). Same locale keys as 03e."
+  ],
+  "notes": {
+    "en": "Film Camela 1.1.5\n• If prices can't be loaded from the store, the MY tab now says why and offers Try again\n• Small fixes",
+    "ko": "Film Camela 1.1.5\n• 스토어에서 가격을 못 불러오면 MY 탭에 이유와 '다시 시도'가 보여요\n• 자잘한 문제를 고쳤어요",
+    "ja": "Film Camela 1.1.5\n• ストアから価格を読み込めないとき、MYタブに理由と「再試行」を表示します\n• 細かな不具合を修正しました",
+    "zh": "Film Camela 1.1.5\n• 无法从商店获取价格时，MY 标签页会显示原因和“重试”\n• 修复了若干小问题",
+    "es": "Film Camela 1.1.5\n• Si no se pueden cargar los precios de la tienda, la pestaña MY indica el motivo y ofrece Reintentar\n• Correcciones menores",
+    "fr": "Film Camela 1.1.5\n• Si les prix ne se chargent pas, l'onglet MY en indique la raison et propose Réessayer\n• Petites corrections",
+    "pt": "Film Camela 1.1.5\n• Se os preços da loja não carregarem, a aba MY mostra o motivo e oferece Tentar de novo\n• Pequenas correções",
+    "ru": "Film Camela 1.1.5\n• Если цены из магазина не загрузились, вкладка MY показывает причину и кнопку «Повторить»\n• Мелкие исправления",
+    "hi": "Film Camela 1.1.5\n• स्टोर से कीमतें लोड न हों तो MY टैब में वजह और 'फिर से कोशिश करें' दिखता है\n• छोटे सुधार",
+    "ar": "Film Camela 1.1.5\n• إذا تعذّر تحميل الأسعار من المتجر، يعرض تبويب MY السبب وزر «أعد المحاولة»\n• إصلاحات صغيرة"
+  }
+}

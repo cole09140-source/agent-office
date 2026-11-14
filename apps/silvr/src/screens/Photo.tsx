@@ -1,0 +1,266 @@
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
+import { cleanNumber, Empty, formatDate, formatSigned, Header, Ltr, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
+import { getStock } from '../film/stocks';
+import { isolate, isRtl, ltr, rollName, t } from '../i18n';
+import { fileName, shareImages } from '../platform/share';
+import { announce, confirm, rolls, toast } from '../state/app';
+import { signalLang } from '../state/lang';
+import { back, go, goTab, isCurrent, route } from '../state/router';
+import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
+import { deletePhoto, getPhoto, listPhotos, restorePhoto, subscribe, viewable, type Photo } from '../store/rolls';
+import { arrowStep } from '../platform/dir';
+
+const INSTANT_DEV_S = 45;
+
+/** "노멀" for no push/pull, else "+1.0 EV" / "−0.5 EV" (rounded: never float noise). */
+function pushLabel(push: number): string {
+  const v = cleanNumber(push);
+  if (v === 0) return t('view.pushNormal');
+  return ltr(`${formatSigned(v)} EV`);
+}
+
+/** Same scale as the darkroom's expiry slider (0–1 → 0–30 years). */
+const expiredYears = (e: number | undefined) => Math.round((e ?? 0) * 30);
+
+export function PhotoScreen({ id }: { id: string }) {
+  const [photo, setPhoto] = useState<Photo | null | undefined>(undefined);
+  const [siblings, setSiblings] = useState<Photo[]>([]);
+  const [info, setInfo] = useState(false);
+  /** The picture alone: a tap on it hides the bars and the tab bar, another tap brings them back. */
+  const [bare, setBare] = useState(false);
+  useEffect(() => {
+    document.documentElement.classList.toggle('viewer-bare', bare);
+    return () => document.documentElement.classList.remove('viewer-bare');
+  }, [bare]);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  // One share/save at a time: a double tap saved the print twice, or the second share
+  // was refused and its cleanup deleted the file the first share sheet was still reading.
+  // (Declared before the early returns below: hooks must run in the same order every render.)
+  const [sharing, setSharing] = useState(false);
+  const sharingRef = useRef(false);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      const p = await getPhoto(id);
+      if (!alive) return;
+      setPhoto(p ?? null);
+      if (p) setSiblings(await listPhotos(p.rollId));
+    };
+    void load();
+    const off = subscribe(load);
+    return () => {
+      alive = false;
+      off();
+    };
+  }, [id]);
+
+  const { blob, error } = usePrint(photo ?? undefined, 'print');
+  const url = useObjectUrl(blob);
+  const roll = photo ? rolls.value.find((r) => r.id === photo.rollId) : undefined;
+  const idx = photo ? siblings.findIndex((p) => p.id === photo.id) : -1;
+  const goSibling = (d: number) => {
+    const next = siblings[idx + d];
+    if (next) go({ name: 'photo', id: next.id }, true);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // A sheet (Info, a confirm) has the keys: arrows must not move the photo behind it, and its Escape closes it.
+      if (e.defaultPrevented || sheetOpen() || e.altKey || e.ctrlKey || e.metaKey) return;
+      // Reading order: in a right-to-left UI the next photo is to the left.
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') goSibling(arrowStep(e.key));
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const undeveloped = !!roll && !viewable(roll);
+  useEffect(() => {
+    if (undeveloped) go({ name: 'gallery' }, true);
+  }, [undeveloped]);
+
+  if (photo === null) {
+    return (
+      <div class="page">
+        <Header title={t('gal.title')} onBack={() => back({ name: 'gallery' })} />
+        <Empty title={t('common.notFound')} />
+      </div>
+    );
+  }
+  if (undeveloped) return null;
+  const stock = photo ? getStock(photo.develop.stockId) : undefined;
+  const camera = photo && hasCamera(photo.develop.cameraId) ? getCamera(photo.develop.cameraId) : undefined;
+  // Instant prints keep developing for a while after they eject.
+  const instantDev = photo && camera && ejectsPrints(camera) ? Math.min(INSTANT_DEV_S, Math.max(0, INSTANT_DEV_S - (Date.now() - photo.takenAt) / 1000)) : 0;
+
+  const share = async (download: boolean) => {
+    if (!blob || !photo || sharingRef.current) return;
+    sharingRef.current = true;
+    setSharing(true);
+    try {
+      const res = await shareImages([{ blob, name: fileName('FilmCamela', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg', photo.frame) }], download);
+      if (res === 'downloaded') toast(savedToastText());
+    } catch (err) {
+      console.error('[silvr] share failed', err);
+      toast((err as { code?: string })?.code === 'DENIED' ? t('err.storagePermission') : t('common.error'));
+    } finally {
+      sharingRef.current = false;
+      setSharing(false);
+    }
+  };
+
+  const remove = async () => {
+    if (!photo) return;
+    if (!(await confirm(t('view.deleteUndoConfirm'), t('common.delete'), true, t('view.deleteTitle')))) return;
+    const next = siblings[idx + 1] ?? siblings[idx - 1];
+    const snap = await deletePhoto(photo.id);
+    if (snap) {
+      // Soft delete: the record and negative stay in memory while the toast offers an undo (≥ 10 s).
+      const undo = async () => {
+        try {
+          if (!(await restorePhoto(snap))) {
+            toast(t('common.notFound'));
+            return;
+          }
+        } catch (err) {
+          console.error('[silvr] undo delete failed', err);
+          toast((err as Error)?.name === 'QuotaExceededError' ? t('err.storage') : t('common.error'));
+          return;
+        }
+        announce(t('view.restored'));
+        const at = route.value;
+        const target = { name: 'photo' as const, id: snap.photo.id };
+        // Back to the restored photo: replace the neighbour it moved to, or open it from wherever the user is.
+        if (at.name === 'photo') go(target, true);
+        else go(target);
+      };
+      toast(t('view.deleted'), { label: t('common.undo'), run: () => void undo() }, 10_000);
+    }
+    if (!isCurrent({ name: 'photo', id: photo.id })) return;
+    if (next) go({ name: 'photo', id: next.id }, true);
+    else goTab({ name: 'gallery' }); // the emptied roll is gone too: unwind so back can't reach it
+  };
+
+  return (
+    <div class={`viewer${bare ? ' bare' : ''}`} data-testid="photo-screen" data-bare={bare || undefined}>
+      <Header
+        // Same "camera · film" naming as the roll and the album.
+        title={stock ? rollName(camera?.name, stock.name) : ''}
+        sub={photo && idx >= 0 ? ltr(`${idx + 1} / ${siblings.length}`) : undefined}
+        onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
+        right={
+          <button class="icon-btn" onClick={() => setInfo(true)} aria-label={t('view.info')}>
+            <Icon name="info" />
+          </button>
+        }
+      />
+      <div
+        class="viewer-stage"
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('button')) return;
+          setBare(!bare);
+        }}
+        onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+        onTouchEnd={(e) => {
+          const s = touch.current;
+          touch.current = null;
+          if (!s) return;
+          const dx = e.changedTouches[0].clientX - s.x;
+          const dy = e.changedTouches[0].clientY - s.y;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goSibling(dx < 0 !== isRtl() ? 1 : -1); // RTL: next comes from the left
+        }}
+      >
+        {url ? (
+          <img
+            src={url}
+            alt={photo && stock ? `${isolate(stock.name)} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
+            class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
+            style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
+            data-testid="print"
+          />
+        ) : (
+          <div class="developing-tray mono" aria-live="polite">
+            {error ? t('common.error') : t('view.developing')}
+          </div>
+        )}
+        {idx > 0 && (
+          <button class="nav prev" onClick={() => goSibling(-1)} aria-label={t('view.prev')}>
+            <Icon name="back" />
+          </button>
+        )}
+        {idx >= 0 && idx < siblings.length - 1 && (
+          <button class="nav next" onClick={() => goSibling(1)} aria-label={t('view.next')} data-testid="btn-next">
+            <Icon name="chevron" />
+          </button>
+        )}
+      </div>
+      <div class="viewer-actions">
+        <button onClick={() => share(false)} disabled={!blob || sharing} data-testid="btn-share">
+          <Icon name="share" />
+          <span>{t('view.share')}</span>
+        </button>
+        <button onClick={() => share(true)} disabled={!blob || sharing} data-testid="btn-save">
+          <Icon name="download" />
+          <span>{t('view.saveImage')}</span>
+        </button>
+        <button onClick={() => photo && go({ name: 'darkroom', id: photo.id })} disabled={!photo} data-testid="btn-darkroom">
+          <Icon name="sliders" />
+          <span>{t('view.darkroom')}</span>
+        </button>
+        <button onClick={remove} disabled={!photo} data-testid="btn-delete">
+          <Icon name="trash" />
+          <span>{t('common.delete')}</span>
+        </button>
+      </div>
+      <Sheet open={info} onClose={() => setInfo(false)} title={t('view.info')}>
+        {photo && stock && (
+          // Container: the list stacks label above value when the sheet is narrow for the text size.
+          <div class="info-box">
+            <dl class="info">
+            <dt>{t('view.film')}</dt>
+            <dd>
+              <bdi>{stock.name}</bdi> · <Ltr>ISO&nbsp;{stock.iso}</Ltr>
+            </dd>
+            {camera && (
+              <>
+                <dt>{t('dr.camera')}</dt>
+                <dd>
+                  <bdi>{camera.name}</bdi>
+                </dd>
+              </>
+            )}
+            <dt>{t('view.taken')}</dt>
+            <dd>{photo.undated ? t('view.noDate') : formatDate(photo.takenAt, signalLang.value, true)}</dd>
+            <dt>{t('view.frame')}</dt>
+            <dd>
+              <Ltr>{photo.frame}</Ltr>
+            </dd>
+            <dt>{t('view.size')}</dt>
+            <dd class="mono">
+              <Ltr>{photo.printW ? `${photo.printW}×${photo.printH}` : `${photo.width}×${photo.height}`}</Ltr>
+            </dd>
+            {roll && (
+              <>
+                <dt>{t('cam.aspect')}</dt>
+                <dd class="mono">
+                  <Ltr>{roll.aspect}</Ltr>
+                </dd>
+              </>
+            )}
+            <dt>{t('dr.push')}</dt>
+            <dd>{pushLabel(photo.develop.push)}</dd>
+            <dt>{t('dr.expired')}</dt>
+            <dd>{expiredYears(photo.develop.expired) ? t('view.expiredYears', { n: expiredYears(photo.develop.expired) }) : t('view.expiredNone')}</dd>
+            </dl>
+          </div>
+        )}
+      </Sheet>
+    </div>
+  );
+}
