@@ -264,3 +264,15 @@
   opacity: 0.45;
   pointer-events: none;
 }
+/* Prices did not come back from the store: say so, offer a retry, and show the store's reason small. */
+.my-pro-noprice {
+  margin: 12px 0 0;
+}
+.my-pro-noprice p {
+  margin: 0;
+}
+.my-pro-noprice .mono {
+  margin-top: 4px;
+  font-size: 11px;
+  word-break: break-word;
+}

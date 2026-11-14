@@ -42,6 +42,10 @@ export type RestoreResult = 'restored' | 'none' | 'failed' | 'unavailable';
 export const canBuy = signal(false);
 /** Products with store prices; empty until loaded (or on web). Ordered week, 3 months, lifetime. */
 export const products = signal<StoreProduct[]>([]);
+/** Why the store gave no prices (shown small under the plans, so a user or support can tell what happened). */
+export const productsError = signal<string | null>(null);
+/** True while prices are being asked for. */
+export const productsLoading = signal(false);
 /** The current entitlement (cached or freshly verified). */
 export const entitlement = signal<Entitlement>({ ...NO_ENTITLEMENT });
 /** Unlimited shots and no ads. */
@@ -135,17 +139,34 @@ async function checkStore(): Promise<void> {
   }
 }
 
+const errText = (err: unknown): string => {
+  const e = err as { code?: string; message?: string } | undefined;
+  return [e?.code, e?.message ?? String(err)].filter(Boolean).join(' ').slice(0, 120);
+};
+
 async function loadProducts(): Promise<void> {
+  productsLoading.value = true;
+  try {
+    await queryProducts();
+  } finally {
+    productsLoading.value = false;
+  }
+}
+
+async function queryProducts(): Promise<void> {
   const { NativePurchases, PURCHASE_TYPE } = await plugin();
+  const errs: string[] = [];
   const subIds = PRODUCTS.filter((p) => p.subscription).map((p) => p.id);
   const inappIds = PRODUCTS.filter((p) => !p.subscription).map((p) => p.id);
   const [subs, inapp] = await Promise.all([
     NativePurchases.getProducts({ productIdentifiers: subIds, productType: PURCHASE_TYPE.SUBS }).catch((err) => {
       console.warn('[silvr] subscriptions not available', err);
+      errs.push(`subs: ${errText(err)}`);
       return { products: [] };
     }),
     NativePurchases.getProducts({ productIdentifiers: inappIds, productType: PURCHASE_TYPE.INAPP }).catch((err) => {
       console.warn('[silvr] lifetime product not available', err);
+      errs.push(`inapp: ${errText(err)}`);
       return { products: [] };
     }),
   ]);
@@ -155,6 +176,26 @@ async function loadProducts(): Promise<void> {
     if (!p) return [];
     return [{ id: def.id, kind: def.kind, subscription: def.subscription, price: p.priceString, priceAmount: p.price, currency: p.currencyCode, title: p.title, description: p.description }];
   });
+  productsError.value = products.value.length ? null : errs.join(' · ') || 'no products';
+}
+
+/** "Try again" under the plans: reconnects to the store if needed and asks for the prices again. */
+export async function retryProducts(): Promise<void> {
+  if (!platform) return;
+  try {
+    if (!canBuy.value) {
+      const { NativePurchases } = await plugin();
+      const { isBillingSupported } = await NativePurchases.isBillingSupported();
+      if (!isBillingSupported) {
+        productsError.value = 'billing not supported';
+        return;
+      }
+      canBuy.value = true;
+    }
+    await loadProducts();
+  } catch (err) {
+    productsError.value = errText(err);
+  }
 }
 
 /**
@@ -177,6 +218,7 @@ export function initBilling(): Promise<void> {
       const { isBillingSupported } = await NativePurchases.isBillingSupported();
       if (!isBillingSupported) {
         console.warn('[silvr] store billing not supported on this device');
+        productsError.value = 'billing not supported';
         return;
       }
       canBuy.value = true;
@@ -185,6 +227,7 @@ export function initBilling(): Promise<void> {
       await Promise.all([loadProducts(), refreshEntitlement()]);
     } catch (err) {
       console.warn('[silvr] billing unavailable', err);
+      productsError.value = errText(err);
     }
     try {
       const { App } = await import('@capacitor/app');

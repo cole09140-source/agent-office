@@ -500,6 +500,8 @@ export const messages: LocaleMessages = {
   'my.pro.renews': '下次续订：{date}',
   'my.pro.pending': '正在等待付款，确认后会立即开通 Pro。',
   'my.pro.noStore': '暂时无法连接商店，请稍后再试。',
+  'my.price.failed': '无法从商店获取价格。',
+  'my.price.retry': '重试',
   'my.pro.legal': '除非在当期结束前至少 24\u00A0小时取消，订阅将按相同周期自动续订，并从你的 {store} 账户扣费。你可以随时在 {store} 的订阅设置中取消。永久版为一次性购买。',
   'my.buy.done': 'Pro 已开通，尽情拍吧。',
   'my.buy.failed': '购买未完成，请再试一次。',

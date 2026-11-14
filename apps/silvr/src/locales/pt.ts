@@ -494,6 +494,8 @@ export const messages: LocaleMessages = {
   'my.pro.renews': 'Renova em {date}',
   'my.pro.pending': 'Aguardando o pagamento. O Pro é liberado assim que for aprovado.',
   'my.pro.noStore': 'Não foi possível conectar à loja agora. Tente de novo daqui a pouco.',
+  'my.price.failed': 'Não foi possível carregar os preços da loja.',
+  'my.price.retry': 'Tentar de novo',
   'my.pro.legal': 'As assinaturas são renovadas automaticamente pelo mesmo período, a menos que sejam canceladas pelo menos 24 horas antes do fim do período atual, e são cobradas na sua conta ({store}). Cancele quando quiser nas configurações de assinatura da loja ({store}). O plano vitalício é um pagamento único.',
   'my.buy.done': 'O Pro está ativo. Fotografe à vontade.',
   'my.buy.failed': 'A compra não foi concluída. Tente de novo.',

@@ -21,6 +21,9 @@ import {
   adsAvailable,
   billingBusy,
   canBuy,
+  productsError,
+  productsLoading,
+  retryProducts,
   canWatchAds,
   entitlement,
   FREE_SHOTS_PER_DAY,
@@ -357,7 +360,7 @@ function ProCard() {
                   </span>
                   {/* Google Play policy: only the store's own localized price, the same currency as checkout. */}
                   <bdi class="my-plan-price" data-testid={`price-${def.kind}`}>
-                    {price(def.kind) ?? '—'}
+                    {price(def.kind) ?? (productsLoading.value || (store && !productsError.value) ? '…' : '')}
                   </bdi>
                 </label>
               );
@@ -372,6 +375,19 @@ function ProCard() {
             <p class="muted small my-pro-nostore" role="status">
               {t('my.pro.noStore')}
             </p>
+          )}
+          {store && list.length === 0 && productsError.value && !productsLoading.value && (
+            <div class="my-pro-noprice" role="status" data-testid="price-error">
+              <p class="small">
+                {t('my.price.failed')}{' '}
+                <button type="button" class="link-btn" onClick={() => void retryProducts()} data-testid="btn-price-retry">
+                  {t('my.price.retry')}
+                </button>
+              </p>
+              <p class="muted tiny mono" dir="ltr">
+                {productsError.value}
+              </p>
+            </div>
           )}
           {/* Always tappable: if the store was out of reach at start-up, the tap reconnects (or says why not). */}
           <button class="btn primary wide" disabled={busy} aria-busy={busy || undefined} onClick={() => void buy(plan)} data-testid="btn-buy">

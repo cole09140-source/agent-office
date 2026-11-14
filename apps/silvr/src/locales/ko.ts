@@ -488,6 +488,8 @@ export const messages = {
   'my.pro.renews': '다음 갱신일 {date}',
   'my.pro.pending': '결제를 기다리고 있어요. 승인되면 바로 Pro가 열려요.',
   'my.pro.noStore': '지금은 스토어에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.',
+  'my.price.failed': '스토어에서 가격을 불러오지 못했어요.',
+  'my.price.retry': '다시 시도',
   'my.pro.legal': '구독은 기간이 끝나기 24시간 전까지 해지하지 않으면 같은 기간으로 자동 갱신되고, {store} 계정으로 결제돼요. 해지는 언제든 {store} 구독 설정에서 할 수 있어요. 평생 이용권은 한 번만 결제해요.',
   'my.buy.done': 'Pro가 열렸어요. 마음껏 찍어요.',
   'my.buy.failed': '결제를 마치지 못했어요. 다시 시도해 주세요.',

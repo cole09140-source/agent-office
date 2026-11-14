@@ -509,6 +509,8 @@ export const messages: LocaleMessages = {
   'my.pro.renews': 'Renouvellement le {date}',
   'my.pro.pending': 'Paiement en attente. Pro s’active dès qu’il est approuvé.',
   'my.pro.noStore': 'Impossible de se connecter à la boutique pour le moment. Réessayez dans un instant.',
+  'my.price.failed': 'Impossible de charger les prix de la boutique.',
+  'my.price.retry': 'Réessayer',
   'my.pro.legal': 'Les abonnements se renouvellent automatiquement pour la même durée, sauf résiliation au moins 24 heures avant la fin de la période en cours. Le paiement est débité de votre compte {store}. Vous pouvez résilier à tout moment dans les réglages d’abonnement de {store}. La formule à vie est un achat unique.',
   'my.buy.done': 'Pro est activé. Photographiez sans compter.',
   'my.buy.failed': 'L’achat n’a pas abouti. Veuillez réessayer.',

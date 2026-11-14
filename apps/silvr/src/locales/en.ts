@@ -484,6 +484,8 @@ export const messages: Messages = {
   'my.pro.renews': 'Renews {date}',
   'my.pro.pending': 'Waiting for payment. Pro opens as soon as it’s approved.',
   'my.pro.noStore': 'Can’t reach the store right now. Try again in a moment.',
+  'my.price.failed': 'Couldn’t load prices from the store.',
+  'my.price.retry': 'Try again',
   'my.pro.legal': 'Subscriptions renew automatically for the same period unless cancelled at least 24 hours before it ends, and are charged to your {store} account. Cancel anytime in your {store} subscription settings. Lifetime is a one-time purchase.',
   'my.buy.done': 'Pro is on. Shoot all you like.',
   'my.buy.failed': 'The purchase didn’t go through. Please try again.',

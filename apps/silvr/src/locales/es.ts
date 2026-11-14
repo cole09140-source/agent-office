@@ -499,6 +499,8 @@ export const messages: LocaleMessages = {
   'my.pro.renews': 'Se renueva el {date}',
   'my.pro.pending': 'Esperando el pago. Pro se activará en cuanto se apruebe.',
   'my.pro.noStore': 'Ahora no se puede conectar con la tienda. Vuelve a intentarlo en un momento.',
+  'my.price.failed': 'No se pudieron cargar los precios de la tienda.',
+  'my.price.retry': 'Reintentar',
   'my.pro.legal': 'Las suscripciones se renuevan automáticamente por el mismo periodo, salvo que las canceles al menos 24 horas antes de que termine el periodo en curso, y se cobran en tu cuenta de {store}. Puedes cancelar cuando quieras en los ajustes de suscripciones de {store}. La opción de por vida es un pago único.',
   'my.buy.done': 'Ya tienes Pro. Toma todas las fotos que quieras.',
   'my.buy.failed': 'No se completó la compra. Vuelve a intentarlo.',
