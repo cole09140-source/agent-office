@@ -6,7 +6,16 @@ import { initMonetization } from './monetize';
 import { depth, go, route } from './state/router';
 import { applyLang, ready, refreshRolls, settings, storageError } from './state/app';
 import { loadSettings } from './store/settings';
+import '@fontsource/archivo-narrow/latin-500.css';
+import '@fontsource/archivo-narrow/latin-700.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-700.css';
 import './styles.css';
+// 2026-11 retro redesign: the darkroom shell, the shutter-row control deck, slide-mount album, photo bodies.
+import './styles/darkroom.css';
+import './styles/deck.css';
+import './styles/slides.css';
+import './styles/bodies.css';
 
 async function boot() {
   initPwa();
