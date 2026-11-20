@@ -14,6 +14,8 @@ export interface FrameSpec {
 /** Shape of a single exposure for a camera (half-frame halves are portrait 3:4). */
 export function exposureSpec(camera: CameraModel, aspect: Aspect): FrameSpec {
   if (camera.capture === 'half') return { aspect: '4:3', orient: 'portrait' };
+  // Booth poses are head-and-shoulders portraits, whichever way the phone is held.
+  if (camera.capture === 'booth') return { aspect, orient: 'portrait' };
   return { aspect, orient: camera.orient ?? 'auto' };
 }
 
@@ -68,6 +70,15 @@ export function quadLayout(fw: number, fh: number): { width: number; height: num
   return { width: fw * 2 + gap, height: fh * 2 + gap, cells };
 }
 
+/** Photo-booth strip: four frames stacked top to bottom on white paper, reading order = firing order. */
+export function boothLayout(fw: number, fh: number): { width: number; height: number; cells: Rect[] } {
+  const m = Math.max(4, Math.round(fw * 0.07));
+  const gap = Math.max(3, Math.round(fw * 0.045));
+  const cells: Rect[] = [];
+  for (let i = 0; i < 4; i++) cells.push({ x: m, y: m + i * (fh + gap), w: fw, h: fh });
+  return { width: fw + 2 * m, height: 4 * fh + 3 * gap + 2 * m, cells };
+}
+
 /** Double exposure: each exposure at ~0.82 density, combined like light (screen). */
 export function blendDouble(a: number, b: number): number {
   return 1 - (1 - 0.82 * a) * (1 - 0.82 * b);
@@ -108,6 +119,27 @@ export function composeQuad(frames: HTMLCanvasElement[]): HTMLCanvasElement {
     g.addColorStop(1, 'rgba(0,0,0,0.55)');
     ctx.fillStyle = g;
     ctx.fillRect(c.x, c.y, c.w, c.h);
+  });
+  return out;
+}
+
+export function composeBooth(frames: HTMLCanvasElement[]): HTMLCanvasElement {
+  // A strip of four full frames is tall: keep it under the canvas limit like the quad sheet.
+  const f0 = frames[0];
+  const L0 = boothLayout(f0.width, f0.height);
+  const k = Math.min(1, Math.sqrt(MAX_CANVAS_PIXELS / (L0.width * L0.height)), 4096 / L0.height);
+  const L = boothLayout(Math.max(1, Math.floor(f0.width * k)), Math.max(1, Math.floor(f0.height * k)));
+  const out = makeCanvas(L.width, L.height);
+  const ctx = out.getContext('2d')!;
+  ctx.fillStyle = '#f3efe6'; // booth paper
+  ctx.fillRect(0, 0, L.width, L.height);
+  frames.forEach((f, i) => {
+    const c = L.cells[i];
+    // Cover-crop: the phone may have turned between poses.
+    const s = Math.max(c.w / f.width, c.h / f.height);
+    const sw = c.w / s;
+    const sh = c.h / s;
+    ctx.drawImage(f, (f.width - sw) / 2, (f.height - sh) / 2, sw, sh, c.x, c.y, c.w, c.h);
   });
   return out;
 }

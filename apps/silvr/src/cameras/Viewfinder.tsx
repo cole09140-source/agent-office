@@ -66,6 +66,23 @@ export function ViewfinderOverlay({ camera, state }: { camera: CameraModel; stat
           ))}
         </div>
       );
+    case 'booth':
+      // Four stacked cells: the pose being taken lights up, the ones already taken dim.
+      return (
+        <div class="vf vf-booth" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} class={`vf-cell ${state.quadIndex === i ? 'on' : ''} ${state.quadIndex !== undefined && state.quadIndex > i ? 'done' : ''}`}>
+              {i + 1}
+            </span>
+          ))}
+        </div>
+      );
+    case 'ground':
+      return (
+        <div class="vf vf-ground" aria-hidden="true">
+          <span class="vf-waist-grid" />
+        </div>
+      );
     case 'double':
       return (
         <div class="vf vf-double" aria-hidden="true">

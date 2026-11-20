@@ -11,7 +11,7 @@ import { orderByPins } from './pins';
 
 type CameraGroup = 'film' | 'instant' | 'digital' | 'phone' | 'toy';
 const GROUPS: CameraGroup[] = ['film', 'instant', 'digital', 'phone', 'toy'];
-const TOY_BODIES = new Set(['disposable', 'toy', 'quad', 'double', 'pano', 'fish', 'aqua', 'super8', 'sprocket', 'flash', 'kid', 'pinhole']);
+const TOY_BODIES = new Set(['disposable', 'toy', 'quad', 'double', 'pano', 'fish', 'aqua', 'super8', 'sprocket', 'flash', 'kid', 'pinhole', 'booth']);
 const PHONE_BODIES = new Set(['flip', 'smart', 'slab', 'qwerty']);
 
 /** Bucket for the "All cameras" sheet: Film · Instant · Digital · Phone · Toy/Special. */

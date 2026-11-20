@@ -419,6 +419,105 @@ export function CameraBody({ camera, width = 96 }: { camera: CameraModel; width?
         </g>
       );
       break;
+    case 'booth':
+      // Photo booth cabinet: lit sign, curtained doorway, a fresh strip hanging from the slot.
+      shape = (
+        <g>
+          <rect x="22" y="4" width="64" height="72" rx="3" fill={body} />
+          <rect x="22" y="4" width="64" height="11" rx="3" fill={accent} />
+          <text x="54" y="12.6" text-anchor="middle" font-size="6.5" font-weight="900" letter-spacing="1.2" fill={body} font-family="ui-sans-serif, system-ui">PHOTO</text>
+          <rect x="28" y="19" width="30" height="53" fill={trim} />
+          <path d="M28 19 h30 v53 h-30 z" fill={accent} opacity="0.85" />
+          {[34, 40, 46, 52].map((x) => (
+            <path key={x} d={`M${x} 19 v53`} stroke={body} stroke-width="1" opacity="0.35" />
+          ))}
+          <rect x="63" y="22" width="18" height="13" rx="1.5" fill="#1b2633" />
+          <rect x="65" y="24" width="14" height="9" fill={accent} opacity="0.35" />
+          <rect x="66" y="44" width="12" height="3" rx="1" fill={trim} />
+          <rect x="88" y="30" width="12" height="44" rx="1" fill="#f3efe6" />
+          {[0, 1, 2, 3].map((i) => (
+            <rect key={i} x="90" y={32 + i * 10.5} width="8" height="9" fill="#3b3b3b" opacity="0.75" />
+          ))}
+        </g>
+      );
+      break;
+    case 'aps':
+      // APS zoom compact: rounded clamshell, zoom lens off centre, the C · H · P print-shape switch on top.
+      shape = (
+        <g>
+          <rect x="12" y="24" width="96" height="42" rx="15" fill={body} />
+          <rect x="12" y="52" width="96" height="14" rx="7" fill={trim} opacity="0.35" />
+          <rect x="22" y="30" width="16" height="8" rx="2" fill="#2a3440" />
+          <rect x="22" y="40" width="10" height="5" rx="1.5" fill="#f4f4f4" opacity="0.85" />
+          <rect x="44" y="18" width="26" height="7" rx="3" fill={accent} />
+          {[50, 57, 64].map((x) => (
+            <circle key={x} cx={x} cy="21.5" r="1.4" fill={body} />
+          ))}
+          <circle cx="76" cy="45" r="17" fill={accent} opacity="0.85" />
+          {lens(76, 45, 13)}
+        </g>
+      );
+      break;
+    case 'pocket':
+      // 110 pocket camera: long and thin, the cartridge door down the middle, a flash cube socket on top.
+      shape = (
+        <g>
+          <rect x="44" y="18" width="14" height="12" rx="2" fill="#f4f4f4" stroke={trim} stroke-width="1" />
+          <rect x="6" y="28" width="108" height="30" rx="5" fill={body} />
+          <rect x="44" y="28" width="32" height="30" fill={trim} opacity="0.85" />
+          <rect x="48" y="33" width="24" height="20" rx="2" fill={body} opacity="0.4" />
+          <rect x="88" y="33" width="16" height="9" rx="1.5" fill="#2a3440" />
+          <rect x="102" y="22" width="8" height="6" rx="2" fill={accent} />
+          {lens(24, 43, 9)}
+        </g>
+      );
+      break;
+    case 'spy':
+      // Subminiature: a slim chrome bar that slides open to uncover the lens and finder.
+      shape = (
+        <g>
+          <rect x="8" y="32" width="104" height="18" rx="9" fill={body} />
+          <rect x="8" y="32" width="38" height="18" rx="9" fill={accent} />
+          <rect x="40" y="32" width="6" height="18" fill={accent} />
+          <path d="M50 35 v12 M54 35 v12 M58 35 v12" stroke={trim} stroke-width="0.9" opacity="0.6" />
+          <circle cx="22" cy="41" r="4.5" fill={trim} />
+          <circle cx="22" cy="41" r="2.8" fill="#0b0b0c" />
+          <circle cx="21.2" cy="40.2" r="0.8" fill="#fff" opacity="0.6" />
+          <rect x="32" y="37" width="7" height="8" rx="1" fill="#2a3440" />
+          <rect x="96" y="28" width="8" height="5" rx="1.5" fill={trim} />
+        </g>
+      );
+      break;
+    case 'view':
+      // Wooden field camera: lens board, black pleated bellows, ground-glass back, all on a rail.
+      shape = (
+        <g>
+          <rect x="6" y="66" width="108" height="6" rx="2" fill={trim} />
+          <path d="M34 22 L84 12 L84 66 L34 58 Z" fill={accent} />
+          {[40, 47, 54, 61, 68, 75].map((x, i) => (
+            <path key={x} d={`M${x} ${21 - i * 1.4} L${x} ${59 + i * 1.1}`} stroke={trim} stroke-width="1" opacity="0.35" />
+          ))}
+          <rect x="14" y="18" width="22" height="46" rx="2" fill={body} />
+          <rect x="84" y="8" width="26" height="60" rx="2" fill={body} />
+          <rect x="88" y="13" width="18" height="50" rx="1" fill={trim} opacity="0.55" />
+          {lens(25, 40, 9)}
+        </g>
+      );
+      break;
+    case 'webcam':
+      // 2000s USB webcam: a glossy ball on a clip-on stand, blue ring around the lens, a green LED.
+      shape = (
+        <g>
+          <path d="M60 52 L52 70 h16 Z" fill={trim} />
+          <rect x="38" y="68" width="44" height="7" rx="3.5" fill={trim} />
+          <path d="M82 72 q14 0 22 -8" stroke={trim} stroke-width="2.5" fill="none" stroke-linecap="round" />
+          <circle cx="60" cy="32" r="26" fill={body} />
+          <circle cx="60" cy="32" r="16" fill={accent} />
+          {lens(60, 32, 11)}
+          <circle cx="78" cy="16" r="2.4" fill="#4cff7a" />
+        </g>
+      );
+      break;
     case 'pixel':
       shape = (
         <g>

@@ -4,7 +4,7 @@ export type FilmKind = 'color' | 'slide' | 'bw' | 'instant' | 'cine' | 'digital'
 /** slide: square slide mount; gate: cine gate with rounded corners; sprocket: exposed sprocket holes. */
 export type BorderStyle = 'none' | 'film35' | 'instant' | 'print' | 'slide' | 'gate' | 'sprocket';
 /** Frame format as long:short; orientation follows the camera frame unless forced. */
-export type Aspect = '3:2' | '4:3' | '1:1' | '65:24' | '2.39:1' | '8:7';
+export type Aspect = '3:2' | '4:3' | '1:1' | '65:24' | '2.39:1' | '8:7' | '16:9' | '3:1' | '5:4';
 
 /** The intrinsic look of a film stock. Values are tuned by eye against reference scans. */
 export interface FilmLook {

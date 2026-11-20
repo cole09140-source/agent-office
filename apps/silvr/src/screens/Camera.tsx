@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CameraController, classifyError, type CameraError } from '../camera/camera';
 import { snapshotVideo } from '../camera/capture';
 import { captureRotation, requestOrientationPermission, startOrientation } from '../camera/orientation';
-import { blankLike, blobToCanvas, composeDouble, composeHalf, composeQuad, cropExposure, exposureSpec, previewBlob, toNegative } from '../cameras/compose';
+import { blankLike, blobToCanvas, composeBooth, composeDouble, composeHalf, composeQuad, cropExposure, exposureSpec, previewBlob, toNegative } from '../cameras/compose';
 import { CameraRail } from '../cameras/CameraRail';
 import { canLoad, DEFAULT_CAMERA_ID, ejectsPrints, filmsFor, getCamera, PALETTE_IDS, type CameraModel } from '../cameras/models';
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
@@ -37,6 +37,8 @@ const LAST_STOCK_KEY = 'lastStock';
 const LAST_CAMERA_KEY = 'lastCamera';
 const FLASH_CHARGE_MS = 2800;
 const QUAD_GAP_MS = 200;
+/** Photo booth: time to change pose between the four shots of a strip. */
+const BOOTH_GAP_MS = 1500;
 /** Shutter presses remembered while a capture is still being saved (fired in order afterwards): 4 quick taps → 4 frames. */
 const MAX_QUEUE = 3;
 /** The instant print hangs over the viewfinder this long before it drops into the thumbnail. */
@@ -710,12 +712,17 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
       // Expose according to the body's capture mechanism.
       let exposures: HTMLCanvasElement[] = [];
-      if (camera.capture === 'quad') {
+      if (camera.capture === 'quad' || camera.capture === 'booth') {
+        const booth = camera.capture === 'booth';
         for (let i = 0; i < 4; i++) {
           setQuadIndex(i);
-          setAnnounce(t('cam.quadProgress', { n: i + 1 }));
+          setAnnounce(t(booth ? 'cam.boothProgress' : 'cam.quadProgress', { n: i + 1 }));
+          if (booth && i > 0) {
+            if (s.sound) playShutter(camera.sound);
+            if (s.haptics) haptic(18);
+          }
           exposures.push(expose());
-          if (i < 3) await sleep(QUAD_GAP_MS);
+          if (i < 3) await sleep(booth ? BOOTH_GAP_MS : QUAD_GAP_MS);
           if (aborted()) {
             drain = false;
             return;
@@ -763,7 +770,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           }
         }
       } else {
-        const composite = camera.capture === 'quad' ? composeQuad(exposures) : exposures[0];
+        const composite = camera.capture === 'quad' ? composeQuad(exposures) : camera.capture === 'booth' ? composeBooth(exposures) : exposures[0];
         quickBlob = previewBlob(composite, rotate).catch(() => null);
         const neg = await toNegative(composite);
         result = await addShot(r.id, neg.blob, developFor(r, { flash: fire, rotate }), { width: neg.width, height: neg.height }, takenAt, 1);
@@ -1363,6 +1370,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </div>
       )}
       {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
+      {roll && camera.capture === 'booth' && !busy && <p class="cam-hint">{t('cam.boothHint')}</p>}
       {roll && camera.capture === 'double' && (
         <p class="cam-hint" data-testid="double-hint">
           {roll.pending?.kind === 'double' ? t('cam.double2') : t('cam.doubleHint')}

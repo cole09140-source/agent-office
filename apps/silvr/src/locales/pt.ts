@@ -107,6 +107,7 @@ export const messages: LocaleMessages = {
   'cam.err.busy': 'Outro app está usando a câmera. Feche-o e tente de novo. Enquanto isso, você pode importar fotos e revelá-las.', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.
   'cam.err.notfound': 'Nenhuma câmera foi encontrada neste dispositivo. Em vez disso, você pode importar fotos e revelá-las.', // ko: 이 기기에서 카메라를 찾지 못했어요. 대신 기기의 사진을 불러와 현상할 수 있어요. · en: No camera was found on this device. You can import photos and develop them instead.
   'cam.quadProgress': 'Lente {n}/4', // ko: 렌즈 {n}/4 · en: Lens {n}/4
+  'cam.boothProgress': 'Pose {n}/4', // ko: 포즈 {n}/4 · en: Pose {n}/4
   'common.skip': 'Pular', // ko: 건너뛰기 · en: Skip
   'view.savedToast': 'Imagem salva', // ko: 이미지를 저장했어요 · en: Image saved
   'view.prev': 'Foto anterior', // ko: 이전 사진 · en: Previous photo
@@ -151,6 +152,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': 'A próxima foto vai na metade direita', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': 'Primeira exposição feita · agora encontre a segunda cena', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': 'Um disparo, quatro lentes em sequência', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
+  'cam.boothHint': 'Um disparo, quatro fotos: mude de pose entre elas', // ko: 한 번 누르면 4번 찍혀요. 찍힐 때마다 포즈를 바꿔 보세요 · en: One press, four shots: change your pose between them
   'cam.inCamera': 'Em uso',
   'cam.lastShot': 'Última foto', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': 'Cartucho terminado. Suas fotos estão esperando no álbum.', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
@@ -549,6 +551,12 @@ export const cameraText: LocaleCameraText = {
     touch07: 'A câmera de 2 MP do primeiro iPhone (2007). Foco fixo, tons quentes e céus estourados.', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
     curve07: 'A câmera de 2 MP do BlackBerry Curve de 2007. Balanço de branco frio, nitidez exagerada e ruído granulado.', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
     filter10: 'O iPhone 4 e os filtros dos apps de foto de 2010. Fotos quadradas, pretos lavados, realces amarelos e borda branca.', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
+    booth4: 'Uma cabine de fotos a moedas. Um disparo faz quatro poses com instantes entre elas e imprime numa tira, em preto e branco por padrão.', // ko: 동전 넣고 찍는 즉석 사진 부스. 한 번 누르면 조금씩 간격을 두고 4컷을 찍어 세로 띠 한 장으로 뽑아요. 기본은 흑백. · en: A coin-op photo booth. One press takes four poses a moment apart and prints them as one strip, black and white by default.
+    aps97: 'Uma compacta APS com zoom de 1997. Escolha um de três formatos por foto: C 3:2, H 16:9 ou P panorâmico 3:1.', // ko: 1997년 APS 줌 컴팩트. 한 컷마다 C 3:2, H 16:9, P 파노라마 3:1 세 가지 비율 중 하나를 골라요. · en: A 1997 APS zoom compact. Pick one of three print shapes for each frame: C 3:2, H 16:9 or P panoramic 3:1.
+    pocket110: 'Uma câmera de bolso 110. Um negativo minúsculo: detalhes suaves, grão grosso e cantos escuros e quentes.', // ko: 주머니에 쏙 들어가는 110 포켓 카메라. 작은 네거티브라 부드러운 디테일, 굵은 입자, 따뜻하게 어두운 모서리. · en: A slim 110 pocket camera. A tiny negative gives soft detail, chunky grain and warm, dark corners.
+    spy8: 'Uma câmera espiã subminiatura que abre deslizando. Quadros de 8 × 11 mm, 50 por cartucho, centro nítido e cantos escuros.', // ko: 밀어서 여는 초소형 스파이 카메라. 8×11mm 작은 컷이 한 통에 50장, 가운데는 선명하고 모서리는 깊게 어두워요. · en: A subminiature spy camera that slides open. 8 × 11 mm frames, 50 to a cartridge, a sharp centre and deep corners.
+    view45: 'Uma câmera de campo 4×5 de madeira. O vidro despolido mostra a cena de cabeça para baixo; o filme em chapa é nitidíssimo.', // ko: 나무로 만든 4×5 대형 필드 카메라. 간유리에는 장면이 거꾸로 맺히고, 시트 필름은 놀랍도록 선명해요. · en: A wooden 4×5 field camera. The ground glass shows the scene upside down; the sheet film is extraordinarily sharp.
+    webcam02: 'Uma webcam USB de 2002. Fotos de 352 pixels, tom esverdeado, ruído manchado e data no canto.', // ko: 2002년 USB 웹캠. 352픽셀 사진, 초록빛 도는 톤, 얼룩진 노이즈, 구석의 날짜 표시. · en: A 2002 USB webcam. 352-pixel frames, a greenish cast, blotchy noise and a timestamp in the corner.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -584,6 +592,12 @@ export const cameraText: LocaleCameraText = {
     Smartphone: 'Smartphone',
     'Filter app': 'App de filtros',
     'QWERTY phone': 'Celular QWERTY',
+    'Photo booth': 'Cabine de fotos', // ko: 포토부스 · en: Photo booth
+    APS: 'APS', // ko: APS · en: APS
+    '110 pocket': 'Bolso 110', // ko: 110 포켓 · en: 110 pocket
+    Subminiature: 'Subminiatura', // ko: 초소형 · en: Subminiature
+    'Large format': 'Grande formato', // ko: 대형 · en: Large format
+    Webcam: 'Webcam', // ko: 웹캠 · en: Webcam
   },
 };
 
@@ -615,4 +629,5 @@ export const stockText: LocaleStockText = {
   phone2mp: 'Sensor dos primeiros smartphones. Balanço de branco quente, céus estourados e detalhes suaves.', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
   bbcurve: 'Sensor de um celular com teclado QWERTY. Tons azulados, bordas com nitidez exagerada e ruído grosso nas sombras.', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: 'Filtro de app de fotos do início dos anos 2010. Pretos foscos, altas luzes amarelas e vinheta forte.', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
+  webcam: 'Sensor de uma webcam USB do início dos anos 2000. Tom verde-ciano, contraste esmagado, ruído manchado e blocos JPEG borrados.', // ko: 2000년대 초 USB 웹캠 센서. 청록빛 톤, 뭉개진 대비, 얼룩진 노이즈, 번진 JPEG 블록. · en: An early-2000s USB webcam sensor. A green-cyan cast, crushed contrast, blotchy noise and smeared JPEG blocks.
 };

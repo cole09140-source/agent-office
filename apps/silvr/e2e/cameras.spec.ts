@@ -35,6 +35,12 @@ const CASES: { id: string; presses: number; ratio: number; tol?: number; check?:
   { id: 'touch07', presses: 1, ratio: 4 / 3 },
   { id: 'curve07', presses: 1, ratio: 4 / 3 },
   { id: 'filter10', presses: 1, ratio: 1, tol: 0.05 }, // square inside an even white print border
+  { id: 'booth4', presses: 1, ratio: 0.203, tol: 0.02 }, // four 3:4 poses stacked on a paper strip
+  { id: 'aps97', presses: 1, ratio: 1.5 }, // C (3:2) by default
+  { id: 'pocket110', presses: 1, ratio: 4 / 3 },
+  { id: 'spy8', presses: 1, ratio: 4 / 3 },
+  { id: 'view45', presses: 1, ratio: 1.25 },
+  { id: 'webcam02', presses: 1, ratio: 4 / 3, check: 'lowres' },
 ];
 
 async function pixels(page: Page, w: number, h: number) {

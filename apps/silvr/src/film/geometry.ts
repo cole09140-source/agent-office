@@ -13,6 +13,12 @@ export function aspectRatio(aspect: Aspect): number {
       return 2.39;
     case '8:7':
       return 8 / 7;
+    case '16:9':
+      return 16 / 9;
+    case '3:1':
+      return 3;
+    case '5:4':
+      return 5 / 4;
     default:
       return 1;
   }

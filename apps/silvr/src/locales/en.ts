@@ -85,6 +85,7 @@ export const messages: Messages = {
   'cam.err.busy': 'Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.',
   'cam.err.notfound': 'No camera was found on this device. You can import photos and develop them instead.',
   'cam.quadProgress': 'Lens {n}/4',
+  'cam.boothProgress': 'Pose {n}/4',
   'common.skip': 'Skip',
   'view.savedToast': 'Image saved',
   'view.prev': 'Previous photo',
@@ -130,6 +131,7 @@ export const messages: Messages = {
   'cam.halfNext': 'Next shot fills the right half',
   'cam.double1': 'First exposure done · now find the second scene',
   'cam.quadHint': 'One press, four lenses in sequence',
+  'cam.boothHint': 'One press, four shots: change your pose between them',
   'cam.inCamera': 'Shooting',
   'cam.lastShot': 'Last shot',
   'cam.packDone': 'Pack finished. Your photos are waiting in the album.',
@@ -538,6 +540,12 @@ export const cameraText: CameraText = {
     touch07: 'The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.',
     curve07: 'The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.',
     filter10: 'The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.',
+    booth4: 'A coin-op photo booth. One press takes four poses a moment apart and prints them as one strip, black and white by default.',
+    aps97: 'A 1997 APS zoom compact. Pick one of three print shapes for each frame: C 3:2, H 16:9 or P panoramic 3:1.',
+    pocket110: 'A slim 110 pocket camera. A tiny negative gives soft detail, chunky grain and warm, dark corners.',
+    spy8: 'A subminiature spy camera that slides open. 8 × 11 mm frames, 50 to a cartridge, a sharp centre and deep corners.',
+    view45: 'A wooden 4×5 field camera. The ground glass shows the scene upside down; the sheet film is extraordinarily sharp.',
+    webcam02: 'A 2002 USB webcam. 352-pixel frames, a greenish cast, blotchy noise and a timestamp in the corner.',
   },
   era: {
     SLR: 'SLR',
@@ -572,6 +580,12 @@ export const cameraText: CameraText = {
     Smartphone: 'Smartphone',
     'Filter app': 'Filter app',
     'QWERTY phone': 'QWERTY phone',
+    'Photo booth': 'Photo booth',
+    APS: 'APS',
+    '110 pocket': '110 pocket',
+    Subminiature: 'Subminiature',
+    'Large format': 'Large format',
+    Webcam: 'Webcam',
   },
 };
 
@@ -602,4 +616,5 @@ export const stockText: StockText = {
   phone2mp: 'A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.',
   bbcurve: 'A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.',
   app10: 'An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.',
+  webcam: 'An early-2000s USB webcam sensor. A green-cyan cast, crushed contrast, blotchy noise and smeared JPEG blocks.',
 };

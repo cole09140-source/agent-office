@@ -28,8 +28,8 @@ function pictureRect(p: Photo) {
   return borderImageRect(p.develop.border, turned ? p.height : p.width, turned ? p.width : p.height);
 }
 
-/** Four-lens frames are a 2×2 grid: a square centre crop would scramble it. */
-const isQuad = (p: Photo) => hasCamera(p.develop.cameraId) && getCamera(p.develop.cameraId).capture === 'quad';
+/** Four-lens frames are a 2×2 grid and booth strips are four frames tall: a square centre crop would scramble them. */
+const isQuad = (p: Photo) => hasCamera(p.develop.cameraId) && ['quad', 'booth'].includes(getCamera(p.develop.cameraId).capture);
 
 /** Undo for a roll delete: puts it back and opens it again. */
 async function undoDelete(snap: DeletedRoll): Promise<void> {

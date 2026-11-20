@@ -109,7 +109,7 @@ const clamp = (v: unknown, lo: number, hi: number, fallback: number) => (isNum(v
 /** A timestamp Date/Intl can format (a forged 1e20 would throw RangeError on every render). Negative = before 1970 (old scans). */
 const isTime = (v: unknown): v is number => isNum(v) && Math.abs(v) <= 8.64e15;
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
-const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7'];
+const ASPECTS: Aspect[] = ['3:2', '4:3', '1:1', '65:24', '2.39:1', '8:7', '16:9', '3:1', '5:4'];
 const BORDERS: BorderStyle[] = ['none', 'film35', 'instant', 'print', 'slide', 'gate', 'sprocket'];
 
 function validRoll(r: Roll): boolean {

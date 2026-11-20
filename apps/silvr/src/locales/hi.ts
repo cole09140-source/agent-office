@@ -107,6 +107,7 @@ export const messages: LocaleMessages = {
   'cam.err.busy': 'कैमरा किसी और ऐप में चल रहा है। उस ऐप को बंद करके फिर कोशिश करें। तब तक आप डिवाइस की तस्वीरें इंपोर्ट करके डेवलप कर सकते हैं।', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.
   'cam.err.notfound': 'इस डिवाइस पर कोई कैमरा नहीं मिला। इसके बजाय आप डिवाइस की तस्वीरें इंपोर्ट करके डेवलप कर सकते हैं।', // ko: 이 기기에서 카메라를 찾지 못했어요. 대신 기기의 사진을 불러와 현상할 수 있어요. · en: No camera was found on this device. You can import photos and develop them instead.
   'cam.quadProgress': 'लेंस {n}/4', // ko: 렌즈 {n}/4 · en: Lens {n}/4
+  'cam.boothProgress': 'पोज़ {n}/4', // ko: 포즈 {n}/4 · en: Pose {n}/4
   'common.skip': 'छोड़ें', // ko: 건너뛰기 · en: Skip
   'view.savedToast': 'फ़ोटो सेव हो गई', // ko: 이미지를 저장했어요 · en: Image saved
   'view.prev': 'पिछली फ़ोटो', // ko: 이전 사진 · en: Previous photo
@@ -151,6 +152,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': 'अगली फ़ोटो दाएँ आधे हिस्से में आएगी', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': 'पहला एक्सपोज़र हो गया · अब दूसरा सीन ढूँढिए', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': 'एक बार दबाएँ, चारों लेंस बारी-बारी से खींचेंगे', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
+  'cam.boothHint': 'एक बार दबाएँ, चार फ़ोटो: हर फ़ोटो के बीच पोज़ बदलें', // ko: 한 번 누르면 4번 찍혀요. 찍힐 때마다 포즈를 바꿔 보세요 · en: One press, four shots: change your pose between them
   'cam.inCamera': 'चालू',
   'cam.lastShot': 'आख़िरी फ़ोटो', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': 'पैक ख़त्म हो गया। आपकी तस्वीरें एल्बम में इंतज़ार कर रही हैं।', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
@@ -549,6 +551,12 @@ export const cameraText: LocaleCameraText = {
     touch07: 'पहले iPhone (2007) का 2 MP कैमरा। फ़िक्स्ड फ़ोकस, गर्म टोन और सफ़ेद पड़ा आसमान।', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
     curve07: '2007 के BlackBerry Curve का 2 MP कैमरा। ठंडा व्हाइट बैलेंस, ज़्यादा शार्पनिंग और खुरदरा नॉइज़।', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
     filter10: 'iPhone 4 और 2010 के फ़ोटो ऐप फ़िल्टर। चौकोर फ़ोटो, हल्का काला, पीली हाइलाइट और सफ़ेद बॉर्डर।', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
+    booth4: 'सिक्के वाला फ़ोटो बूथ। एक बार दबाने पर थोड़े-थोड़े अंतर पर चार पोज़ खिंचते हैं और एक पट्टी में छपते हैं, डिफ़ॉल्ट रूप से ब्लैक एंड व्हाइट।', // ko: 동전 넣고 찍는 즉석 사진 부스. 한 번 누르면 조금씩 간격을 두고 4컷을 찍어 세로 띠 한 장으로 뽑아요. 기본은 흑백. · en: A coin-op photo booth. One press takes four poses a moment apart and prints them as one strip, black and white by default.
+    aps97: '1997 का APS ज़ूम कॉम्पैक्ट। हर फ़्रेम के लिए तीन में से एक आकार चुनें: C 3:2, H 16:9 या P पैनोरमा 3:1।', // ko: 1997년 APS 줌 컴팩트. 한 컷마다 C 3:2, H 16:9, P 파노라마 3:1 세 가지 비율 중 하나를 골라요. · en: A 1997 APS zoom compact. Pick one of three print shapes for each frame: C 3:2, H 16:9 or P panoramic 3:1.
+    pocket110: 'जेब में आने वाला 110 पॉकेट कैमरा। छोटा नेगेटिव: नरम डिटेल, मोटा ग्रेन और गर्म, गहरे कोने।', // ko: 주머니에 쏙 들어가는 110 포켓 카메라. 작은 네거티브라 부드러운 디테일, 굵은 입자, 따뜻하게 어두운 모서리. · en: A slim 110 pocket camera. A tiny negative gives soft detail, chunky grain and warm, dark corners.
+    spy8: 'खिसकाकर खुलने वाला सबमिनिएचर जासूसी कैमरा। 8 × 11 mm के फ़्रेम, एक कार्ट्रिज में 50, बीच में शार्प और कोने गहरे।', // ko: 밀어서 여는 초소형 스파이 카메라. 8×11mm 작은 컷이 한 통에 50장, 가운데는 선명하고 모서리는 깊게 어두워요. · en: A subminiature spy camera that slides open. 8 × 11 mm frames, 50 to a cartridge, a sharp centre and deep corners.
+    view45: 'लकड़ी का 4×5 फ़ील्ड कैमरा। ग्राउंड ग्लास पर दृश्य उल्टा दिखता है; शीट फ़िल्म बेहद शार्प होती है।', // ko: 나무로 만든 4×5 대형 필드 카메라. 간유리에는 장면이 거꾸로 맺히고, 시트 필름은 놀랍도록 선명해요. · en: A wooden 4×5 field camera. The ground glass shows the scene upside down; the sheet film is extraordinarily sharp.
+    webcam02: '2002 का USB वेबकैम। 352 पिक्सेल की फ़ोटो, हरापन लिए टोन, धब्बेदार नॉइज़ और कोने में टाइमस्टैम्प।', // ko: 2002년 USB 웹캠. 352픽셀 사진, 초록빛 도는 톤, 얼룩진 노이즈, 구석의 날짜 표시. · en: A 2002 USB webcam. 352-pixel frames, a greenish cast, blotchy noise and a timestamp in the corner.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -584,6 +592,12 @@ export const cameraText: LocaleCameraText = {
     Smartphone: 'स्मार्टफ़ोन',
     'Filter app': 'फ़िल्टर ऐप',
     'QWERTY phone': 'QWERTY फ़ोन',
+    'Photo booth': 'फ़ोटो बूथ', // ko: 포토부스 · en: Photo booth
+    APS: 'APS', // ko: APS · en: APS
+    '110 pocket': '110 पॉकेट', // ko: 110 포켓 · en: 110 pocket
+    Subminiature: 'सबमिनिएचर', // ko: 초소형 · en: Subminiature
+    'Large format': 'लार्ज फ़ॉर्मैट', // ko: 대형 · en: Large format
+    Webcam: 'वेबकैम', // ko: 웹캠 · en: Webcam
   },
 };
 
@@ -615,4 +629,5 @@ export const stockText: LocaleStockText = {
   phone2mp: 'पहली पीढ़ी के स्मार्टफ़ोन का सेंसर: गर्म व्हाइट बैलेंस, सफ़ेद पड़ा आसमान और नरम डिटेल।', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
   bbcurve: 'QWERTY फ़ोन का सेंसर: नीला टोन, ज़रूरत से ज़्यादा शार्प किनारे और छायाओं में मोटा नॉइज़।', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: '2010 के दशक की शुरुआत का फ़ोटो ऐप फ़िल्टर: मैट काले, पीली हाइलाइट्स और गहरा विनेट।', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
+  webcam: '2000 के दशक की शुरुआत के USB वेबकैम का सेंसर: हरा-नीला टिंट, दबा हुआ कंट्रास्ट, धब्बेदार नॉइज़ और फैले JPEG ब्लॉक।', // ko: 2000년대 초 USB 웹캠 센서. 청록빛 톤, 뭉개진 대비, 얼룩진 노이즈, 번진 JPEG 블록. · en: An early-2000s USB webcam sensor. A green-cyan cast, crushed contrast, blotchy noise and smeared JPEG blocks.
 };

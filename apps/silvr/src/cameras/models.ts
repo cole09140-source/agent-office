@@ -6,7 +6,8 @@ export type CaptureMode =
   | 'single'
   | 'half' // two portrait halves share one 35mm frame (two presses)
   | 'quad' // four lenses fire in sequence into a 2×2 grid (one press)
-  | 'double'; // two exposures stacked on one frame (two presses)
+  | 'double' // two exposures stacked on one frame (two presses)
+  | 'booth'; // photo booth: four poses a moment apart, printed as one vertical strip (one press)
 
 export type BodyStyle =
   | 'slr'
@@ -40,7 +41,13 @@ export type BodyStyle =
   | 'flip'
   | 'smart'
   | 'slab'
-  | 'qwerty';
+  | 'qwerty'
+  | 'booth'
+  | 'aps'
+  | 'pocket'
+  | 'spy'
+  | 'view'
+  | 'webcam';
 export type ViewfinderStyle =
   | 'slr'
   | 'range'
@@ -59,7 +66,9 @@ export type ViewfinderStyle =
   | 'sport' // waterproof sport finder: big wire frame
   | 'waist' // TLR ground glass seen from above: laterally reversed
   | 'gate' // cine gate with rounded corners
-  | 'phone'; // phone camera app: status bar, shot counter
+  | 'phone' // phone camera app: status bar, shot counter
+  | 'booth' // photo booth: four stacked cells that light up one by one
+  | 'ground'; // view camera ground glass: upside down and reversed, with a focusing grid
 export type ShutterSound = 'slr' | 'leaf' | 'disposable' | 'instant' | 'toy' | 'quad' | 'digital' | 'pixel' | 'cine' | 'motor' | 'phone';
 /** standard: torch / screen flash. charge: must be charged before every flash shot. none: no flash. */
 export type FlashMode = 'standard' | 'charge' | 'none';
@@ -933,6 +942,153 @@ export const CAMERAS: CameraModel[] = [
     border: 'print',
     maxLong: 2048,
     pro: true,
+  },
+  {
+    id: 'booth4',
+    name: 'Booth 4',
+    era: '1968 · Photo booth',
+    body: 'booth',
+    colors: ['#7a1f2b', '#e9dcc0', '#2a1a14'],
+    films: ['mono400', 'silver100', 'sunny200', 'dream160'],
+    defaultStock: 'mono400',
+    // Strips, not frames: each press prints one strip of four poses.
+    capacities: [12, 6],
+    formats: ['4:3'],
+    capture: 'booth',
+    lens: lens({ soft: 0.15, vignette: 0.12 }),
+    flash: 'standard',
+    defaultFlash: true,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'leaf',
+    viewfinder: 'booth',
+    instant: false,
+    zoom: [1],
+    ev: false,
+    flashPower: 1.2,
+    pro: false,
+  },
+  {
+    id: 'aps97',
+    name: 'APS Zoom',
+    chip: 'APS',
+    era: '1997 · APS',
+    body: 'aps',
+    colors: ['#c9c4bb', '#2b2d31', '#8d8a84'],
+    films: 'any',
+    defaultStock: 'sunny200',
+    capacities: [40, 25, 15],
+    // C · H · P: the three print shapes an APS cartridge records per frame.
+    formats: ['3:2', '16:9', '3:1'],
+    capture: 'single',
+    lens: lens({ soft: 0.12, vignette: 0.12, chroma: 0.3 }),
+    flash: 'standard',
+    defaultFlash: false,
+    stamp: 'led',
+    defaultDate: true,
+    sound: 'motor',
+    viewfinder: 'compact',
+    instant: false,
+    zoom: [1, 2],
+    ev: false,
+    pro: false,
+  },
+  {
+    id: 'pocket110',
+    name: 'Pocket 110',
+    era: '1975 · 110 pocket',
+    body: 'pocket',
+    colors: ['#1c1c1c', '#c9cbcd', '#e0a526'],
+    films: 'any',
+    defaultStock: 'sunny200',
+    capacities: [24, 12],
+    formats: ['4:3'],
+    capture: 'single',
+    // A thumbnail-sized negative behind a tiny lens: soft, grainy, warm corners.
+    lens: lens({ soft: 0.4, distort: 0.03, vignette: 0.32, chroma: 0.6 }),
+    flash: 'standard',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'toy',
+    viewfinder: 'tunnel',
+    instant: false,
+    zoom: [1],
+    ev: false,
+    leakChance: 0.15,
+    pro: false,
+  },
+  {
+    id: 'spy8',
+    name: 'Spy 8',
+    era: '1958 · Subminiature',
+    body: 'spy',
+    colors: ['#cfd2d6', '#26282c', '#8e9298'],
+    films: ['mono400', 'silver100', 'sunny200', 'chrome100'],
+    defaultStock: 'silver100',
+    capacities: [50, 36],
+    formats: ['4:3'],
+    capture: 'single',
+    // A tiny, sharp lens on a fingernail of film: crisp centre, deep corners.
+    lens: lens({ soft: 0.1, vignette: 0.4, chroma: 0.2 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'leaf',
+    viewfinder: 'range',
+    instant: false,
+    zoom: [1],
+    ev: true,
+    pro: true,
+  },
+  {
+    id: 'view45',
+    name: 'Field 4×5',
+    era: '1950 · Large format',
+    body: 'view',
+    colors: ['#8a5a32', '#1b1b1b', '#c9a86a'],
+    films: 'any',
+    defaultStock: 'silver100',
+    // Sheets in double-sided holders.
+    capacities: [12, 6],
+    formats: ['5:4'],
+    capture: 'single',
+    lens: lens({ vignette: 0.08 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'none',
+    defaultDate: false,
+    sound: 'leaf',
+    viewfinder: 'ground',
+    instant: false,
+    zoom: [1],
+    ev: true,
+    pro: true,
+  },
+  {
+    id: 'webcam02',
+    name: 'Web Cam',
+    era: '2002 · Webcam',
+    body: 'webcam',
+    colors: ['#e9ecef', '#3d7be0', '#9aa3ad'],
+    films: ['webcam'],
+    defaultStock: 'webcam',
+    capacities: [99],
+    formats: ['4:3'],
+    capture: 'single',
+    lens: lens({ soft: 0.5, vignette: 0.2, chroma: 0.9 }),
+    flash: 'none',
+    defaultFlash: false,
+    stamp: 'digital',
+    defaultDate: true,
+    sound: 'digital',
+    viewfinder: 'lcd',
+    instant: true,
+    zoom: [1],
+    ev: false,
+    maxLong: 352, // CIF: 352×288 stretched to 4:3
+    pro: false,
   },
 ];
 

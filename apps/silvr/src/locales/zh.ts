@@ -113,6 +113,7 @@ export const messages: LocaleMessages = {
   'cam.err.busy': '其他 App 正在使用相机。请关闭该 App 后重试。现在也可以先导入设备里的照片来冲洗。', // ko: 다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해 주세요. 그동안 기기의 사진을 불러와 현상할 수 있어요. · en: Another app is using the camera. Close it and try again. In the meantime, you can import photos and develop them.
   'cam.err.notfound': '这台设备上没有找到相机。你可以改为导入设备里的照片来冲洗。', // ko: 이 기기에서 카메라를 찾지 못했어요. 대신 기기의 사진을 불러와 현상할 수 있어요. · en: No camera was found on this device. You can import photos and develop them instead.
   'cam.quadProgress': '镜头 {n}/4', // ko: 렌즈 {n}/4 · en: Lens {n}/4
+  'cam.boothProgress': '第 {n}/4 张', // ko: 포즈 {n}/4 · en: Pose {n}/4
   'common.skip': '跳过', // ko: 건너뛰기 · en: Skip
   'view.savedToast': '图片已保存', // ko: 이미지를 저장했어요 · en: Image saved
   'view.prev': '上一张', // ko: 이전 사진 · en: Previous photo
@@ -157,6 +158,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': '下一张会拍在右半格', // ko: 다음 장은 오른쪽 칸에 찍혀요 · en: Next shot fills the right half
   'cam.double1': '第一次曝光完成 · 再找一个要叠加的画面', // ko: 첫 번째 노출 완료 · 겹쳐 담을 장면을 찾아보세요 · en: First exposure done · now find the second scene
   'cam.quadHint': '按一次，4 个镜头依次拍摄', // ko: 한 번 누르면 렌즈 4개가 차례로 찍어요 · en: One press, four lenses in sequence
+  'cam.boothHint': '按一次拍 4 张，每张之间换个姿势', // ko: 한 번 누르면 4번 찍혀요. 찍힐 때마다 포즈를 바꿔 보세요 · en: One press, four shots: change your pose between them
   'cam.inCamera': '拍摄中',
   'cam.lastShot': '最近一张', // ko: 마지막 사진 · en: Last shot
   'cam.packDone': '这盒相纸用完了。照片正在相册里等你。', // ko: 팩을 다 썼어요. 사진은 앨범에서 기다리고 있어요. · en: Pack finished. Your photos are waiting in the album.
@@ -555,6 +557,12 @@ export const cameraText: LocaleCameraText = {
     touch07: '初代 iPhone（2007\u00A0年）的 200\u00A0万像素摄像头。定焦，暖色调，天空一片过曝。', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
     curve07: '2007\u00A0年 BlackBerry Curve 的 200\u00A0万像素摄像头。白平衡偏冷，锐化过重，噪点粗糙。', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
     filter10: 'iPhone 4 与 2010\u00A0年的照片应用滤镜。方形照片，发灰的黑色，偏黄的高光，白色边框。', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
+    booth4: '投币自助照相亭。按一次隔一会儿拍 4 张，印成一条竖长的照片条，默认黑白。', // ko: 동전 넣고 찍는 즉석 사진 부스. 한 번 누르면 조금씩 간격을 두고 4컷을 찍어 세로 띠 한 장으로 뽑아요. 기본은 흑백. · en: A coin-op photo booth. One press takes four poses a moment apart and prints them as one strip, black and white by default.
+    aps97: '1997 年的 APS 变焦便携相机。每张可在三种画幅中选一种：C 3:2、H 16:9、P 全景 3:1。', // ko: 1997년 APS 줌 컴팩트. 한 컷마다 C 3:2, H 16:9, P 파노라마 3:1 세 가지 비율 중 하나를 골라요. · en: A 1997 APS zoom compact. Pick one of three print shapes for each frame: C 3:2, H 16:9 or P panoramic 3:1.
+    pocket110: '能放进口袋的 110 袖珍相机。底片很小，细节柔和、颗粒粗、四角温暖地暗下去。', // ko: 주머니에 쏙 들어가는 110 포켓 카메라. 작은 네거티브라 부드러운 디테일, 굵은 입자, 따뜻하게 어두운 모서리. · en: A slim 110 pocket camera. A tiny negative gives soft detail, chunky grain and warm, dark corners.
+    spy8: '推拉式超小型间谍相机。8×11 毫米的小画幅，一卷 50 张，中心锐利，四角暗角明显。', // ko: 밀어서 여는 초소형 스파이 카메라. 8×11mm 작은 컷이 한 통에 50장, 가운데는 선명하고 모서리는 깊게 어두워요. · en: A subminiature spy camera that slides open. 8 × 11 mm frames, 50 to a cartridge, a sharp centre and deep corners.
+    view45: '木制 4×5 大画幅外拍相机。毛玻璃上的景象上下颠倒，页片锐利得惊人。', // ko: 나무로 만든 4×5 대형 필드 카메라. 간유리에는 장면이 거꾸로 맺히고, 시트 필름은 놀랍도록 선명해요. · en: A wooden 4×5 field camera. The ground glass shows the scene upside down; the sheet film is extraordinarily sharp.
+    webcam02: '2002 年的 USB 摄像头。352 像素照片、偏绿的色调、斑驳的噪点，角落带时间戳。', // ko: 2002년 USB 웹캠. 352픽셀 사진, 초록빛 도는 톤, 얼룩진 노이즈, 구석의 날짜 표시. · en: A 2002 USB webcam. 352-pixel frames, a greenish cast, blotchy noise and a timestamp in the corner.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -590,6 +598,12 @@ export const cameraText: LocaleCameraText = {
     Smartphone: '智能手机',
     'Filter app': '滤镜应用',
     'QWERTY phone': '全键盘手机',
+    'Photo booth': '照相亭', // ko: 포토부스 · en: Photo booth
+    APS: 'APS', // ko: APS · en: APS
+    '110 pocket': '110 袖珍', // ko: 110 포켓 · en: 110 pocket
+    Subminiature: '超小型', // ko: 초소형 · en: Subminiature
+    'Large format': '大画幅', // ko: 대형 · en: Large format
+    Webcam: '摄像头', // ko: 웹캠 · en: Webcam
   },
 };
 
@@ -621,4 +635,5 @@ export const stockText: LocaleStockText = {
   phone2mp: '第一代智能手机的传感器。白平衡偏暖，天空过曝，细节柔和。', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
   bbcurve: '全键盘手机的传感器。色调偏蓝，锐化过度，暗部噪点粗糙。', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: '2010\u00A0年代初修图应用的滤镜。哑光的黑，泛黄的高光，浓重的暗角。', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
+  webcam: '2000 年代初 USB 摄像头的传感器。青绿色调、对比度发闷、斑驳噪点、模糊的 JPEG 色块。', // ko: 2000년대 초 USB 웹캠 센서. 청록빛 톤, 뭉개진 대비, 얼룩진 노이즈, 번진 JPEG 블록. · en: An early-2000s USB webcam sensor. A green-cyan cast, crushed contrast, blotchy noise and smeared JPEG blocks.
 };

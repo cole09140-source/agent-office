@@ -141,6 +141,12 @@ export const BACKS: Record<string, BackEntry> = {
   touch07: { family: 'phone', body: '#141416', shade: '#060607', band: '#141416', plate: 'transparent', plateInk: '#e8e8ea', btn: '#2a2b2e', btnInk: '#f1f1f3', btnOn: '#ffcc4d', shutter: '#f4f4f6', shutterRim: '#9a9ca0', frame: '#2a2b2e', accent: '#b9bcc1' },
   curve07: { family: 'phone', material: 'matte', buttons: 'rubber', body: '#1d1f23', shade: '#0d0e10', band: '#1d1f23', plate: 'transparent', plateInk: '#e6e8ec', btn: '#30333a', btnInk: '#f1f2f5', btnOn: '#7fd0ff', shutter: '#d9dde3', shutterRim: '#80868f', frame: '#30333a', accent: '#9aa0a8' },
   filter10: { family: 'phone', body: '#f4f4f2', shade: '#d4d4d0', band: '#f4f4f2', plate: 'transparent', plateInk: '#1b1b1d', btn: '#1b1b1d', btnInk: '#f4f4f2', btnOn: '#ffb36b', shutter: '#ffffff', shutterRim: '#b9b9b5', frame: '#1b1b1d', accent: '#c76b2a' },
+  booth4: { family: 'compact', material: 'gloss', buttons: 'chrome', shutterStyle: 'dome', body: '#7a1f2b', shade: '#4a1019', band: '#e9dcc0', plate: '#e9dcc0', plateInk: '#4a1019', ...CHROME_BTN, shutter: '#e9dcc0', shutterRim: '#8a7a5c', frame: '#2a1a14', accent: '#e9dcc0', print: '4 POSES · 1 STRIP', bandAt: 'bottom', details: { screws: true, stripe: true } },
+  aps97: { family: 'compact', material: 'brushed', buttons: 'rubber', shutterStyle: 'dome', body: '#c9c4bb', shade: '#9a958c', band: '#2b2d31', plate: 'transparent', plateInk: '#1f2023', ...RUBBER_BTN, shutter: '#2b2d31', shutterRim: '#111214', frame: '#2b2d31', accent: '#2b2d31', print: 'C · H · P', details: { grip: true, lugs: true } },
+  pocket110: { family: 'compact', material: 'matte', buttons: 'rubber', shutterStyle: 'knurl', body: '#1c1c1c', shade: '#0b0b0b', band: '#c9cbcd', plate: '#c9cbcd', plateInk: '#1c1c1c', ...RUBBER_BTN, shutter: '#e0a526', shutterRim: '#6e4f0c', frame: '#3a3a3a', accent: '#e0a526', print: '110 · POCKET', bandAt: 'none', details: { lugs: true, stripe: true } },
+  spy8: { family: 'compact', material: 'brushed', buttons: 'chrome', shutterStyle: 'knurl', body: '#cfd2d6', shade: '#9a9ea4', band: '#26282c', plate: 'transparent', plateInk: '#1d1f22', ...CHROME_BTN, shutter: '#e1e3e6', shutterRim: '#6b6f75', frame: '#26282c', accent: '#26282c', print: '8 × 11 MM', details: { screws: true } },
+  view45: { family: 'leather', material: 'wood', window: 'waist', body: '#8a5a32', shade: '#5c3a1e', band: '#1b1b1b', plate: '#d9c39a', plateInk: '#2b1d12', btn: '#d9c39a', btnInk: '#2b1d12', btnOn: '#7c2d12', shutter: '#c9a86a', shutterRim: '#5c3a1e', frame: '#1b1b1b', accent: '#c9a86a', details: { screws: true, lugs: false } },
+  webcam02: { family: 'y2k', material: 'gloss', body: '#e9ecef', shade: '#b9c0c7', band: '#e9ecef', plate: '#2a5fb8', plateInk: '#ffffff', btn: '#2a5fb8', btnInk: '#ffffff', btnOn: '#0b2a5c', shutter: '#3d7be0', shutterRim: '#1d4fa0', frame: '#2a2f36', accent: '#3d7be0', print: 'USB · 352 × 288', details: { led: '#4cff7a', grille: true } },
   super8: { family: 'cine', body: '#4a4733', shade: '#2b291c', band: '#4a4733', plate: '#d9d6c8', plateInk: '#2b291c', ...RUBBER_BTN, shutter: '#e0a526', shutterRim: '#6e4f0c', frame: '#bdbdbd', accent: '#e0a526', details: { grip: true, screws: true, lugs: true } },
 };
 
@@ -149,6 +155,7 @@ const BY_BODY: Partial<Record<CameraModel['body'], string>> = {
   slr: 'pro35', double: 'doublex', range: 'range', tlr: 'twin66', trip: 'slide35', half: 'half72', compact: 'zonelc', toy: 'toy120', pano: 'panox', sprocket: 'sprocket',
   flash: 'party', disposable: 'snap27', instant: 'instasq', wide: 'instaw', digicam: 'ccd03', quad: 'quad4', fish: 'fish180', pixel: 'pixel', kid: 'kidcam', aqua: 'aqua27', cine: 'cine', super8: 'super8',
   floppy: 'floppy98', slim: 'slim06', bridge: 'bridge09', zoomc: 'zoom90', mf: 'mf645', pinhole: 'pinhole', flip: 'flip03', smart: 'touch07', slab: 'filter10', qwerty: 'curve07',
+  booth: 'booth4', aps: 'aps97', pocket: 'pocket110', spy: 'spy8', view: 'view45', webcam: 'webcam02',
 };
 
 export function backFor(camera: Pick<CameraModel, 'id' | 'body'>): BackSpec {

@@ -111,6 +111,7 @@ export const messages: LocaleMessages = {
   'cam.err.busy': 'Камера занята другим приложением. Закройте его и попробуйте ещё раз. А пока можно импортировать фото и проявить их.',
   'cam.err.notfound': 'Камера на этом устройстве не найдена. Вместо этого можно импортировать фото и проявить их.',
   'cam.quadProgress': 'Объектив {n}/4',
+  'cam.boothProgress': 'Поза {n}/4', // ko: 포즈 {n}/4 · en: Pose {n}/4
   'common.skip': 'Пропустить',
   'view.savedToast': 'Изображение сохранено',
   'view.prev': 'Предыдущее фото',
@@ -155,6 +156,7 @@ export const messages: LocaleMessages = {
   'cam.halfNext': 'Следующий кадр — в правой половине',
   'cam.double1': 'Первая экспозиция готова · найдите сюжет для второй',
   'cam.quadHint': 'Одно нажатие — четыре объектива по очереди',
+  'cam.boothHint': 'Одно нажатие — четыре снимка: меняйте позу между ними', // ko: 한 번 누르면 4번 찍혀요. 찍힐 때마다 포즈를 바꿔 보세요 · en: One press, four shots: change your pose between them
   'cam.inCamera': 'Снимается',
   'cam.lastShot': 'Последний кадр',
   'cam.packDone': 'Кассета закончилась. Снимки уже ждут в альбоме.',
@@ -553,6 +555,12 @@ export const cameraText: LocaleCameraText = {
     touch07: 'Камера на 2 Мп первого iPhone (2007). Фиксированный фокус, тёплые тона, выбитое небо.', // ko: 2007년 첫 아이폰의 200만 화소 카메라. 고정 초점, 따뜻한 톤, 하얗게 날아간 하늘. · en: The 2 MP camera of the first iPhone (2007). Fixed focus, warm tones, blown-out skies.
     curve07: 'Камера на 2 Мп в BlackBerry Curve 2007 года. Холодный баланс белого, сильная резкость, зернистый шум.', // ko: 2007년 블랙베리 커브의 200만 화소 카메라. 차가운 화이트밸런스, 강한 샤픈, 자글자글한 노이즈. · en: The 2 MP camera of the 2007 BlackBerry Curve. Cool white balance, heavy sharpening, gritty noise.
     filter10: 'iPhone 4 и фильтры фотоприложений 2010 года. Квадратные снимки, приподнятый чёрный, жёлтые света, белая рамка.', // ko: 2010년 아이폰 4와 사진 앱 필터 감성. 정사각 사진, 들뜬 검정, 노란 하이라이트, 하얀 테두리. · en: The iPhone 4 and the 2010 photo-app filters. Square shots, lifted blacks, yellow highlights, a white border.
+    booth4: 'Фотобудка с монетоприёмником. Одно нажатие — четыре позы с короткими паузами, напечатанные одной полоской, по умолчанию чёрно-белые.', // ko: 동전 넣고 찍는 즉석 사진 부스. 한 번 누르면 조금씩 간격을 두고 4컷을 찍어 세로 띠 한 장으로 뽑아요. 기본은 흑백. · en: A coin-op photo booth. One press takes four poses a moment apart and prints them as one strip, black and white by default.
+    aps97: 'Компактная APS-камера с зумом 1997 года. Один из трёх форматов на каждый кадр: C 3:2, H 16:9 или панорамный P 3:1.', // ko: 1997년 APS 줌 컴팩트. 한 컷마다 C 3:2, H 16:9, P 파노라마 3:1 세 가지 비율 중 하나를 골라요. · en: A 1997 APS zoom compact. Pick one of three print shapes for each frame: C 3:2, H 16:9 or P panoramic 3:1.
+    pocket110: 'Карманная камера формата 110. Крошечный негатив: мягкая детализация, крупное зерно и тёплые тёмные углы.', // ko: 주머니에 쏙 들어가는 110 포켓 카메라. 작은 네거티브라 부드러운 디테일, 굵은 입자, 따뜻하게 어두운 모서리. · en: A slim 110 pocket camera. A tiny negative gives soft detail, chunky grain and warm, dark corners.
+    spy8: 'Шпионская субминиатюрная камера, которая открывается сдвигом. Кадры 8 × 11 мм, 50 на кассету, резкий центр и тёмные углы.', // ko: 밀어서 여는 초소형 스파이 카메라. 8×11mm 작은 컷이 한 통에 50장, 가운데는 선명하고 모서리는 깊게 어두워요. · en: A subminiature spy camera that slides open. 8 × 11 mm frames, 50 to a cartridge, a sharp centre and deep corners.
+    view45: 'Деревянная полевая камера 4×5. На матовом стекле сцена перевёрнута, а листовая плёнка поразительно резкая.', // ko: 나무로 만든 4×5 대형 필드 카메라. 간유리에는 장면이 거꾸로 맺히고, 시트 필름은 놀랍도록 선명해요. · en: A wooden 4×5 field camera. The ground glass shows the scene upside down; the sheet film is extraordinarily sharp.
+    webcam02: 'USB-веб-камера 2002 года. Снимки 352 пикселя, зеленоватый оттенок, пятнистый шум и дата в углу.', // ko: 2002년 USB 웹캠. 352픽셀 사진, 초록빛 도는 톤, 얼룩진 노이즈, 구석의 날짜 표시. · en: A 2002 USB webcam. 352-pixel frames, a greenish cast, blotchy noise and a timestamp in the corner.
   },
   /** Type word in the era line "1979 · SLR" (guide §3.3). The year and " · " are added by the app. */
   era: {
@@ -588,6 +596,12 @@ export const cameraText: LocaleCameraText = {
     Smartphone: 'Смартфон',
     'Filter app': 'Приложение с фильтрами',
     'QWERTY phone': 'QWERTY-телефон',
+    'Photo booth': 'Фотобудка', // ko: 포토부스 · en: Photo booth
+    APS: 'APS', // ko: APS · en: APS
+    '110 pocket': 'Карманная 110', // ko: 110 포켓 · en: 110 pocket
+    Subminiature: 'Субминиатюра', // ko: 초소형 · en: Subminiature
+    'Large format': 'Крупный формат', // ko: 대형 · en: Large format
+    Webcam: 'Веб-камера', // ko: 웹캠 · en: Webcam
   },
 };
 
@@ -619,4 +633,5 @@ export const stockText: LocaleStockText = {
   phone2mp: 'Сенсор первых смартфонов: тёплый баланс белого, выбитое небо, мягкая детализация.', // ko: 1세대 스마트폰 센서. 따뜻한 화이트밸런스, 날아간 하늘, 부드러운 디테일. · en: A first-generation smartphone sensor. Warm white balance, blown skies, soft detail.
   bbcurve: 'Сенсор телефона с QWERTY-клавиатурой: синеватые тона, пересушенные края, грубый шум в тенях.', // ko: 쿼티폰 센서. 푸르스름한 톤, 과한 샤픈, 거친 그림자 노이즈. · en: A QWERTY-phone sensor. Bluish tones, over-sharpened edges, coarse shadow noise.
   app10: 'Фильтр фотоприложения начала 2010-х: матовые чёрные, жёлтые света, сильное виньетирование.', // ko: 2010년대 초 사진 앱 필터. 들뜬 검정, 노란 하이라이트, 진한 비네팅. · en: An early-2010s photo-app filter. Matte blacks, yellow highlights, a heavy vignette.
+  webcam: 'Сенсор USB-веб-камеры начала 2000-х: зелёно-голубой оттенок, сжатый контраст, пятнистый шум и размытые блоки JPEG.', // ko: 2000년대 초 USB 웹캠 센서. 청록빛 톤, 뭉개진 대비, 얼룩진 노이즈, 번진 JPEG 블록. · en: An early-2000s USB webcam sensor. A green-cyan cast, crushed contrast, blotchy noise and smeared JPEG blocks.
 };

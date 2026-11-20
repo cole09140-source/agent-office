@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { blendDouble, exposureSpec, halfLayout, quadLayout } from '../src/cameras/compose';
+import { blendDouble, boothLayout, exposureSpec, halfLayout, quadLayout } from '../src/cameras/compose';
 import { canLoad, CAMERAS, ejectsPrints, filmsFor, getCamera, PALETTE_IDS, PIXEL_PALETTES } from '../src/cameras/models';
 import { ditherIndex, lensUv, renderCpu } from '../src/film/cpuRender';
 import { aspectRatio, cropForAspect } from '../src/film/geometry';
@@ -14,9 +14,9 @@ import { clearAll } from '../src/store/db';
 import { addShot, developAllNow, finishRoll, getPending, getRoll, inCamera, listPhotos, listRolls, loadRoll, OPEN_CAPACITY, savePending, viewable, type Roll } from '../src/store/rolls';
 
 describe('camera catalogue', () => {
-  it('has 32 distinct, well-formed bodies', () => {
-    expect(CAMERAS).toHaveLength(32);
-    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(32);
+  it('has 38 distinct, well-formed bodies', () => {
+    expect(CAMERAS).toHaveLength(38);
+    expect(new Set(CAMERAS.map((c) => c.id)).size).toBe(38);
     for (const c of CAMERAS) {
       expect(canLoad(c, c.defaultStock), `${c.id} default film`).toBe(true);
       expect(c.capacities.length).toBeGreaterThan(0);
@@ -48,7 +48,7 @@ describe('camera catalogue', () => {
       signalLang.value = lang;
       for (const c of CAMERAS) {
         expect(cameraDescription(c.id), `${lang} ${c.id}`).not.toBe('');
-        if (lang === 'ko') expect(cameraEra(c.era), c.era).toMatch(/^\d{4} · [^A-Za-z]*(\d|SLR|TLR)?[^A-Za-z]*$/);
+        if (lang === 'ko') expect(cameraEra(c.era), c.era).toMatch(/^\d{4} · [^A-Za-z]*(\d|SLR|TLR|APS)?[^A-Za-z]*$/);
       }
       for (const st of STOCKS) expect(stockDescription(st.id), `${lang} ${st.id}`).not.toBe('');
     }
@@ -60,11 +60,11 @@ describe('camera catalogue', () => {
   });
   it('covers every distinct mechanism', () => {
     const caps = new Set(CAMERAS.map((c) => c.capture));
-    expect([...caps].sort()).toEqual(['double', 'half', 'quad', 'single']);
+    expect([...caps].sort()).toEqual(['booth', 'double', 'half', 'quad', 'single']);
     expect(CAMERAS.some((c) => c.flash === 'charge')).toBe(true);
     expect(CAMERAS.some((c) => c.lens.fisheye)).toBe(true);
     expect(CAMERAS.some((c) => c.lens.streak > 0)).toBe(true);
-    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['bridge09', 'ccd03', 'curve07', 'filter10', 'flip03', 'floppy98', 'instasq', 'instaw', 'kidcam', 'pixel', 'slim06', 'touch07']);
+    expect(CAMERAS.filter((c) => c.instant).map((c) => c.id).sort()).toEqual(['bridge09', 'ccd03', 'curve07', 'filter10', 'flip03', 'floppy98', 'instasq', 'instaw', 'kidcam', 'pixel', 'slim06', 'touch07', 'webcam02']);
     expect(CAMERAS.filter(ejectsPrints).map((c) => c.id).sort()).toEqual(['instasq', 'instaw']);
   });
   it('has 4-tone palettes ordered dark → light', () => {
@@ -76,6 +76,18 @@ describe('camera catalogue', () => {
 });
 
 describe('capture geometry', () => {
+  it('a booth strip stacks four portrait poses top to bottom on paper', () => {
+    expect(exposureSpec(getCamera('booth4'), '4:3')).toEqual({ aspect: '4:3', orient: 'portrait' });
+    const L = boothLayout(300, 400);
+    expect(L.cells).toHaveLength(4);
+    L.cells.forEach((c, i) => {
+      expect(c.x).toBeGreaterThan(0);
+      if (i) expect(c.y).toBeGreaterThan(L.cells[i - 1].y + L.cells[i - 1].h);
+    });
+    const last = L.cells[3];
+    expect(L.height).toBeGreaterThan(last.y + last.h);
+    expect(L.width / L.height).toBeCloseTo(0.203, 2);
+  });
   it('half-frame exposures are portrait 3:4 even from a landscape sensor', () => {
     const spec = exposureSpec(getCamera('half72'), '3:2');
     expect(spec).toEqual({ aspect: '4:3', orient: 'portrait' });
