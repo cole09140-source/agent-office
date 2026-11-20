@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Film Camela 레트로 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo+Narrow:wght@500;700&family=IBM+Plex+Mono:wght@500;700&family=Space+Mono:wght@400;700&family=VT323&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --page: #1a1816; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); font-family: 'Space Grotesk', system-ui, sans-serif; color: #eee; }
+  .wrap { display: grid; gap: 56px; padding: 40px; justify-content: center; }
+  figure { margin: 0; display: grid; gap: 14px; justify-items: center; }
+  figcaption { font: 700 15px 'Space Grotesk'; letter-spacing: 0.02em; text-align: center; }
+  figcaption small { display: block; font-weight: 500; opacity: 0.6; margin-top: 4px; }
+  .phone { width: 390px; height: 844px; border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 0 0 10px #000, 0 30px 60px rgba(0,0,0,.6); }
+  .scene { position: absolute; inset: 0; background:
+    radial-gradient(circle at 72% 28%, #fff4c9 0 9%, transparent 10%),
+    linear-gradient(#7fb6d9 0 46%, #e9c890 46% 47%, #4f7d3a 47% 70%, #2f4f25 70%); }
+  .scene::after { content: ''; position: absolute; left: 18%; bottom: 30%; width: 18%; height: 22%; background: #b8342a; box-shadow: inset -14px 0 0 #8f241c; }
+
+  /* ---------- A · 70s film box ---------- */
+  .a { background: #efe4cc; color: #3a2416; font-family: 'Space Mono', monospace; }
+  .a .stripes { position: absolute; left: 0; right: 0; top: 0; height: 104px; background: linear-gradient(#efe4cc 0 52px, #c2391b 52px 64px, #e8742a 64px 76px, #f2b632 76px 88px, #efe4cc 88px); }
+  .a .brand { position: absolute; top: 18px; left: 22px; right: 22px; display: flex; justify-content: space-between; align-items: baseline; }
+  .a .brand b { font: 26px 'Archivo Black'; letter-spacing: -0.02em; }
+  .a .brand span { font-size: 11px; letter-spacing: .18em; }
+  .a .vf { position: absolute; top: 112px; left: 18px; right: 18px; height: 420px; border-radius: 6px; overflow: hidden; border: 6px solid #3a2416; }
+  .a .vf .tag { position: absolute; left: 10px; bottom: 10px; background: #f2b632; color: #3a2416; font: 700 12px 'Space Mono'; padding: 4px 8px; border-radius: 3px; }
+  .a .vf .iso { position: absolute; right: 10px; top: 10px; background: #efe4cc; font: 700 11px 'Space Mono'; padding: 3px 7px; border-radius: 3px; }
+  .a .rail { position: absolute; top: 546px; left: 18px; right: 18px; display: flex; gap: 8px; }
+  .a .box { flex: 1; height: 82px; border-radius: 4px; background: #fff7e6; border: 2px solid #3a2416; display: grid; place-items: center; font: 700 10px 'Space Mono'; text-align: center; padding-top: 30px; position: relative; }
+  .a .box::before { content: ''; position: absolute; top: 8px; left: 50%; width: 44px; height: 24px; transform: translateX(-50%); background: #3a2416; border-radius: 4px; box-shadow: inset 0 0 0 7px #3a2416, inset 0 0 0 9px #c9b896; }
+  .a .box.on { background: #e8742a; color: #fff7e6; }
+  .a .box.on::before { background: #fff7e6; box-shadow: inset 0 0 0 7px #fff7e6, inset 0 0 0 9px #3a2416; }
+  .a .shut { position: absolute; top: 650px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 34px; }
+  .a .thumb { width: 54px; height: 54px; background: #3a2416; border-radius: 4px; border: 3px solid #fff7e6; outline: 2px solid #3a2416; }
+  .a .btn { width: 88px; height: 88px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f08a3c, #c2391b 70%); border: 6px solid #3a2416; box-shadow: 0 4px 0 #3a2416; }
+  .a .flip { width: 54px; height: 54px; border-radius: 50%; border: 3px solid #3a2416; display: grid; place-items: center; font: 700 18px 'Space Mono'; }
+  .a .tabs { position: absolute; bottom: 0; left: 0; right: 0; height: 82px; background: #3a2416; display: grid; grid-template-columns: repeat(5, 1fr); color: #c9b896; font: 700 10px 'Space Mono'; letter-spacing: .08em; }
+  .a .tabs span { display: grid; place-items: center; padding-bottom: 14px; }
+  .a .tabs span.on { color: #f2b632; box-shadow: inset 0 4px 0 #f2b632; }
+
+  /* ---------- B · darkroom contact sheet ---------- */
+  .b { background: #0b0a09; color: #e8e2d6; font-family: 'IBM Plex Mono', monospace; }
+  .b .edge { position: absolute; left: 0; right: 0; height: 30px; background: #1c1916; display: flex; align-items: center; gap: 14px; padding: 0 10px; font: 700 10px 'IBM Plex Mono'; color: #e0a03a; letter-spacing: .12em; }
+  .b .holes { flex: 1; height: 12px; background: repeating-linear-gradient(90deg, #0b0a09 0 10px, transparent 10px 20px); border-radius: 2px; }
+  .b .top { top: 54px; }
+  .b .head { position: absolute; top: 0; left: 0; right: 0; height: 54px; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 0; }
+  .b .head b { font: 700 20px 'Archivo Narrow'; letter-spacing: .3em; }
+  .b .head i { width: 10px; height: 10px; border-radius: 50%; background: #d3322b; box-shadow: 0 0 12px #d3322b; }
+  .b .vf { position: absolute; top: 96px; left: 14px; right: 14px; height: 430px; overflow: hidden; border: 1px solid #3a342d; }
+  .b .vf .scene { filter: contrast(1.05) saturate(.9); }
+  .b .crop { position: absolute; inset: 14px; border: 1px solid rgba(255,255,255,.55); }
+  .b .crop::before, .b .crop::after { content: ''; position: absolute; left: 50%; top: 50%; width: 24px; height: 1px; background: #fff; transform: translate(-50%,-50%); }
+  .b .crop::after { width: 1px; height: 24px; }
+  .b .frameno { position: absolute; left: 10px; bottom: 8px; font: 700 13px 'IBM Plex Mono'; color: #e0a03a; }
+  .b .bottom { top: 534px; }
+  .b .rail { position: absolute; top: 576px; left: 14px; right: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .b .cell { height: 74px; border: 1px solid #3a342d; display: grid; align-content: end; padding: 6px; font: 500 10px 'IBM Plex Mono'; color: #a89f92; background: linear-gradient(#1c1916, #141210); }
+  .b .cell b { color: #e8e2d6; font: 700 11px 'Archivo Narrow'; letter-spacing: .06em; }
+  .b .cell.on { border-color: #d3322b; box-shadow: inset 0 0 0 1px #d3322b; background: linear-gradient(#2a1513, #170c0b); }
+  .b .shut { position: absolute; top: 670px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; }
+  .b .thumb { width: 52px; height: 52px; border: 1px solid #5a5148; background: #2a2622; }
+  .b .btn { width: 84px; height: 84px; border-radius: 50%; border: 2px solid #e8e2d6; display: grid; place-items: center; }
+  .b .btn::after { content: ''; width: 66px; height: 66px; border-radius: 50%; background: #d3322b; }
+  .b .flip { width: 52px; height: 52px; border: 1px solid #5a5148; display: grid; place-items: center; font-size: 18px; }
+  .b .tabs { position: absolute; bottom: 0; left: 0; right: 0; height: 72px; border-top: 1px solid #3a342d; display: grid; grid-template-columns: repeat(5, 1fr); font: 700 10px 'Archivo Narrow'; letter-spacing: .2em; color: #7d756a; }
+  .b .tabs span { display: flex; align-items: center; justify-content: center; padding-bottom: 12px; }
+  .b .tabs span.on { color: #e8e2d6; }
+  .b .tabs span.on::before { content: '●'; color: #d3322b; margin-right: 4px; }
+
+  /* ---------- C · 90s point & shoot ---------- */
+  .c { background: linear-gradient(160deg, #e9eaec, #b9bcc1 45%, #d6d8db 70%, #a7abb1); color: #24272b; font-family: 'Space Grotesk', sans-serif; }
+  .c::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 3px); }
+  .c .lcd { position: absolute; top: 46px; left: 22px; right: 22px; height: 58px; border-radius: 8px; background: #b9c5a2; box-shadow: inset 0 2px 6px rgba(0,0,0,.35), 0 1px 0 #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font: 34px 'VT323'; color: #2a3122; }
+  .c .lcd small { font-size: 18px; opacity: .8; }
+  .c .lcd .ghost { position: relative; }
+  .c .vf { position: absolute; top: 120px; left: 30px; right: 30px; height: 400px; border-radius: 22px; overflow: hidden; border: 10px solid #24272b; box-shadow: 0 0 0 3px #8d9197, inset 0 0 30px rgba(0,0,0,.4); }
+  .c .vf .af { position: absolute; left: 50%; top: 50%; width: 70px; height: 50px; transform: translate(-50%,-50%); border: 2px solid #9cff6a; border-radius: 4px; }
+  .c .vf .date { position: absolute; right: 12px; bottom: 10px; font: 22px 'VT323'; color: #ffa53a; text-shadow: 0 0 6px #ff7a1a; }
+  .c .rail { position: absolute; top: 538px; left: 22px; right: 22px; display: flex; gap: 8px; }
+  .c .key { flex: 1; height: 66px; border-radius: 14px; background: linear-gradient(#f4f5f6, #c3c6ca); box-shadow: 0 3px 0 #8d9197, inset 0 1px 0 #fff; display: grid; place-items: center; text-align: center; font: 700 11px 'Space Grotesk'; padding-top: 4px; }
+  .c .key i { display: block; font: 18px 'VT323'; color: #5d636a; font-style: normal; }
+  .c .key.on { background: linear-gradient(#ff8f3a, #e2611a); color: #fff; box-shadow: 0 3px 0 #a3420d, inset 0 1px 0 #ffc08a; }
+  .c .key.on i { color: #ffe1c4; }
+  .c .shut { position: absolute; top: 638px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 34px; }
+  .c .thumb { width: 56px; height: 56px; border-radius: 12px; background: #24272b; border: 3px solid #f4f5f6; box-shadow: 0 2px 0 #8d9197; }
+  .c .btn { width: 92px; height: 92px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #fff 0 8%, #ff9a4a 30%, #d4520f 80%); box-shadow: 0 0 0 8px #d6d8db, 0 0 0 10px #8d9197, 0 6px 10px rgba(0,0,0,.35); }
+  .c .flip { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(#f4f5f6, #c3c6ca); box-shadow: 0 3px 0 #8d9197; display: grid; place-items: center; font-size: 20px; }
+  .c .tabs { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: #24272b; display: grid; grid-template-columns: repeat(5, 1fr); font: 700 11px 'Space Grotesk'; color: #9aa0a8; }
+  .c .tabs span { display: grid; place-items: center; padding-bottom: 14px; }
+  .c .tabs span.on { color: #ff8f3a; }
+  .c .tabs span.on::after { content: ''; position: absolute; }
+  /* ---------- Models screens ---------- */
+  .pair { display: flex; gap: 22px; }
+  .m { overflow: hidden; }
+  .m .hdr { position: absolute; left: 22px; right: 22px; top: 40px; }
+  .m .grid { position: absolute; left: 18px; right: 18px; top: 182px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .m .tabs span:nth-child(1).on { }
+  .a.m .hdr h1 { margin: 0; font: 34px 'Archivo Black'; letter-spacing: -0.02em; }
+  .a.m .hdr p { margin: 4px 0 0; font: 700 11px 'Space Mono'; letter-spacing: .14em; }
+  .a.m .stripes { top: 132px; height: 30px; background: linear-gradient(#c2391b 0 10px, #e8742a 10px 20px, #f2b632 20px 30px); }
+  .a.m .card { background: #fff7e6; border: 2px solid #3a2416; border-radius: 4px; height: 214px; position: relative; overflow: hidden; padding: 96px 10px 10px; }
+  .a.m .card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 84px; background: var(--c, #e8742a); }
+  .a.m .card::after { content: ''; position: absolute; left: 50%; top: 18px; width: 66px; height: 44px; transform: translateX(-50%); background: #3a2416; border-radius: 6px; box-shadow: inset 0 0 0 12px #3a2416, inset 0 0 0 16px #c9b896; }
+  .a.m .card b { display: block; font: 18px 'Archivo Black'; }
+  .a.m .card span { font: 700 10px 'Space Mono'; letter-spacing: .1em; }
+  .a.m .card p { margin: 6px 0 0; font: 11px/1.35 'Space Mono'; }
+  .a.m .card .iso { position: absolute; right: 8px; top: 8px; z-index: 1; background: #fff7e6; font: 700 10px 'Space Mono'; padding: 2px 6px; border-radius: 3px; }
+  .b.m .hdr h1 { margin: 0; font: 700 30px 'Archivo Narrow'; letter-spacing: .28em; }
+  .b.m .hdr p { margin: 6px 0 0; font: 500 11px 'IBM Plex Mono'; color: #e0a03a; letter-spacing: .1em; }
+  .b.m .edge { top: 104px; }
+  .b.m .grid { gap: 0; border: 1px solid #3a342d; top: 146px; }
+  .b.m .card { height: 196px; border: 1px solid #3a342d; padding: 8px; position: relative; background: #12100e; }
+  .b.m .card .neg { height: 104px; background: linear-gradient(135deg, #2a2622, #1a1714); border: 1px solid #3a342d; display: grid; place-items: center; }
+  .b.m .card .neg::after { content: ''; width: 54px; height: 34px; border-radius: 5px; background: #e8e2d6; opacity: .85; box-shadow: inset 0 0 0 9px #e8e2d6, inset 0 0 0 13px #3a342d; }
+  .b.m .card b { display: block; margin-top: 10px; font: 700 15px 'Archivo Narrow'; letter-spacing: .08em; }
+  .b.m .card span { font: 500 10px 'IBM Plex Mono'; color: #a89f92; }
+  .b.m .card i { position: absolute; right: 8px; top: 8px; font: 700 10px 'IBM Plex Mono'; color: #e0a03a; font-style: normal; }
+  .b.m .card.on { box-shadow: inset 0 0 0 2px #d3322b; }
+  .c.m .hdr { top: 44px; }
+  .c.m .hdr .lcd { position: static; height: 64px; }
+  .c.m .card { height: 200px; border-radius: 18px; background: linear-gradient(#f4f5f6, #c9ccd0); box-shadow: 0 4px 0 #8d9197, inset 0 1px 0 #fff; padding: 12px; position: relative; }
+  .c.m .card .win { height: 92px; border-radius: 10px; background: #24272b; display: grid; place-items: center; box-shadow: inset 0 0 0 3px #8d9197; }
+  .c.m .card .win::after { content: ''; width: 56px; height: 36px; border-radius: 6px; background: #d6d8db; box-shadow: inset 0 0 0 10px #d6d8db, inset 0 0 0 14px #24272b; }
+  .c.m .card b { display: block; margin-top: 10px; font: 700 16px 'Space Grotesk'; }
+  .c.m .card span { font: 18px 'VT323'; color: #5d636a; }
+  .c.m .card.on { background: linear-gradient(#ff8f3a, #e2611a); color: #fff; box-shadow: 0 4px 0 #a3420d; }
+  .c.m .card.on span { color: #ffe1c4; }
+  .c .grille { position: absolute; top: 608px; right: 34px; width: 46px; height: 10px; background: repeating-linear-gradient(90deg, #6d7279 0 3px, transparent 3px 6px); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <figure>
+    <div class="pair">
+    <div class="phone a">
+      <div class="stripes"></div>
+      <div class="brand"><b>FILM CAMELA</b><span>ISO 200 · 24 EXP</span></div>
+      <div class="vf"><div class="scene"></div><span class="iso">SUNNY 200</span><span class="tag">03 / 24</span></div>
+      <div class="rail"><div class="box">HALF 72</div><div class="box on">PRO 35</div><div class="box">SNAP 27</div><div class="box">POP SQ</div></div>
+      <div class="shut"><span class="thumb"></span><span class="btn"></span><span class="flip">⟲</span></div>
+      <div class="tabs"><span class="on">CAMERA</span><span>MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    <div class="phone a m">
+      <div class="hdr"><h1>MODELS</h1><p>38 CAMERAS · TAP TO SHOOT</p></div>
+      <div class="stripes"></div>
+      <div class="grid">
+        <div class="card" style="--c:#e8742a"><span class="iso">SUNNY 200</span><b>PRO 35</b><span>1979 · SLR</span><p>믿음직한 35mm SLR, 3가지 비율.</p></div>
+        <div class="card" style="--c:#c2391b"><span class="iso">MINT 400</span><b>HALF 72</b><span>1963 · HALF</span><p>한 컷에 두 장, 한 롤 72장.</p></div>
+        <div class="card" style="--c:#f2b632"><span class="iso">MONO 400</span><b>BOOTH 4</b><span>1968 · BOOTH</span><p>4컷을 세로 띠 한 장으로.</p></div>
+        <div class="card" style="--c:#4a2c1a"><span class="iso">USB CIF</span><b>WEB CAM</b><span>2002 · WEBCAM</span><p>352픽셀, 구석의 날짜.</p></div>
+      </div>
+      <div class="tabs"><span>CAMERA</span><span class="on">MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    </div>
+    <figcaption>A · 70년대 필름 상자<small>크림 종이, 주황·노랑·빨강 띠, 굵은 고딕. 따뜻하고 장난스러움</small></figcaption>
+  </figure>
+
+  <figure>
+    <div class="pair">
+    <div class="phone b">
+      <div class="head"><b>FILM CAMELA</b><i></i></div>
+      <div class="edge top"><span>FC 200</span><span class="holes"></span><span>▸ 3A</span></div>
+      <div class="vf"><div class="scene"></div><span class="crop"></span><span class="frameno">03 ▸ 03A</span></div>
+      <div class="edge bottom"><span>SAFETY FILM</span><span class="holes"></span><span>24</span></div>
+      <div class="rail"><div class="cell"><b>HALF 72</b>1963</div><div class="cell on"><b>PRO 35</b>1979</div><div class="cell"><b>SNAP 27</b>1996</div><div class="cell"><b>POP SQ</b>1982</div></div>
+      <div class="shut"><span class="thumb"></span><span class="btn"></span><span class="flip">⟲</span></div>
+      <div class="tabs"><span class="on">CAMERA</span><span>MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    <div class="phone b m">
+      <div class="hdr"><h1>MODELS</h1><p>38 BODIES ▸ CONTACT SHEET 01</p></div>
+      <div class="edge"><span>FC 200</span><span class="holes"></span><span>▸ 01A</span></div>
+      <div class="grid">
+        <div class="card on"><i>01</i><div class="neg"></div><b>PRO 35</b><span>1979 · SLR · SUNNY 200</span></div>
+        <div class="card"><i>02</i><div class="neg"></div><b>HALF 72</b><span>1963 · HALF · MINT 400</span></div>
+        <div class="card"><i>03</i><div class="neg"></div><b>BOOTH 4</b><span>1968 · BOOTH · MONO 400</span></div>
+        <div class="card"><i>04</i><div class="neg"></div><b>WEB CAM</b><span>2002 · WEBCAM · USB CIF</span></div>
+      </div>
+      <div class="tabs"><span>CAMERA</span><span class="on">MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    </div>
+    <figcaption>B · 암실 밀착 인화지<small>검정 바탕, 필름 가장자리 글자·구멍, 붉은 안전등. 진지하고 사진가스러움</small></figcaption>
+  </figure>
+
+  <figure>
+    <div class="pair">
+    <div class="phone c">
+      <div class="lcd"><span>03<small> / 24</small></span><small>☀ AUTO</small><span>200</span></div>
+      <div class="vf"><div class="scene"></div><span class="af"></span><span class="date">'26 11 21</span></div>
+      <div class="rail"><div class="key"><i>01</i>HALF 72</div><div class="key on"><i>02</i>PRO 35</div><div class="key"><i>03</i>SNAP 27</div><div class="key"><i>04</i>POP SQ</div></div>
+      <span class="grille"></span>
+      <div class="shut"><span class="thumb"></span><span class="btn"></span><span class="flip">⟲</span></div>
+      <div class="tabs"><span class="on">CAMERA</span><span>MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    <div class="phone c m">
+      <div class="hdr"><div class="lcd"><span>38<small> CAMS</small></span><small>MODELS</small><span>01</span></div></div>
+      <div class="grid">
+        <div class="card on"><div class="win"></div><b>Pro 35</b><span>1979 · SLR</span></div>
+        <div class="card"><div class="win"></div><b>Half 72</b><span>1963 · HALF</span></div>
+        <div class="card"><div class="win"></div><b>Booth 4</b><span>1968 · BOOTH</span></div>
+        <div class="card"><div class="win"></div><b>Web Cam</b><span>2002 · WEBCAM</span></div>
+      </div>
+      <div class="tabs"><span>CAMERA</span><span class="on">MODELS</span><span>ALBUM</span><span>ANALOG</span><span>MY</span></div>
+    </div>
+    </div>
+    <figcaption>C · 90년대 자동 카메라<small>은색 플라스틱, 액정 숫자, 고무 버튼, 주황 날짜. 손에 잡히는 기계 느낌</small></figcaption>
+  </figure>
+</div>
+</body>
+</html>

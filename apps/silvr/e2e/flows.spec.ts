@@ -223,7 +223,7 @@ test('Models tab: every camera at a glance, a tap shoots with it at once; the ta
   expect(Math.abs(xs[0][0] - (vw - xs[4][1]))).toBeLessThanOrEqual(2);
   await page.getByTestId('tab-models').click();
   await expect(page.getByTestId('models-screen')).toBeVisible();
-  await expect(page.locator('[data-testid^="model-"]')).toHaveCount(32);
+  await expect(page.locator('[data-testid^="model-"]')).toHaveCount(38);
   await page.getByTestId('model-instasq').click();
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'instasq');
   await expect(page.getByTestId('camera-instasq')).toHaveAttribute('aria-pressed', 'true');
