@@ -63,6 +63,10 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
         <div class="onb-brand">
           <span class="logo">FILM CAMELA</span>
           <span class="muted small">{t('app.tagline')}</span>
+          {/* Film-edge code: decoration only (the slide number is read from the heading). */}
+          <span class="onb-edge" aria-hidden="true">
+            FC 200 ▸ {String(i + 1).padStart(2, '0')}A
+          </span>
         </div>
         <div class={`onb-art art-${s.art}`} aria-hidden="true">
           <span />

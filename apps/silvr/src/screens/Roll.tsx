@@ -14,6 +14,7 @@ import { back, go, goTab, isCurrent, route } from '../state/router';
 import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
 import { deleteRoll, ensurePrint, inCamera, listPhotos, markSeen, restoreRoll, subscribe, viewable, type DeletedRoll, type Photo } from '../store/rolls';
 import { framesText, rollDate } from './Gallery';
+import { frameShape, SlideLabel } from './Folder';
 
 const SHEET_MAX_FRAMES = 72;
 const LONG_PRESS_MS = 480;
@@ -304,40 +305,42 @@ export function RollScreen({ id }: { id: string }) {
       {developing ? (
         <Empty title={t('gal.developing')} hint={arrivalHint} />
       ) : (
-        <ul class="photo-grid">
-          {(photos ?? []).map((p) => {
-            const on = selected.has(p.id);
-            return (
-              <li
-                key={p.id}
-                class={`${isQuad(p) ? 'quad' : ''}${on ? ' on' : ''}`}
-                onPointerDown={(e) => startPress(p, e)}
-                onPointerMove={movePress}
-                onPointerUp={endPress}
-                onPointerCancel={endPress}
-                onPointerLeave={endPress}
-                onContextMenu={(e) => (selecting || suppressClick.current) && e.preventDefault()}
-              >
-                <Thumb photo={p} onClick={() => openOrToggle(p)} tabIndex={selecting ? -1 : undefined} />
-                <span class="frame-no mono">{p.frame}</span>
-                {selecting && (
-                  <button
-                    type="button"
-                    class="sel-toggle"
-                    aria-pressed={on}
-                    aria-label={t('roll.selectPhoto', { n: p.frame })}
-                    onClick={() => openOrToggle(p)}
-                    data-testid="sel-toggle"
-                  >
-                    <span class="sel-mark" aria-hidden="true">
-                      {on && <Icon name="check" size={16} />}
-                    </span>
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <div class="lt-box">
+          <ul class="photo-grid mounts">
+            {(photos ?? []).map((p) => {
+              const on = selected.has(p.id);
+              return (
+                <li
+                  key={p.id}
+                  class={`mount ${isQuad(p) ? `quad ${frameShape(p)}` : ''}${on ? ' on' : ''}`}
+                  onPointerDown={(e) => startPress(p, e)}
+                  onPointerMove={movePress}
+                  onPointerUp={endPress}
+                  onPointerCancel={endPress}
+                  onPointerLeave={endPress}
+                  onContextMenu={(e) => (selecting || suppressClick.current) && e.preventDefault()}
+                >
+                  <Thumb photo={p} onClick={() => openOrToggle(p)} tabIndex={selecting ? -1 : undefined} />
+                  <SlideLabel photo={p} />
+                  {selecting && (
+                    <button
+                      type="button"
+                      class="sel-toggle"
+                      aria-pressed={on}
+                      aria-label={t('roll.selectPhoto', { n: p.frame })}
+                      onClick={() => openOrToggle(p)}
+                      data-testid="sel-toggle"
+                    >
+                      <span class="sel-mark" aria-hidden="true">
+                        {on && <Icon name="check" size={16} />}
+                      </span>
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
       {selecting && (
         <div class="sel-bar" role="toolbar" aria-label={t('roll.selectedN', { n: count })}>

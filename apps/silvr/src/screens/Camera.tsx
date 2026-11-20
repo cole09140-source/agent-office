@@ -9,6 +9,7 @@ import { canLoad, DEFAULT_CAMERA_ID, ejectsPrints, filmsFor, getCamera, PALETTE_
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { BackDecor, BackWindow } from '../cameras/backs/Back';
+import { artWindowBox, artWindowRadius, BodyArt, bodyArtFor, hasBodyArt } from '../cameras/BodyArt';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
@@ -125,7 +126,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const moreRef = useRef<HTMLDivElement>(null);
   /** A camera change is closing the current roll: no second change (or auto-load) meanwhile. */
   const switchingRef = useRef(false);
-  const [box, setBox] = useState({ w: 0, h: 0 });
+  /** The stage: content box (w, h: room for the preview inside the bezel) and padding box (sw, sh: what body art lays out in). */
+  const [box, setBox] = useState({ w: 0, h: 0, sw: 0, sh: 0 });
   const [facing, setFacing] = useState(cam().facing);
   const [videoSize, setVideoSize] = useState({ w: 0, h: 0 });
   const [gpu, setGpu] = useState(true);
@@ -193,7 +195,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   /** The camera + film the user asked for and does not have yet: wins over whatever roll is in. */
   const wanted = useRef<{ camera: string; stock: string } | null>(null);
 
-  // The "more" popover (date imprint, grid) closes on an outside tap or Escape.
+  // The "more" popover (format, zoom, EV, palette, date imprint, grid) closes on an outside tap or Escape.
   useEffect(() => {
     if (!moreOpen) return;
     const onDown = (e: PointerEvent) => {
@@ -209,6 +211,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       window.removeEventListener('keydown', onKey);
     };
   }, [moreOpen]);
+  // A capture (or the self-timer) locks the deck: the popover folds away rather than sit there disabled.
+  useEffect(() => {
+    if (busy || countdown > 0) setMoreOpen(false);
+  }, [busy, countdown > 0]);
 
   // Per-camera defaults whenever the body changes.
   useEffect(() => {
@@ -304,14 +310,38 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const el = stageRef.current;
     if (!el) return;
     // Content box: the stage's padding is the room the body's window bezel takes around the preview.
-    const ro = new ResizeObserver(([e]) => setBox({ w: Math.floor(e.contentRect.width), h: Math.floor(e.contentRect.height) }));
+    const ro = new ResizeObserver(([e]) =>
+      setBox({ w: Math.floor(e.contentRect.width), h: Math.floor(e.contentRect.height), sw: el.clientWidth, sh: el.clientHeight }),
+    );
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   const portraitFrame = spec.orient === 'auto' ? videoSize.h > videoSize.w : spec.orient === 'portrait';
   const frameRatio = portraitFrame ? 1 / aspectRatio(spec.aspect) : aspectRatio(spec.aspect);
-  const frame = box.w && box.h ? fitContain(box.w, box.h, frameRatio) : { width: 0, height: 0 };
+  /** Photographic body art around the preview: the preview fits its black window instead of the stage. */
+  const artOn = hasBodyArt(camera.id);
+  const artEntry = artOn ? bodyArtFor(camera.id) : undefined;
+  const artShape = artEntry ? `${artEntry.w} / ${artEntry.h}` : undefined;
+  const artBox = box.sw && box.sh ? artWindowBox(camera.id, box.sw, box.sh) : null;
+  const frame = artBox && artBox.width > 0 && artBox.height > 0
+    ? fitContain(artBox.width, artBox.height, frameRatio)
+    : box.w && box.h
+      ? fitContain(box.w, box.h, frameRatio)
+      : { width: 0, height: 0 };
+  /** Physical left/top (the art is never mirrored, also in RTL): centred on the art window. */
+  const vfStyle = artBox && frame.width
+    ? {
+        position: 'absolute',
+        gridArea: 'auto', // left/top are from the stage's padding edge (same as bodies.css .vf-on-art)
+        left: `${Math.round(artBox.left + (artBox.width - frame.width) / 2)}px`,
+        top: `${Math.round(artBox.top + (artBox.height - frame.height) / 2)}px`,
+        width: `${frame.width}px`,
+        height: `${frame.height}px`,
+        // The preview's corners follow the art window's rounded corners.
+        borderRadius: `${Math.round(artWindowRadius(camera.id, box.sw, box.sh))}px`,
+      }
+    : { width: `${frame.width}px`, height: `${frame.height}px` };
 
   // ----- preview rendering -----
   const flashLook = camera.flash === 'charge' ? flashOn && charge === 'ready' : camera.flash === 'standard' && flashOn;
@@ -1118,7 +1148,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
   const counting = countdown > 0;
   const starting = state === 'starting';
-  /** While the self-timer counts, only the timer chip (cancel) stays usable in the toolbar. */
+  /** While the self-timer counts, only the timer button (cancel) and the shutter stay usable on the deck. */
   const chipLock = counting || undefined;
   /** The body's back plate: material, window, buttons and release for this camera (static CSS). */
   const back = useMemo(() => backFor(camera), [camera.id]);
@@ -1126,7 +1156,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   return (
     <div class={`camera cam-${camera.id}`} data-testid="camera-screen" data-camera={camera.id}>
       <div
-        class="bp-body"
+        class={`bp-body${artOn ? " has-art" : ""}`}
         data-family={back.family}
         data-mat={back.material}
         data-win={back.window}
@@ -1138,104 +1168,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         data-stripe={back.details.stripe || undefined}
         style={backVars(back)}
       >
-      <BackDecor key={camera.id} spec={back} />
-      <div class={`cam-top ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} inert={(busy && !counting) || undefined}>
-        {camera.flash === 'standard' && (
-          <button class={`chip ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={chipLock} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
-            <Icon name={flashOn ? 'flash' : 'flashOff'} size={20} />
-          </button>
-        )}
-        {camera.flash === 'charge' && (
-          <button
-            class={`chip flash-charge charge-${charge} ${flashOn ? '' : 'off'}`}
-            disabled={chipLock}
-            onClick={() => (charge === 'empty' ? chargeFlash() : charge === 'ready' ? toggleFlash() : undefined)}
-            aria-label={flashLabel}
-            aria-pressed={charge === 'ready' && flashOn}
-            data-testid="btn-flash"
-            data-charge={charge}
-          >
-            <Icon name="flash" size={20} />
-            <i class="charge-led" />
-          </button>
-        )}
-        {/* While counting down, the timer chip is the cancel button (like the shutter and Escape). */}
-        {/* Fixed width (icon + digit badge): turning the timer on never wraps the bar or moves the viewfinder. */}
-        <button
-          class={`chip timer-chip ${timer ? 'on' : ''} ${counting ? 'cancel' : ''}`}
-          onClick={counting ? cancelTimer : () => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}
-          aria-label={counting ? t('cam.cancelTimer') : `${t('cam.timer')} ${timer ? t('cam.sec', { n: timer }) : t('common.off')}`}
-          data-testid="btn-timer"
-        >
-          <Icon name={counting ? 'close' : 'timer'} size={20} />
-          {(counting || timer > 0) && (
-            <span class="timer-badge mono" aria-hidden="true">
-              {counting ? countdown : timer}
-            </span>
-          )}
-        </button>
-        {camera.formats.length > 1 && (
-          <button class="chip" disabled={chipLock} onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
-            <span class="chip-txt mono" dir="ltr">{aspect}</span>
-          </button>
-        )}
-        {camera.zoom.length > 1 && (
-          <button class={`chip ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
-            <span class="chip-txt mono" dir="ltr">{zoom}×</span>
-          </button>
-        )}
-        {camera.ev && (
-          <button class={`chip ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={() => setEvOpen(!evOpen)} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
-            <span class="chip-txt mono" dir="ltr">
-              {formatSigned(ev, undefined, '±')}
-            </span>
-          </button>
-        )}
-        {getStock(stock.id).kind === 'pixel' && (
-          <button class="chip" disabled={chipLock} onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])} aria-label={`${t('cam.palette')} ${t(`palette.${palette}` as MsgKey)}`} data-testid="btn-palette" data-palette={palette}>
-            <span class="chip-txt">{t(`palette.${palette}` as MsgKey)}</span>
-          </button>
-        )}
-        {/* Low-priority toggles live under "more" so the bar fits a 360px phone without scrolling. */}
-        <div class="cam-more-wrap" ref={moreRef}>
-          <button
-            class={`chip more-chip ${moreOpen ? 'on' : ''}`}
-            disabled={chipLock}
-            onClick={() => setMoreOpen(!moreOpen)}
-            aria-expanded={moreOpen}
-            aria-controls="cam-more"
-            aria-label={t('cam.more')}
-            data-testid="btn-more"
-          >
-            <span class="more-dots" aria-hidden="true">
-              ⋯
-            </span>
-          </button>
-          <div class="cam-more" id="cam-more" hidden={!moreOpen} data-testid="cam-more">
-            {camera.stamp !== 'none' && (
-              <button class={`more-item ${dateOn ? 'on' : ''}`} onClick={() => setDateOn(!dateOn)} aria-pressed={dateOn} data-testid="btn-date">
-                <Icon name="calendar" size={20} />
-                <span>{t('cam.date')}</span>
-                <small aria-hidden="true">{dateOn ? t('common.on') : t('common.off')}</small>
-              </button>
-            )}
-            <button class={`more-item ${s.grid ? 'on' : ''}`} onClick={() => updateSettings({ grid: !s.grid })} aria-pressed={s.grid} data-testid="btn-grid">
-              <Icon name="grid" size={20} />
-              <span>{t('cam.grid')}</span>
-              <small aria-hidden="true">{s.grid ? t('common.on') : t('common.off')}</small>
-            </button>
-          </div>
-        </div>
-      </div>
-      {camera.ev && evOpen && (
-        <div class="ev-row">
-          <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
-        </div>
-      )}
-
-      <div class="cam-stage" ref={stageRef}>
-        <BackWindow spec={back} width={frame.width} height={frame.height} />
-        <div class={`viewfinder vfs-${camera.viewfinder}`} style={{ width: `${frame.width}px`, height: `${frame.height}px` }}>
+      {!artOn && <BackDecor key={camera.id} spec={back} />}
+      {/* With art the stage takes the art's own shape (never taller), so no empty plate shows above / below it. */}
+      <div class="cam-stage" ref={stageRef} style={artShape ? { flex: '0 1 auto', aspectRatio: artShape } : undefined}>
+        {/* Photographic body (decorative): drawn first, the preview sits in its window (see artWindowBox). */}
+        <BodyArt cameraId={camera.id} stageW={box.sw} stageH={box.sh} />
+        {!artOn && <BackWindow spec={back} width={frame.width} height={frame.height} />}
+        <div class={`viewfinder vfs-${camera.viewfinder}${artBox ? ' vf-on-art' : ''}`} style={vfStyle}>
           {gpu ? <canvas key={glKey} ref={canvasRef} class="preview" data-testid="preview" /> : <div class="preview" ref={videoHostRef} />}
           <ViewfinderOverlay
             camera={camera}
@@ -1260,21 +1199,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             </div>
           )}
           {blink && <div class="blink" />}
-          {roll && camera.viewfinder !== 'lcd' && camera.viewfinder !== 'pixel' && (
-            <div class="counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
-              {/* Re-keyed per frame: a short tick shows the film advanced. */}
-              <span key={counterText} class="counter-tick">
-                {counterText}
-              </span>
-            </div>
-          )}
-          {/* Today's free shots, in the corner opposite the frame counter (hidden for Pro / unlimited and while counting down). */}
+          {/* Today's free shots, in a bottom corner of the preview (hidden for Pro / unlimited and while counting down). */}
           {roll && !counting && <ShotsLeftBadge class="vf-shots" onClick={() => goTab({ name: 'settings' })} />}
-          {roll && (camera.viewfinder === 'lcd' || camera.viewfinder === 'pixel') && (
-            <span class="sr-only" data-testid="counter">
-              {String(roll.shots).padStart(2, '0')}
-            </span>
-          )}
           {dateOn && camera.stamp === 'led' && <div class="vf-date mono" aria-hidden="true">DATE</div>}
         </div>
         {state === 'error' && (
@@ -1314,46 +1240,236 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         onFilm={() => !counting && roll && setFilmOpen(true)}
       />
 
+      </div>
+      {/*
+        The control deck: every control on the shutter line, nothing above the camera body.
+        last shot · flash · timer · SHUTTER · frame counter · more · flip. Rarer controls live under "more".
+      */}
       {(roll || (!loadError && !storageError.value)) && (
-        <div class="cam-bottom">
-          {lastPhoto ? (
-            <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
-              {/* Shown under the thumbnail until its developed print is ready: never a black square. */}
-              {quick?.id === lastPhoto.id && <img class="last-shot-quick" src={quick.url} alt="" aria-hidden="true" />}
-              <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
+        <div class={`deck ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} data-testid="deck">
+          {camera.ev && evOpen && (
+            <div class="ev-row deck-ev" data-testid="ev-row">
+              <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
             </div>
-          ) : (
-            // Nothing shot with this camera yet: the slot leads to the album (earlier photos live there).
-            <button class="last-shot-empty" onClick={() => goTab({ name: 'gallery' })} aria-label={t('tab.gallery')} data-testid="btn-last-album">
-              <Icon name="gallery" size={22} />
-            </button>
           )}
-          {/* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */}
-          <button
-            ref={shutterRef}
-            class={`shutter ${busy && !counting ? 'busy' : ''} ${counting ? 'cancel' : ''} ${starting ? 'starting' : ''}`}
-            onClick={onShutter}
-            disabled={state === 'error'}
-            aria-disabled={starting || undefined}
-            aria-label={counting ? t('cam.cancelTimer') : starting ? `${t('cam.shutter')} · ${t('cam.starting')}` : t('cam.shutter')}
-            data-testid="shutter"
-            data-state={counting ? 'cancel' : starting ? 'starting' : busy ? 'busy' : 'ready'}
-          >
-            <span>{counting && <Icon name="close" size={28} />}</span>
-            {queued > 0 && (
-              <i class="shutter-queue mono" aria-hidden="true">
-                +{queued}
-              </i>
-            )}
-          </button>
-          <div class="cam-right">
-            <button class="icon-btn big" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
-              <Icon name="flip" size={26} />
-            </button>
+          {/* Film edge above the deck: sprocket holes and an edge code (stock · format). */}
+          <div class="deck-edge" aria-hidden="true">
+            <span class="deck-edge-code">
+              <bdi>{stock.name}</bdi>
+            </span>
+            <span class="deck-edge-code" dir="ltr">
+              {aspect} ▸
+            </span>
           </div>
+          <div class="cam-bottom deck-row">
+            <div class="deck-side deck-start">
+              {lastPhoto ? (
+                <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
+                  {/* Shown under the thumbnail until its developed print is ready: never a black square. */}
+                  {quick?.id === lastPhoto.id && <img class="last-shot-quick" src={quick.url} alt="" aria-hidden="true" />}
+                  <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
+                </div>
+              ) : (
+                // Nothing shot with this camera yet: the slot leads to the album (earlier photos live there).
+                <button class="last-shot-empty" onClick={() => goTab({ name: 'gallery' })} aria-label={t('tab.gallery')} data-testid="btn-last-album">
+                  <Icon name="gallery" size={22} />
+                </button>
+              )}
+              {camera.flash === 'standard' && (
+                <button class={`chip deck-btn ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={busy} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
+                  <Icon name={flashOn ? 'flash' : 'flashOff'} size={20} />
+                </button>
+              )}
+              {camera.flash === 'charge' && (
+                <button
+                  class={`chip deck-btn flash-charge charge-${charge} ${flashOn ? '' : 'off'}`}
+                  disabled={busy}
+                  onClick={() => (charge === 'empty' ? chargeFlash() : charge === 'ready' ? toggleFlash() : undefined)}
+                  aria-label={flashLabel}
+                  aria-pressed={charge === 'ready' && flashOn}
+                  data-testid="btn-flash"
+                  data-charge={charge}
+                >
+                  <Icon name="flash" size={20} />
+                  <i class="charge-led" />
+                </button>
+              )}
+              {/* No flash on this body: an empty slot keeps every control where the thumb expects it. */}
+              {camera.flash !== 'standard' && camera.flash !== 'charge' && <span class="deck-slot" aria-hidden="true" />}
+              {/* While counting down, the timer button is the cancel button (like the shutter and Escape). */}
+              <button
+                class={`chip deck-btn timer-chip ${timer ? 'on' : ''} ${counting ? 'cancel' : ''}`}
+                onClick={counting ? cancelTimer : () => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}
+                disabled={busy && !counting}
+                aria-label={counting ? t('cam.cancelTimer') : `${t('cam.timer')} ${timer ? t('cam.sec', { n: timer }) : t('common.off')}`}
+                data-testid="btn-timer"
+              >
+                <Icon name={counting ? 'close' : 'timer'} size={20} />
+                {(counting || timer > 0) && (
+                  <span class="timer-badge mono" aria-hidden="true">
+                    {counting ? countdown : timer}
+                  </span>
+                )}
+              </button>
+            </div>
+            {/* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */}
+            <button
+              ref={shutterRef}
+              class={`shutter ${busy && !counting ? 'busy' : ''} ${counting ? 'cancel' : ''} ${starting ? 'starting' : ''}`}
+              onClick={onShutter}
+              disabled={state === 'error'}
+              aria-disabled={starting || undefined}
+              aria-label={counting ? t('cam.cancelTimer') : starting ? `${t('cam.shutter')} · ${t('cam.starting')}` : t('cam.shutter')}
+              data-testid="shutter"
+              data-state={counting ? 'cancel' : starting ? 'starting' : busy ? 'busy' : 'ready'}
+            >
+              <span>{counting && <Icon name="close" size={26} />}</span>
+              {queued > 0 && (
+                <i class="shutter-queue mono" aria-hidden="true">
+                  +{queued}
+                </i>
+              )}
+            </button>
+            <div class="deck-side deck-end">
+              {/* Frame counter window. LCD / pixel bodies also show the count in their finder. */}
+              {roll ? (
+                <div class="deck-counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
+                  {/* Re-keyed per frame: a short tick shows the film advanced. */}
+                  <span key={counterText} class="counter-tick">
+                    {counterText}
+                  </span>
+                </div>
+              ) : (
+                <div class="deck-counter mono empty" aria-hidden="true">
+                  <span>--</span>
+                </div>
+              )}
+              {/* Rarer controls: format, zoom, EV, palette, date imprint, grid. Opens upward from the deck. */}
+              <div class="cam-more-wrap" ref={moreRef}>
+                <button
+                  class={`chip deck-btn more-chip ${moreOpen ? 'on' : ''}`}
+                  disabled={busy}
+                  onClick={() => {
+                    if (!moreOpen) setEvOpen(false);
+                    setMoreOpen(!moreOpen);
+                  }}
+                  aria-expanded={moreOpen}
+                  aria-controls="cam-more"
+                  aria-label={t('cam.more')}
+                  data-testid="btn-more"
+                >
+                  <span class="more-dots" aria-hidden="true">
+                    ⋯
+                  </span>
+                </button>
+                <div class="cam-more" id="cam-more" hidden={!moreOpen} data-testid="cam-more">
+                  {camera.formats.length > 1 && (
+                    <button
+                      class="more-item"
+                      disabled={chipLock}
+                      onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])}
+                      aria-label={`${t('cam.aspect')} ${aspect}`}
+                      data-testid="btn-aspect"
+                    >
+                      <span class="more-glyph" aria-hidden="true">
+                        <i class="glyph-frame" />
+                      </span>
+                      <span>{t('cam.aspect')}</span>
+                      <small class="mono" dir="ltr">
+                        {aspect}
+                      </small>
+                    </button>
+                  )}
+                  {camera.zoom.length > 1 && (
+                    <button
+                      class={`more-item ${zoom > 1 ? 'on' : ''}`}
+                      disabled={chipLock}
+                      onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])}
+                      aria-label={`${t('cam.zoom')} ${zoom}×`}
+                      data-testid="btn-zoom"
+                    >
+                      <span class="more-glyph mono" aria-hidden="true">
+                        ×
+                      </span>
+                      <span>{t('cam.zoom')}</span>
+                      <small class="mono" dir="ltr">
+                        {zoom}×
+                      </small>
+                    </button>
+                  )}
+                  {camera.ev && (
+                    <button
+                      class={`more-item ${ev !== 0 || evOpen ? 'on' : ''}`}
+                      disabled={chipLock}
+                      onClick={() => {
+                        // The slider row opens just above the deck, so the popover steps aside for it.
+                        const open = !evOpen;
+                        setEvOpen(open);
+                        if (open) setMoreOpen(false);
+                      }}
+                      aria-expanded={evOpen}
+                      aria-label={`${t('cam.ev')} ${formatSigned(ev)}`}
+                      data-testid="btn-ev"
+                    >
+                      <span class="more-glyph mono" aria-hidden="true">
+                        ±
+                      </span>
+                      <span>{t('cam.ev')}</span>
+                      <small class="mono" dir="ltr">
+                        {formatSigned(ev, undefined, '±')}
+                      </small>
+                    </button>
+                  )}
+                  {getStock(stock.id).kind === 'pixel' && (
+                    <button
+                      class="more-item"
+                      disabled={chipLock}
+                      onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])}
+                      aria-label={`${t('cam.palette')} ${t(`palette.${palette}` as MsgKey)}`}
+                      data-testid="btn-palette"
+                      data-palette={palette}
+                    >
+                      <span class="more-glyph" aria-hidden="true">
+                        <i class="glyph-pal" />
+                      </span>
+                      <span>{t('cam.palette')}</span>
+                      <small>{t(`palette.${palette}` as MsgKey)}</small>
+                    </button>
+                  )}
+                  {camera.stamp !== 'none' && (
+                    <button class={`more-item ${dateOn ? 'on' : ''}`} disabled={chipLock} onClick={() => setDateOn(!dateOn)} aria-pressed={dateOn} data-testid="btn-date">
+                      <span class="more-glyph" aria-hidden="true">
+                        <Icon name="calendar" size={18} />
+                      </span>
+                      <span>{t('cam.date')}</span>
+                      <small aria-hidden="true">{dateOn ? t('common.on') : t('common.off')}</small>
+                    </button>
+                  )}
+                  <button class={`more-item ${s.grid ? 'on' : ''}`} disabled={chipLock} onClick={() => updateSettings({ grid: !s.grid })} aria-pressed={s.grid} data-testid="btn-grid">
+                    <span class="more-glyph" aria-hidden="true">
+                      <Icon name="grid" size={18} />
+                    </span>
+                    <span>{t('cam.grid')}</span>
+                    <small aria-hidden="true">{s.grid ? t('common.on') : t('common.off')}</small>
+                  </button>
+                </div>
+              </div>
+              <button class="icon-btn deck-btn" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
+                <Icon name="flip" size={22} />
+              </button>
+            </div>
+          </div>
+          {/* Capture hints, under the shutter line. */}
+          {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
+          {roll && camera.capture === 'booth' && !busy && <p class="cam-hint">{t('cam.boothHint')}</p>}
+          {roll && camera.capture === 'double' && (
+            <p class="cam-hint" data-testid="double-hint">
+              {roll.pending?.kind === 'double' ? t('cam.double2') : t('cam.doubleHint')}
+            </p>
+          )}
+          {roll?.pending?.kind === 'half' && <p class="cam-hint">{t('cam.halfNext')}</p>}
         </div>
       )}
-      </div>
       {!roll && loadError && !storageError.value && (
         <div class="cam-retry">
           <button
@@ -1369,14 +1485,6 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           </button>
         </div>
       )}
-      {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
-      {roll && camera.capture === 'booth' && !busy && <p class="cam-hint">{t('cam.boothHint')}</p>}
-      {roll && camera.capture === 'double' && (
-        <p class="cam-hint" data-testid="double-hint">
-          {roll.pending?.kind === 'double' ? t('cam.double2') : t('cam.doubleHint')}
-        </p>
-      )}
-      {roll?.pending?.kind === 'half' && <p class="cam-hint">{t('cam.halfNext')}</p>}
       {screenFlash && <div class="screen-flash" />}
       {eject && (
         <div class={`eject-print ${camera.id === 'instaw' ? 'wide' : ''}`} key={eject.key} aria-hidden="true" style={{ width: `${Math.round(Math.min(frame.width * 0.46, 220))}px` }}>

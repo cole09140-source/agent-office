@@ -1,4 +1,4 @@
-/* MY tab (top of the Settings screen) and the paywall sheet. Tokens from styles.css :root. */
+/* MY tab (top of the Settings screen) and the paywall sheet. Darkroom tokens (--dr-*) from styles/darkroom.css. */
 
 .my-label {
   margin: 0 0 6px;
@@ -16,7 +16,8 @@
   margin: 0 0 12px;
 }
 .my-count-num {
-  color: var(--accent);
+  color: var(--dr-amber);
+  text-shadow: 0 0 14px rgba(224, 160, 58, 0.3);
   font-size: 2.25rem;
   font-weight: 800;
   line-height: 1;
@@ -40,12 +41,13 @@
 .my-marks i {
   width: 7px;
   height: 12px;
-  border-radius: 2px;
-  background: var(--line);
+  border-radius: 1px;
+  background: var(--dr-line);
   transition: background-color 0.3s ease;
 }
 .my-marks i.on {
-  background: var(--accent);
+  background: var(--dr-amber);
+  box-shadow: 0 0 6px rgba(224, 160, 58, 0.35);
 }
 .my-earned {
   display: flex;
@@ -64,6 +66,7 @@
 }
 .my-earned strong {
   flex: none;
+  font-family: var(--dr-mono-ui);
   font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
 }
@@ -121,9 +124,9 @@
   gap: 12px;
   min-height: 60px;
   padding: 10px 14px;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
-  background: var(--bg);
+  border-radius: var(--dr-r);
+  border: 1px solid var(--dr-line);
+  background: var(--dr-well);
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -138,8 +141,9 @@
   outline-offset: 2px;
 }
 .my-plan.on {
-  border-color: var(--accent);
-  background: rgba(255, 138, 43, 0.08);
+  border-color: var(--dr-red);
+  background: var(--dr-red-tint);
+  box-shadow: 0 0 14px rgba(211, 50, 43, 0.25);
 }
 .my-plan::before {
   content: '';
@@ -151,7 +155,7 @@
   box-sizing: border-box;
 }
 .my-plan.on::before {
-  border: 5px solid var(--accent);
+  border: 5px solid var(--dr-red-text);
 }
 .my-plan-txt {
   display: flex;
@@ -169,14 +173,19 @@
 }
 .my-plan-best {
   padding: 1px 7px;
-  border-radius: 6px;
-  background: rgba(255, 138, 43, 0.16);
-  color: var(--accent-2);
+  border-radius: var(--dr-r-sm);
+  background: rgba(224, 160, 58, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(224, 160, 58, 0.45);
+  color: var(--dr-amber);
+  font-family: var(--dr-mono-ui);
+  text-transform: uppercase;
+  letter-spacing: calc(var(--dr-track) * 0.75);
   font-size: 0.6875rem;
   font-weight: 700;
 }
 .my-plan-price {
   flex: none;
+  font-family: var(--dr-mono-ui);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -251,12 +260,12 @@
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--bg-3);
+  border-radius: var(--dr-r);
+  border: 1px solid var(--dr-line);
+  background: var(--dr-well);
   color: var(--fg);
   font: inherit;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--dr-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

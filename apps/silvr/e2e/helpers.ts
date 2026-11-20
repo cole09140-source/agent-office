@@ -60,6 +60,16 @@ export async function shoot(page: Page, n: number) {
   }
 }
 
+/**
+ * Opens the camera's "more" popover (format, zoom, EV, palette, date, grid live there since the
+ * 2026-11 deck redesign); a no-op when it is already open. Waits while the deck is locked by a capture.
+ */
+export async function openMore(page: Page) {
+  const more = page.getByTestId('btn-more');
+  if ((await more.getAttribute('aria-expanded')) !== 'true') await more.click();
+  await expect(page.getByTestId('cam-more')).toBeVisible();
+}
+
 /** Picks a camera on the strip under the viewfinder (and optionally its film); it is ready at once. */
 export async function loadCamera(page: Page, cameraId: string, opts: { stock?: string; size?: string } = {}) {
   // Tapping the camera already in use opens its film sheet instead, so only tap another one.

@@ -1,1 +1,531 @@
 /* slides — see the owner note at the top of each section. Loaded after styles.css, so equal-specificity rules here win. */
+
+/* ── Album + photo viewer as a light table with slide mounts (owner: album agent C) ──
+   Story: you develop in the darkroom (the dark shell), then look at the slides on a light box. The box sits
+   inside a dark bezel, so the status-bar area, headers and the tab bar stay dark and the lit surface reads as
+   an object on the darkroom bench, not as a different app. Screens: Gallery, Folder, Roll, Photo, Darkroom.
+   Text on the lit surface and on the mounts is dark ink, ≥ 4.5:1 everywhere (darkest surface #e4d9c6). */
+:root {
+  /* lit surface: warm white, brighter in the middle like a bulb under opal glass */
+  --lt-glow: #fbf8f1;
+  --lt-surface: #f1eadc;
+  --lt-edge: #e4d9c6;
+  --lt-grid: rgba(122, 98, 62, 0.1);
+  --lt-ink: #29231c;
+  --lt-ink-2: #574d42;
+  /* cardboard slide mount */
+  --mt-hi: #e9e4da;
+  --mt-lo: #d4cec2;
+  --mt-edge: rgba(70, 58, 44, 0.32);
+  --mt-ink: #3d352c;
+  /* red ink printed on a mount (the safelight red is too light for small text on cardboard) */
+  --mt-red: #971c16;
+  --lt-bezel: #1a1612;
+}
+
+/* ---------- the light box ---------- */
+.lt-box {
+  position: relative;
+  isolation: isolate;
+  margin: 2px -4px 0;
+  padding: 12px 10px 16px;
+  border-radius: 16px;
+  color: var(--lt-ink);
+  background:
+    linear-gradient(var(--lt-grid) 1px, transparent 1px) -1px -1px / 22px 22px,
+    linear-gradient(90deg, var(--lt-grid) 1px, transparent 1px) -1px -1px / 22px 22px,
+    radial-gradient(130% 70% at 50% 18%, var(--lt-glow), var(--lt-surface) 62%, var(--lt-edge));
+  box-shadow:
+    0 0 0 5px var(--lt-bezel),
+    0 0 0 6px var(--dr-line),
+    0 0 46px 2px rgba(255, 226, 170, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    inset 0 0 38px rgba(150, 112, 56, 0.2);
+}
+/* The tube warms up once when the box appears. Only a glow layer fades: text colours never blend. */
+.lt-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(90% 55% at 50% 20%, rgba(255, 252, 240, 0.85), transparent 70%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lt-box::before {
+    animation: lt-warm 0.5s ease-out both;
+  }
+}
+@keyframes lt-warm {
+  from {
+    opacity: 0;
+  }
+}
+.lt-box .muted,
+.lt-box .small {
+  color: var(--lt-ink-2);
+}
+
+/* Section labels printed on the box edge. */
+.lt-box .gal-section,
+.lt-box .folder-day-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 2px 10px;
+  color: var(--lt-ink);
+  font-family: var(--dr-cond);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lt-box .gal-section::after {
+  content: '';
+  flex: 1;
+  align-self: center;
+  height: 1px;
+  background: rgba(60, 48, 34, 0.22);
+}
+.lt-box .folder-day-title .muted {
+  font-family: var(--dr-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.lt-box .folder-day + .folder-day {
+  margin-top: 6px;
+}
+
+/* ---------- the slide mount (shared by grids, cards, viewer, darkroom) ---------- */
+.mount,
+.lt-box .roll-card,
+.lt-box .folder-card,
+.viewer-mount,
+.dr-mount {
+  background: linear-gradient(160deg, var(--mt-hi), var(--mt-lo));
+  border-radius: 9px;
+  box-shadow:
+    0 0 0 1px var(--mt-edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 3px rgba(60, 40, 15, 0.22),
+    0 6px 14px -6px rgba(60, 40, 15, 0.35);
+}
+/* The picture window: a hard cut in the card, a hair of shadow on its upper edge. */
+.mount .thumb,
+.lt-box .roll-card .thumb,
+.lt-box .folder-card .thumb {
+  border-radius: 3px;
+  background: #2a2622;
+  box-shadow:
+    0 0 0 1px rgba(40, 30, 20, 0.45),
+    inset 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+.mount .thumb img,
+.lt-box .roll-card .thumb img,
+.lt-box .folder-card .thumb img {
+  border-radius: 3px;
+}
+/* Label printed on the mount: camera (condensed caps), frame number in red ink, date in mono. */
+.mount-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  color: var(--mt-ink);
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  line-height: 1.25;
+  pointer-events: none;
+}
+.mount-cam {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--dr-cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mount-run {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mount-run .frame-no {
+  /* reset the old frame-number chip (styles.css) */
+  position: static;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--mt-red);
+}
+.mount-date {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- photo grids (folder, roll) ---------- */
+.photo-grid.mounts {
+  grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+  gap: 9px 8px;
+}
+.photo-grid .mount {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 6px 5px;
+}
+.photo-grid .mount .mount-label {
+  padding: 0 1px;
+}
+/* Four-lens sheets and booth strips: the whole picture in the window (never cropped). */
+.photo-grid .mount.quad .thumb img,
+.photo-grid .mount.booth .thumb img,
+.lt-box .roll-card.quad .thumb img,
+.lt-box .roll-card.booth .thumb img,
+.lt-box .folder-card.quad .thumb img,
+.lt-box .folder-card.booth .thumb img {
+  object-fit: contain;
+}
+/* Booth strips: four frames tall, so the strip gets a tall mount two rows high and is shown whole. */
+.photo-grid .mount.booth {
+  grid-row: span 2;
+}
+.photo-grid .mount.booth .thumb {
+  flex: 1 1 0;
+  min-height: 190px;
+  aspect-ratio: auto;
+}
+/* Selection: a safelight-red edge round the whole mount and a red check. */
+.photo-grid .mount .sel-toggle {
+  border-radius: 9px;
+  padding: 5px;
+}
+.photo-grid .mount .sel-toggle[aria-pressed='true'] {
+  box-shadow:
+    inset 0 0 0 3px var(--dr-red),
+    0 0 0 1px var(--dr-red);
+  background: rgba(211, 50, 43, 0.08);
+}
+.photo-grid .mount .sel-mark {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  background: rgba(20, 16, 12, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: #fff;
+}
+.photo-grid .mount .sel-toggle[aria-pressed='true'] .sel-mark {
+  background: var(--dr-red);
+  border-color: #fff;
+}
+.photo-grid .mount .sel-toggle:focus-visible {
+  outline: 3px solid var(--lt-ink);
+  outline-offset: 2px;
+}
+.photo-grid .mount.on {
+  transform: translateY(-1px);
+}
+
+/* ---------- album: shooting groups as large mounts ---------- */
+.lt-box .roll-grid {
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+  gap: 12px 10px;
+}
+.lt-box .roll-card {
+  padding: 8px 8px 4px;
+}
+.lt-box .roll-card .thumb {
+  aspect-ratio: 1;
+}
+.lt-box .roll-meta {
+  padding: 6px 1px 2px;
+  min-height: 44px;
+  color: var(--lt-ink);
+}
+.lt-box .roll-meta strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  font-family: var(--dr-cond);
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.lt-box .roll-meta .muted {
+  font-family: var(--dr-mono);
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: var(--mt-ink);
+}
+/* Badges printed as a dark rubber stamp; "new" in red ink. */
+.lt-box .badge {
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--lt-ink);
+  color: #f4eee2;
+  font-family: var(--dr-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.lt-box .badge.new {
+  background: var(--mt-red);
+  color: #fff;
+}
+
+/* ---------- album: folders as stacks of mounts ---------- */
+.lt-box .folder-row {
+  gap: 16px;
+  margin: 0 -10px 18px;
+  padding: 8px 14px 10px;
+  scroll-padding-inline: 14px;
+}
+.lt-box .folder-card {
+  position: relative;
+  isolation: isolate;
+  width: 108px;
+  padding: 7px 7px 3px;
+}
+/* The mounts underneath, fanned a little (one for a camera, two for "All photos"). */
+.lt-box .folder-card::before,
+.lt-box .folder-card.all::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(160deg, #dfd9ce, #c9c2b5);
+  box-shadow: 0 0 0 1px var(--mt-edge), 0 2px 4px rgba(60, 40, 15, 0.25);
+  transform: rotate(-4deg) translate(-2px, 2px);
+}
+.lt-box .folder-card.all::after {
+  z-index: -2;
+  transform: rotate(5deg) translate(3px, 3px);
+}
+.lt-box .folder-card .thumb,
+.lt-box .folder-card.all .thumb {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px rgba(40, 30, 20, 0.45),
+    inset 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+.lt-box .folder-meta {
+  padding: 5px 1px 2px;
+  min-height: 40px;
+  color: var(--lt-ink);
+}
+.lt-box .folder-meta strong {
+  font-family: var(--dr-cond);
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.lt-box .folder-meta .muted {
+  font-family: var(--dr-mono);
+  font-size: 0.6875rem;
+  color: var(--mt-ink);
+}
+/* "All photos": a red ink tab on the top mount. */
+.lt-box .folder-card.all .folder-meta strong {
+  color: var(--mt-red);
+}
+
+/* Focus rings on the lit surface: dark ink, not the shell's accent. */
+.lt-box :focus-visible {
+  outline: 2px solid var(--lt-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- photo viewer: the slide on the light box ---------- */
+.viewer-stage {
+  /* the stage is the light box; its size (not the print's) sets the mount's limits */
+  container-type: size;
+  margin: 2px 2px 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(var(--lt-grid) 1px, transparent 1px) -1px -1px / 22px 22px,
+    linear-gradient(90deg, var(--lt-grid) 1px, transparent 1px) -1px -1px / 22px 22px,
+    radial-gradient(80% 70% at 50% 45%, var(--lt-glow), var(--lt-surface) 60%, var(--lt-edge));
+  box-shadow:
+    0 0 0 5px var(--lt-bezel),
+    0 0 0 6px var(--dr-line),
+    0 0 46px 2px rgba(255, 226, 170, 0.1),
+    inset 0 0 44px rgba(150, 112, 56, 0.22);
+}
+.viewer-mount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* a narrow booth strip sits in a mount wide enough for its label, like a real strip holder */
+  min-width: min(100%, 200px);
+  margin: 0;
+  padding: 12px 12px 0;
+  border-radius: 12px;
+}
+.viewer-mount .print {
+  /* 12px light box margin + 12px mount edge on each side; the label strip under the picture is 30px */
+  max-width: calc(100cqw - 48px);
+  max-height: calc(100cqh - 24px - 12px - 30px);
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(40, 30, 20, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.viewer-mount .mount-label {
+  /* never widens the mount past the picture: a narrow booth strip keeps a narrow mount */
+  width: 0;
+  min-width: 100%;
+  height: 30px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+}
+.viewer-mount .mount-cam {
+  min-width: 0;
+  font-size: 12px;
+}
+.viewer-mount .mount-run {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  gap: 10px;
+}
+.viewer .nav {
+  background: rgba(26, 22, 18, 0.72);
+  color: var(--dr-fg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.viewer .developing-tray {
+  background: var(--lt-bezel);
+  color: var(--dr-amber);
+  box-shadow: inset 0 0 30px rgba(211, 50, 43, 0.35);
+}
+/* Tap the picture: the box light goes off and the slide is all that is left (as a projection). */
+.viewer.bare .viewer-stage {
+  background: #000;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .viewer-stage {
+    transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+}
+
+/* Actions: four technical keys on the dark bench under the box. */
+.viewer-actions {
+  gap: 6px;
+  padding: 12px 0 10px;
+}
+.viewer-actions button {
+  gap: 3px;
+  min-height: 56px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  background: var(--dr-panel);
+  border: 1px solid var(--dr-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: var(--dr-fg);
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.viewer-actions button svg {
+  color: var(--dr-fg-2);
+}
+.viewer-actions button:active:not(:disabled) {
+  background: var(--dr-panel-2);
+  border-color: var(--dr-fg-3);
+}
+.viewer-actions button[data-testid='btn-darkroom'] svg {
+  color: var(--dr-amber);
+}
+
+/* ---------- darkroom: dark tray under the safelight, the print in its mount ---------- */
+.darkroom .dr-stage {
+  background:
+    radial-gradient(70% 60% at 50% 30%, rgba(211, 50, 43, 0.2), transparent 75%),
+    var(--dr-panel);
+  box-shadow:
+    inset 0 0 0 1px var(--dr-line-soft),
+    inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+.dr-top .dr-stage {
+  /* the stage height is fixed by .dr-top; its size bounds the mount */
+  container-type: size;
+}
+.dr-mount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 8px 0;
+  border-radius: 9px;
+  /* under the safelight the cardboard reads warmer and dimmer */
+  background: linear-gradient(160deg, #c9c0b2, #b0a798);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 8px 22px rgba(0, 0, 0, 0.55);
+}
+.dr-top .dr-stage canvas,
+.dr-stage .dr-mount canvas {
+  /* 8px stage padding + 8px mount edge each side; 22px label strip */
+  max-width: calc(100cqw - 32px);
+  max-height: calc(100cqh - 16px - 8px - 22px);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(30, 20, 10, 0.55);
+}
+.dr-mount .mount-label {
+  width: 0;
+  min-width: 100%;
+  height: 22px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #2a231c;
+}
+.dr-mount .mount-cam {
+  min-width: 0;
+}
+.dr-mount .mount-run .frame-no {
+  color: #7a140f;
+}
+.dr-badge {
+  z-index: 1;
+  background: rgba(11, 10, 9, 0.8);
+  color: var(--dr-amber);
+}
+
+/* Right-to-left: the fan of mounts under a folder leans the other way. */
+:root[dir='rtl'] .lt-box .folder-card::before {
+  transform: rotate(4deg) translate(2px, 2px);
+}
+:root[dir='rtl'] .lt-box .folder-card.all::after {
+  transform: rotate(-5deg) translate(-3px, 3px);
+}
+
+@media (forced-colors: active) {
+  .lt-box,
+  .viewer-stage {
+    border: 2px solid CanvasText;
+  }
+  .photo-grid .mount .sel-toggle[aria-pressed='true'] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+}

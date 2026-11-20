@@ -59,7 +59,7 @@ export function FolderCard({ folder }: { folder: Folder }) {
   const open = () => go({ name: 'folder', id: folder.id });
   const name = folderName(folder.id);
   return (
-    <li class={`folder-card ${folder.id === 'all' ? 'all' : ''}`} data-testid={`folder-${folder.id}`}>
+    <li class={`folder-card ${folder.id === 'all' ? 'all' : ''} ${cover ? frameShape(cover) : ''}`} data-testid={`folder-${folder.id}`}>
       {cover ? <Thumb photo={cover} onClick={open} label={name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={name} tabIndex={-1} />}
       <button class="folder-meta" onClick={open}>
         <strong>
@@ -72,6 +72,40 @@ export function FolderCard({ folder }: { folder: Folder }) {
 }
 
 const dayKey = (ts: number) => new Date(ts).toDateString();
+
+/**
+ * How a frame sits in its slide mount. Booth strips are four frames tall and four-lens frames a 2×2 grid:
+ * both are shown whole (a square centre crop would scramble them); a strip also gets a tall mount.
+ */
+export function frameShape(p: Photo): '' | 'quad' | 'booth' {
+  if (!hasCamera(p.develop.cameraId)) return '';
+  const c = getCamera(p.develop.cameraId).capture;
+  return c === 'booth' ? 'booth' : c === 'quad' ? 'quad' : '';
+}
+
+/** The date printed on a slide mount, like the camera's date back: '26 11 21 (always left to right). */
+export function mountDate(ts: number): string {
+  const d = new Date(ts);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `'${two(d.getFullYear() % 100)} ${two(d.getMonth() + 1)} ${two(d.getDate())}`;
+}
+
+/**
+ * The label printed on a slide mount: frame number and date, plus the camera when the grid mixes cameras.
+ * Decorative (aria-hidden): the thumbnail's own name already says "Photo 12".
+ */
+export function SlideLabel({ photo, camera }: { photo: Photo; camera?: boolean }) {
+  const cam = camera && hasCamera(photo.develop.cameraId) ? getCamera(photo.develop.cameraId).name : '';
+  return (
+    <span class="mount-label" aria-hidden="true">
+      {cam && <bdi class="mount-cam">{cam}</bdi>}
+      <span class="mount-run" dir="ltr">
+        <b class="frame-no">{photo.frame}</b>
+        {!photo.undated && <span class="mount-date">{mountDate(photo.takenAt)}</span>}
+      </span>
+    </span>
+  );
+}
 
 /** One folder's photos, newest first, under a heading per day. */
 export function FolderScreen({ id }: { id: FolderId }) {
@@ -105,20 +139,24 @@ export function FolderScreen({ id }: { id: FolderId }) {
       {photos !== null && photos.length === 0 ? (
         <Empty title={t('gal.empty')} hint={t('gal.emptyHint')} />
       ) : (
-        days.map((d) => (
-          <section key={d.key} class="folder-day" aria-label={formatDate(d.ts, signalLang.value)}>
-            <h2 class="folder-day-title">
-              {formatDate(d.ts, signalLang.value)} <span class="muted">{t('gal.frames', { n: d.items.length })}</span>
-            </h2>
-            <ul class="photo-grid">
-              {d.items.map((p) => (
-                <li key={p.id}>
-                  <Thumb photo={p} onClick={() => go({ name: 'photo', id: p.id })} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
+        // The light table: every frame in its slide mount on a lit, gridded surface (the shell around stays dark).
+        <div class="lt-box">
+          {days.map((d) => (
+            <section key={d.key} class="folder-day" aria-label={formatDate(d.ts, signalLang.value)}>
+              <h2 class="folder-day-title">
+                {formatDate(d.ts, signalLang.value)} <span class="muted">{t('gal.frames', { n: d.items.length })}</span>
+              </h2>
+              <ul class="photo-grid mounts">
+                {d.items.map((p) => (
+                  <li key={p.id} class={`mount ${frameShape(p)}`}>
+                    <Thumb photo={p} onClick={() => go({ name: 'photo', id: p.id })} />
+                    <SlideLabel photo={p} camera={id === 'all'} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
     </div>
   );

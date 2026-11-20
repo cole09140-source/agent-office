@@ -24,6 +24,8 @@ export function ModelsScreen() {
     cameraRequest.value = id;
     goTab({ name: 'camera' });
   };
+  // Frame numbers run across the whole contact sheet (01, 02 …), like the edge of a negative.
+  let frame = 0;
   return (
     <div class="page" data-testid="models-screen">
       <Header title={t('tab.models')} sub={t('models.sub', { n: CAMERAS.length })} />
@@ -38,11 +40,15 @@ export function ModelsScreen() {
             <ul class="models-grid">
               {list.map((c) => {
                 const on = c.id === inUse;
+                frame += 1;
                 return (
                   <li key={c.id}>
                     <button type="button" class={`model-card ${on ? 'on' : ''}`} onClick={() => pick(c.id)} aria-current={on || undefined} data-testid={`model-${c.id}`}>
                       <span class="model-art" aria-hidden="true">
-                        <CameraBody camera={c} width={84} />
+                        <CameraBody camera={c} width={92} />
+                      </span>
+                      <span class="model-frame" aria-hidden="true">
+                        {String(frame).padStart(2, '0')}
                       </span>
                       <strong class="model-name">
                         <bdi>{c.name}</bdi>

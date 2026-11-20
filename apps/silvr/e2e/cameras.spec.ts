@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, openMore, rewindAndDevelop, shoot, start } from './helpers';
 
 /** Expected print shape per camera (fake camera is landscape 16:9). */
 const CASES: { id: string; presses: number; ratio: number; tol?: number; check?: 'fisheye' | 'pixel' | 'quad' | 'half' | 'slide' | 'gate' | 'sprocket' | 'lowres' }[] = [
@@ -63,10 +63,20 @@ for (const cse of CASES) {
     const errors = await start(page);
     await loadCamera(page, cse.id);
     await page.waitForTimeout(600);
-    // The top toolbar stays on one row on a 360px phone (Tele 20 once wrapped there).
+    // Nothing sits above the camera body, and the control deck stays one row on a 360px phone.
     const vp = page.viewportSize()!;
     await page.setViewportSize({ width: 360, height: vp.height });
-    expect(await page.locator('.cam-top').evaluate((el) => el.getBoundingClientRect().height), 'toolbar on one row at 360px').toBeLessThan(70);
+    await expect(page.locator('.cam-top')).toHaveCount(0);
+    const row = await page.locator('.deck-row').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const kids = [...el.querySelectorAll('.deck-side > *, :scope > .shutter')].map((k) => k.getBoundingClientRect());
+      const mids = kids.map((k) => k.top + k.height / 2);
+      return { h: r.height, w: el.scrollWidth - el.clientWidth, spread: Math.max(...mids) - Math.min(...mids), right: Math.max(...kids.map((k) => k.right)), vw: innerWidth };
+    });
+    expect(row.h, 'deck on one row at 360px').toBeLessThan(96);
+    expect(row.spread, 'deck controls share one line at 360px').toBeLessThan(4);
+    expect(row.w, 'deck never scrolls sideways at 360px').toBeLessThanOrEqual(0);
+    expect(row.right, 'deck fits the 360px screen').toBeLessThanOrEqual(row.vw);
     await page.setViewportSize(vp);
     await page.screenshot({ path: `e2e/.shots/cam-${cse.id}-vf.png` });
     for (let i = 0; i < cse.presses; i++) {
@@ -214,6 +224,7 @@ test('instant camera: print ejects, develops, and is viewable in the camera', as
 test('digital camera: the shot is in the album right away, nothing to finish', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'pixel');
+  await openMore(page);
   await page.getByTestId('btn-palette').click();
   await expect(page.getByTestId('btn-palette')).toHaveAttribute('data-palette', 'mono');
   await shoot(page, 1);
@@ -225,6 +236,7 @@ test('digital camera: the shot is in the album right away, nothing to finish', a
 test('exposure dial and pixel darkroom palette', async ({ page }) => {
   await start(page);
   await loadCamera(page, 'pro35');
+  await openMore(page);
   await page.getByTestId('btn-ev').click();
   await page.getByTestId('sl-ev').fill('1');
   await expect(page.getByTestId('btn-ev')).toContainText('+1.0');

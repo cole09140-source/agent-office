@@ -1,1 +1,583 @@
 /* deck — see the owner note at the top of each section. Loaded after styles.css, so equal-specificity rules here win. */
+
+/* ==========================================================================
+   Camera control deck (owner: camera-screen agent A, 2026-11 darkroom redesign)
+   One row on the shutter line, nothing above the camera body:
+   last shot · flash · timer · SHUTTER · frame counter · more · flip.
+   Markup: src/screens/Camera.tsx (.deck > .deck-edge + .cam-bottom.deck-row).
+   ========================================================================== */
+
+.deck {
+  /* One size scale for the row: 36px buttons at 320px, 40px at 360px, 44px from ~393px up. */
+  --deck-btn: clamp(36px, 11.2vw, 44px);
+  --deck-shutter: clamp(56px, 17.6vw, 72px);
+  --deck-gap: clamp(3px, 1.4vw, 8px);
+  --deck-film: #1d1814;
+  position: relative;
+  z-index: 8;
+  flex: none;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  background: linear-gradient(180deg, var(--dr-panel-2), var(--dr-panel) 40%);
+  box-shadow: 0 -1px 0 var(--dr-line-soft);
+  font-family: var(--dr-cond);
+  color: var(--dr-fg);
+}
+
+/* ---- film edge above the deck: sprocket holes with an amber edge code ---- */
+.deck-edge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 14px;
+  padding: 0 12px;
+  background: var(--dr-holes) 0 50% / 100% 6px no-repeat, var(--deck-film);
+  border-bottom: 1px solid var(--dr-line-soft);
+  overflow: hidden;
+  pointer-events: none;
+}
+.deck-edge-code {
+  padding: 0 6px;
+  background: var(--deck-film);
+  color: var(--dr-amber);
+  font: 700 9px/14px var(--dr-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+/* ---- the row: shutter dead centre, three slots either side ---- */
+.deck .cam-bottom.deck-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--deck-gap);
+  padding: 9px clamp(8px, 2.6vw, 14px) 10px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.deck .cam-bottom.deck-row::before,
+.deck .cam-bottom.deck-row::after {
+  content: none;
+}
+.deck .deck-row > .deck-side {
+  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--deck-gap);
+  min-width: 0;
+}
+
+/* ---- secondary buttons: flat, dark, square-ish, thin line ---- */
+.deck .deck-btn {
+  position: relative;
+  flex: none;
+  width: var(--deck-btn);
+  min-width: var(--deck-btn);
+  height: var(--deck-btn);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--dr-panel-2);
+  color: var(--dr-fg-2);
+  box-shadow:
+    inset 0 0 0 1px var(--dr-line),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.deck .deck-slot {
+  flex: none;
+  width: var(--deck-btn);
+  height: var(--deck-btn);
+}
+/* 44px hit area around the smaller buttons on narrow phones. */
+.deck .deck-btn::after {
+  content: '';
+  position: absolute;
+  inset: calc((var(--deck-btn) - 44px) / 2);
+}
+.deck .deck-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  background: #241f1a;
+}
+.deck .deck-btn.on,
+.deck .flash-charge.charge-ready {
+  color: var(--dr-amber);
+  background: #21190f;
+  box-shadow:
+    inset 0 0 0 1px rgba(224, 160, 58, 0.55),
+    inset 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.deck .flash-charge.flash-charge.off {
+  color: var(--dr-fg-3);
+  background: var(--dr-panel-2);
+  box-shadow: inset 0 0 0 1px var(--dr-line);
+}
+.deck .deck-btn:disabled {
+  opacity: 0.4;
+}
+.deck .deck-btn:focus-visible,
+.deck .shutter:focus-visible,
+.deck .last-shot-empty:focus-visible,
+.deck .last-shot .thumb:focus-visible {
+  outline: 2px solid var(--dr-amber);
+  outline-offset: 2px;
+}
+.deck .more-dots {
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+/* Disposable flash: the ready lamp in the corner. */
+.deck .charge-led {
+  position: absolute;
+  top: 5px;
+  inset-inline-end: 5px;
+  width: 6px;
+  height: 6px;
+}
+
+/* Timer: seconds in a small amber tab on the corner; red while it is the cancel button. */
+.deck .timer-badge {
+  top: -5px;
+  inset-inline-end: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--dr-amber);
+  color: #1a1206;
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  line-height: 17px;
+}
+.deck .chip.cancel {
+  color: #ff8a7f;
+  background: #2a1412;
+  box-shadow: inset 0 0 0 1px rgba(211, 50, 43, 0.75);
+}
+.deck .chip.cancel .timer-badge {
+  background: var(--dr-red);
+  color: #fff;
+}
+
+/* ---- last shot: a small print in a thin frame ---- */
+.deck .last-shot,
+.deck .last-shot-empty {
+  flex: none;
+  width: calc(var(--deck-btn) + 4px);
+  justify-self: auto;
+}
+.deck .last-shot-empty {
+  height: calc(var(--deck-btn) + 4px);
+  border-radius: 5px;
+  background: #0f0d0b;
+  box-shadow: inset 0 0 0 1px var(--dr-line);
+  color: var(--dr-fg-3);
+}
+.deck .last-shot .thumb,
+.deck .last-shot-quick {
+  border-radius: 4px;
+}
+.deck .last-shot .thumb {
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 0 0 3px #0f0d0b;
+}
+.deck .last-shot.instant .thumb {
+  border-radius: 2px;
+  padding: 2px 2px 7px;
+}
+.deck .last-shot.instant .last-shot-quick {
+  inset: 2px 2px 7px;
+  width: calc(100% - 4px);
+  height: calc(100% - 9px);
+}
+
+/* ---- frame counter window: amber digits behind dark glass ---- */
+.deck .deck-counter {
+  position: relative;
+  flex: none;
+  min-width: calc(var(--deck-btn) + 8px);
+  height: calc(var(--deck-btn) - 4px);
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 45%), #070605;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.9),
+    0 0 0 1px var(--dr-line);
+  color: var(--dr-amber);
+  font: 700 clamp(15px, 4.4vw, 19px) / 1 var(--dr-mono);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px rgba(224, 160, 58, 0.5);
+  direction: ltr;
+}
+.deck .deck-counter .counter-tick {
+  color: var(--dr-amber);
+}
+/* A small index notch over the window, as on a film counter. */
+.deck .deck-counter::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -3px;
+  border: 3px solid transparent;
+  border-top-color: var(--dr-red);
+  border-bottom: 0;
+  opacity: 0.9;
+}
+.deck .deck-counter.empty {
+  color: var(--dr-fg-3);
+  text-shadow: none;
+}
+
+/* ---- the shutter: a red safelight button with a soft glow ---- */
+.deck .shutter {
+  width: var(--deck-shutter);
+  height: var(--deck-shutter);
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #2d2722, #0d0b09 72%);
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 0 0 4px #0c0a08,
+    0 0 0 5px var(--dr-line-soft),
+    0 0 22px -2px var(--dr-red-glow);
+  transition: transform 120ms ease;
+}
+.deck .shutter span {
+  width: 74%;
+  height: 74%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #ff7466 0, var(--dr-red) 46%, #8c1b16 100%);
+  box-shadow:
+    0 0 16px 1px var(--dr-red-glow),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition:
+    transform 100ms ease,
+    filter 100ms ease;
+}
+.deck .shutter:active:not(:disabled) span,
+.deck .shutter.busy span {
+  transform: scale(0.88);
+  background: radial-gradient(circle at 50% 30%, #ff7466 0, var(--dr-red) 46%, #8c1b16 100%);
+  filter: brightness(0.8);
+}
+.deck .shutter.starting {
+  border: 0;
+  outline: 1.5px dashed var(--dr-fg-3);
+  outline-offset: -4px;
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 0 0 4px #0c0a08;
+}
+.deck .shutter.starting span {
+  transform: scale(0.82);
+  background: #5a201c;
+  opacity: 0.7;
+  box-shadow: none;
+}
+.deck .shutter.cancel {
+  border: 0;
+  box-shadow:
+    0 0 0 1.5px #ff6b5e,
+    0 0 0 4px #0c0a08,
+    0 0 18px -2px var(--dr-red-glow);
+}
+.deck .shutter.cancel span {
+  transform: scale(0.86);
+  background: #2a1412;
+  color: #ff8a7f;
+  box-shadow: inset 0 0 0 1px rgba(211, 50, 43, 0.6);
+}
+.deck .shutter:disabled {
+  opacity: 0.45;
+}
+.deck .shutter-queue {
+  top: -4px;
+  right: -6px;
+  border-radius: 4px;
+  background: var(--dr-amber);
+  color: #1a1206;
+  font-family: var(--dr-mono);
+}
+/* A slow breath on the safelight while the camera is ready (none with reduced motion). */
+@media (prefers-reduced-motion: no-preference) {
+  .deck .shutter[data-state='ready'] {
+    animation: deck-safelight 3.6s ease-in-out infinite;
+  }
+}
+@keyframes deck-safelight {
+  50% {
+    box-shadow:
+      0 0 0 1px var(--dr-line),
+      0 0 0 4px #0c0a08,
+      0 0 0 5px var(--dr-line-soft),
+      0 0 30px 1px var(--dr-red-glow);
+  }
+}
+
+/* ---- "more": the rarer controls, opening upward from the deck ---- */
+.deck .cam-more-wrap {
+  position: static;
+  flex: none;
+}
+.deck .cam-more {
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 6px);
+  inset-inline-end: 8px;
+  z-index: 30;
+  min-width: 212px;
+  max-width: calc(100vw - 16px);
+  padding: 0 4px 4px;
+  border-radius: 7px;
+  background: var(--dr-panel);
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 -12px 32px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  transform-origin: bottom right;
+}
+[dir='rtl'] .deck .cam-more {
+  transform-origin: bottom left;
+}
+.deck .cam-more[hidden] {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .deck .cam-more:not([hidden]) {
+    animation: deck-pop 160ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+}
+@keyframes deck-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+}
+/* The popover's own film edge. */
+.deck .cam-more::before {
+  content: '';
+  display: block;
+  height: 10px;
+  margin: 0 -4px 4px;
+  background: var(--dr-holes) 0 50% / 100% 4px no-repeat, var(--deck-film);
+  border-bottom: 1px solid var(--dr-line-soft);
+}
+.deck .more-item {
+  width: 100%;
+  min-height: 44px;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 4px;
+  color: var(--dr-fg);
+  font-family: var(--dr-cond);
+  font-size: 1rem;
+  font-weight: 500;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+.deck .more-item + .more-item {
+  box-shadow: 0 -1px 0 var(--dr-line-soft);
+}
+.deck .more-item:active:not(:disabled) {
+  background: var(--dr-panel-2);
+}
+.deck .more-item:focus-visible {
+  outline: 2px solid var(--dr-amber);
+  outline-offset: -2px;
+}
+.deck .more-item:disabled {
+  opacity: 0.45;
+}
+.deck .more-item small {
+  color: var(--dr-fg-2);
+  font-family: var(--dr-mono);
+  font-size: 0.8125rem;
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+.deck .more-item.on small,
+.deck .more-item.on svg,
+.deck .more-item.on .more-glyph {
+  color: var(--dr-amber);
+}
+.more-glyph {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  color: var(--dr-fg-3);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-caps: normal;
+}
+.glyph-frame {
+  width: 15px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 1.5px;
+}
+.glyph-pal {
+  width: 12px;
+  height: 12px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 0 / 5px 5px no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 100% / 5px 5px no-repeat;
+  box-shadow: inset 0 0 0 1px currentColor;
+  border-radius: 1px;
+}
+
+/* ---- exposure slider: a floating strip just above the deck ---- */
+.deck .ev-row.deck-ev {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: calc(100% + 6px);
+  z-index: 25;
+  margin: 0;
+  padding: 2px 14px;
+  border-radius: 7px;
+  background: var(--dr-panel);
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 -10px 26px rgba(0, 0, 0, 0.55);
+}
+
+/* ---- capture hints under the shutter line ---- */
+.deck .cam-hint {
+  margin: -4px 0 0;
+  padding: 0 16px 8px;
+  color: var(--dr-fg-3);
+  font-family: var(--dr-cond);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+/* Locked while a capture is saved: the secondary controls dim (the shutter stays live and queues presses). */
+.deck.locked:not(.counting) .deck-side {
+  opacity: 0.85;
+}
+
+/* ---- toasts / update bar: no toolbar above the camera any more, so they sit at the very top ---- */
+.route-camera .toasts {
+  top: calc(12px + var(--safe-t));
+  bottom: auto;
+}
+.route-camera.has-update .toasts {
+  top: calc(64px + var(--safe-t));
+}
+.route-camera .update-bar {
+  top: calc(8px + var(--safe-t));
+}
+
+/* ---- camera screen layout with photographic body art (Camera.tsx adds .has-art) ----
+   The stage takes the art's own shape (inline aspect-ratio, shrinks on short screens), the CSS back plate
+   steps aside (the art is the body), and the art + camera strip sit centred in the room above the deck,
+   on the darkroom background instead of an empty textured plate. */
+.bp-body.has-art {
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.bp-body.has-art > .cam-stage {
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.bp-body.has-art > .cam-stage::before,
+.bp-body.has-art > .cam-stage::after {
+  content: none;
+}
+
+/* Today's-shots badge: the frame counter left the preview, so it keeps its corner on narrow previews too. */
+@container vf (max-width: 14.5rem) {
+  .viewfinder .vf-shots {
+    bottom: 10px;
+  }
+  .vfs-pixel .vf-shots {
+    bottom: 14px;
+  }
+  .viewfinder:has(.vf-shots) .vf-date {
+    bottom: 48px;
+  }
+}
+
+/* Short landscape phones: a slimmer deck so the picture keeps its height. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .deck {
+    --deck-btn: 38px;
+    --deck-shutter: 52px;
+  }
+  .deck .cam-bottom.deck-row {
+    padding-top: 4px;
+    padding-bottom: 5px;
+  }
+}
+
+@media (forced-colors: active) {
+  html .deck .deck-btn,
+  html .deck .deck-counter {
+    border: 1px solid ButtonText;
+  }
+  html .deck .shutter {
+    border: 4px solid ButtonText;
+    animation: none;
+  }
+  html .deck .shutter span {
+    background: ButtonText;
+  }
+  html .deck-edge {
+    display: none;
+  }
+}
+
+/* Camera strip on the bare darkroom background (art bodies have no plate behind it): unselected names stay
+   fully legible (WCAG AA) — only the little camera drawings dim, the selected one is lit. */
+.cam-rail-card {
+  opacity: 1;
+  color: var(--dr-fg-2);
+}
+.cam-rail-card .camera-body {
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+.cam-rail-cell.on .cam-rail-card {
+  color: var(--dr-fg);
+}
+.cam-rail-cell.on .cam-rail-card .camera-body {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-rail-card .camera-body {
+    transition: none;
+  }
+}

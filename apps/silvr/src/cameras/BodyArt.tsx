@@ -1,4 +1,8 @@
-import { bodyArtFor } from './bodyArt';
+import { bodyArtFor, type BodyArtEntry } from './bodyArtData';
+
+// The data lives in bodyArtData.ts, not bodyArt.ts: on a case-insensitive disk (Windows, default macOS) an
+// import of './BodyArt' would resolve to bodyArt.ts first (.ts before .tsx). Everything is re-exported here.
+export { BODY_ART, bodyArtFor, type BodyArtEntry } from './bodyArtData';
 
 /** A box in stage pixels (relative to the top-left of `.cam-stage`). */
 export interface StageBox {
@@ -6,6 +10,14 @@ export interface StageBox {
   top: number;
   width: number;
   height: number;
+}
+
+/** The art's own box in the stage: contain-fit and centred (a wider-than-stage art fills the width). */
+function artBox(art: BodyArtEntry, stageW: number, stageH: number): StageBox {
+  const scale = Math.min(stageW / art.w, stageH / art.h);
+  const width = art.w * scale;
+  const height = art.h * scale;
+  return { left: (stageW - width) / 2, top: (stageH - height) / 2, width, height };
 }
 
 /**
@@ -16,9 +28,24 @@ export interface StageBox {
  */
 export function artWindowBox(cameraId: string, stageW: number, stageH: number): StageBox | null {
   const art = bodyArtFor(cameraId);
-  if (!art || !stageW || !stageH) return null;
-  // Stub: real geometry comes with the art.
-  return null;
+  if (!art || !(stageW > 0) || !(stageH > 0)) return null;
+  const box = artBox(art, stageW, stageH);
+  return {
+    left: box.left + art.win.x * box.width,
+    top: box.top + art.win.y * box.height,
+    width: art.win.w * box.width,
+    height: art.win.h * box.height,
+  };
+}
+
+/**
+ * The art window's corner radius in stage px for the same layout (0 without art). Camera.tsx can give the
+ * viewfinder this border-radius so the preview's corners follow the window's rounded corners.
+ */
+export function artWindowRadius(cameraId: string, stageW: number, stageH: number): number {
+  const art = bodyArtFor(cameraId);
+  if (!art || !(stageW > 0) || !(stageH > 0)) return 0;
+  return (art.win.r ?? 0) * artBox(art, stageW, stageH).width;
 }
 
 /**
@@ -28,8 +55,24 @@ export function artWindowBox(cameraId: string, stageW: number, stageH: number): 
  */
 export function BodyArt({ cameraId, stageW, stageH }: { cameraId: string; stageW: number; stageH: number }) {
   const art = bodyArtFor(cameraId);
-  if (!art || !stageW || !stageH) return null;
-  return null;
+  if (!art || !(stageW > 0) || !(stageH > 0)) return null;
+  const box = artBox(art, stageW, stageH);
+  // The box is sized from the known natural size, so nothing shifts while the image decodes.
+  return (
+    <img
+      key={cameraId}
+      class="body-art"
+      src={art.src}
+      width={art.w}
+      height={art.h}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+      draggable={false}
+      data-testid="body-art"
+      style={{ left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` }}
+    />
+  );
 }
 
 /** Whether a camera has body art (Camera.tsx hides the CSS bezel then). */

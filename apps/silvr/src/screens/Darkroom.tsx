@@ -298,7 +298,16 @@ export function DarkroomScreen({ id }: { id: string }) {
           onPointerCancel={() => setCompare(false)}
           title={t('dr.compare')}
         >
-          <canvas ref={canvasRef} data-testid="dr-canvas" />
+          {/* The print being re-developed, in the slide mount it goes back to the light table in. */}
+          <div class="dr-mount">
+            <canvas ref={canvasRef} data-testid="dr-canvas" />
+            <span class="mount-label" aria-hidden="true">
+              <bdi class="mount-cam">{stock.name}</bdi>
+              <span class="mount-run" dir="ltr">
+                <b class="frame-no">{`No.${photo.frame}`}</b>
+              </span>
+            </span>
+          </div>
           {compare && <span class="dr-badge mono">{t('dr.original')}</span>}
         </div>
         <p class="dr-hint muted small">

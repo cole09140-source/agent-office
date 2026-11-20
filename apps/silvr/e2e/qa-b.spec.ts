@@ -46,12 +46,12 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
     const t0 = Date.now();
     await page.getByTestId('shutter').click();
     await expect(page.locator('.countdown')).toHaveText('3');
-    await expect(page.locator('.cam-top')).toHaveClass(/locked/);
+    await expect(page.getByTestId('deck')).toHaveClass(/locked/);
     // The shutter stays operable during the countdown (it cancels), so wait for the shot itself.
     await expect(page.locator('.countdown')).toBeHidden({ timeout: 10_000 });
     await expect(page.getByTestId('shutter')).toHaveAttribute('data-state', 'ready', { timeout: 10_000 });
     expect(Date.now() - t0).toBeGreaterThan(2900);
-    await expect(page.locator('.cam-top')).not.toHaveClass(/locked/);
+    await expect(page.getByTestId('deck')).not.toHaveClass(/locked/);
     await page.getByTestId('btn-timer').click(); // 10 s
     await page.getByTestId('btn-timer').click(); // off
     if (presses(id) === 2) await page.getByTestId('shutter').click();
@@ -152,6 +152,7 @@ test('R20 monkey test: 300 random actions keep every invariant', async ({ page }
     () => page.getByTestId('shutter').click({ timeout: 800 }),
     () => page.getByTestId('btn-flip').click({ timeout: 800 }),
     () => page.getByTestId('btn-flash').click({ timeout: 800 }),
+    () => page.getByTestId('btn-more').click({ timeout: 800 }),
     () => page.getByTestId('btn-aspect').click({ timeout: 800 }),
     () => page.getByTestId('btn-zoom').click({ timeout: 800 }),
     () => page.getByTestId('btn-palette').click({ timeout: 800 }),

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
+import { loadRoll, openMore, shoot, start, openCurrentRoll } from './helpers';
 
 /** Phones deliver portrait frames; the whole pipeline must keep portrait orientation. */
 test('portrait camera → portrait viewfinder and portrait prints for every format', async ({ page }) => {
@@ -11,8 +11,10 @@ test('portrait camera → portrait viewfinder and portrait prints for every form
   await page.waitForTimeout(800);
   await page.screenshot({ path: 'e2e/.shots/13-portrait-camera.png' });
   await shoot(page, 1); // 3:2
+  await openMore(page);
   await page.getByTestId('btn-aspect').click(); // 4:3
   await shoot(page, 1);
+  await openMore(page);
   await page.getByTestId('btn-aspect').click(); // 1:1
   await shoot(page, 1);
   await openCurrentRoll(page);

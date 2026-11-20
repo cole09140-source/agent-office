@@ -10,6 +10,7 @@ import { back, go, goTab, isCurrent, route } from '../state/router';
 import { ejectsPrints, getCamera, hasCamera } from '../cameras/models';
 import { deletePhoto, getPhoto, listPhotos, restorePhoto, subscribe, viewable, type Photo } from '../store/rolls';
 import { arrowStep } from '../platform/dir';
+import { mountDate } from './Folder';
 
 const INSTANT_DEV_S = 45;
 
@@ -177,13 +178,25 @@ export function PhotoScreen({ id }: { id: string }) {
         }}
       >
         {url ? (
-          <img
-            src={url}
-            alt={photo && stock ? `${isolate(stock.name)} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
-            class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
-            style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
-            data-testid="print"
-          />
+          // The print in its slide mount on the light box; the label is printed on the mount like the album's.
+          <figure class="viewer-mount">
+            <img
+              src={url}
+              alt={photo && stock ? `${isolate(stock.name)} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
+              class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
+              style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
+              data-testid="print"
+            />
+            {photo && (
+              <figcaption class="mount-label" aria-hidden="true">
+                <bdi class="mount-cam">{camera?.name ?? stock?.name}</bdi>
+                <span class="mount-run" dir="ltr">
+                  <b class="frame-no">{`No.${photo.frame}`}</b>
+                  {!photo.undated && <span class="mount-date">{mountDate(photo.takenAt)}</span>}
+                </span>
+              </figcaption>
+            )}
+          </figure>
         ) : (
           <div class="developing-tray mono" aria-live="polite">
             {error ? t('common.error') : t('view.developing')}

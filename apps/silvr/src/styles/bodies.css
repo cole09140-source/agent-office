@@ -1,1 +1,29 @@
 /* bodies — see the owner note at the top of each section. Loaded after styles.css, so equal-specificity rules here win. */
+
+/* ── Photographic camera bodies (owner: body-art agent, src/cameras/BodyArt.tsx) ──
+   The art is absolutely placed inside .cam-stage at the px box BodyArt computes (the same layout as
+   artWindowBox), under the viewfinder, which Camera.tsx fits into the art's black window. */
+.cam-stage > .body-art {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  max-width: none;
+  margin: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  /* placeholder tone while decoding, so the frame does not flash empty */
+  background: #141210;
+  border-radius: 4px;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+/* artWindowBox / BodyArt work in stage px from the stage's padding edge (sized by clientWidth/Height). The
+   back-plate rule `.bp-body .cam-stage > .viewfinder { grid-area: 1 / 1 }` would make the viewfinder's
+   containing block the grid area (the content box, inside the stage padding), shifting the preview by the
+   padding. On art, drop the grid placement so the viewfinder's left/top are measured from the same edge. */
+.cam-stage > .viewfinder.vf-on-art {
+  grid-area: auto;
+}

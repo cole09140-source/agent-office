@@ -3647,12 +3647,12 @@ html.tap-guard * {
   background: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.5px) 0 0 / 4px 4px;
 }
 /* Photo booth: four poses stacked down a strip; the one being taken lights up. */
-/* A little strip down the right edge counts the poses; the preview itself stays clear. */
+/* A little strip down the left edge counts the poses (the right corner holds today's-shots badge). */
 .vf-booth {
   display: grid;
   grid-template-rows: repeat(4, 1fr);
   gap: 4px;
-  inset: 10px 10px 10px auto;
+  inset: 10px auto 10px 10px;
   width: 16%;
   padding: 4px;
   border-radius: 4px;

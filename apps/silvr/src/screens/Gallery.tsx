@@ -10,7 +10,7 @@ import { getCamera, hasCamera } from '../cameras/models';
 import { isNative } from '../platform/share';
 import { getPhoto, inCamera, photoCount, type Photo, type Roll } from '../store/rolls';
 import { restoreRequest } from './Settings';
-import { buildFolders, FolderCard } from './Folder';
+import { buildFolders, FolderCard, frameShape } from './Folder';
 
 /**
  * "12장", or for half-frame rolls "3프레임 (5컷)" (frames on the film, presses taken), like the camera.
@@ -54,7 +54,7 @@ function RollCard({ roll }: { roll: Roll }) {
   const stock = getStock(roll.stockId);
   const open = () => go({ name: 'roll', id: roll.id });
   return (
-    <li class="roll-card" data-testid="roll-card">
+    <li class={`roll-card ${cover ? frameShape(cover) : ''}`} data-testid="roll-card">
       {cover ? <Thumb photo={cover} onClick={open} label={stock.name} tabIndex={-1} /> : <button class="thumb" onClick={open} aria-label={stock.name} tabIndex={-1} />}
       <button class="roll-meta" onClick={open} data-testid="roll-open">
         <strong>
@@ -101,19 +101,22 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
         </Empty>
       ) : (
         <>
-          {/* Folders: every photo at once, and one per camera. */}
-          <h2 class="gal-section">{t('gal.folders')}</h2>
-          <ul class="folder-row" data-testid="folder-row">
-            {buildFolders(list).map((f) => (
-              <FolderCard key={f.id} folder={f} />
-            ))}
-          </ul>
-          <h2 class="gal-section">{t('gal.groups')}</h2>
-          <ul class="roll-grid">
-            {list.map((r) => (
-              <RollCard key={r.id} roll={r} />
-            ))}
-          </ul>
+          {/* The light table: folders as stacks of slide mounts, shooting groups as single mounts. */}
+          <div class="lt-box">
+            {/* Folders: every photo at once, and one per camera. */}
+            <h2 class="gal-section">{t('gal.folders')}</h2>
+            <ul class="folder-row" data-testid="folder-row">
+              {buildFolders(list).map((f) => (
+                <FolderCard key={f.id} folder={f} />
+              ))}
+            </ul>
+            <h2 class="gal-section">{t('gal.groups')}</h2>
+            <ul class="roll-grid">
+              {list.map((r) => (
+                <RollCard key={r.id} roll={r} />
+              ))}
+            </ul>
+          </div>
           <p class="gal-help">
             <HelpLink />
           </p>

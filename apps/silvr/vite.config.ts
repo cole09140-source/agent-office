@@ -1,5 +1,5 @@
 import preact from '@preact/preset-vite';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
@@ -17,7 +17,9 @@ function serviceWorker(): Plugin {
         if (!found) this.error(`locale chunk for "${l}" is missing: it would not be precached for offline use`);
       }
       const assets = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
-      const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css'];
+      const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css',
+        // Camera body art (public/bodies): the camera screen must look the same offline.
+        ...readdirSync(new URL('./public/bodies/', import.meta.url)).filter((f) => f.endsWith('.webp')).map((f) => `bodies/${f}`)];
       const urls = ['./', ...new Set([...assets, ...publicFiles])].map((f) => (f === './' ? f : `./${f}`));
       const template = readFileSync(new URL('./src/sw-template.js', import.meta.url), 'utf8');
       const version = `${pkg.version}-${Date.now().toString(36)}`;
