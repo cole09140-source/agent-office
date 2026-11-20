@@ -1,1 +1,23 @@
-/* darkroom — see the owner note at the top of each section. Loaded after styles.css, so equal-specificity rules here win. */
+/*
+ * Darkroom shell (2026-11 retro redesign, direction "02 darkroom red"): shared tokens for every agent.
+ * Tokens below are the contract — extend, never rename. Owner of the rest of this file: the shell agent.
+ */
+:root {
+  --dr-bg: #0b0a09;
+  --dr-panel: #15120f;
+  --dr-panel-2: #1c1814;
+  --dr-line: #3a332c;
+  --dr-line-soft: #2a2520;
+  --dr-fg: #ece4d6;
+  --dr-fg-2: #a99f90;
+  --dr-fg-3: #7d756a;
+  /* Safelight red: shutter, selection, the live dot. Never for errors or long text. */
+  --dr-red: #d3322b;
+  --dr-red-glow: rgba(211, 50, 43, 0.45);
+  /* Film-edge amber: frame numbers, edge codes, small labels. */
+  --dr-amber: #e0a03a;
+  --dr-cond: 'Archivo Narrow', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  --dr-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Sprocket holes along a film edge: use as a background on a 10–14px tall strip. */
+  --dr-holes: repeating-linear-gradient(90deg, var(--dr-bg) 0 9px, transparent 9px 18px);
+}
