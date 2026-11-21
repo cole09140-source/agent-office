@@ -68,7 +68,17 @@ try {
     const dir = join(out, loc);
     mkdirSync(join(dir, 'raw'), { recursive: true });
     const ctx = await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: L.browser, permissions: ['camera'] });
-    await ctx.addInitScript(() => localStorage.setItem('fc-unlimited', '1'));
+    await ctx.addInitScript(() => {
+      localStorage.setItem('fc-unlimited', '1');
+      // Store material shows no third-party trademarks: the four real-phone bodies stay out of the camera list.
+      const hide = () => {
+        const s = document.createElement('style');
+        s.textContent = ['flip03', 'touch07', 'curve07', 'filter10'].map((id) => `[data-testid="camera-${id}"]`).join(',') + '{visibility:hidden!important}';
+        document.head.append(s);
+      };
+      if (document.head) hide();
+      else document.addEventListener('DOMContentLoaded', hide);
+    });
     const page = await ctx.newPage();
     const tid = (id) => page.getByTestId(id);
     await page.goto(base);

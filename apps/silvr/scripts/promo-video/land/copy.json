@@ -1,0 +1,267 @@
+{
+  "_comment": "Landscape promo (16:9) per Play listing language. say = narration text sent to ElevenLabs (numbers spelled out), cap = on-screen caption. ui = app locale for the screen recording. No trademark names.",
+  "beats": [
+    "hook",
+    "bodies",
+    "shoot",
+    "formats",
+    "album",
+    "end"
+  ],
+  "locales": {
+    "en-US": {
+      "ui": "en",
+      "voice": "EXAVITQu4vr4xnSDxMaL",
+      "voiceName": "Sarah",
+      "say": [
+        "Thirty-eight film cameras. All in your pocket.",
+        "Each one has its own body, its own lens, and its own film.",
+        "Hold it sideways like the real thing, press the shutter, and your shot is ready. No waiting.",
+        "From photo booth strips to big four-by-five film.",
+        "Every frame lands on the light table, and the original is kept, so you can develop it again anytime.",
+        "Film Camela. Now on Google Play."
+      ],
+      "cap": [
+        "38 film cameras.\nAll in your pocket.",
+        "Every camera, its own body",
+        "Shoot sideways. No waiting.",
+        "From booth strips to 4×5 film",
+        "Originals kept. Re-develop anytime.",
+        ""
+      ],
+      "tag": "38 film cameras in your pocket",
+      "cta": "Get it on Google Play"
+    },
+    "ko-KR": {
+      "ui": "ko",
+      "voice": "YDseIkMzKtO5bK1Ehnev",
+      "voiceName": "Hanaba",
+      "say": [
+        "필름 카메라 서른여덟 대. 이제 주머니 속에.",
+        "카메라마다 몸체도, 렌즈도, 필름도 다 달라요.",
+        "진짜 카메라처럼 가로로 들고 셔터를 누르면, 사진이 바로 나와요.",
+        "포토부스 네 컷부터 포 바이 파이브 대형 필름까지.",
+        "찍은 사진은 라이트박스 위로. 원본이 남아서 언제든 다시 현상할 수 있어요.",
+        "필름 카멜라. 지금 구글 플레이에서 만나 보세요."
+      ],
+      "cap": [
+        "필름 카메라 38대,\n주머니 속에",
+        "카메라마다 다른 몸체",
+        "가로로 찍고, 바로 확인",
+        "포토부스 4컷부터 4×5 대형까지",
+        "원본이 남아, 언제든 다시 현상",
+        ""
+      ],
+      "tag": "주머니 속 필름 카메라 38대",
+      "cta": "Google Play에서 다운로드"
+    },
+    "ja-JP": {
+      "ui": "ja",
+      "voice": "4lOQ7A2l7HPuG7UIHiKA",
+      "voiceName": "JA Kyoko",
+      "say": [
+        "さんじゅうはちだいのフィルムカメラが、ポケットの中に。",
+        "一台ごとに、ボディもレンズもフィルムも違います。",
+        "本物のカメラのように横向きに構えて、シャッターを押せば、すぐに写真が仕上がります。",
+        "フォトブースのよんコマから、シノゴの大判フィルムまで。",
+        "撮った一枚は、ライトボックスに並びます。元データが残るので、いつでも、げんぞうし直せます。",
+        "Film Camela。Google Playで配信中。"
+      ],
+      "cap": [
+        "38台のフィルムカメラを\nポケットに",
+        "一台ごとに違うボディ",
+        "横向きで撮って、すぐ仕上がる",
+        "フォトブース4コマから4×5大判まで",
+        "元データが残るから、いつでも再現像",
+        ""
+      ],
+      "tag": "ポケットに38台のフィルムカメラ",
+      "cta": "Google Play で手に入れよう"
+    },
+    "zh-CN": {
+      "ui": "zh",
+      "voice": "ByhETIclHirOlWnWKhHc",
+      "voiceName": "Shan Shan",
+      "say": [
+        "三十八台胶片相机，装进你的口袋。",
+        "每一台，都有自己的机身、镜头和胶片。",
+        "像真正的相机一样横着拿，按下快门，照片马上就好，不用等待。",
+        "从照相亭四格，到四乘五大画幅胶片。",
+        "拍下的照片都放在灯箱上，原图会保留，随时都能重新冲洗。",
+        "Film Camela，现已登陆 Google Play。"
+      ],
+      "cap": [
+        "38 台胶片相机\n装进口袋",
+        "每台相机，都有自己的机身",
+        "横着拍，马上出片",
+        "从照相亭四格到 4×5 大画幅",
+        "保留原图，随时重新冲洗",
+        ""
+      ],
+      "tag": "口袋里的 38 台胶片相机",
+      "cta": "在 Google Play 下载",
+      "model": "eleven_v3"
+    },
+    "es-419": {
+      "ui": "es",
+      "voice": "2rigMbVWLdqtBSCahJFX",
+      "voiceName": "Tatiana Martin",
+      "say": [
+        "Treinta y ocho cámaras de película. En tu bolsillo.",
+        "Cada una tiene su propio cuerpo, su propio lente y su propia película.",
+        "Sostenlo en horizontal como una cámara de verdad, presiona el obturador y tu foto queda lista al instante.",
+        "Desde tiras de fotomatón hasta película de gran formato cuatro por cinco.",
+        "Cada foto llega a la mesa de luz, y el original se guarda para revelarla otra vez cuando quieras.",
+        "Film Camela. Ya disponible en Google Play."
+      ],
+      "cap": [
+        "38 cámaras de película,\nen tu bolsillo",
+        "Cada cámara, su propio cuerpo",
+        "Dispara en horizontal, sin esperas",
+        "Del fotomatón a la película 4×5",
+        "Original guardado: revela otra vez",
+        ""
+      ],
+      "tag": "38 cámaras de película en tu bolsillo",
+      "cta": "Disponible en Google Play"
+    },
+    "es-ES": {
+      "ui": "es",
+      "voice": "gD1IexrzCvsXPHUuT0s3",
+      "voiceName": "LP_elena",
+      "say": [
+        "Treinta y ocho cámaras de película. En tu bolsillo.",
+        "Cada una tiene su propio cuerpo, su propio objetivo y su propia película.",
+        "Sujétalo en horizontal como una cámara de verdad, pulsa el obturador y tu foto está lista al instante.",
+        "Desde tiras de fotomatón hasta película de gran formato cuatro por cinco.",
+        "Cada foto llega a la mesa de luz, y el original se guarda para revelarla otra vez cuando quieras.",
+        "Film Camela. Ya disponible en Google Play."
+      ],
+      "cap": [
+        "38 cámaras de película,\nen tu bolsillo",
+        "Cada cámara, su propio cuerpo",
+        "Dispara en horizontal, sin esperas",
+        "Del fotomatón a la película 4×5",
+        "Original guardado: revela otra vez",
+        ""
+      ],
+      "tag": "38 cámaras de película en tu bolsillo",
+      "cta": "Disponible en Google Play"
+    },
+    "fr-FR": {
+      "ui": "fr",
+      "voice": "i5Fydub7F0HPXhynAgDo",
+      "voiceName": "LP_camille",
+      "say": [
+        "Trente-huit appareils photo argentiques. Dans votre poche.",
+        "Chacun a son boîtier, son objectif et sa pellicule.",
+        "Tenez-le à l’horizontale comme un vrai appareil, appuyez sur le déclencheur, et la photo est prête. Sans attendre.",
+        "Du photomaton à la grande pellicule quatre par cinq.",
+        "Chaque photo arrive sur la table lumineuse, et l’original est conservé pour la redévelopper quand vous voulez.",
+        "Film Camela. Disponible sur Google Play."
+      ],
+      "cap": [
+        "38 appareils argentiques,\ndans votre poche",
+        "Chaque appareil, son boîtier",
+        "À l’horizontale, sans attendre",
+        "Du photomaton au 4×5",
+        "Original conservé, redéveloppez à volonté",
+        ""
+      ],
+      "tag": "38 appareils argentiques dans votre poche",
+      "cta": "Disponible sur Google Play"
+    },
+    "pt-BR": {
+      "ui": "pt",
+      "voice": "xMGbstDe7gGBMg3DqxOc",
+      "voiceName": "LP_luana",
+      "say": [
+        "Trinta e oito câmeras de filme. No seu bolso.",
+        "Cada uma tem seu próprio corpo, sua lente e seu filme.",
+        "Segure na horizontal como uma câmera de verdade, aperte o obturador e a foto fica pronta na hora.",
+        "Da cabine de fotos ao filme de grande formato quatro por cinco.",
+        "Cada foto vai para a mesa de luz, e o original fica guardado para você revelar de novo quando quiser.",
+        "Film Camela. Já no Google Play."
+      ],
+      "cap": [
+        "38 câmeras de filme,\nno seu bolso",
+        "Cada câmera, seu próprio corpo",
+        "Na horizontal, sem esperar",
+        "Da cabine de fotos ao filme 4×5",
+        "Original guardado: revele de novo",
+        ""
+      ],
+      "tag": "38 câmeras de filme no seu bolso",
+      "cta": "Disponível no Google Play"
+    },
+    "ru-RU": {
+      "ui": "ru",
+      "voice": "ymDCYd8puC7gYjxIamPt",
+      "voiceName": "Marina",
+      "say": [
+        "Тридцать восемь плёночных камер. Прямо в кармане.",
+        "У каждой свой корпус, свой объектив и своя плёнка.",
+        "Держите телефон горизонтально, как настоящую камеру, нажмите на спуск — и снимок готов. Без ожидания.",
+        "От фотобудки до крупноформатной плёнки четыре на пять.",
+        "Каждый кадр ложится на световой стол, а оригинал сохраняется, чтобы проявить его заново в любой момент.",
+        "Film Camela. Уже в Google Play."
+      ],
+      "cap": [
+        "38 плёночных камер\nв вашем кармане",
+        "У каждой камеры свой корпус",
+        "Горизонтально и без ожидания",
+        "От фотобудки до плёнки 4×5",
+        "Оригинал сохранён — проявляйте заново",
+        ""
+      ],
+      "tag": "38 плёночных камер в кармане",
+      "cta": "Доступно в Google Play"
+    },
+    "hi-IN": {
+      "ui": "hi",
+      "voice": "1qEiC6qsybMkmnNdVMbK",
+      "voiceName": "Monika Sogam",
+      "say": [
+        "अड़तीस फ़िल्म कैमरे, अब आपकी जेब में।",
+        "हर कैमरे की अपनी बॉडी, अपना लेंस और अपनी फ़िल्म।",
+        "असली कैमरे की तरह फ़ोन को आड़ा पकड़ें, शटर दबाएँ, और फ़ोटो तुरंत तैयार। कोई इंतज़ार नहीं।",
+        "फ़ोटो बूथ की पट्टियों से लेकर बड़े फ़ॉर्मेट की फ़ोर बाय फ़ाइव फ़िल्म तक।",
+        "हर फ़ोटो लाइट टेबल पर आती है, और ओरिजिनल सुरक्षित रहता है, ताकि आप जब चाहें दोबारा डेवलप कर सकें।",
+        "Film Camela. अब Google Play पर।"
+      ],
+      "cap": [
+        "38 फ़िल्म कैमरे,\nआपकी जेब में",
+        "हर कैमरे की अपनी बॉडी",
+        "आड़ा पकड़ें, तुरंत फ़ोटो",
+        "फ़ोटो बूथ से 4×5 फ़िल्म तक",
+        "ओरिजिनल सुरक्षित — कभी भी दोबारा डेवलप",
+        ""
+      ],
+      "tag": "आपकी जेब में 38 फ़िल्म कैमरे",
+      "cta": "Google Play पर पाएँ"
+    },
+    "ar": {
+      "ui": "ar",
+      "voice": "XTa3iQyMA6f1qrI4F6kZ",
+      "voiceName": "Sara",
+      "say": [
+        "ثمانٍ وثلاثون كاميرا فيلم، في جيبك.",
+        "لكل كاميرا هيكلها وعدستها وفيلمها الخاص.",
+        "أمسك هاتفك أفقيًا مثل كاميرا حقيقية، واضغط زر الالتقاط، فتصبح صورتك جاهزة فورًا.",
+        "من شرائط كشك التصوير إلى فيلم الحجم الكبير أربعة في خمسة.",
+        "كل صورة تصل إلى الطاولة الضوئية، ويُحفظ الأصل لتعيد تحميضها متى شئت.",
+        "Film Camela. متاح الآن على Google Play."
+      ],
+      "cap": [
+        "38 كاميرا فيلم\nفي جيبك",
+        "لكل كاميرا هيكلها الخاص",
+        "صوّر أفقيًا، بلا انتظار",
+        "من كشك التصوير إلى فيلم 4×5",
+        "الأصل محفوظ، أعد التحميض متى شئت",
+        ""
+      ],
+      "tag": "38 كاميرا فيلم في جيبك",
+      "cta": "احصل عليه من Google Play"
+    }
+  }
+}
