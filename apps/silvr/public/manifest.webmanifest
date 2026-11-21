@@ -6,7 +6,7 @@
   "start_url": "./#/camera",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "background_color": "#0e0d0c",
   "theme_color": "#0e0d0c",
   "lang": "ko",
