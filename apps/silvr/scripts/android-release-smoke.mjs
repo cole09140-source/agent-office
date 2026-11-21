@@ -67,8 +67,8 @@ async function tap(re, opts = {}) {
 // The frame counter in the viewfinder reads "3 shots" (Camera.tsx shotsSaid, en); the album folder of a
 // camera reads "<camera> <n> frames".
 // uiautomator reads it as text "03" + description "3 shots" → "03 3 shots".
-const SHOTS = /^\d+ \d+ shots?$/;
-const FOLDER = /^Pro 35 \d+ frames?$/;
+const SHOTS = /^(\d+ )?\d+ shots?$/i;
+const FOLDER = /^Pro 35 \d+ frames?$/i;
 const galleryCount = () => {
   try {
     return sh("ls '/sdcard/Pictures/Film Camela'").split(/\s+/).filter((f) => /\.(jpg|png)$/.test(f)).length;
@@ -122,11 +122,11 @@ await step('cold start: process up, no crash', async () => {
 });
 
 await step('app starts (onboarding)', async () => {
-  await tap(/^Skip$/);
+  await tap(/^Skip$/i);
   shot('r1-start');
 });
 await step('camera is ready at once (no roll to load)', async () => {
-  await find(/Take photo/);
+  await find(/Take photo/i);
   return (await find(SHOTS)).label;
 });
 await step('shoot 3 frames', async () => {
@@ -137,7 +137,7 @@ await step('shoot 3 frames', async () => {
   for (let i = 1; i <= 3; i++) {
     for (const until = Date.now() + 90000; (await taken()) < i; ) {
       if (Date.now() > until) throw new Error(`stuck at ${await taken()} shots`);
-      const s = await find(/^Take photo$/, { timeout: 30000 });
+      const s = await find(/^Take photo$/i, { timeout: 30000 });
       sh(`input swipe ${s.x} ${s.y} ${s.x} ${s.y} 120`); // a short press, like a finger
       for (let w = 0; w < 15 && (await taken()) < i; w++) await sleep(1000);
     }
@@ -147,12 +147,24 @@ await step('shoot 3 frames', async () => {
 });
 // The app is landscape-only: no tab bar — the camera's gear ("More") menu has the rows to Album / MY.
 async function openFromMenu(row) {
-  await tap(/^More$/);
-  await sleep(800);
-  await tap(row);
+  // The menu row and a deck button can share a name ("Album"): take the row (it comes first in the tree).
+  // uiautomator's WebView snapshot can lag right after the popover opens, so retry once if nothing changed.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await tap(/^More$/i);
+    await sleep(1500);
+    // On a short landscape screen the panel scrolls: the last rows (Analog, MY) sit below its fold.
+    const first = nodes().find((n) => /^Format|^Date|^Grid/i.test(n.label));
+    if (first) {
+      sh(`input swipe ${first.x} ${first.y + 400} ${first.x} ${first.y - 200} 300`);
+      await sleep(1200);
+    }
+    await tap(row);
+    await sleep(2500);
+    if (!nodes().some((n) => /^Take photo$/i.test(n.label))) return; // left the camera screen
+  }
 }
 await step('photos are in the album already (More → Album → the camera folder)', async () => {
-  await openFromMenu(/^Album$/);
+  await openFromMenu(/^Album$/i);
   await sleep(2500);
   // The camera's folder ("Pro 35 3 frames"); uiautomator's WebView snapshot can lag on the group list below it.
   await tap(FOLDER);
@@ -160,10 +172,10 @@ await step('photos are in the album already (More → Album → the camera folde
   shot('r3-roll');
 });
 await step('open photo and Save to the gallery', async () => {
-  await tap(/^Photo 1$/, { fallback: [203, 475] });
+  await tap(/^Photo 1$/i, { fallback: [203, 475] });
   await sleep(2000);
   const before = galleryCount();
-  await tap(/^Save$/, { fallback: [416, 2066] });
+  await tap(/^Save$/i, { fallback: [416, 2066] });
   await sleep(2500);
   const after = galleryCount();
   shot('r4-saved');
@@ -183,12 +195,19 @@ await step('MY opens (More → MY), store billing without a Play account is hand
     sh(`am start -n ${ACTIVITY}`); // an earlier step may have left the app
     await sleep(4000);
   }
-  await openFromMenu(/^MY$/);
+  // Back to the camera first (the gear menu lives there): the header's camera button, else hardware back.
+  for (let i = 0; i < 4 && !nodes().some((n) => /^More$/i.test(n.label)); i++) {
+    const home = nodes().find((n) => /^Camera$/i.test(n.label));
+    if (home) sh(`input tap ${home.x} ${home.y}`);
+    else sh('input keyevent 4');
+    await sleep(1800);
+  }
+  await openFromMenu(/^MY$/i);
   await sleep(2500);
   const here = nodes();
-  const restore = here.find((n) => /Restore purchases/.test(n.label));
-  const buy = here.find((n) => /^Get Pro/.test(n.label));
-  if (!here.some((n) => /Free today|Bonus shots|Pro plans|Unlimited shots/.test(n.label))) throw new Error('MY content not on screen');
+  const restore = here.find((n) => /Restore purchases/i.test(n.label));
+  const buy = here.find((n) => /^Get Pro/i.test(n.label));
+  if (!here.some((n) => /Free today|Bonus shots|Pro plans|Unlimited shots/i.test(n.label))) throw new Error('MY content not on screen');
   shot('r6-my');
   if (restore) {
     sh(`input tap ${restore.x} ${restore.y}`);
