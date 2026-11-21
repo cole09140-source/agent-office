@@ -9,7 +9,7 @@ import { canLoad, DEFAULT_CAMERA_ID, ejectsPrints, filmsFor, getCamera, PALETTE_
 import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from '../cameras/sound';
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { BackDecor, BackWindow } from '../cameras/backs/Back';
-import { artWindowBox, artWindowRadius, BodyArt, bodyArtFor, hasBodyArt } from '../cameras/BodyArt';
+import { artFrameSize, artWindowBox, artWindowRadius, BodyArt, hasBodyArt } from '../cameras/BodyArt';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
@@ -341,8 +341,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const frameRatio = portraitFrame ? 1 / aspectRatio(spec.aspect) : aspectRatio(spec.aspect);
   /** Photographic body art around the preview: the preview fits its black window instead of the stage. */
   const artOn = hasBodyArt(camera.id);
-  const artEntry = artOn ? bodyArtFor(camera.id) : undefined;
-  const artShape = artEntry ? `${artEntry.w} / ${artEntry.h}` : undefined;
+  /** The visible (cropped) body's shape: the portrait stage takes it, so no empty plate shows around it. */
+  const artFrame = artOn ? artFrameSize(camera.id) : null;
+  const artShape = artFrame ? `${Math.round(artFrame.w)} / ${Math.round(artFrame.h)}` : undefined;
   const artBox = box.sw && box.sh ? artWindowBox(camera.id, box.sw, box.sh) : null;
   const frame = artBox && artBox.width > 0 && artBox.height > 0
     ? fitContain(artBox.width, artBox.height, frameRatio)
@@ -1261,91 +1262,75 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const nextAspect = () => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length]);
   const nextZoom = () => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length]);
   const toggleEv = () => {
-    // The slider opens next to the controls, so the popover steps aside for it.
     const open = !evOpen;
     setEvOpen(open);
-    if (open) setMoreOpen(false);
+    // Portrait: the slider opens above the deck, so the popover steps aside for it. Landscape: the slider
+    // opens inside the settings panel, right under its row.
+    if (open && !land) setMoreOpen(false);
   };
-  // Format / zoom / EV live in "more" on the portrait deck; on the landscape column they are hardware
-  // buttons (D-pad down, the W/T rocker, D-pad left). Same element, same test id, one place at a time.
+  // Format / zoom / EV live in the "more" popover (portrait) / the settings panel (landscape).
   const aspectEl =
     camera.formats.length > 1 ? (
-      land ? (
-        <button class="dpad-key" disabled={chipLock} onClick={nextAspect} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
-          <i class="glyph-frame" aria-hidden="true" />
-          <small class="mono" dir="ltr" aria-hidden="true">
-            {aspect}
-          </small>
-        </button>
-      ) : (
-        <button class="more-item" disabled={chipLock} onClick={nextAspect} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
-          <span class="more-glyph" aria-hidden="true">
-            <i class="glyph-frame" />
-          </span>
-          <span>{t('cam.aspect')}</span>
-          <small class="mono" dir="ltr">
-            {aspect}
-          </small>
-        </button>
-      )
+      <button class="more-item" disabled={chipLock} onClick={nextAspect} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
+        <span class="more-glyph" aria-hidden="true">
+          <i class="glyph-frame" />
+        </span>
+        <span>{t('cam.aspect')}</span>
+        <small class="mono" dir="ltr">
+          {aspect}
+        </small>
+      </button>
     ) : null;
   const zoomEl =
     camera.zoom.length > 1 ? (
-      land ? (
-        // A W/T rocker: each press steps through the lens's stops (wraps back to wide), like the zoom chip.
-        <button class={`zoom-rocker ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom" dir="ltr">
-          <span class="rocker-w" aria-hidden="true">
-            W
-          </span>
-          <span class="rocker-val mono" aria-hidden="true">
-            {zoom}×
-          </span>
-          <span class="rocker-t" aria-hidden="true">
-            T
-          </span>
-        </button>
-      ) : (
-        <button class={`more-item ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
-          <span class="more-glyph mono" aria-hidden="true">
-            ×
-          </span>
-          <span>{t('cam.zoom')}</span>
-          <small class="mono" dir="ltr">
-            {zoom}×
-          </small>
-        </button>
-      )
-    ) : null;
-  const evEl = camera.ev ? (
-    land ? (
-      <button class={`dpad-key ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={toggleEv} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
-        <span class="dpad-glyph mono" aria-hidden="true">
-          ±
-        </span>
-        {ev !== 0 && (
-          <small class="mono" dir="ltr" aria-hidden="true">
-            {formatSigned(ev, undefined, '±')}
-          </small>
-        )}
-      </button>
-    ) : (
-      <button class={`more-item ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={toggleEv} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
+      <button class={`more-item ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
         <span class="more-glyph mono" aria-hidden="true">
-          ±
+          ×
         </span>
-        <span>{t('cam.ev')}</span>
+        <span>{t('cam.zoom')}</span>
         <small class="mono" dir="ltr">
-          {formatSigned(ev, undefined, '±')}
+          {zoom}×
         </small>
       </button>
-    )
+    ) : null;
+  const evEl = camera.ev ? (
+    <button class={`more-item ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={toggleEv} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
+      <span class="more-glyph mono" aria-hidden="true">
+        ±
+      </span>
+      <span>{t('cam.ev')}</span>
+      <small class="mono" dir="ltr">
+        {formatSigned(ev, undefined, '±')}
+      </small>
+    </button>
   ) : null;
   const evPanel = camera.ev && evOpen && (
     <div class="ev-row deck-ev" data-testid="ev-row">
       <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
     </div>
   );
-  /* Rarer controls: (format, zoom, EV on the portrait deck,) palette, date imprint, grid. */
+  /** Landscape has no tab bar: the settings panel leads to the other screens. */
+  const navRow = (name: 'models' | 'gallery' | 'analog' | 'settings', label: MsgKey) => (
+    <button
+      class="more-item more-nav"
+      disabled={chipLock}
+      onClick={() => {
+        setMoreOpen(false);
+        goTab({ name });
+      }}
+      data-testid={`more-nav-${name}`}
+    >
+      <span class="more-glyph" aria-hidden="true">
+        <Icon name={name} size={18} />
+      </span>
+      <span>{t(label)}</span>
+      <i class="more-chev" aria-hidden="true" />
+    </button>
+  );
+  /*
+    Rarer controls: format, zoom, EV, palette, date imprint, grid. Portrait: the "more" popover above the
+    deck. Landscape: the settings (gear) panel, which also holds the way to the other screens.
+  */
   const moreEl = (
     <div class="cam-more-wrap" ref={moreRef}>
       <button
@@ -1360,14 +1345,19 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         aria-label={t('cam.more')}
         data-testid="btn-more"
       >
-        <span class="more-dots" aria-hidden="true">
-          ⋯
-        </span>
+        {land ? (
+          <Icon name="settings" size={22} />
+        ) : (
+          <span class="more-dots" aria-hidden="true">
+            ⋯
+          </span>
+        )}
       </button>
       <div class="cam-more" id="cam-more" hidden={!moreOpen} data-testid="cam-more">
-        {!land && aspectEl}
-        {!land && zoomEl}
-        {!land && evEl}
+        {aspectEl}
+        {zoomEl}
+        {evEl}
+        {land && evPanel}
         {getStock(stock.id).kind === 'pixel' && (
           <button
             class="more-item"
@@ -1400,6 +1390,14 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           <span>{t('cam.grid')}</span>
           <small aria-hidden="true">{s.grid ? t('common.on') : t('common.off')}</small>
         </button>
+        {land && (
+          <div class="more-navs" data-testid="more-navs">
+            {navRow('models', 'tab.models')}
+            {navRow('gallery', 'tab.gallery')}
+            {navRow('analog', 'tab.analog')}
+            {navRow('settings', 'tab.settings')}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1408,7 +1406,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       <Icon name="flip" size={22} />
     </button>
   );
-  /* Capture hints, under the shutter line (portrait) / at the foot of the column (landscape). */
+  /* Capture hints, under the shutter line (portrait) / in the middle of the column (landscape). */
   const hintsEl = (
     <>
       {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
@@ -1426,55 +1424,28 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
 
   const deck = !showDeck ? null : land ? (
     /*
-      Landscape: the back of a digicam, right of the LCD. The release on top (with the W/T rocker), the
-      frame readout, the D-pad (up flash · right timer · down format · left EV · centre film), then
-      playback · MENU · flip. Never mirrored (hardware), the column itself sits at the inline end.
+      Landscape: one quiet column at the right edge, like a phone camera. Top to bottom: settings (gear:
+      format, zoom, EV, palette, date, grid and the other screens) · flash · timer · frame counter ·
+      last shot · flip · the SHUTTER in the bottom-right corner, under the right thumb. Always on the
+      physical right (also in RTL): the hand does not change with the language.
     */
     <div class={deckClass} data-testid="deck">
-      {evPanel}
-      <div class="land-release">
-        {zoomEl ?? <span class="rocker-slot" aria-hidden="true" />}
+      <div class="land-top">
+        {moreEl}
+        <div class="land-pair">
+          {flashEl}
+          {timerEl}
+        </div>
+        {counterEl}
+      </div>
+      <div class="land-mid">{hintsEl}</div>
+      <div class="land-bottom">
+        <div class="land-pair">
+          {lastShotEl}
+          {flipEl}
+        </div>
         {shutterEl}
       </div>
-      <div class="land-lcd" dir="ltr">
-        <span class="land-lcd-tag" aria-hidden="true">
-          {camera.instant ? 'NO.' : 'FR'}
-        </span>
-        {counterEl}
-        <span class="land-lcd-fmt" aria-hidden="true">
-          {aspect}
-        </span>
-      </div>
-      <div class="dpad" dir="ltr">
-        <div class="dpad-n">{flashEl}</div>
-        <div class="dpad-w">{evEl ?? <span class="dpad-blank" aria-hidden="true" />}</div>
-        <button class="dpad-ok" disabled={counting || !roll} onClick={() => !counting && roll && setFilmOpen(true)} aria-label={sheetLabel} data-testid="btn-film">
-          <span aria-hidden="true">OK</span>
-        </button>
-        <div class="dpad-e">{timerEl}</div>
-        <div class="dpad-s">{aspectEl ?? <span class="dpad-blank" aria-hidden="true" />}</div>
-      </div>
-      <div class="land-keys">
-        <div class="land-key">
-          {lastShotEl}
-          <span class="land-engrave" aria-hidden="true">
-            ▶
-          </span>
-        </div>
-        <div class="land-key">
-          {moreEl}
-          <span class="land-engrave" aria-hidden="true">
-            MENU
-          </span>
-        </div>
-        <div class="land-key">
-          {flipEl}
-          <span class="land-engrave" aria-hidden="true">
-            ⇄
-          </span>
-        </div>
-      </div>
-      {hintsEl}
     </div>
   ) : (
     /*

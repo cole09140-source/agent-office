@@ -6,6 +6,7 @@ import { announcement, confirmReq, dismissToast, pauseToast, resumeToast, settin
 import { ensurePrint, type Photo } from '../store/rolls';
 import type { FilmStock } from '../film/types';
 import { pushBackHandler } from '../platform/back';
+import { goTab } from '../state/router';
 import { isNative } from '../platform/share';
 import { Icon } from './Icon';
 import { formatFixed1 } from '../intl/format';
@@ -88,9 +89,33 @@ export function Ltr({ children, class: cls }: { children: ComponentChildren; cla
   );
 }
 
-export function Header({ title, onBack, right, sub, wrap }: { title: string; onBack?: () => void; right?: ComponentChildren; sub?: string; wrap?: boolean }) {
+/**
+ * `home`: a top-level screen (Models, Album, Analog, MY). In phone landscape there is no tab bar: the
+ * header starts with a way back to the camera (darkroom.css shows it only there; portrait keeps the bar).
+ */
+export function Header({
+  title,
+  onBack,
+  right,
+  sub,
+  wrap,
+  home,
+}: {
+  title: string;
+  onBack?: () => void;
+  right?: ComponentChildren;
+  sub?: string;
+  wrap?: boolean;
+  home?: boolean;
+}) {
   return (
     <header class={`hdr${wrap ? ' wrap' : ''}`}>
+      {home && !onBack && (
+        <button class="icon-btn hdr-home" onClick={() => goTab({ name: 'camera' })} aria-label={t('tab.camera')} data-testid="btn-to-camera">
+          <Icon name="back" />
+          <Icon name="camera" size={22} />
+        </button>
+      )}
       {onBack ? (
         <button class="icon-btn" onClick={onBack} aria-label={t('common.back')}>
           <Icon name="back" />
@@ -167,7 +192,7 @@ if (typeof window !== 'undefined') {
       const guarded = pressedWhileGuarded || Date.now() < tabGuardUntil;
       pressedWhileGuarded = false;
       if (!guarded || e.detail === 0) return; // keyboard / screen-reader activation (detail 0) is never blocked
-      if ((e.target as Element | null)?.closest?.('.tabbar')) {
+      if ((e.target as Element | null)?.closest?.('.tabbar, .hdr-home')) {
         e.preventDefault();
         e.stopPropagation();
       }

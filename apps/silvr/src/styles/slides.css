@@ -536,8 +536,8 @@
 }
 
 /* ---------- phone landscape (owner: album agent C) ----------
-   The app is landscape-locked like a digicam (contract and shell at the end of darkroom.css: .app already
-   pads by --land-rail-space, .page by --land-pad, headers are one compact row). Here: the light table fills
+   The app is landscape-locked like a digicam (contract and shell at the end of darkroom.css: no tab bar,
+   .page pads by --land-pad-s / --land-pad-e, headers are one compact row). Here: the light table fills
    the rest edge to edge with more, smaller mounts; the viewer is a playback screen (slide left/centre, keys
    in a column on the inline-end side); the darkroom puts the print beside a scrolling column of controls. */
 @media (orientation: landscape) and (max-height: 600px) {
@@ -545,7 +545,7 @@
     max-width: none;
   }
 
-  /* ----- album / folder / roll: the lit table runs from the rail to the far edge and down to the bottom ----- */
+  /* ----- album / folder / roll: the lit table runs edge to edge and down to the bottom ----- */
   .app:is(.route-gallery, .route-folder, .route-roll) .page {
     display: flex;
     flex-direction: column;
@@ -554,8 +554,10 @@
   }
   .app:is(.route-gallery, .route-folder, .route-roll) .lt-box {
     flex: 1 0 auto;
-    margin: 4px calc(-1 * (var(--land-pad) + var(--land-safe-end))) 0 calc(-1 * var(--land-pad));
-    padding: 10px calc(14px + var(--land-safe-end)) calc(14px + var(--safe-b)) 14px;
+    margin-block: 4px 0;
+    margin-inline: calc(-1 * var(--land-pad-s)) calc(-1 * var(--land-pad-e));
+    padding-block: 10px calc(14px + var(--safe-b));
+    padding-inline: calc(14px + var(--land-safe-start)) calc(14px + var(--land-safe-end));
     border-radius: 14px 14px 0 0;
   }
   .route-gallery .gal-help {
@@ -606,21 +608,21 @@
     padding: 4px 1px 2px;
   }
 
-  /* Selection: one short bar along the bottom, right of the rail; the grid keeps clear of it. */
+  /* Selection: one short bar along the bottom; the grid keeps clear of it. */
   .route-roll .page.selecting .lt-box {
     padding-bottom: calc(66px + var(--safe-b));
   }
   .route-roll .sel-bar {
     left: auto;
     right: auto;
-    inset-inline: var(--land-rail-space) 0;
+    inset-inline: 0;
     bottom: 0;
     max-width: none;
     margin: 0;
     flex-wrap: nowrap;
     justify-content: flex-end;
     padding-block: 6px calc(6px + var(--safe-b));
-    padding-inline: 14px calc(14px + var(--land-safe-end));
+    padding-inline: calc(14px + var(--land-safe-start)) calc(14px + var(--land-safe-end));
   }
   .route-roll .sel-bar .btn {
     flex: 0 1 220px;
@@ -638,7 +640,7 @@
     gap: 0 10px;
     height: 100dvh;
     padding: 0;
-    padding-inline: 10px calc(10px + var(--land-safe-end));
+    padding-inline: calc(10px + var(--land-safe-start)) calc(10px + var(--land-safe-end));
   }
   .viewer > .hdr {
     grid-area: hdr;
@@ -685,7 +687,7 @@
   .viewer-actions .act-info {
     display: flex;
   }
-  /* Bars hidden: the rail fades out too, so its strip goes as black as the box (only the slide is lit). */
+  /* Bars hidden: the whole screen goes as black as the box (only the slide is lit). */
   html.viewer-bare,
   html.viewer-bare body,
   html.viewer-bare .app {
@@ -699,7 +701,7 @@
     gap: 0 12px;
     height: 100dvh;
     padding: 0;
-    padding-inline-start: 10px;
+    padding-inline-start: calc(10px + var(--land-safe-start));
   }
   .darkroom .dr-top {
     position: static;

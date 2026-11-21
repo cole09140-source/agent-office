@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { artWindowBox, BODY_ART, bodyArtFor, hasBodyArt } from '../src/cameras/BodyArt';
+import { ART_MARGIN_KEEP, artFrameSize, artWindowBox, artWindowRadius, BODY_ART, bodyArtFor, hasBodyArt } from '../src/cameras/BodyArt';
 import { CAMERAS } from '../src/cameras/models';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
@@ -57,10 +57,23 @@ describe('camera body art', () => {
     }
   });
 
-  it('artWindowBox stays inside the stage and keeps the window aspect', () => {
+  it('only half of the frame is shown: the window plus half of each margin', () => {
+    expect(ART_MARGIN_KEEP).toBe(0.5);
+    for (const [id, art] of Object.entries(BODY_ART)) {
+      const f = artFrameSize(id)!;
+      // visible fraction on each axis = win + (1 - win) / 2
+      expect(f.w / art.w, id).toBeCloseTo(art.win.w + (1 - art.win.w) / 2, 9);
+      expect(f.h / art.h, id).toBeCloseTo(art.win.h + (1 - art.win.h) / 2, 9);
+    }
+    expect(artFrameSize('no-such-camera')).toBeNull();
+  });
+
+  it('artWindowBox: the cropped body fits the stage, the window keeps its aspect and grows', () => {
     for (const [stageW, stageH] of [
       [360, 300],
       [412, 520],
+      [643, 344],
+      [520, 344],
     ]) {
       for (const [id, art] of Object.entries(BODY_ART)) {
         const box = artWindowBox(id, stageW, stageH)!;
@@ -70,9 +83,19 @@ describe('camera body art', () => {
         expect(box.left + box.width, id).toBeLessThan(stageW);
         expect(box.top + box.height, id).toBeLessThan(stageH);
         expect(box.width / box.height, id).toBeCloseTo((art.win.w * art.w) / (art.win.h * art.h), 6);
-        // contain-fit: the art touches the stage on at least one axis
-        const scale = Math.min(stageW / art.w, stageH / art.h);
+        // contain-fit of the visible (cropped) body: it touches the stage on at least one axis
+        const f = artFrameSize(id)!;
+        const scale = Math.min(stageW / f.w, stageH / f.h);
         expect(box.width, id).toBeCloseTo(art.win.w * art.w * scale, 6);
+        const clipL = (stageW - f.w * scale) / 2;
+        const clipT = (stageH - f.h * scale) / 2;
+        // half of the original left / top margin is left around the window
+        expect(box.left - clipL, id).toBeCloseTo((art.win.x / 2) * art.w * scale, 6);
+        expect(box.top - clipT, id).toBeCloseTo((art.win.y / 2) * art.h * scale, 6);
+        // and the window is bigger than with the whole body (contain-fit of the full image)
+        const fullScale = Math.min(stageW / art.w, stageH / art.h);
+        expect(box.width, id).toBeGreaterThan(art.win.w * art.w * fullScale * 1.15);
+        expect(artWindowRadius(id, stageW, stageH), id).toBeCloseTo((art.win.r ?? 0) * art.w * scale, 6);
       }
     }
   });

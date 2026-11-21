@@ -80,6 +80,7 @@ export function GalleryScreen({ onImport }: { onImport: () => void }) {
   return (
     <div class="page" data-testid="gallery-screen">
       <Header
+        home
         title={t('gal.title')}
         right={
           // Labelled: a bare arrow icon read as "save / download".

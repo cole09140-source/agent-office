@@ -2,10 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { loadCamera, shoot, start } from './helpers';
 
 /*
- * Landscape phone (project 'landscape-phone': Pixel 7 landscape, 863×360, isMobile): the camera screen is
- * the back of a digicam. [tab rail] | body art + live preview | vertical mode dial | control column
- * (release + W/T rocker · frame readout · D-pad · playback / MENU / flip). The viewport comes from the
- * project; nothing here sets it.
+ * Landscape phone (project 'landscape-phone': Pixel 7 landscape, 863×360, isMobile): no tab bar, the camera
+ * screen is home. Body art (half of its frame) + live preview | vertical mode dial | one quiet column:
+ * settings (gear) · flash · timer · frame counter · last shot · flip · SHUTTER in the bottom-right corner.
+ * Format, zoom, EV, palette, date, grid and the way to the other screens live in the gear panel.
+ * The viewport comes from the project; nothing here sets it.
  */
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -48,17 +49,12 @@ async function centredCamera(page: Page): Promise<string | null> {
   });
 }
 
-test.beforeEach(async ({ page }) => {
-  await start(page);
-  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-layout', 'landscape');
-});
-
-test('digicam layout: every control on screen, once, clear of the LCD and of each other', async ({ page }) => {
-  // Tele 20: flash, zoom, EV and three formats, so every D-pad key and the rocker are there.
-  await loadCamera(page, 'bridge09');
-  await expect(page.getByTestId('camera-rail')).toHaveAttribute('data-axis', 'y');
-
-  const ids = ['shutter', 'btn-zoom', 'counter', 'btn-flash', 'btn-timer', 'btn-aspect', 'btn-ev', 'btn-film', 'btn-more', 'btn-flip'];
+/** The column, the shutter in its bottom-right corner, everything clear of the preview and of each other. */
+async function checkColumn(page: Page) {
+  const vp = page.viewportSize()!;
+  // A body without a flash keeps an empty slot there (the timer stays where the thumb expects it).
+  const hasFlash = (await page.getByTestId('btn-flash').count()) > 0;
+  const ids = ['btn-more', ...(hasFlash ? ['btn-flash'] : []), 'btn-timer', 'counter', 'btn-flip', 'shutter'];
   const vf = await box(page.locator('.viewfinder'));
   const boxes: Record<string, Box> = {};
   for (const id of ids) {
@@ -70,46 +66,97 @@ test('digicam layout: every control on screen, once, clear of the LCD and of eac
     expect(overlaps(b, vf), `${id} is not over the live preview`).toBe(false);
     boxes[id] = b;
   }
-  // The playback slot: the last shot, or the way to the album before the first one.
+  // The last-shot slot: the last shot, or the way to the album before the first one.
   const playback = page.locator('[data-testid=last-shot], [data-testid=btn-last-album]');
   await expect(playback).toHaveCount(1);
   boxes.playback = await box(playback);
   await onScreen(page, boxes.playback, 'playback');
+  expect(overlaps(boxes.playback, vf)).toBe(false);
 
   const keys = Object.keys(boxes);
   for (let i = 0; i < keys.length; i++)
     for (let j = i + 1; j < keys.length; j++) expect(overlaps(boxes[keys[i]], boxes[keys[j]], 1), `${keys[i]} vs ${keys[j]}`).toBe(false);
 
-  // Column order, top to bottom: release → readout → D-pad → playback / MENU / flip.
-  expect(cy(boxes.shutter)).toBeLessThan(cy(boxes.counter));
-  expect(cy(boxes.counter)).toBeLessThan(cy(boxes['btn-film']));
-  expect(cy(boxes['btn-film'])).toBeLessThan(cy(boxes['btn-more']));
-  // D-pad: up flash, right timer, down format, left EV around the centre OK (hardware: never mirrored).
-  const ok = boxes['btn-film'];
-  expect(cy(boxes['btn-flash'])).toBeLessThan(ok.y);
-  expect(cx(boxes['btn-timer'])).toBeGreaterThan(ok.x + ok.width);
-  expect(cy(boxes['btn-aspect'])).toBeGreaterThan(ok.y + ok.height);
-  expect(cx(boxes['btn-ev'])).toBeLessThan(ok.x);
+  // Generous hit targets.
+  for (const id of ['btn-more', 'btn-timer', 'btn-flip', 'playback', ...(hasFlash ? ['btn-flash'] : [])]) {
+    expect(boxes[id].width, `${id} width`).toBeGreaterThanOrEqual(43.5);
+    expect(boxes[id].height, `${id} height`).toBeGreaterThanOrEqual(43.5);
+  }
 
-  // The column and the dial sit beside the body, not on it; the art fills the stage (contain).
+  // Top to bottom: gear → flash / timer → counter → last shot / flip → shutter.
+  expect(cy(boxes['btn-more'])).toBeLessThan(cy(boxes['btn-timer']));
+  if (hasFlash) expect(Math.abs(cy(boxes['btn-flash']) - cy(boxes['btn-timer']))).toBeLessThan(2);
+  expect(cy(boxes['btn-timer'])).toBeLessThan(cy(boxes.counter));
+  expect(cy(boxes.counter)).toBeLessThan(cy(boxes.playback));
+  expect(Math.abs(cy(boxes.playback) - cy(boxes['btn-flip']))).toBeLessThan(2);
+  expect(cy(boxes.playback)).toBeLessThan(cy(boxes.shutter));
+
+  // The shutter is the hero, in the bottom-right corner (under the right thumb).
+  const sh = boxes.shutter;
+  expect(sh.width).toBeGreaterThanOrEqual(60);
+  for (const k of keys) if (k !== 'shutter') expect(sh.width, `shutter bigger than ${k}`).toBeGreaterThan(boxes[k].width);
+  expect(sh.x + sh.width, 'shutter near the right edge').toBeGreaterThan(vp.width - 56);
+  expect(sh.y + sh.height, 'shutter near the bottom edge').toBeGreaterThan(vp.height - 32);
+  for (const k of keys) if (k !== 'shutter') expect(cy(sh), `shutter below ${k}`).toBeGreaterThan(cy(boxes[k]));
+  return boxes;
+}
+
+test.beforeEach(async ({ page }) => {
+  await start(page);
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-layout', 'landscape');
+});
+
+test('one column on the right, no tab bar, the preview big and clear of every control', async ({ page }) => {
+  // Tele 20: flash, zoom, EV and three formats.
+  await loadCamera(page, 'bridge09');
+  await expect(page.getByTestId('camera-rail')).toHaveAttribute('data-axis', 'y');
+  // No tab bar in phone landscape: the camera spans the full width.
+  await expect(page.getByTestId('tab-camera')).toBeHidden();
+  await checkColumn(page);
+
+  // Format, zoom and EV are not on the column: they wait in the (closed) gear panel, once each.
+  for (const id of ['btn-aspect', 'btn-zoom', 'btn-ev']) {
+    await expect(page.getByTestId(id), `${id} once`).toHaveCount(1);
+    await expect(page.getByTestId(id)).toBeHidden();
+  }
+  // The old D-pad / rocker / OK are gone; the film is on the selected dial card.
+  await expect(page.locator('.dpad, .zoom-rocker, [data-testid=btn-film]')).toHaveCount(0);
+  await expect(page.getByTestId('roll-btn')).toBeVisible();
+
+  // Body | dial | column, left to right; nothing overlaps.
   const stage = await box(page.locator('.cam-stage'));
   const rail = await box(page.getByTestId('camera-rail'));
   const deck = await box(page.getByTestId('deck'));
   expect(overlaps(stage, rail)).toBe(false);
   expect(overlaps(stage, deck)).toBe(false);
+  expect(overlaps(rail, deck)).toBe(false);
   expect(rail.x).toBeGreaterThan(stage.x);
   expect(deck.x).toBeGreaterThan(rail.x);
+  expect(stage.x, 'the stage starts at the left edge (no rail)').toBeLessThan(24);
+
+  // The visible half of the body fills the stage (contain) and frames a big preview.
   const art = await box(page.getByTestId('body-art'));
   expect(art.height >= stage.height - 2 || art.width >= stage.width - 2).toBe(true);
-  // The preview sits inside the art.
+  const vf = await box(page.locator('.viewfinder'));
   expect(vf.x).toBeGreaterThanOrEqual(art.x - 1);
   expect(vf.x + vf.width).toBeLessThanOrEqual(art.x + art.width + 1);
+  expect(vf.y).toBeGreaterThanOrEqual(art.y - 1);
+  expect(vf.y + vf.height).toBeLessThanOrEqual(art.y + art.height + 1);
+  expect(vf.width / art.width, 'preview takes most of the body').toBeGreaterThan(0.6);
+  expect(vf.height / stage.height, 'preview takes most of the height').toBeGreaterThan(0.6);
   // No page scroll sideways.
   const scrollW = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollW).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
 
-test('shooting: a frame lands, the readout counts it, playback shows it', async ({ page }) => {
+test('every body keeps the column layout (no flash slot, single format, instant, phone)', async ({ page }) => {
+  for (const id of ['pro35', 'snap27', 'booth4', 'cine', 'flip03', 'aps97']) {
+    await loadCamera(page, id);
+    await checkColumn(page);
+  }
+});
+
+test('shooting: a frame lands, the counter counts it, the last shot shows it', async ({ page }) => {
   await loadCamera(page, 'pro35');
   await expect(page.getByTestId('counter')).toContainText('00');
   await shoot(page, 1);
@@ -160,37 +207,35 @@ test('mode dial: vertical, tap picks, a drag picks the camera that stops in the 
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', order[at]);
 });
 
-test('MENU opens on screen toward the LCD; the EV slider too; D-pad keys are not in it', async ({ page }) => {
+test('gear panel: opens leftwards on screen, holds format / zoom / EV / date / grid and the other screens', async ({ page }) => {
   await loadCamera(page, 'bridge09');
   const deck = await box(page.getByTestId('deck'));
-  await page.getByTestId('btn-more').click();
+  const gear = page.getByTestId('btn-more');
+  await gear.click();
+  await expect(gear).toHaveAttribute('aria-expanded', 'true');
   const menu = page.getByTestId('cam-more');
   await expect(menu).toBeVisible();
   const m = await box(menu);
-  await onScreen(page, m, 'menu');
+  await onScreen(page, m, 'gear panel');
   expect(m.x + m.width).toBeLessThanOrEqual(deck.x + 1); // opens leftwards from the column
-  await expect(menu.getByTestId('btn-grid')).toBeVisible();
-  await expect(menu.getByTestId('btn-date')).toBeVisible();
-  for (const id of ['btn-aspect', 'btn-zoom', 'btn-ev']) await expect(menu.getByTestId(id)).toHaveCount(0);
-  await page.getByTestId('btn-grid').click();
-  await expect(page.getByTestId('btn-grid')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.grid-overlay')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(menu).toBeHidden();
+  // Every row is reachable: the panel scrolls when it is taller than the screen. (Scrolled with scrollTop:
+  // repeated scrollIntoViewIfNeeded calls over the live WebGL preview have crashed the headless shell.)
+  const rows = ['btn-aspect', 'btn-zoom', 'btn-ev', 'btn-date', 'btn-grid', 'more-nav-models', 'more-nav-gallery', 'more-nav-analog', 'more-nav-settings'];
+  for (const end of [false, true]) {
+    await menu.evaluate((el, toEnd) => (el.scrollTop = toEnd ? el.scrollHeight : 0), end);
+    for (const id of end ? rows.slice(-4) : rows.slice(0, 3)) {
+      const row = menu.getByTestId(id);
+      await expect(row, `${id} in the panel`).toHaveCount(1);
+      const r = await box(row);
+      expect(r.y, `${id} inside the panel`).toBeGreaterThanOrEqual(m.y - 1);
+      expect(r.y + r.height, `${id} inside the panel`).toBeLessThanOrEqual(m.y + m.height + 1);
+      expect(r.height, `${id} hit target`).toBeGreaterThanOrEqual(43.5);
+    }
+  }
+  await menu.evaluate((el) => (el.scrollTop = 0));
+  for (const id of rows) await expect(menu.getByTestId(id)).toHaveCount(1);
 
-  await page.getByTestId('btn-ev').click();
-  await expect(page.getByTestId('btn-ev')).toHaveAttribute('aria-expanded', 'true');
-  const ev = page.getByTestId('ev-row');
-  await expect(ev).toBeVisible();
-  const e = await box(ev);
-  await onScreen(page, e, 'EV slider');
-  expect(overlaps(e, deck)).toBe(false);
-  await page.getByTestId('btn-ev').click();
-  await expect(ev).toBeHidden();
-});
-
-test('D-pad, rocker and OK do what the deck chips did', async ({ page }) => {
-  await loadCamera(page, 'bridge09');
+  // Zoom and format step (zoom wraps back to wide).
   const zoom = page.getByTestId('btn-zoom');
   await expect(zoom).toHaveAttribute('aria-label', /1×/);
   await zoom.click();
@@ -198,13 +243,47 @@ test('D-pad, rocker and OK do what the deck chips did', async ({ page }) => {
   await zoom.click();
   await expect(zoom).toHaveAttribute('aria-label', /4×/);
   await zoom.click();
-  await expect(zoom).toHaveAttribute('aria-label', /1×/); // wraps back to wide
-
+  await expect(zoom).toHaveAttribute('aria-label', /1×/);
   const aspect = page.getByTestId('btn-aspect');
   const a0 = await aspect.getAttribute('aria-label');
   await aspect.click();
   await expect(aspect).not.toHaveAttribute('aria-label', a0 ?? '');
 
+  // EV: the slider opens inside the panel, under its row; the panel stays open.
+  const evBtn = page.getByTestId('btn-ev');
+  await evBtn.click();
+  await expect(evBtn).toHaveAttribute('aria-expanded', 'true');
+  const ev = menu.getByTestId('ev-row');
+  await expect(ev).toBeVisible();
+  await expect(menu).toBeVisible();
+  const e = await box(ev);
+  await onScreen(page, e, 'EV slider');
+  expect(e.y).toBeGreaterThan((await box(evBtn)).y);
+  await evBtn.click();
+  await expect(ev).toBeHidden();
+
+  // Grid.
+  await page.getByTestId('btn-grid').click();
+  await expect(page.getByTestId('btn-grid')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.grid-overlay')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+
+  // The other screens: Models from the panel (and back to the camera from its header).
+  await gear.click();
+  await menu.evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await menu.getByTestId('more-nav-models').click();
+  await expect(page.getByTestId('models-screen')).toBeVisible();
+  await page.getByTestId('btn-to-camera').click();
+  await expect(page.getByTestId('camera-screen')).toBeVisible();
+  await gear.click();
+  await menu.evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await menu.getByTestId('more-nav-settings').click();
+  await expect(page.getByTestId('settings-screen')).toBeVisible();
+});
+
+test('column buttons and the dial card do what the deck chips did', async ({ page }) => {
+  await loadCamera(page, 'bridge09');
   const timer = page.getByTestId('btn-timer');
   await timer.click();
   await expect(timer).toHaveAttribute('aria-label', /3/);
@@ -216,7 +295,8 @@ test('D-pad, rocker and OK do what the deck chips did', async ({ page }) => {
   await flash.click();
   await expect(flash).not.toHaveAttribute('aria-pressed', f0 ?? '');
 
-  await page.getByTestId('btn-film').click();
+  // The film: the selected card on the dial opens the film sheet.
+  await page.getByTestId('camera-bridge09').click();
   await expect(page.getByTestId('roll-sheet')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('roll-sheet')).toBeHidden();
@@ -224,20 +304,20 @@ test('D-pad, rocker and OK do what the deck chips did', async ({ page }) => {
 
 test.describe('right-to-left', () => {
   test.use({ locale: 'ar' });
-  test('the screen mirrors (column at the inline end), the hardware does not', async ({ page }) => {
+  test('text mirrors, the column stays under the right thumb', async ({ page }) => {
     await loadCamera(page, 'bridge09');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     const stage = await box(page.locator('.cam-stage'));
     const rail = await box(page.getByTestId('camera-rail'));
     const deck = await box(page.getByTestId('deck'));
-    expect(deck.x + deck.width).toBeLessThanOrEqual(rail.x + 1);
-    expect(rail.x + rail.width).toBeLessThanOrEqual(stage.x + 1);
-    const ok = await box(page.getByTestId('btn-film'));
-    expect(cx(await box(page.getByTestId('btn-timer')))).toBeGreaterThan(ok.x + ok.width);
-    expect(cx(await box(page.getByTestId('btn-ev')))).toBeLessThan(ok.x);
+    // Same physical order as LTR: body | dial | column.
+    expect(rail.x).toBeGreaterThanOrEqual(stage.x + stage.width - 1);
+    expect(deck.x).toBeGreaterThanOrEqual(rail.x + rail.width - 1);
+    await checkColumn(page);
     await page.getByTestId('btn-more').click();
     const m = await box(page.getByTestId('cam-more'));
-    await onScreen(page, m, 'menu (rtl)');
-    expect(m.x).toBeGreaterThanOrEqual(deck.x + deck.width - 1); // opens rightwards, toward the LCD
+    await onScreen(page, m, 'gear panel (rtl)');
+    expect(m.x + m.width).toBeLessThanOrEqual(deck.x + 1); // still opens leftwards, over the dial
+    expect(await page.getByTestId('cam-more').evaluate((el) => getComputedStyle(el).direction)).toBe('rtl');
   });
 });

@@ -195,7 +195,7 @@ export function AnalogScreen() {
   const active = rolls.find((r) => (counts[r.id] ?? 0) < r.exposures);
   return (
     <div class="page analog" data-testid="analog-screen">
-      <Header title={t('an.title')} sub={t('an.subtitle')} />
+      <Header home title={t('an.title')} sub={t('an.subtitle')} />
       {active && (
         <button class="card log-active" onClick={() => go({ name: 'log', id: active.id })} data-testid="active-log">
           <span class="log-active-txt">

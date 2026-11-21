@@ -28,7 +28,7 @@ export function ModelsScreen() {
   let frame = 0;
   return (
     <div class="page" data-testid="models-screen">
-      <Header title={t('tab.models')} sub={t('models.sub', { n: CAMERAS.length })} />
+      <Header home title={t('tab.models')} sub={t('models.sub', { n: CAMERAS.length })} />
       {GROUPS.map((g) => {
         const list = items.filter((c) => cameraGroup(c) === g);
         if (!list.length) return null;

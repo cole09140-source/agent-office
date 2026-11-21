@@ -47,8 +47,11 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
   settings: 'settings',
 };
 
-/** Phone landscape (the landscape contract in styles/darkroom.css): the tab bar is a side rail. */
-const LANDSCAPE_RAIL = '(orientation: landscape) and (max-height: 600px)';
+/**
+ * Phone landscape (the landscape contract in styles/darkroom.css): no tab bar at all. The camera's own
+ * menu leads to the other screens, and each of them has a camera button in its header (<Header home>).
+ */
+const LANDSCAPE_PHONE = '(orientation: landscape) and (max-height: 600px)';
 
 function TabBar() {
   const current = TAB_OF[route.value.name];
@@ -60,10 +63,10 @@ function TabBar() {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
     const root = document.documentElement;
-    // Phone landscape: the bar is a full-height rail at the side (darkroom.css), --tab-h is 0 there.
-    const rail = typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_RAIL) : null;
+    // Phone landscape: the bar is hidden (darkroom.css), --tab-h is 0 there.
+    const land = typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_PHONE) : null;
     const measure = () => {
-      if (rail?.matches) {
+      if (land?.matches) {
         root.style.removeProperty('--tab-h');
         return;
       }
@@ -75,10 +78,10 @@ function TabBar() {
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    rail?.addEventListener?.('change', measure);
+    land?.addEventListener?.('change', measure);
     return () => {
       ro.disconnect();
-      rail?.removeEventListener?.('change', measure);
+      land?.removeEventListener?.('change', measure);
       root.style.removeProperty('--tab-h');
     };
   }, []);

@@ -789,10 +789,10 @@ input[type='range']::-moz-range-thumb {
 
 /* ---------- landscape contract (2026-11-21: the app is landscape-locked like a digicam) ----------
    Phone landscape = exactly `@media (orientation: landscape) and (max-height: 600px)` in every file.
-   The tab bar becomes a vertical rail on the inline-start edge, --land-rail-w wide (plus the left safe
-   area); every screen leaves that space. Notches sit left/right in landscape: use --land-safe-l/-r. */
+   No tab bar there (2026-11-21, "simple, like Apple"): every screen gets the full width. The camera's
+   menu leads to the other screens; each of them starts its header with a camera button (.hdr-home).
+   Notches sit left/right in landscape: pages pad by --land-pad-s / --land-pad-e, which include them. */
 :root {
-  --land-rail-w: 72px;
   --land-safe-l: env(safe-area-inset-left, 0px);
   --land-safe-r: env(safe-area-inset-right, 0px);
 }
@@ -800,8 +800,7 @@ input[type='range']::-moz-range-thumb {
   /* The inline-start safe area (left in LTR, right in RTL) and the one on the far side. */
   --land-safe-start: var(--land-safe-l);
   --land-safe-end: var(--land-safe-r);
-  /* What every screen leaves free at its inline-start edge for the rail: 0 outside phone landscape.
-     .app already pads by it (in-flow content needs nothing); position: fixed layers offset by it. */
+  /* Was the side rail's width; the rail is gone, so it is 0 everywhere (kept for anything still reading it). */
   --land-rail-space: 0px;
   /* 1 in LTR, -1 in RTL: slide-in direction of the side drawer. */
   --land-dir: 1;
@@ -813,6 +812,11 @@ input[type='range']::-moz-range-thumb {
   --land-safe-start: var(--land-safe-r);
   --land-safe-end: var(--land-safe-l);
   --land-dir: -1;
+}
+
+/* The header's way back to the camera: phone landscape only (portrait has the tab bar). */
+.hdr-home {
+  display: none;
 }
 
 /* Wrappers that only group things in phone landscape: invisible to layout everywhere else. */
@@ -828,102 +832,48 @@ input[type='range']::-moz-range-thumb {
   :root {
     /* No bottom bar: everything that sat above it (camera height, toasts, floating bars) drops to the edge. */
     --tab-h: 0px;
-    --land-rail-space: calc(var(--land-rail-w) + var(--land-safe-start));
-    /* Page side padding in landscape (the far edge adds its notch). */
+    /* Page side padding in landscape, plus the notch on that side. */
     --land-pad: 20px;
+    --land-pad-s: calc(var(--land-pad) + var(--land-safe-start));
+    --land-pad-e: calc(var(--land-pad) + var(--land-safe-end));
   }
 
-  /* ---------- the shell: content starts after the rail ---------- */
+  /* ---------- the shell: no tab bar, every screen edge to edge ---------- */
   .app {
     padding-bottom: 0;
-    padding-inline-start: var(--land-rail-space);
+  }
+  .tabbar {
+    display: none;
   }
   .screen {
     max-width: 1040px;
   }
   .page {
     padding-block: 0 24px;
-    padding-inline: var(--land-pad) calc(var(--land-pad) + var(--land-safe-end));
+    padding-inline: var(--land-pad-s) var(--land-pad-e);
   }
   .page > .hdr {
-    margin-inline: calc(-1 * var(--land-pad));
-    padding-inline: var(--land-pad);
-  }
-
-  /* ---------- tab bar → a vertical film-edge rail on the inline-start edge ---------- */
-  .tabbar {
-    top: 0;
-    bottom: 0;
-    left: auto;
-    right: auto;
-    inset-inline-start: 0;
-    width: var(--land-rail-space);
-    min-height: 0;
-    height: 100%;
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    grid-template-columns: minmax(0, 1fr);
-    grid-auto-rows: minmax(0, 76px);
-    align-content: center;
-    justify-content: stretch;
-    padding: calc(6px + var(--safe-t)) 0 calc(6px + var(--safe-b));
-    /* the sprocket strip (12px) runs down the outer edge, just inside the notch's safe area */
-    padding-inline-start: calc(12px + var(--land-safe-start));
-    background: linear-gradient(to right, #0b0a09, #15110e);
-    border-top: 0;
-    border-inline-end: 1px solid #2c241d;
-  }
-  [dir='rtl'] .tabbar {
-    background: linear-gradient(to left, #0b0a09, #15110e);
-  }
-  .tabbar::before {
-    top: 0;
-    bottom: 0;
-    left: auto;
-    right: auto;
-    inset-inline-start: var(--land-safe-start);
-    width: 12px;
-    height: auto;
-    background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film);
-    border-block: 0;
-    border-inline: 1px solid #2c241d;
-  }
-  .tabbar button {
-    padding: 6px 2px;
-    gap: 3px;
-    font-size: min(0.6875rem, 11.5px);
-    line-height: 1.1;
-    letter-spacing: calc(var(--dr-track) * 0.5);
-  }
-  .tabbar button > span:not(.sr-only) {
-    max-width: 100%;
-    /* two lines at most ("Mi espacio", "Meu espaço"); a word never breaks inside */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  /* The safelight: glow behind the icon, the lit bar on the edge that faces the screen. */
-  .tabbar button.on::before {
-    inset: 8% 6%;
-    height: auto;
-  }
-  .tabbar button.on::after {
-    top: 50%;
-    bottom: auto;
-    left: auto;
-    inset-inline-end: 0;
-    width: 2px;
-    height: 22px;
-    margin: -11px 0 0;
-  }
-  .tabbar .dot {
-    top: 8px;
+    margin-inline: calc(-1 * var(--land-pad-s)) calc(-1 * var(--land-pad-e));
+    padding-inline: var(--land-pad-s) var(--land-pad-e);
   }
 
   /* ---------- headers: one compact row ---------- */
   .hdr {
     padding: calc(4px + var(--safe-t)) 0 4px;
+  }
+  /* "‹ camera" at the inline start of a top-level screen's header, like an iOS back button. */
+  .hdr-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: auto;
+    padding-inline: 10px 6px;
+    color: var(--dr-amber);
+  }
+  /* The chevron sits exactly where a pushed screen's back chevron does. */
+  .hdr-home .icon-back {
+    margin-inline-end: -6px;
   }
   .hdr h1 {
     font-size: 1.125rem;
@@ -947,11 +897,14 @@ input[type='range']::-moz-range-thumb {
     min-width: 0;
     margin-top: 0;
   }
+  /* Under the title a plain hairline, not the sprocket strip: 360px of height is precious and the
+     screen reads calmer (the strip stays on the drawers and in portrait). */
   .hdr:has(> .hdr-spacer)::after {
-    height: 8px;
-    margin: 6px calc(-1 * var(--land-pad)) 2px;
-    background-size: 13.5px 9px;
-    background-position: 4px center;
+    height: 1px;
+    margin-block: 8px 0;
+    margin-inline: calc(-1 * var(--land-pad-s)) calc(-1 * var(--land-pad-e));
+    background: var(--dr-line-soft);
+    border: 0;
   }
 
   /* ---------- sheets: a drawer from the inline-end edge; confirms: a centred dialog ---------- */
@@ -1043,7 +996,7 @@ input[type='range']::-moz-range-thumb {
     bottom: auto;
     left: auto;
     right: auto;
-    inset-inline-start: var(--land-rail-space);
+    inset-inline-start: var(--land-safe-start);
     inset-inline-end: var(--land-safe-end);
   }
   /* Camera: stay left of its dial + control column (about 236px; the camera can set --land-toast-end). */
@@ -1067,7 +1020,7 @@ input[type='range']::-moz-range-thumb {
     top: calc(8px + var(--safe-t));
     left: auto;
     right: auto;
-    inset-inline-start: calc(var(--land-rail-space) + 16px);
+    inset-inline-start: calc(var(--land-safe-start) + 16px);
     inset-inline-end: calc(var(--land-safe-end) + 16px);
   }
 
@@ -1149,10 +1102,10 @@ input[type='range']::-moz-range-thumb {
     display: block;
     min-width: 0;
   }
-  /* The reading stays in view while the controls beside it scroll under the title. */
+  /* The reading stays in view while the controls beside it scroll under the title (71px tall + a gap). */
   .meter-read {
     position: sticky;
-    top: calc(68px + var(--safe-t));
+    top: calc(80px + var(--safe-t));
   }
   .meter-controls .field:first-child {
     padding-top: 0;
@@ -1252,10 +1205,6 @@ input[type='range']::-moz-range-thumb {
     margin-top: 0;
   }
 
-  /* ---------- splash: centred on the screen area beside where the rail will be ---------- */
-  .splash {
-    padding-inline-start: var(--land-rail-space);
-  }
 }
 @keyframes land-drawer {
   from {
@@ -1267,21 +1216,6 @@ input[type='range']::-moz-range-thumb {
   from {
     transform: translateY(-12px);
     opacity: 0;
-  }
-}
-@media (orientation: landscape) and (max-height: 600px) and (forced-colors: active) {
-  html .tabbar {
-    border-top: 0;
-    border-inline-end: 1px solid CanvasText;
-  }
-  html .tabbar button.on::before {
-    top: 18%;
-    bottom: 18%;
-    left: auto;
-    right: auto;
-    inset-inline-end: 0;
-    width: 4px;
-    height: auto;
   }
 }
 @media (orientation: landscape) and (max-height: 600px) and (prefers-reduced-motion: reduce) {

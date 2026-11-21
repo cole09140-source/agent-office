@@ -196,7 +196,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
   return (
     <div class="page settings" data-testid="settings-screen">
       {/* The tab is "MY": shots, ads and Pro first, then the settings as before. */}
-      <Header title={t('tab.settings')} />
+      <Header home title={t('tab.settings')} />
       <MySection />
       <h2 class="my-settings-h">{t('set.title')}</h2>
       {/* iOS-style list: each row names its group and its current value, and opens it as a sheet. */}
