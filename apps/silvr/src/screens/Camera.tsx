@@ -1574,6 +1574,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
                     '--wrap-win-r': `${Math.max(0, Math.round(wrap.win.left + wrap.win.width - box.pad.l))}px`,
                     '--wrap-win-t': `${Math.round(wrap.win.top - box.pad.t)}px`,
                     '--wrap-win-h': `${Math.round(wrap.win.height)}px`,
+                    // Where the plain body starts right of the window: the dial and the column start below the top plate.
+                    '--wrap-ctl-t': `${Math.max(0, Math.round(wrap.ctlTop - box.pad.t))}px`,
                   }
                 : {}),
             }

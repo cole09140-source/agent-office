@@ -225,7 +225,11 @@ def main() -> int:
     ap.add_argument("--q", type=int, default=68)
     ap.add_argument("--skip", default="")
     ap.add_argument("--only", default="", help="comma list: process just these ids (the data keeps the others)")
+    ap.add_argument("--win-share", type=float, default=None, help="window share of the visible height (default WIN_SHARE)")
     args = ap.parse_args()
+    global WIN_SHARE
+    if args.win_share:
+        WIN_SHARE = args.win_share
     skip = SKIP | {s for s in args.skip.split(",") if s}
     only = {s for s in args.only.split(",") if s}
 
@@ -278,7 +282,8 @@ def main() -> int:
     for f in out_dir.glob("*.webp"):
         if f.stem not in entries:
             f.unlink()
-    ordered = {c: entries[c] for c in ids if c in entries}
+    # --only updates a few cameras in place: keep every other entry (and the existing order).
+    ordered = dict(entries) if only else {c: entries[c] for c in ids if c in entries}
     write_ts(ordered)
     if thumbs:
         contact(thumbs, args.src / "wrap_all.jpg")

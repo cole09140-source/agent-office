@@ -86,18 +86,35 @@ async function checkColumn(page: Page) {
     expect(boxes[id].height, `${id} height`).toBeGreaterThanOrEqual(43.5);
   }
 
-  // Top to bottom: gear → flash / timer → counter → last shot / flip → shutter.
+  // Top to bottom: gear → flash / timer → (counter) → last shot / flip → shutter. On a full-body wrap the
+  // frame counter is a small plate on the body above the mode dial, level with the gear, left of the column.
+  const wrap = await isWrap(page);
   expect(cy(boxes['btn-more'])).toBeLessThan(cy(boxes['btn-timer']));
   if (hasFlash) expect(Math.abs(cy(boxes['btn-flash']) - cy(boxes['btn-timer']))).toBeLessThan(2);
-  expect(cy(boxes['btn-timer'])).toBeLessThan(cy(boxes.counter));
-  expect(cy(boxes.counter)).toBeLessThan(cy(boxes.playback));
+  if (wrap) {
+    const deck = await box(page.getByTestId('deck'));
+    const rail = await box(page.getByTestId('camera-rail'));
+    expect(boxes.counter.x + boxes.counter.width, 'counter left of the column').toBeLessThanOrEqual(deck.x + 1);
+    expect(boxes.counter.y + boxes.counter.height, 'counter above the dial').toBeLessThanOrEqual(rail.y + 1);
+    expect(Math.abs(cx(boxes.counter) - cx(rail)), 'counter centred over the dial').toBeLessThan(2);
+    expect(Math.abs(boxes.counter.y - boxes['btn-more'].y), 'counter level with the gear').toBeLessThan(2);
+  } else {
+    expect(cy(boxes['btn-timer'])).toBeLessThan(cy(boxes.counter));
+    expect(cy(boxes.counter)).toBeLessThan(cy(boxes.playback));
+  }
+  expect(cy(boxes['btn-timer'])).toBeLessThan(cy(boxes.playback));
   expect(Math.abs(cy(boxes.playback) - cy(boxes['btn-flip']))).toBeLessThan(2);
   expect(cy(boxes.playback)).toBeLessThan(cy(boxes.shutter));
 
-  // The shutter is the hero, in the bottom-right corner (under the right thumb).
+  // The shutter is the hero, in the bottom-right corner (under the right thumb). (The wrap's counter plate is as
+  // wide as the dial but short: the shutter is still the biggest thing on the body.)
   const sh = boxes.shutter;
   expect(sh.width).toBeGreaterThanOrEqual(60);
-  for (const k of keys) if (k !== 'shutter') expect(sh.width, `shutter bigger than ${k}`).toBeGreaterThan(boxes[k].width);
+  for (const k of keys) {
+    if (k === 'shutter') continue;
+    if (wrap && k === 'counter') expect(sh.width * sh.height, 'shutter bigger than the counter plate').toBeGreaterThan(boxes[k].width * boxes[k].height);
+    else expect(sh.width, `shutter bigger than ${k}`).toBeGreaterThan(boxes[k].width);
+  }
   expect(sh.x + sh.width, 'shutter near the right edge').toBeGreaterThan(vp.width - 56);
   expect(sh.y + sh.height, 'shutter near the bottom edge').toBeGreaterThan(vp.height - 32);
   for (const k of keys) if (k !== 'shutter') expect(cy(sh), `shutter below ${k}`).toBeGreaterThan(cy(boxes[k]));
@@ -131,10 +148,20 @@ async function checkBody(page: Page) {
     expect(overlaps(vf, rail), 'preview clear of the dial').toBe(false);
     expect(overlaps(vf, deck), 'preview clear of the column').toBe(false);
     expect(vf.x + vf.width).toBeLessThanOrEqual(rail.x);
-    // the dial track is set into the body beside the window (level with it, about as tall as it)
+    // 3-slice: the art's RIGHT part (the right-hand dials, the end of the top plate) ends at the screen's right
+    // edge, whole; LEFT (with the window) starts at the left edge
+    const right = await box(page.locator('.wrap-art .wrap-right'));
+    expect(Math.abs(right.x + right.width - vp.width), 'RIGHT ends at the right edge').toBeLessThan(1);
+    expect(right.x, 'RIGHT starts right of the preview').toBeGreaterThanOrEqual(vf.x + vf.width - 1);
+    await onScreen(page, right, 'art RIGHT');
+    // the dial track is set into the body beside the window (level with it, most of its height), under the
+    // frame counter; the dial and the column start below the top plate (never over the printed name / dials)
     expect(Math.abs(cy(rail) - cy(vf)), 'dial level with the window').toBeLessThan(vp.height * 0.12);
-    expect(rail.height).toBeGreaterThan(vp.height * 0.5);
+    expect(rail.height).toBeGreaterThan(vp.height * 0.42);
     expect(rail.height).toBeLessThan(vp.height * 0.9);
+    const gear = await box(page.getByTestId('btn-more'));
+    expect(gear.y, 'the column starts below the top plate').toBeGreaterThan(vp.height * 0.12);
+    expect(rail.y, 'the dial starts below the top plate').toBeGreaterThan(gear.y);
     // a big preview (at least as big as with the cropped body): most of the height, or of the body's left half
     expect(vf.height / vp.height > 0.6 || vf.width / vp.width > 0.4, 'preview takes most of the window').toBe(true);
     return;

@@ -7,9 +7,13 @@ export { BODY_WRAP, bodyWrapFor, type BodyWrapEntry };
 
 /*
  * FULL-BODY WRAP (landscape camera screen): the camera back covers the whole screen, edge to edge. The art
- * (scripts/bodies/wrap.py, ~2.6:1) is cover-fit by height and anchored at the left so its black window, where the
- * live preview goes, is always fully on screen; the mode dial and the control column are mounted on the plain
- * body to the right of the window. Portrait keeps the cropped body art (BodyArt.tsx).
+ * (scripts/bodies/panels.py, ~2.1:1) is scaled to the screen's height and drawn as a 3-slice:
+ *   LEFT   [0, s0)  the black window (the live preview goes there), anchored at the screen's left edge,
+ *   MIDDLE [s0, s1) a straight strip of plain body, mirrored-tiled across whatever width is left,
+ *   RIGHT  [s1, w)  the right-hand dials and the end of the top plate, anchored at the screen's right edge,
+ * so the top plate (printed name, dials, crank) is whole on every phone. The mode dial and the control column are
+ * mounted on the plain body right of the window, below the top plate. Portrait keeps the cropped body art
+ * (BodyArt.tsx).
  */
 
 /** Widths of the mode dial and the control column in wrap mode (px), and the least body between them / the window. */
@@ -20,6 +24,10 @@ export const WRAP_MIN_GAP = 8;
 export const WRAP_RESERVE = WRAP_COL_W + WRAP_DIAL_W + 2 * WRAP_MIN_GAP;
 /** Least room between the window and the screen's (safe) top, bottom and left edges. */
 const EDGE = 6;
+/** The window's bevel / frame right of the black (fraction of the art width): RIGHT never covers it. */
+export const WRAP_BEVEL = 0.025;
+/** How much of the body left of the window LEFT may slide off the screen before the art is scaled down. */
+const SLIDE = 0.4;
 
 /** The safe-area padding of the camera screen (px): the window keeps clear of a notch. */
 export interface WrapPad {
@@ -30,23 +38,47 @@ export interface WrapPad {
 }
 const NO_PAD: WrapPad = { l: 0, t: 0, r: 0, b: 0 };
 
+/** One horizontal slice of the art on screen (px). */
+export interface WrapSlice {
+  x: number;
+  w: number;
+}
+
 export interface WrapLayout {
-  /** The whole image in screen px (it may run past the right edge: that part is clipped). */
+  /** The art's band on screen: from LEFT's left edge to the screen's right edge, the art's height. */
   art: StageBox;
+  /** LEFT (window side), MIDDLE (n mirrored tiles; w < 0: none, RIGHT overlaps LEFT by -w) and RIGHT (ends at the
+   *  screen's right edge; narrower than the art's RIGHT when its plain start is clipped at the window's bevel). */
+  left: WrapSlice;
+  mid: WrapSlice & { n: number };
+  right: WrapSlice;
   /** The black window in screen px: the preview is fitted inside it. */
   win: StageBox;
   /** The window's corner radius in screen px. */
   radius: number;
   /** Screen px per image px. */
   scale: number;
+  /** Screen y where the plain body starts right of the window (below the top plate): the controls start here. */
+  ctlTop: number;
+}
+
+/** The odd number of tiles (the last one then ends on s1 unmirrored, seamless with RIGHT) that best fits `w` with tiles of `tile` px. */
+export function tileCount(w: number, tile: number): number {
+  if (!(w > 0) || !(tile > 0)) return 0;
+  let best = 1;
+  for (let n = 3; n < 401 && (n - 2) * tile < w * 2; n += 2) {
+    if (Math.abs(Math.log(w / (n * tile))) < Math.abs(Math.log(w / (best * tile)))) best = n;
+  }
+  return best;
 }
 
 /**
- * Where the wrap art and its window land on a W × H camera screen, or null without wrap art.
- * Cover-fit by height (the art was cropped to the rows that should show), the art's left edge at the screen's left
- * edge. When the window would run under the controls (`reserveRight` px at the right, inside the padding) the art
- * first slides left (cropping the body left of the window); only when that is not enough does the scale drop,
- * and the art then sits centred on the screen's height. The window is pushed right of a left notch when needed.
+ * Where the wrap art, its three slices and its window land on a W × H camera screen, or null without wrap art.
+ * Scaled to the screen's height (art height = H). LEFT starts at the screen's left edge (pushed right of a left
+ * notch when the window needs it, or slid left — the body left of the window cropped — when the window would run
+ * under the controls, `reserveRight` px at the right inside the padding); RIGHT ends at the screen's right edge.
+ * Only when even that cannot keep the window clear of the controls, of the safe height, or of RIGHT does the scale
+ * drop (the art then sits centred on the height).
  * CONTRACT shared by the camera screen (caller: the preview and the controls) and WrapArt (drawing).
  */
 export function wrapLayout(cameraId: string, W: number, H: number, pad: WrapPad = NO_PAD, reserveRight = WRAP_RESERVE): WrapLayout | null {
@@ -56,31 +88,50 @@ export function wrapLayout(cameraId: string, W: number, H: number, pad: WrapPad 
   const wy = art.win.y * art.h;
   const ww = art.win.w * art.w;
   const wh = art.win.h * art.h;
+  const lw = art.slice.l * art.w;
+  const rw = art.slice.r * art.w;
+  const kw = Math.min(rw, art.slice.k * art.w); // the part of RIGHT that always shows
+  const sw = art.w - lw - rw;
+  const bev = WRAP_BEVEL * art.w;
   const right = W - pad.r - reserveRight; // the window ends before this
   const minLeft = pad.l + EDGE; // the window's left edge, at the furthest left it may go
   let scale = H / art.h;
-  // Shrink only when even a window slid all the way left (the body strip left of it cropped) would run under
-  // the controls, or when it would not fit the safe height.
   scale = Math.min(scale, (right - minLeft) / ww, (H - pad.t - pad.b - 2 * EDGE) / wh);
-  scale = Math.max(scale, 0.01);
-  const artW = art.w * scale;
+  // RIGHT's details (anchored at the right edge) start after the window's bevel: LEFT + window + bevel + kept part
+  // <= W (the plain body before the details may slide under the bevel and is clipped). LEFT may slide left by up
+  // to SLIDE of the body left of the window (keeping the window clear of a notch) before the scale drops: sA.
+  // With the window held at `right` by the controls it holds up to sR.
+  const cA = W / ((1 - SLIDE) * wx + ww + bev + kw);
+  const sA = cA * (1 - SLIDE) * wx >= minLeft ? cA : (W - minLeft) / (ww + bev + kw);
+  const sR = (W - right) / (bev + kw);
+  scale = Math.max(Math.min(scale, Math.max(sA, sR)), 0.01);
   const artH = art.h * scale;
-  // Left: the art's own edge at the screen's edge; pushed right of a notch, or slid left (its left margin
-  // cropped) when the window would otherwise run under the controls.
+  // LEFT: at the screen's edge; pushed right of a notch, or slid left when the window would run under the controls
+  // or RIGHT's details would not fit.
   let left = Math.max(0, minLeft - wx * scale);
   const over = left + (wx + ww) * scale - right;
   if (over > 0) left -= over;
+  const tight = left + (wx + ww + bev + kw) * scale - W;
+  if (tight > 0) left -= tight;
   // Top: centred on the height (0 when it covers), then nudged so the window clears the safe top / bottom.
   let top = (H - artH) / 2;
   const winTop = top + wy * scale;
   if (winTop < pad.t + EDGE) top += pad.t + EDGE - winTop;
   const winBottom = top + (wy + wh) * scale;
   if (winBottom > H - pad.b - EDGE) top -= winBottom - (H - pad.b - EDGE);
+  const L = lw * scale;
+  // RIGHT ends at the screen's right edge; on a narrow screen its plain start is clipped at the window's bevel.
+  const rx = Math.max(W - rw * scale, left + (wx + ww + bev) * scale);
+  const midW = rx - (left + L);
   return {
-    art: { left, top, width: artW, height: artH },
+    art: { left, top, width: W - left, height: artH },
+    left: { x: left, w: L },
+    mid: { x: left + L, w: midW, n: tileCount(midW, sw * scale) },
+    right: { x: rx, w: W - rx },
     win: { left: left + wx * scale, top: top + wy * scale, width: ww * scale, height: wh * scale },
     radius: art.win.r * art.w * scale,
     scale,
+    ctlTop: Math.max(pad.t, top + art.top * artH),
   };
 }
 
@@ -135,27 +186,46 @@ export function BodyGlint() {
 }
 
 /**
- * The full camera back (decorative: aria-hidden, no pointer events), laid out by `wrapLayout`. Renders nothing
- * without wrap art or before the screen is measured.
+ * The full camera back (decorative: aria-hidden, no pointer events), laid out by `wrapLayout` as three slices of
+ * one image (one download): LEFT and RIGHT are the image itself, clipped; the MIDDLE strip is tiled as
+ * backgrounds, every other tile mirrored so each joint meets the same column on both sides (seamless), an odd
+ * count so the last tile meets RIGHT unmirrored. RIGHT over LEFT (a screen narrower than both) gets a soft edge.
+ * Renders nothing without wrap art or before the screen is measured.
  * CONTRACT: Camera.tsx places it inside `.cam-stage` (which then covers the whole camera screen) before the
  * viewfinder: <WrapArt cameraId layout />.
  */
 export function WrapArt({ cameraId, layout }: { cameraId: string; layout: WrapLayout | null }) {
   const art = bodyWrapFor(cameraId);
   if (!art || !layout) return null;
-  const { art: a } = layout;
+  const { art: a, left, mid, right, scale } = layout;
+  const artW = art.w * scale;
+  const px = (v: number) => `${Math.round(v * 100) / 100}px`;
+  const band = { top: px(a.top), height: px(a.height) };
+  const img = (dx: number) => ({ left: px(dx), top: '0px', width: px(artW), height: px(a.height) });
+  // Neighbouring parts overlap by half a pixel: no hairline of the dark backdrop at a fractional joint.
+  const join = mid.w > 0 ? 0.5 : 0;
+  const tiles = [];
+  if (mid.w > 0 && mid.n > 0) {
+    const tw = mid.w / mid.n;
+    const k = tw / ((1 - art.slice.l - art.slice.r) * artW); // the strip stretched a little to fit a whole number of tiles
+    const bg = { backgroundImage: `url(${art.src})`, backgroundSize: `${px(artW * k)} ${px(a.height)}`, backgroundPosition: `${px(-art.slice.l * artW * k)} 0px` };
+    for (let i = 0; i < mid.n; i++) {
+      tiles.push(<i key={i} class={i % 2 ? 'wrap-tile flip' : 'wrap-tile'} style={{ ...bg, left: px(i * tw - (i ? 0.5 : 0)), width: px(tw + (i ? 0.5 : 0) + 0.5) }} />);
+    }
+  }
   return (
     <div key={cameraId} class="wrap-art" aria-hidden="true" data-testid="wrap-art">
-      <img
-        class="wrap-art-img"
-        src={art.src}
-        width={art.w}
-        height={art.h}
-        alt=""
-        decoding="async"
-        draggable={false}
-        style={{ left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px` }}
-      />
+      <div class="wrap-part wrap-left" style={{ left: px(left.x), width: px(left.w + join), ...band }}>
+        <img class="wrap-art-img" src={art.src} width={art.w} height={art.h} alt="" decoding="async" draggable={false} style={img(0)} />
+      </div>
+      {tiles.length > 0 && (
+        <div class="wrap-part wrap-mid" style={{ left: px(mid.x), width: px(mid.w), ...band }}>
+          {tiles}
+        </div>
+      )}
+      <div class={`wrap-part wrap-right${mid.w < 0 ? ' feather' : ''}`} style={{ left: px(right.x - join), width: px(right.w + join), ...band }}>
+        <img class="wrap-art-part" src={art.src} alt="" decoding="async" draggable={false} style={img(a.left + a.width - artW - (right.x - join))} />
+      </div>
       <BodyGlint />
     </div>
   );
