@@ -47,6 +47,9 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
   settings: 'settings',
 };
 
+/** Phone landscape (the landscape contract in styles/darkroom.css): the tab bar is a side rail. */
+const LANDSCAPE_RAIL = '(orientation: landscape) and (max-height: 600px)';
+
 function TabBar() {
   const current = TAB_OF[route.value.name];
   const badges: Partial<Record<Route['name'], number>> = { gallery: newRollCount.value };
@@ -57,7 +60,13 @@ function TabBar() {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
     const root = document.documentElement;
+    // Phone landscape: the bar is a full-height rail at the side (darkroom.css), --tab-h is 0 there.
+    const rail = typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_RAIL) : null;
     const measure = () => {
+      if (rail?.matches) {
+        root.style.removeProperty('--tab-h');
+        return;
+      }
       const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
       const h = Math.round(el.getBoundingClientRect().height - pad);
       if (h > 64) root.style.setProperty('--tab-h', `${h}px`);
@@ -66,8 +75,10 @@ function TabBar() {
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
+    rail?.addEventListener?.('change', measure);
     return () => {
       ro.disconnect();
+      rail?.removeEventListener?.('change', measure);
       root.style.removeProperty('--tab-h');
     };
   }, []);

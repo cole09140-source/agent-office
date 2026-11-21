@@ -581,3 +581,533 @@
     transition: none;
   }
 }
+
+/* ==========================================================================
+   LANDSCAPE: the back of a digicam (owner: camera-screen agent A, 2026-11-21)
+   [tab rail (shell)] | BODY + LCD (art, live preview in its window) | MODE DIAL (vertical camera strip)
+   | CONTROL COLUMN (release + W/T rocker · frame readout · D-pad · playback / MENU / flip).
+   Camera.tsx renders this arrangement when the contract query matches (.camera.cam-land): the same
+   elements, never duplicates. Grid columns follow the reading direction: in RTL the tab rail is on the
+   right, so the column sits on the left. The art and the D-pad are hardware: never mirrored.
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 600px) {
+  /* Toasts (shell) stay clear of the mode dial + control column: their widths, the gaps and the edge pad. */
+  .app.route-camera {
+    --land-toast-end: calc(80px + 136px + 6px + 6px + 6px + var(--land-safe-end, 0px));
+  }
+  .camera.cam-land {
+    --land-dial-w: 80px;
+    --land-col-w: 136px;
+    --land-gap: 6px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--land-dial-w) var(--land-col-w);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'stage dial col';
+    /* Anything else in the screen (sheet hosts, live region) takes no room. */
+    grid-auto-rows: 0;
+    grid-auto-columns: 0;
+    column-gap: var(--land-gap);
+    height: 100dvh;
+    margin: 0;
+    padding: max(6px, var(--safe-t, 0px)) 0 max(6px, var(--safe-b, 0px));
+    /* .app already starts after the shell's tab rail (darkroom.css); the far edge keeps clear of a notch. */
+    padding-inline-start: 4px;
+    padding-inline-end: calc(var(--land-safe-end, var(--land-safe-r)) + 6px);
+    background: radial-gradient(70% 90% at 38% 50%, #17130f 0, var(--dr-bg) 75%);
+    overflow: hidden;
+  }
+
+  /* The body plate steps out of the way: its stage and the camera strip become cells of the grid. */
+  .cam-land > .bp-body.has-art {
+    display: contents;
+  }
+  /* (A body without art keeps its CSS plate, spanning the stage and the dial.) */
+  .cam-land > .bp-body:not(.has-art) {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+    width: auto;
+    margin: 0;
+  }
+
+  /* BODY + LCD: the art fills the height it can (contain-fit in the stage, BodyArt / artWindowBox). */
+  .cam-land .cam-stage {
+    grid-area: stage;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---- MODE DIAL: the camera strip turned vertical ---- */
+  .cam-land .cam-rail.vertical {
+    grid-area: dial;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    border-radius: 14px;
+    background:
+      repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 5px),
+      linear-gradient(90deg, #0d0b09, #17130f 50%, #0d0b09);
+    box-shadow:
+      inset 0 0 0 1px var(--dr-line-soft),
+      inset 0 10px 14px -8px rgba(0, 0, 0, 0.9),
+      inset 0 -10px 14px -8px rgba(0, 0, 0, 0.9);
+  }
+  .cam-land .cam-rail.vertical .cam-rail-track {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    container-type: size;
+  }
+  /* The ring the cameras roll under: a band across the middle of the dial. */
+  .cam-land .cam-rail.vertical .cam-rail-track::after {
+    top: 50%;
+    bottom: auto;
+    left: 3px;
+    right: 3px;
+    width: auto;
+    height: 76px;
+    transform: translateY(-50%);
+    border-radius: 10px;
+    box-shadow:
+      inset 0 0 0 1.5px var(--dr-red),
+      0 0 12px -2px var(--dr-red-glow);
+  }
+  .cam-land .cam-rail.vertical .cam-rail-strip {
+    flex-direction: column;
+    height: 100%;
+    gap: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y mandatory;
+    /* Half the dial above and below: the first and last cameras can reach the ring. */
+    padding: calc(50cqh - 35px) 4px;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 16%, #000 84%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 16%, #000 84%, transparent);
+  }
+  .cam-land .cam-rail.vertical .cam-rail-cell {
+    flex: 0 0 auto;
+    min-height: 70px;
+    scroll-snap-align: center;
+  }
+  .cam-land .cam-rail.vertical .cam-rail-card {
+    min-height: 70px;
+    padding: 5px 2px 4px;
+    gap: 2px;
+    border-radius: 10px;
+  }
+  .cam-land .cam-rail.vertical .cam-rail-card .camera-body {
+    width: 38px;
+    height: auto;
+  }
+  /* The legacy short-screen rule hides names; the dial has room for them. */
+  .cam-land .cam-rail.vertical .cam-rail-name {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+    max-width: 100%;
+    font-family: var(--dr-cond);
+    font-size: 0.6875rem;
+  }
+  .cam-land .cam-rail.vertical .cam-rail-film {
+    color: var(--dr-amber);
+    font-family: var(--dr-mono-ui);
+    font-size: 0.5625rem;
+  }
+  .cam-land .cam-rail.vertical .cam-rail-divider {
+    flex: 0 0 1px;
+    margin: 3px 12px;
+  }
+
+  /* ---- CONTROL COLUMN: dark rubber panel ---- */
+  .camera.cam-land .deck.deck-land {
+    --deck-btn: 38px;
+    --deck-shutter: 60px;
+    --dpad: 118px;
+    grid-area: col;
+    position: relative;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 6px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    border-radius: 16px;
+    background:
+      radial-gradient(120% 60% at 50% 0, rgba(255, 255, 255, 0.05), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg, #1d1915, #131110);
+    box-shadow:
+      inset 0 0 0 1px var(--dr-line-soft),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 20px -8px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Release on top, as on the top plate of a camera; the W/T rocker beside it. */
+  .deck-land .land-release {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .deck-land .rocker-slot {
+    width: 30px;
+  }
+  .deck-land .zoom-rocker {
+    position: relative;
+    width: 30px;
+    height: 64px;
+    display: flex;
+    flex-direction: column-reverse; /* W at the bottom, T on top */
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-radius: 15px;
+    background: linear-gradient(90deg, #26211c, #171411 70%);
+    box-shadow:
+      inset 0 0 0 1px var(--dr-line),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 2px 3px rgba(0, 0, 0, 0.5);
+    color: var(--dr-fg-2);
+    font: 700 10px/1 var(--dr-cond);
+    letter-spacing: 0.04em;
+  }
+  .deck-land .zoom-rocker::after {
+    content: '';
+    position: absolute;
+    inset: -4px -7px;
+  }
+  .deck-land .zoom-rocker .rocker-val {
+    font: 700 9px/1 var(--dr-mono);
+    color: var(--dr-fg-3);
+  }
+  .deck-land .zoom-rocker.on .rocker-val,
+  .deck-land .zoom-rocker.on .rocker-t {
+    color: var(--dr-amber);
+  }
+  .deck-land .zoom-rocker:active:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .deck-land .zoom-rocker:disabled {
+    opacity: 0.4;
+  }
+  .deck-land .zoom-rocker:focus-visible,
+  .deck-land .dpad-key:focus-visible,
+  .deck-land .dpad-ok:focus-visible {
+    outline: 2px solid var(--dr-amber);
+    outline-offset: 2px;
+  }
+
+  /* Frame readout: a small amber LCD segment. */
+  .deck-land .land-lcd {
+    flex: none;
+    width: 100%;
+    max-width: 124px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 0 8px;
+    border-radius: 5px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 45%), var(--dr-well);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.9),
+      0 0 0 1px var(--dr-line);
+    color: var(--dr-amber);
+  }
+  .deck-land .land-lcd-tag,
+  .deck-land .land-lcd-fmt {
+    font: 700 9px/1 var(--dr-mono);
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+  }
+  .deck-land .deck-counter {
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    font-size: 18px;
+  }
+  .deck-land .deck-counter::before {
+    content: none;
+  }
+
+  /* ---- D-pad: a rubber ring, four keys and the centre OK (film) ---- */
+  .deck-land .dpad {
+    position: relative;
+    flex: none;
+    width: var(--dpad);
+    height: var(--dpad);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas:
+      '. n .'
+      'w ok e'
+      '. s .';
+    place-items: center;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, transparent 0 24%, rgba(0, 0, 0, 0.5) 24.5% 26%, transparent 26.5%),
+      radial-gradient(circle at 50% 35%, #2a2520, #15120f 70%);
+    box-shadow:
+      inset 0 0 0 1px var(--dr-line),
+      inset 0 2px 1px rgba(255, 255, 255, 0.05),
+      inset 0 -3px 6px rgba(0, 0, 0, 0.5),
+      0 3px 8px rgba(0, 0, 0, 0.6);
+  }
+  .deck-land .dpad-n {
+    grid-area: n;
+  }
+  .deck-land .dpad-s {
+    grid-area: s;
+  }
+  .deck-land .dpad-w {
+    grid-area: w;
+  }
+  .deck-land .dpad-e {
+    grid-area: e;
+  }
+  .deck-land .dpad > div {
+    display: grid;
+    place-items: center;
+  }
+  .deck-land .dpad .deck-btn,
+  .deck-land .dpad-key {
+    position: relative;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1px;
+    border-radius: 50%;
+    background: none;
+    box-shadow: none;
+    color: var(--dr-fg-2);
+  }
+  .deck-land .dpad .deck-btn::after,
+  .deck-land .dpad-key::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+  .deck-land .dpad .deck-btn.on,
+  .deck-land .dpad .flash-charge.charge-ready,
+  .deck-land .dpad-key.on {
+    background: radial-gradient(circle, rgba(224, 160, 58, 0.18), transparent 70%);
+    box-shadow: none;
+    color: var(--dr-amber);
+  }
+  .deck-land .dpad .flash-charge.flash-charge.off {
+    background: none;
+    box-shadow: none;
+  }
+  .deck-land .dpad .chip.cancel {
+    background: radial-gradient(circle, rgba(211, 50, 43, 0.32), transparent 72%);
+    box-shadow: none;
+  }
+  .deck-land .dpad .deck-btn:active:not(:disabled),
+  .deck-land .dpad-key:active:not(:disabled) {
+    transform: scale(0.92);
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .deck-land .dpad-key:disabled {
+    opacity: 0.4;
+  }
+  .deck-land .dpad-key small {
+    font: 700 8.5px/1 var(--dr-mono);
+    letter-spacing: 0;
+  }
+  .deck-land .dpad-glyph {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .deck-land .dpad .glyph-frame {
+    width: 16px;
+    height: 11px;
+  }
+  .deck-land .dpad .deck-slot,
+  .deck-land .dpad-blank {
+    width: 6px;
+    min-width: 0;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dr-line-soft);
+  }
+  .deck-land .dpad .timer-badge {
+    top: -3px;
+    inset-inline-end: -4px;
+  }
+  .deck-land .dpad-ok {
+    grid-area: ok;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 30%, #332d27, #1a1612 75%);
+    box-shadow:
+      0 0 0 1px #0b0908,
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 2px 3px rgba(0, 0, 0, 0.6);
+    color: var(--dr-fg-2);
+    font: 700 10px/1 var(--dr-cond);
+    letter-spacing: 0.08em;
+  }
+  .deck-land .dpad-ok::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+  }
+  .deck-land .dpad-ok:active:not(:disabled) {
+    transform: translateY(1px);
+    filter: brightness(0.85);
+  }
+  .deck-land .dpad-ok:disabled {
+    opacity: 0.45;
+  }
+
+  /* ---- playback · MENU · flip, with engraved labels ---- */
+  .deck-land .land-keys {
+    flex: none;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+  }
+  .deck-land .land-key {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+  }
+  .deck-land .land-engrave {
+    color: var(--dr-fg-3);
+    font: 700 8px/1 var(--dr-cond);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .deck-land .last-shot,
+  .deck-land .last-shot-empty {
+    width: var(--deck-btn);
+  }
+  .deck-land .last-shot-empty {
+    height: var(--deck-btn);
+  }
+  .deck-land .land-keys .deck-btn {
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 30%, #2a2520, #171411 75%);
+    box-shadow:
+      0 0 0 1px #0b0908,
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 2px 3px rgba(0, 0, 0, 0.5);
+  }
+  .deck-land .land-keys .deck-btn.more-chip.on {
+    color: var(--dr-amber);
+    box-shadow:
+      0 0 0 1px rgba(224, 160, 58, 0.55),
+      inset 0 1px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  /* MENU opens toward the LCD (inline start of the column), anchored to the column's foot. */
+  .deck-land .cam-more-wrap {
+    position: static;
+  }
+  .deck-land .cam-more {
+    top: auto;
+    bottom: 6px;
+    inset-inline-end: calc(100% + 8px);
+    inset-inline-start: auto;
+    max-height: calc(100% - 12px);
+    max-width: min(260px, 46vw);
+    overflow-y: auto;
+    transform-origin: bottom right;
+    box-shadow:
+      0 0 0 1px var(--dr-line),
+      -12px 0 32px rgba(0, 0, 0, 0.65);
+  }
+  [dir='rtl'] .deck-land .cam-more {
+    transform-origin: bottom left;
+  }
+  /* The EV slider floats beside the column, level with the D-pad. */
+  .deck-land .ev-row.deck-ev {
+    left: auto;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    inset-inline-end: calc(100% + 8px);
+    width: min(300px, 44vw);
+    transform: translateY(-50%);
+    box-shadow:
+      0 0 0 1px var(--dr-line),
+      -10px 0 26px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Capture hints at the foot of the column. */
+  .deck-land .cam-hint {
+    flex: none;
+    margin: 0;
+    padding: 0 2px;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+    /* never pushes the column past the screen on short phones / long languages */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* The retry (storage) sits where the column would be. */
+  .cam-land > .cam-retry {
+    grid-area: col;
+    align-items: center;
+    padding: 0;
+  }
+
+  /* The release breathes on its own; the rest of the column dims while a capture is saved. */
+  .deck-land.locked:not(.counting) :is(.dpad, .land-keys, .zoom-rocker) {
+    opacity: 0.85;
+  }
+}
+
+/* Taller landscape phones (390px and up): a little more room for the release and the D-pad. */
+@media (orientation: landscape) and (max-height: 600px) and (min-height: 390px) {
+  .camera.cam-land .deck.deck-land {
+    --deck-btn: 40px;
+    --deck-shutter: 64px;
+    --dpad: 124px;
+  }
+}
+
+/* Very short landscape windows (340px and less): drop the engravings and tighten the column. */
+@media (orientation: landscape) and (max-height: 340px) {
+  .camera.cam-land .deck.deck-land {
+    --deck-shutter: 54px;
+    --dpad: 108px;
+    padding-block: 6px;
+    gap: 4px;
+  }
+  .deck-land .land-engrave {
+    display: none;
+  }
+}

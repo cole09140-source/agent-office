@@ -37,6 +37,9 @@ function Meter() {
   return (
     <section class="card" data-testid="meter">
       <h2>{t('an.meter')}</h2>
+      {/* Readout and controls: stacked in portrait, side by side in phone landscape (darkroom.css). */}
+      <div class="meter-body">
+      <div class="meter-read">
       <div class="meter-result">
         <div>
           <small class="muted">{t('an.shutter')}</small>
@@ -60,6 +63,8 @@ function Meter() {
         </div>
       </div>
       {a.outOfRange ? <p class="warn small">{t('an.outOfRange')}</p> : a.tripod && <p class="warn small">{t('an.tripod')}</p>}
+      </div>
+      <div class="meter-controls">
       <label class="field">
         <span>{t('an.light')}</span>
         <select value={m.light} onChange={(e) => set({ light: e.currentTarget.value as Light })} data-testid="meter-light">
@@ -91,6 +96,8 @@ function Meter() {
         </div>
       </div>
       <Slider label={t('an.comp')} value={m.comp} min={-3} max={3} step={1 / 3} onInput={(v) => set({ comp: Math.round(v * 3) / 3 })} format={(v) => ltr(formatSigned(v))} />
+      </div>
+      </div>
     </section>
   );
 }

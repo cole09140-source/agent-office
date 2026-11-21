@@ -60,6 +60,9 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
     <div class="onboarding" role="dialog" aria-modal="true" aria-labelledby="onb-title" aria-describedby="onb-body" ref={boxRef} data-testid="onboarding">
       {/* The slide scrolls on its own above the action row, so large text never hides it behind the buttons. */}
       <div class="onb-scroll">
+        {/* Two groups that only matter in phone landscape (art beside the text, darkroom.css);
+            in portrait they are display: contents and the slide reads top to bottom as before. */}
+        <div class="onb-side">
         <div class="onb-brand">
           <span class="logo">FILM CAMELA</span>
           <span class="muted small">{t('app.tagline')}</span>
@@ -74,6 +77,8 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
           <span />
           <span />
         </div>
+        </div>
+        <div class="onb-text">
         <h1 tabIndex={-1} ref={titleRef} id="onb-title">
           <span class="sr-only">
             {i + 1}/{SLIDES.length}.{' '}
@@ -86,6 +91,7 @@ export function Onboarding({ onDone, onRestore }: { onDone: () => void; onRestor
           {SLIDES.map((_, k) => (
             <i key={k} class={k === i ? 'on' : ''} />
           ))}
+        </div>
         </div>
       </div>
       {/* Pinned to the bottom: with large text on a small phone the slide scrolls, the buttons stay in reach. */}

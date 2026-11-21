@@ -529,3 +529,214 @@
     outline-offset: -3px;
   }
 }
+
+/* Info lives in the header in portrait; in landscape it moves to the end of the viewer's key column. */
+.viewer-actions .act-info {
+  display: none;
+}
+
+/* ---------- phone landscape (owner: album agent C) ----------
+   The app is landscape-locked like a digicam (contract and shell at the end of darkroom.css: .app already
+   pads by --land-rail-space, .page by --land-pad, headers are one compact row). Here: the light table fills
+   the rest edge to edge with more, smaller mounts; the viewer is a playback screen (slide left/centre, keys
+   in a column on the inline-end side); the darkroom puts the print beside a scrolling column of controls. */
+@media (orientation: landscape) and (max-height: 600px) {
+  .app:is(.route-gallery, .route-folder, .route-roll, .route-photo, .route-darkroom) > .screen {
+    max-width: none;
+  }
+
+  /* ----- album / folder / roll: the lit table runs from the rail to the far edge and down to the bottom ----- */
+  .app:is(.route-gallery, .route-folder, .route-roll) .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+  .app:is(.route-gallery, .route-folder, .route-roll) .lt-box {
+    flex: 1 0 auto;
+    margin: 4px calc(-1 * (var(--land-pad) + var(--land-safe-end))) 0 calc(-1 * var(--land-pad));
+    padding: 10px calc(14px + var(--land-safe-end)) calc(14px + var(--safe-b)) 14px;
+    border-radius: 14px 14px 0 0;
+  }
+  .route-gallery .gal-help {
+    margin: 10px 0 calc(10px + var(--safe-b));
+  }
+  .lt-box .gal-section,
+  .lt-box .folder-day-title {
+    margin: 0 2px 8px;
+  }
+  .lt-box .folder-day + .folder-day {
+    margin-top: 10px;
+  }
+
+  /* More, smaller mounts: 6 groups and 7–8 frames a row at 844–915 wide, 5 and 6 at 740. */
+  .lt-box .roll-grid {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 10px 9px;
+  }
+  .lt-box .roll-card {
+    padding: 6px 6px 2px;
+  }
+  .lt-box .roll-meta {
+    min-height: 0;
+    padding: 4px 1px 2px;
+  }
+  .lt-box .roll-meta strong {
+    font-size: 0.875rem;
+  }
+  .photo-grid.mounts {
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 8px 7px;
+  }
+  /* A booth strip spans two rows; the whole strip stays in its window (object-fit: contain above). */
+  .photo-grid .mount.booth .thumb {
+    min-height: 180px;
+  }
+  .lt-box .folder-row {
+    gap: 14px;
+    margin: 0 -14px 10px;
+    padding: 6px 16px 8px;
+  }
+  .lt-box .folder-card {
+    width: 112px;
+    padding: 6px 6px 2px;
+  }
+  .lt-box .folder-meta {
+    min-height: 0;
+    padding: 4px 1px 2px;
+  }
+
+  /* Selection: one short bar along the bottom, right of the rail; the grid keeps clear of it. */
+  .route-roll .page.selecting .lt-box {
+    padding-bottom: calc(66px + var(--safe-b));
+  }
+  .route-roll .sel-bar {
+    left: auto;
+    right: auto;
+    inset-inline: var(--land-rail-space) 0;
+    bottom: 0;
+    max-width: none;
+    margin: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    padding-block: 6px calc(6px + var(--safe-b));
+    padding-inline: 14px calc(14px + var(--land-safe-end));
+  }
+  .route-roll .sel-bar .btn {
+    flex: 0 1 220px;
+    min-height: 42px;
+  }
+
+  /* ----- photo viewer: digicam playback ----- */
+  .viewer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'hdr keys'
+      'stage keys';
+    gap: 0 10px;
+    height: 100dvh;
+    padding: 0;
+    padding-inline: 10px calc(10px + var(--land-safe-end));
+  }
+  .viewer > .hdr {
+    grid-area: hdr;
+    padding-block: calc(2px + var(--safe-t)) 2px;
+  }
+  .viewer .hdr h1 {
+    font-size: min(1.0625rem, 19px);
+  }
+  .viewer .hdr p {
+    margin-top: 0;
+  }
+  .viewer .hdr-info {
+    display: none;
+  }
+  .viewer-stage {
+    grid-area: stage;
+    margin: 4px 4px calc(10px + var(--safe-b));
+  }
+  /* The arrows keep 56px lanes at the box edges: the mount never reaches under them. */
+  .viewer .nav.prev {
+    inset-inline-start: 6px;
+  }
+  .viewer .nav.next {
+    inset-inline-end: 6px;
+  }
+  .viewer-mount .print {
+    max-width: calc(100cqw - 48px - 112px);
+  }
+  .viewer-actions {
+    grid-area: keys;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 84px;
+    padding: calc(8px + var(--safe-t)) 0 calc(8px + var(--safe-b));
+  }
+  .viewer-actions button {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: 76px;
+    padding: 4px;
+  }
+  .viewer-actions .act-info {
+    display: flex;
+  }
+  /* Bars hidden: the rail fades out too, so its strip goes as black as the box (only the slide is lit). */
+  html.viewer-bare,
+  html.viewer-bare body,
+  html.viewer-bare .app {
+    background: #000;
+  }
+
+  /* ----- darkroom: the print on the left, the controls in their own scrolling column ----- */
+  .darkroom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(272px, 0.85fr);
+    gap: 0 12px;
+    height: 100dvh;
+    padding: 0;
+    padding-inline-start: 10px;
+  }
+  .darkroom .dr-top {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0;
+    padding: 0 0 calc(8px + var(--safe-b));
+    background: none;
+    box-shadow: none;
+  }
+  .darkroom .dr-top .hdr {
+    padding-block: calc(2px + var(--safe-t)) 2px;
+  }
+  .darkroom .dr-top .hdr h1 {
+    font-size: min(1.0625rem, 19px);
+  }
+  .darkroom .dr-top .dr-stage {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+  .darkroom .dr-top .dr-hint {
+    margin: 4px 0 0;
+  }
+  .darkroom .dr-controls {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: calc(2px + var(--safe-t)) calc(16px + var(--safe-b));
+    padding-inline: 12px calc(12px + var(--land-safe-end));
+    background: var(--dr-panel);
+    border-inline-start: 1px solid var(--dr-line-soft);
+  }
+  .darkroom .dr-controls .stock-strip {
+    margin: 0 -12px;
+    padding: 4px 12px;
+  }
+}

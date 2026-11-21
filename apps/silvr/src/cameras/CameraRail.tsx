@@ -69,6 +69,7 @@ export function CameraRail({
   film,
   filmLabel,
   onFilm,
+  vertical = false,
 }: {
   selected: string;
   onPick: (id: string) => void;
@@ -77,7 +78,14 @@ export function CameraRail({
   film?: string;
   filmLabel?: string;
   onFilm?: () => void;
+  /**
+   * A vertical mode dial (the landscape digicam layout): scrolls and snaps on the Y axis, the card in
+   * the vertical middle is the camera in use, Up / Down step through it. Horizontal otherwise.
+   */
+  vertical?: boolean;
 }) {
+  const verticalRef = useRef(vertical);
+  verticalRef.current = vertical;
   const ordered = orderByPins(CAMERAS, settings.value.pinnedCameras);
   const stripRef = useRef<HTMLDivElement>(null);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -109,6 +117,15 @@ export function CameraRail({
     const strip = stripRef.current;
     const card = cardOf(id);
     if (!strip || !card) return;
+    if (verticalRef.current) {
+      // Vertical dial: the same centring on the Y axis (no RTL subtlety: scrollTop always grows downwards).
+      const s = strip.getBoundingClientRect();
+      const r = card.getBoundingClientRect();
+      const top = strip.scrollTop + r.top + r.height / 2 - (s.top + s.height / 2);
+      if (!smooth || reduceMotion()) strip.scrollTop = top;
+      else strip.scrollTo({ top, behavior: 'smooth' });
+      return;
+    }
     if (!smooth || reduceMotion()) {
       centerInStrip(strip, card);
       return;
@@ -137,18 +154,29 @@ export function CameraRail({
     }
     glideTo(selectedRef.current, false);
   }, [orderKey]);
+  // Turning between the strip and the dial (orientation change): the camera in use goes back to the middle.
+  const firstAxis = useRef(true);
+  useLayoutEffect(() => {
+    if (firstAxis.current) {
+      firstAxis.current = false;
+      return;
+    }
+    reglides.current = 0;
+    glideTo(selectedRef.current, false);
+  }, [vertical]);
 
   /** The card nearest the middle of the strip. */
   const centred = (): string | null => {
     const strip = stripRef.current;
     if (!strip) return null;
     const s = strip.getBoundingClientRect();
-    const mid = s.left + s.width / 2;
+    const v = verticalRef.current;
+    const mid = v ? s.top + s.height / 2 : s.left + s.width / 2;
     let best: string | null = null;
     let dist = Infinity;
     for (const el of Array.from(strip.querySelectorAll<HTMLElement>('[data-camera]'))) {
       const r = el.getBoundingClientRect();
-      const d = Math.abs(r.left + r.width / 2 - mid);
+      const d = Math.abs((v ? r.top + r.height / 2 : r.left + r.width / 2) - mid);
       if (d < dist) {
         dist = d;
         best = el.dataset.camera ?? null;
@@ -180,10 +208,10 @@ export function CameraRail({
   useEffect(() => () => clearTimeout(settleTimer.current), []);
 
   /** A long press pins (or unpins) a camera: pinned ones come first on the strip. */
-  const press = useRef<{ id: string; x: number; timer: ReturnType<typeof setTimeout>; fired: boolean } | null>(null);
-  const startPress = (id: string, x: number) => {
+  const press = useRef<{ id: string; x: number; y: number; timer: ReturnType<typeof setTimeout>; fired: boolean } | null>(null);
+  const startPress = (id: string, x: number, y: number) => {
     if (press.current) clearTimeout(press.current.timer);
-    const p = { id, x, fired: false, timer: setTimeout(() => {
+    const p = { id, x, y, fired: false, timer: setTimeout(() => {
       p.fired = true;
       const pinned = settings.value.pinnedCameras.includes(id);
       void setCameraPinned(id, !pinned);
@@ -213,7 +241,9 @@ export function CameraRail({
   };
 
   const onKey = (e: KeyboardEvent) => {
-    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+    // The strip steps with Left / Right; the vertical dial with Up / Down (Left / Right still work there).
+    const keys = vertical ? ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Home', 'End'] : ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
     e.preventDefault();
     e.stopPropagation();
     const ids = ordered.items.map((c) => c.id);
@@ -226,7 +256,7 @@ export function CameraRail({
   };
 
   return (
-    <div class={`cam-rail ${locked ? 'locked' : ''}`} data-testid="camera-rail">
+    <div class={`cam-rail ${locked ? 'locked' : ''} ${vertical ? 'vertical' : ''}`} data-testid="camera-rail" data-axis={vertical ? 'y' : 'x'}>
       <p id="camera-rail-keys" class="sr-only">
         {t('a11y.cameraKeys')}
       </p>
@@ -275,8 +305,8 @@ export function CameraRail({
                 type="button"
                 class="cam-rail-card"
                 onClick={() => pick(c.id)}
-                onPointerDown={(e) => startPress(c.id, e.clientX)}
-                onPointerMove={(e) => press.current && Math.abs(e.clientX - press.current.x) > 8 && endPress()}
+                onPointerDown={(e) => startPress(c.id, e.clientX, e.clientY)}
+                onPointerMove={(e) => press.current && Math.max(Math.abs(e.clientX - press.current.x), Math.abs(e.clientY - press.current.y)) > 8 && endPress()}
                 onPointerUp={endPress}
                 onPointerLeave={endPress}
                 onContextMenu={(e) => e.preventDefault()}

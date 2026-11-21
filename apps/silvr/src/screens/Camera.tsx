@@ -49,6 +49,25 @@ const reduceMotion = () => typeof matchMedia === 'function' && matchMedia('(pref
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+/**
+ * Phone landscape: the app is landscape-locked like a digicam, and the camera screen becomes the back of
+ * one (LCD + mode dial + control column). EXACTLY the shared landscape contract query (darkroom.css).
+ */
+export const LANDSCAPE_QUERY = '(orientation: landscape) and (max-height: 600px)';
+function useLandscape(): boolean {
+  const mq = () => (typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_QUERY) : null);
+  const [land, setLand] = useState(() => !!mq()?.matches);
+  useEffect(() => {
+    const m = mq();
+    if (!m) return;
+    const on = () => setLand(m.matches);
+    on();
+    m.addEventListener?.('change', on);
+    return () => m.removeEventListener?.('change', on);
+  }, []);
+  return land;
+}
+
 type Charge = 'empty' | 'charging' | 'ready';
 
 /**
@@ -95,6 +114,7 @@ export function shotCount(r: Roll): number {
 export function CameraScreen({ onImport }: { onImport: () => void }) {
   const roll = activeRoll.value;
   const s = settings.value;
+  const land = useLandscape();
   const [pickCamera, setPickCamera] = useState(DEFAULT_CAMERA_ID);
   const [pickStock, setPickStock] = useState(getCamera(DEFAULT_CAMERA_ID).defaultStock);
   const camera = getCamera(roll ? roll.cameraId : pickCamera);
@@ -1153,8 +1173,343 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   /** The body's back plate: material, window, buttons and release for this camera (static CSS). */
   const back = useMemo(() => backFor(camera), [camera.id]);
 
+  // ----- the controls (each built once, then placed by the portrait deck or the landscape column) -----
+  const lastShotEl = lastPhoto ? (
+    <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
+      {/* Shown under the thumbnail until its developed print is ready: never a black square. */}
+      {quick?.id === lastPhoto.id && <img class="last-shot-quick" src={quick.url} alt="" aria-hidden="true" />}
+      <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
+    </div>
+  ) : (
+    // Nothing shot with this camera yet: the slot leads to the album (earlier photos live there).
+    <button class="last-shot-empty" onClick={() => goTab({ name: 'gallery' })} aria-label={t('tab.gallery')} data-testid="btn-last-album">
+      <Icon name="gallery" size={22} />
+    </button>
+  );
+  const flashEl =
+    camera.flash === 'standard' ? (
+      <button class={`chip deck-btn ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={busy} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
+        <Icon name={flashOn ? 'flash' : 'flashOff'} size={20} />
+      </button>
+    ) : camera.flash === 'charge' ? (
+      <button
+        class={`chip deck-btn flash-charge charge-${charge} ${flashOn ? '' : 'off'}`}
+        disabled={busy}
+        onClick={() => (charge === 'empty' ? chargeFlash() : charge === 'ready' ? toggleFlash() : undefined)}
+        aria-label={flashLabel}
+        aria-pressed={charge === 'ready' && flashOn}
+        data-testid="btn-flash"
+        data-charge={charge}
+      >
+        <Icon name="flash" size={20} />
+        <i class="charge-led" />
+      </button>
+    ) : (
+      // No flash on this body: an empty slot keeps every control where the thumb expects it.
+      <span class="deck-slot" aria-hidden="true" />
+    );
+  /* While counting down, the timer button is the cancel button (like the shutter and Escape). */
+  const timerEl = (
+    <button
+      class={`chip deck-btn timer-chip ${timer ? 'on' : ''} ${counting ? 'cancel' : ''}`}
+      onClick={counting ? cancelTimer : () => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}
+      disabled={busy && !counting}
+      aria-label={counting ? t('cam.cancelTimer') : `${t('cam.timer')} ${timer ? t('cam.sec', { n: timer }) : t('common.off')}`}
+      data-testid="btn-timer"
+    >
+      <Icon name={counting ? 'close' : 'timer'} size={20} />
+      {(counting || timer > 0) && (
+        <span class="timer-badge mono" aria-hidden="true">
+          {counting ? countdown : timer}
+        </span>
+      )}
+    </button>
+  );
+  /* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */
+  const shutterEl = (
+    <button
+      ref={shutterRef}
+      class={`shutter ${busy && !counting ? 'busy' : ''} ${counting ? 'cancel' : ''} ${starting ? 'starting' : ''}`}
+      onClick={onShutter}
+      disabled={state === 'error'}
+      aria-disabled={starting || undefined}
+      aria-label={counting ? t('cam.cancelTimer') : starting ? `${t('cam.shutter')} · ${t('cam.starting')}` : t('cam.shutter')}
+      data-testid="shutter"
+      data-state={counting ? 'cancel' : starting ? 'starting' : busy ? 'busy' : 'ready'}
+    >
+      <span>{counting && <Icon name="close" size={26} />}</span>
+      {queued > 0 && (
+        <i class="shutter-queue mono" aria-hidden="true">
+          +{queued}
+        </i>
+      )}
+    </button>
+  );
+  /* Frame counter window. LCD / pixel bodies also show the count in their finder. */
+  const counterEl = roll ? (
+    <div class="deck-counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
+      {/* Re-keyed per frame: a short tick shows the film advanced. */}
+      <span key={counterText} class="counter-tick">
+        {counterText}
+      </span>
+    </div>
+  ) : (
+    <div class="deck-counter mono empty" aria-hidden="true">
+      <span>--</span>
+    </div>
+  );
+  const nextAspect = () => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length]);
+  const nextZoom = () => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length]);
+  const toggleEv = () => {
+    // The slider opens next to the controls, so the popover steps aside for it.
+    const open = !evOpen;
+    setEvOpen(open);
+    if (open) setMoreOpen(false);
+  };
+  // Format / zoom / EV live in "more" on the portrait deck; on the landscape column they are hardware
+  // buttons (D-pad down, the W/T rocker, D-pad left). Same element, same test id, one place at a time.
+  const aspectEl =
+    camera.formats.length > 1 ? (
+      land ? (
+        <button class="dpad-key" disabled={chipLock} onClick={nextAspect} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
+          <i class="glyph-frame" aria-hidden="true" />
+          <small class="mono" dir="ltr" aria-hidden="true">
+            {aspect}
+          </small>
+        </button>
+      ) : (
+        <button class="more-item" disabled={chipLock} onClick={nextAspect} aria-label={`${t('cam.aspect')} ${aspect}`} data-testid="btn-aspect">
+          <span class="more-glyph" aria-hidden="true">
+            <i class="glyph-frame" />
+          </span>
+          <span>{t('cam.aspect')}</span>
+          <small class="mono" dir="ltr">
+            {aspect}
+          </small>
+        </button>
+      )
+    ) : null;
+  const zoomEl =
+    camera.zoom.length > 1 ? (
+      land ? (
+        // A W/T rocker: each press steps through the lens's stops (wraps back to wide), like the zoom chip.
+        <button class={`zoom-rocker ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom" dir="ltr">
+          <span class="rocker-w" aria-hidden="true">
+            W
+          </span>
+          <span class="rocker-val mono" aria-hidden="true">
+            {zoom}×
+          </span>
+          <span class="rocker-t" aria-hidden="true">
+            T
+          </span>
+        </button>
+      ) : (
+        <button class={`more-item ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
+          <span class="more-glyph mono" aria-hidden="true">
+            ×
+          </span>
+          <span>{t('cam.zoom')}</span>
+          <small class="mono" dir="ltr">
+            {zoom}×
+          </small>
+        </button>
+      )
+    ) : null;
+  const evEl = camera.ev ? (
+    land ? (
+      <button class={`dpad-key ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={toggleEv} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
+        <span class="dpad-glyph mono" aria-hidden="true">
+          ±
+        </span>
+        {ev !== 0 && (
+          <small class="mono" dir="ltr" aria-hidden="true">
+            {formatSigned(ev, undefined, '±')}
+          </small>
+        )}
+      </button>
+    ) : (
+      <button class={`more-item ${ev !== 0 || evOpen ? 'on' : ''}`} disabled={chipLock} onClick={toggleEv} aria-expanded={evOpen} aria-label={`${t('cam.ev')} ${formatSigned(ev)}`} data-testid="btn-ev">
+        <span class="more-glyph mono" aria-hidden="true">
+          ±
+        </span>
+        <span>{t('cam.ev')}</span>
+        <small class="mono" dir="ltr">
+          {formatSigned(ev, undefined, '±')}
+        </small>
+      </button>
+    )
+  ) : null;
+  const evPanel = camera.ev && evOpen && (
+    <div class="ev-row deck-ev" data-testid="ev-row">
+      <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
+    </div>
+  );
+  /* Rarer controls: (format, zoom, EV on the portrait deck,) palette, date imprint, grid. */
+  const moreEl = (
+    <div class="cam-more-wrap" ref={moreRef}>
+      <button
+        class={`chip deck-btn more-chip ${moreOpen ? 'on' : ''}`}
+        disabled={busy}
+        onClick={() => {
+          if (!moreOpen) setEvOpen(false);
+          setMoreOpen(!moreOpen);
+        }}
+        aria-expanded={moreOpen}
+        aria-controls="cam-more"
+        aria-label={t('cam.more')}
+        data-testid="btn-more"
+      >
+        <span class="more-dots" aria-hidden="true">
+          ⋯
+        </span>
+      </button>
+      <div class="cam-more" id="cam-more" hidden={!moreOpen} data-testid="cam-more">
+        {!land && aspectEl}
+        {!land && zoomEl}
+        {!land && evEl}
+        {getStock(stock.id).kind === 'pixel' && (
+          <button
+            class="more-item"
+            disabled={chipLock}
+            onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])}
+            aria-label={`${t('cam.palette')} ${t(`palette.${palette}` as MsgKey)}`}
+            data-testid="btn-palette"
+            data-palette={palette}
+          >
+            <span class="more-glyph" aria-hidden="true">
+              <i class="glyph-pal" />
+            </span>
+            <span>{t('cam.palette')}</span>
+            <small>{t(`palette.${palette}` as MsgKey)}</small>
+          </button>
+        )}
+        {camera.stamp !== 'none' && (
+          <button class={`more-item ${dateOn ? 'on' : ''}`} disabled={chipLock} onClick={() => setDateOn(!dateOn)} aria-pressed={dateOn} data-testid="btn-date">
+            <span class="more-glyph" aria-hidden="true">
+              <Icon name="calendar" size={18} />
+            </span>
+            <span>{t('cam.date')}</span>
+            <small aria-hidden="true">{dateOn ? t('common.on') : t('common.off')}</small>
+          </button>
+        )}
+        <button class={`more-item ${s.grid ? 'on' : ''}`} disabled={chipLock} onClick={() => updateSettings({ grid: !s.grid })} aria-pressed={s.grid} data-testid="btn-grid">
+          <span class="more-glyph" aria-hidden="true">
+            <Icon name="grid" size={18} />
+          </span>
+          <span>{t('cam.grid')}</span>
+          <small aria-hidden="true">{s.grid ? t('common.on') : t('common.off')}</small>
+        </button>
+      </div>
+    </div>
+  );
+  const flipEl = (
+    <button class="icon-btn deck-btn" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
+      <Icon name="flip" size={22} />
+    </button>
+  );
+  /* Capture hints, under the shutter line (portrait) / at the foot of the column (landscape). */
+  const hintsEl = (
+    <>
+      {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
+      {roll && camera.capture === 'booth' && !busy && <p class="cam-hint">{t('cam.boothHint')}</p>}
+      {roll && camera.capture === 'double' && (
+        <p class="cam-hint" data-testid="double-hint">
+          {roll.pending?.kind === 'double' ? t('cam.double2') : t('cam.doubleHint')}
+        </p>
+      )}
+      {roll?.pending?.kind === 'half' && <p class="cam-hint">{t('cam.halfNext')}</p>}
+    </>
+  );
+  const deckClass = `deck ${land ? 'deck-land' : ''} ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`;
+  const showDeck = !!roll || (!loadError && !storageError.value);
+
+  const deck = !showDeck ? null : land ? (
+    /*
+      Landscape: the back of a digicam, right of the LCD. The release on top (with the W/T rocker), the
+      frame readout, the D-pad (up flash · right timer · down format · left EV · centre film), then
+      playback · MENU · flip. Never mirrored (hardware), the column itself sits at the inline end.
+    */
+    <div class={deckClass} data-testid="deck">
+      {evPanel}
+      <div class="land-release">
+        {zoomEl ?? <span class="rocker-slot" aria-hidden="true" />}
+        {shutterEl}
+      </div>
+      <div class="land-lcd" dir="ltr">
+        <span class="land-lcd-tag" aria-hidden="true">
+          {camera.instant ? 'NO.' : 'FR'}
+        </span>
+        {counterEl}
+        <span class="land-lcd-fmt" aria-hidden="true">
+          {aspect}
+        </span>
+      </div>
+      <div class="dpad" dir="ltr">
+        <div class="dpad-n">{flashEl}</div>
+        <div class="dpad-w">{evEl ?? <span class="dpad-blank" aria-hidden="true" />}</div>
+        <button class="dpad-ok" disabled={counting || !roll} onClick={() => !counting && roll && setFilmOpen(true)} aria-label={sheetLabel} data-testid="btn-film">
+          <span aria-hidden="true">OK</span>
+        </button>
+        <div class="dpad-e">{timerEl}</div>
+        <div class="dpad-s">{aspectEl ?? <span class="dpad-blank" aria-hidden="true" />}</div>
+      </div>
+      <div class="land-keys">
+        <div class="land-key">
+          {lastShotEl}
+          <span class="land-engrave" aria-hidden="true">
+            ▶
+          </span>
+        </div>
+        <div class="land-key">
+          {moreEl}
+          <span class="land-engrave" aria-hidden="true">
+            MENU
+          </span>
+        </div>
+        <div class="land-key">
+          {flipEl}
+          <span class="land-engrave" aria-hidden="true">
+            ⇄
+          </span>
+        </div>
+      </div>
+      {hintsEl}
+    </div>
+  ) : (
+    /*
+      The control deck: every control on the shutter line, nothing above the camera body.
+      last shot · flash · timer · SHUTTER · frame counter · more · flip. Rarer controls live under "more".
+    */
+    <div class={deckClass} data-testid="deck">
+      {evPanel}
+      {/* Film edge above the deck: sprocket holes and an edge code (stock · format). */}
+      <div class="deck-edge" aria-hidden="true">
+        <span class="deck-edge-code">
+          <bdi>{stock.name}</bdi>
+        </span>
+        <span class="deck-edge-code" dir="ltr">
+          {aspect} ▸
+        </span>
+      </div>
+      <div class="cam-bottom deck-row">
+        <div class="deck-side deck-start">
+          {lastShotEl}
+          {flashEl}
+          {timerEl}
+        </div>
+        {shutterEl}
+        <div class="deck-side deck-end">
+          {counterEl}
+          {moreEl}
+          {flipEl}
+        </div>
+      </div>
+      {hintsEl}
+    </div>
+  );
   return (
-    <div class={`camera cam-${camera.id}`} data-testid="camera-screen" data-camera={camera.id}>
+    <div class={`camera cam-${camera.id}${land ? ' cam-land' : ''}`} data-testid="camera-screen" data-camera={camera.id} data-layout={land ? 'landscape' : 'portrait'}>
       <div
         class={`bp-body${artOn ? " has-art" : ""}`}
         data-family={back.family}
@@ -1170,7 +1525,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       >
       {!artOn && <BackDecor key={camera.id} spec={back} />}
       {/* With art the stage takes the art's own shape (never taller), so no empty plate shows above / below it. */}
-      <div class="cam-stage" ref={stageRef} style={artShape ? { flex: '0 1 auto', aspectRatio: artShape } : undefined}>
+      <div class="cam-stage" ref={stageRef} style={artShape && !land ? { flex: '0 1 auto', aspectRatio: artShape } : undefined}>
         {/* Photographic body (decorative): drawn first, the preview sits in its window (see artWindowBox). */}
         <BodyArt cameraId={camera.id} stageW={box.sw} stageH={box.sh} />
         {!artOn && <BackWindow spec={back} width={frame.width} height={frame.height} />}
@@ -1230,8 +1585,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         )}
       </div>
 
-      {/* Drag sideways: the camera that stops in the middle is the one you shoot with. */}
+      {/* Drag sideways (up / down on the landscape mode dial): the camera that stops in the middle is the one you shoot with. */}
       <CameraRail
+        vertical={land}
         selected={pickCamera}
         onPick={(id) => switchTo(id)}
         locked={busy || counting}
@@ -1241,235 +1597,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       />
 
       </div>
-      {/*
-        The control deck: every control on the shutter line, nothing above the camera body.
-        last shot · flash · timer · SHUTTER · frame counter · more · flip. Rarer controls live under "more".
-      */}
-      {(roll || (!loadError && !storageError.value)) && (
-        <div class={`deck ${busy ? 'locked' : ''} ${counting ? 'counting' : ''}`} data-testid="deck">
-          {camera.ev && evOpen && (
-            <div class="ev-row deck-ev" data-testid="ev-row">
-              <Slider label={t('cam.ev')} value={ev} min={-2} max={2} step={1 / 3} onInput={(v) => setEv(Math.round(v * 3) / 3)} format={(v) => ltr(`${formatSigned(v)} EV`)} testId="sl-ev" />
-            </div>
-          )}
-          {/* Film edge above the deck: sprocket holes and an edge code (stock · format). */}
-          <div class="deck-edge" aria-hidden="true">
-            <span class="deck-edge-code">
-              <bdi>{stock.name}</bdi>
-            </span>
-            <span class="deck-edge-code" dir="ltr">
-              {aspect} ▸
-            </span>
-          </div>
-          <div class="cam-bottom deck-row">
-            <div class="deck-side deck-start">
-              {lastPhoto ? (
-                <div class={`last-shot ${ejectsPrints(camera) ? 'instant' : ''} ${eject ? 'landing' : ''}`} data-testid="last-shot">
-                  {/* Shown under the thumbnail until its developed print is ready: never a black square. */}
-                  {quick?.id === lastPhoto.id && <img class="last-shot-quick" src={quick.url} alt="" aria-hidden="true" />}
-                  <Thumb key={lastPhoto.id} photo={lastPhoto} onClick={() => go({ name: 'photo', id: lastPhoto.id })} label={t('cam.lastShot')} />
-                </div>
-              ) : (
-                // Nothing shot with this camera yet: the slot leads to the album (earlier photos live there).
-                <button class="last-shot-empty" onClick={() => goTab({ name: 'gallery' })} aria-label={t('tab.gallery')} data-testid="btn-last-album">
-                  <Icon name="gallery" size={22} />
-                </button>
-              )}
-              {camera.flash === 'standard' && (
-                <button class={`chip deck-btn ${flashOn ? 'on' : ''}`} onClick={toggleFlash} disabled={busy} aria-pressed={flashOn} aria-label={flashLabel} data-testid="btn-flash">
-                  <Icon name={flashOn ? 'flash' : 'flashOff'} size={20} />
-                </button>
-              )}
-              {camera.flash === 'charge' && (
-                <button
-                  class={`chip deck-btn flash-charge charge-${charge} ${flashOn ? '' : 'off'}`}
-                  disabled={busy}
-                  onClick={() => (charge === 'empty' ? chargeFlash() : charge === 'ready' ? toggleFlash() : undefined)}
-                  aria-label={flashLabel}
-                  aria-pressed={charge === 'ready' && flashOn}
-                  data-testid="btn-flash"
-                  data-charge={charge}
-                >
-                  <Icon name="flash" size={20} />
-                  <i class="charge-led" />
-                </button>
-              )}
-              {/* No flash on this body: an empty slot keeps every control where the thumb expects it. */}
-              {camera.flash !== 'standard' && camera.flash !== 'charge' && <span class="deck-slot" aria-hidden="true" />}
-              {/* While counting down, the timer button is the cancel button (like the shutter and Escape). */}
-              <button
-                class={`chip deck-btn timer-chip ${timer ? 'on' : ''} ${counting ? 'cancel' : ''}`}
-                onClick={counting ? cancelTimer : () => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}
-                disabled={busy && !counting}
-                aria-label={counting ? t('cam.cancelTimer') : `${t('cam.timer')} ${timer ? t('cam.sec', { n: timer }) : t('common.off')}`}
-                data-testid="btn-timer"
-              >
-                <Icon name={counting ? 'close' : 'timer'} size={20} />
-                {(counting || timer > 0) && (
-                  <span class="timer-badge mono" aria-hidden="true">
-                    {counting ? countdown : timer}
-                  </span>
-                )}
-              </button>
-            </div>
-            {/* Stays operable while busy (presses queue up) and while counting (a press cancels the timer). */}
-            <button
-              ref={shutterRef}
-              class={`shutter ${busy && !counting ? 'busy' : ''} ${counting ? 'cancel' : ''} ${starting ? 'starting' : ''}`}
-              onClick={onShutter}
-              disabled={state === 'error'}
-              aria-disabled={starting || undefined}
-              aria-label={counting ? t('cam.cancelTimer') : starting ? `${t('cam.shutter')} · ${t('cam.starting')}` : t('cam.shutter')}
-              data-testid="shutter"
-              data-state={counting ? 'cancel' : starting ? 'starting' : busy ? 'busy' : 'ready'}
-            >
-              <span>{counting && <Icon name="close" size={26} />}</span>
-              {queued > 0 && (
-                <i class="shutter-queue mono" aria-hidden="true">
-                  +{queued}
-                </i>
-              )}
-            </button>
-            <div class="deck-side deck-end">
-              {/* Frame counter window. LCD / pixel bodies also show the count in their finder. */}
-              {roll ? (
-                <div class="deck-counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
-                  {/* Re-keyed per frame: a short tick shows the film advanced. */}
-                  <span key={counterText} class="counter-tick">
-                    {counterText}
-                  </span>
-                </div>
-              ) : (
-                <div class="deck-counter mono empty" aria-hidden="true">
-                  <span>--</span>
-                </div>
-              )}
-              {/* Rarer controls: format, zoom, EV, palette, date imprint, grid. Opens upward from the deck. */}
-              <div class="cam-more-wrap" ref={moreRef}>
-                <button
-                  class={`chip deck-btn more-chip ${moreOpen ? 'on' : ''}`}
-                  disabled={busy}
-                  onClick={() => {
-                    if (!moreOpen) setEvOpen(false);
-                    setMoreOpen(!moreOpen);
-                  }}
-                  aria-expanded={moreOpen}
-                  aria-controls="cam-more"
-                  aria-label={t('cam.more')}
-                  data-testid="btn-more"
-                >
-                  <span class="more-dots" aria-hidden="true">
-                    ⋯
-                  </span>
-                </button>
-                <div class="cam-more" id="cam-more" hidden={!moreOpen} data-testid="cam-more">
-                  {camera.formats.length > 1 && (
-                    <button
-                      class="more-item"
-                      disabled={chipLock}
-                      onClick={() => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length])}
-                      aria-label={`${t('cam.aspect')} ${aspect}`}
-                      data-testid="btn-aspect"
-                    >
-                      <span class="more-glyph" aria-hidden="true">
-                        <i class="glyph-frame" />
-                      </span>
-                      <span>{t('cam.aspect')}</span>
-                      <small class="mono" dir="ltr">
-                        {aspect}
-                      </small>
-                    </button>
-                  )}
-                  {camera.zoom.length > 1 && (
-                    <button
-                      class={`more-item ${zoom > 1 ? 'on' : ''}`}
-                      disabled={chipLock}
-                      onClick={() => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length])}
-                      aria-label={`${t('cam.zoom')} ${zoom}×`}
-                      data-testid="btn-zoom"
-                    >
-                      <span class="more-glyph mono" aria-hidden="true">
-                        ×
-                      </span>
-                      <span>{t('cam.zoom')}</span>
-                      <small class="mono" dir="ltr">
-                        {zoom}×
-                      </small>
-                    </button>
-                  )}
-                  {camera.ev && (
-                    <button
-                      class={`more-item ${ev !== 0 || evOpen ? 'on' : ''}`}
-                      disabled={chipLock}
-                      onClick={() => {
-                        // The slider row opens just above the deck, so the popover steps aside for it.
-                        const open = !evOpen;
-                        setEvOpen(open);
-                        if (open) setMoreOpen(false);
-                      }}
-                      aria-expanded={evOpen}
-                      aria-label={`${t('cam.ev')} ${formatSigned(ev)}`}
-                      data-testid="btn-ev"
-                    >
-                      <span class="more-glyph mono" aria-hidden="true">
-                        ±
-                      </span>
-                      <span>{t('cam.ev')}</span>
-                      <small class="mono" dir="ltr">
-                        {formatSigned(ev, undefined, '±')}
-                      </small>
-                    </button>
-                  )}
-                  {getStock(stock.id).kind === 'pixel' && (
-                    <button
-                      class="more-item"
-                      disabled={chipLock}
-                      onClick={() => setPalette(PALETTE_IDS[(PALETTE_IDS.indexOf(palette) + 1) % PALETTE_IDS.length])}
-                      aria-label={`${t('cam.palette')} ${t(`palette.${palette}` as MsgKey)}`}
-                      data-testid="btn-palette"
-                      data-palette={palette}
-                    >
-                      <span class="more-glyph" aria-hidden="true">
-                        <i class="glyph-pal" />
-                      </span>
-                      <span>{t('cam.palette')}</span>
-                      <small>{t(`palette.${palette}` as MsgKey)}</small>
-                    </button>
-                  )}
-                  {camera.stamp !== 'none' && (
-                    <button class={`more-item ${dateOn ? 'on' : ''}`} disabled={chipLock} onClick={() => setDateOn(!dateOn)} aria-pressed={dateOn} data-testid="btn-date">
-                      <span class="more-glyph" aria-hidden="true">
-                        <Icon name="calendar" size={18} />
-                      </span>
-                      <span>{t('cam.date')}</span>
-                      <small aria-hidden="true">{dateOn ? t('common.on') : t('common.off')}</small>
-                    </button>
-                  )}
-                  <button class={`more-item ${s.grid ? 'on' : ''}`} disabled={chipLock} onClick={() => updateSettings({ grid: !s.grid })} aria-pressed={s.grid} data-testid="btn-grid">
-                    <span class="more-glyph" aria-hidden="true">
-                      <Icon name="grid" size={18} />
-                    </span>
-                    <span>{t('cam.grid')}</span>
-                    <small aria-hidden="true">{s.grid ? t('common.on') : t('common.off')}</small>
-                  </button>
-                </div>
-              </div>
-              <button class="icon-btn deck-btn" onClick={flip} disabled={busy || state === 'starting'} aria-label={facing === 'user' ? t('cam.flipToBack') : t('cam.flipToFront')} data-testid="btn-flip" data-facing={facing}>
-                <Icon name="flip" size={22} />
-              </button>
-            </div>
-          </div>
-          {/* Capture hints, under the shutter line. */}
-          {roll && camera.capture === 'quad' && !busy && <p class="cam-hint">{t('cam.quadHint')}</p>}
-          {roll && camera.capture === 'booth' && !busy && <p class="cam-hint">{t('cam.boothHint')}</p>}
-          {roll && camera.capture === 'double' && (
-            <p class="cam-hint" data-testid="double-hint">
-              {roll.pending?.kind === 'double' ? t('cam.double2') : t('cam.doubleHint')}
-            </p>
-          )}
-          {roll?.pending?.kind === 'half' && <p class="cam-hint">{t('cam.halfNext')}</p>}
-        </div>
-      )}
+      {deck}
       {!roll && loadError && !storageError.value && (
         <div class="cam-retry">
           <button

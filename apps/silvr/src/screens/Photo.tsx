@@ -156,7 +156,8 @@ export function PhotoScreen({ id }: { id: string }) {
         sub={photo && idx >= 0 ? ltr(`${idx + 1} / ${siblings.length}`) : undefined}
         onBack={() => back(roll ? { name: 'roll', id: roll.id } : { name: 'gallery' })}
         right={
-          <button class="icon-btn" onClick={() => setInfo(true)} aria-label={t('view.info')}>
+          // Landscape: hidden here, the same Info sits at the end of the action column instead (one at a time).
+          <button class="icon-btn hdr-info" onClick={() => setInfo(true)} aria-label={t('view.info')}>
             <Icon name="info" />
           </button>
         }
@@ -229,6 +230,11 @@ export function PhotoScreen({ id }: { id: string }) {
         <button onClick={remove} disabled={!photo} data-testid="btn-delete">
           <Icon name="trash" />
           <span>{t('common.delete')}</span>
+        </button>
+        {/* Only shown in landscape (playback keys in one column); portrait keeps Info in the header. */}
+        <button class="act-info" onClick={() => setInfo(true)}>
+          <Icon name="info" />
+          <span>{t('view.info')}</span>
         </button>
       </div>
       <Sheet open={info} onClose={() => setInfo(false)} title={t('view.info')}>

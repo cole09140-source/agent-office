@@ -619,6 +619,13 @@ input[type='range']::-moz-range-thumb {
   direction: ltr;
   pointer-events: none;
 }
+/* direction: ltr above also flips its own inline-start to the left: pin it to the right in RTL,
+   where the badges take the left corner. */
+[dir='rtl'] .model-frame {
+  inset-inline-start: auto;
+  left: auto;
+  right: 12px;
+}
 .model-name {
   font-family: var(--dr-cond);
   font-size: 1.0625rem;
@@ -788,4 +795,504 @@ input[type='range']::-moz-range-thumb {
   --land-rail-w: 72px;
   --land-safe-l: env(safe-area-inset-left, 0px);
   --land-safe-r: env(safe-area-inset-right, 0px);
+}
+:root {
+  /* The inline-start safe area (left in LTR, right in RTL) and the one on the far side. */
+  --land-safe-start: var(--land-safe-l);
+  --land-safe-end: var(--land-safe-r);
+  /* What every screen leaves free at its inline-start edge for the rail: 0 outside phone landscape.
+     .app already pads by it (in-flow content needs nothing); position: fixed layers offset by it. */
+  --land-rail-space: 0px;
+  /* 1 in LTR, -1 in RTL: slide-in direction of the side drawer. */
+  --land-dir: 1;
+  /* Vertical sprocket holes (18px pitch) for a 12px wide strip:
+     background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film). */
+  --dr-holes-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='18'%3E%3Crect x='3' y='4.5' width='6' height='9' rx='1.5' fill='%23070605'/%3E%3C/svg%3E");
+}
+:root[dir='rtl'] {
+  --land-safe-start: var(--land-safe-r);
+  --land-safe-end: var(--land-safe-l);
+  --land-dir: -1;
+}
+
+/* Wrappers that only group things in phone landscape: invisible to layout everywhere else. */
+.onb-side,
+.onb-text,
+.meter-body,
+.meter-read,
+.meter-controls {
+  display: contents;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  :root {
+    /* No bottom bar: everything that sat above it (camera height, toasts, floating bars) drops to the edge. */
+    --tab-h: 0px;
+    --land-rail-space: calc(var(--land-rail-w) + var(--land-safe-start));
+    /* Page side padding in landscape (the far edge adds its notch). */
+    --land-pad: 20px;
+  }
+
+  /* ---------- the shell: content starts after the rail ---------- */
+  .app {
+    padding-bottom: 0;
+    padding-inline-start: var(--land-rail-space);
+  }
+  .screen {
+    max-width: 1040px;
+  }
+  .page {
+    padding-block: 0 24px;
+    padding-inline: var(--land-pad) calc(var(--land-pad) + var(--land-safe-end));
+  }
+  .page > .hdr {
+    margin-inline: calc(-1 * var(--land-pad));
+    padding-inline: var(--land-pad);
+  }
+
+  /* ---------- tab bar → a vertical film-edge rail on the inline-start edge ---------- */
+  .tabbar {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: auto;
+    inset-inline-start: 0;
+    width: var(--land-rail-space);
+    min-height: 0;
+    height: 100%;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 76px);
+    align-content: center;
+    justify-content: stretch;
+    padding: calc(6px + var(--safe-t)) 0 calc(6px + var(--safe-b));
+    /* the sprocket strip (12px) runs down the outer edge, just inside the notch's safe area */
+    padding-inline-start: calc(12px + var(--land-safe-start));
+    background: linear-gradient(to right, #0b0a09, #15110e);
+    border-top: 0;
+    border-inline-end: 1px solid #2c241d;
+  }
+  [dir='rtl'] .tabbar {
+    background: linear-gradient(to left, #0b0a09, #15110e);
+  }
+  .tabbar::before {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: auto;
+    inset-inline-start: var(--land-safe-start);
+    width: 12px;
+    height: auto;
+    background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film);
+    border-block: 0;
+    border-inline: 1px solid #2c241d;
+  }
+  .tabbar button {
+    padding: 6px 2px;
+    gap: 3px;
+    font-size: min(0.6875rem, 11.5px);
+    line-height: 1.1;
+    letter-spacing: calc(var(--dr-track) * 0.5);
+  }
+  .tabbar button > span:not(.sr-only) {
+    max-width: 100%;
+    /* two lines at most ("Mi espacio", "Meu espaço"); a word never breaks inside */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* The safelight: glow behind the icon, the lit bar on the edge that faces the screen. */
+  .tabbar button.on::before {
+    inset: 8% 6%;
+    height: auto;
+  }
+  .tabbar button.on::after {
+    top: 50%;
+    bottom: auto;
+    left: auto;
+    inset-inline-end: 0;
+    width: 2px;
+    height: 22px;
+    margin: -11px 0 0;
+  }
+  .tabbar .dot {
+    top: 8px;
+  }
+
+  /* ---------- headers: one compact row ---------- */
+  .hdr {
+    padding: calc(4px + var(--safe-t)) 0 4px;
+  }
+  .hdr h1 {
+    font-size: 1.125rem;
+  }
+  .page > .hdr:has(> .hdr-spacer) {
+    padding-top: calc(10px + var(--safe-t));
+  }
+  .hdr-spacer + .hdr-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+  }
+  .hdr-spacer + .hdr-title h1 {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: min(1.5rem, 26px);
+  }
+  .hdr-spacer + .hdr-title p {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-top: 0;
+  }
+  .hdr:has(> .hdr-spacer)::after {
+    height: 8px;
+    margin: 6px calc(-1 * var(--land-pad)) 2px;
+    background-size: 13.5px 9px;
+    background-position: 4px center;
+  }
+
+  /* ---------- sheets: a drawer from the inline-end edge; confirms: a centred dialog ---------- */
+  .sheet-backdrop {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+  .sheet {
+    width: min(440px, 62vw);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    border-start-start-radius: var(--dr-r);
+    border-end-start-radius: var(--dr-r);
+    border-top: 0;
+    border-inline-start: 1px solid var(--dr-line);
+    padding-block: calc(10px + var(--safe-t)) calc(14px + var(--safe-b));
+    padding-inline: 30px calc(16px + var(--land-safe-end));
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(211, 50, 43, 0.12);
+    animation: land-drawer 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    overscroll-behavior: contain;
+  }
+  /* The drawer's handle edge: the sprocket strip runs down its inline-start side. */
+  .sheet::before {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: auto;
+    inset-inline-start: 0;
+    width: 12px;
+    height: auto;
+    background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film);
+    border-bottom: 0;
+    border-inline-end: 1px solid #2c241d;
+    border-radius: 0;
+  }
+  .sheet-grip {
+    display: none;
+  }
+  .sheet-head .sheet-title {
+    margin-top: 8px;
+  }
+  /* A confirm is a centred card that fits a 360px-tall screen. */
+  .sheet-backdrop:has(> .sheet[data-testid='confirm']) {
+    align-items: center;
+    justify-content: center;
+    padding: calc(12px + var(--safe-t)) 16px calc(12px + var(--safe-b));
+  }
+  .sheet[data-testid='confirm'] {
+    width: min(460px, 100%);
+    height: auto;
+    max-height: 100%;
+    border-radius: var(--dr-r);
+    border: 1px solid var(--dr-line);
+    padding: 18px 18px 16px;
+    animation: fade 0.15s ease;
+  }
+  .sheet[data-testid='confirm']::before {
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 8px;
+    background: var(--dr-holes-r) repeat-x 4px center / 13.5px 9px, var(--dr-film);
+    border-inline-end: 0;
+    border-bottom: 1px solid #2c241d;
+    border-radius: var(--dr-r) var(--dr-r) 0 0;
+  }
+  .sheet[data-testid='confirm'] .btn-row {
+    margin-top: 12px;
+  }
+  /* Films in a drawer: rows of canisters instead of one long sideways strip (← → still walk them in order). */
+  .sheet .stock-strip {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin: 0;
+    padding: 4px 0 8px;
+    scroll-snap-type: none;
+  }
+  .sheet .stock-strip .stock-card {
+    width: 88px;
+  }
+
+  /* ---------- toasts and the update bar: top centre of the screen area, clear of the camera's controls ---------- */
+  .app .toasts,
+  .app.route-camera .toasts {
+    top: calc(8px + var(--safe-t));
+    bottom: auto;
+    left: auto;
+    right: auto;
+    inset-inline-start: var(--land-rail-space);
+    inset-inline-end: var(--land-safe-end);
+  }
+  /* Camera: stay left of its dial + control column (about 236px; the camera can set --land-toast-end). */
+  .app.route-camera .toasts {
+    inset-inline-end: calc(var(--land-safe-end) + var(--land-toast-end, 236px));
+  }
+  .app.has-update .toasts,
+  .app.route-camera.has-update .toasts {
+    top: calc(60px + var(--safe-t));
+  }
+  .toast {
+    max-width: min(480px, 100%);
+    min-height: 44px;
+    animation-name: land-toast;
+  }
+  .toast > span {
+    padding: 6px 0;
+  }
+  .update-bar,
+  .app.route-camera .update-bar {
+    top: calc(8px + var(--safe-t));
+    left: auto;
+    right: auto;
+    inset-inline-start: calc(var(--land-rail-space) + 16px);
+    inset-inline-end: calc(var(--land-safe-end) + 16px);
+  }
+
+  /* ---------- Models: a wide contact sheet ---------- */
+  .models-group h2 {
+    margin: 12px 0 8px;
+  }
+  .models-grid {
+    /* 4 columns at 740, 5 at 844–915, 6 on wider short screens */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+    gap: 8px;
+  }
+  .model-art {
+    height: 100px;
+    padding-top: 24px;
+  }
+  .model-desc {
+    -webkit-line-clamp: 2;
+  }
+  .model-badges {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 48px);
+  }
+  /* Two badges ("In use" + "Pinned") wrap to a second line in a narrow column: every picture in that
+     group gets the taller clear band, so the badges stay off the cameras and names still line up. */
+  .models-grid:has(.model-badges > :nth-child(2)) .model-art {
+    height: 120px;
+    padding-top: 44px;
+  }
+
+  /* ---------- MY tab: shots beside the plans (or the app card), the settings list in two columns ---------- */
+  .page.settings > .hdr {
+    margin-bottom: 8px;
+  }
+  .my {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 14px;
+    align-items: start;
+  }
+  .my > * {
+    grid-column: 1;
+  }
+  .my > .my-pro,
+  .my > .my-app {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+  .my:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .my-settings-h {
+    margin-top: 10px;
+  }
+  .set-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .set-list .row:nth-child(2) {
+    border-top: 0;
+  }
+  .set-list .row:nth-child(even) {
+    border-inline-start: 1px solid var(--dr-line-soft);
+  }
+  .set-list .row {
+    min-height: 50px;
+  }
+
+  /* ---------- Analog: readout beside its controls ---------- */
+  .meter-body {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 0 20px;
+    align-items: start;
+  }
+  .meter-read,
+  .meter-controls {
+    display: block;
+    min-width: 0;
+  }
+  /* The reading stays in view while the controls beside it scroll under the title. */
+  .meter-read {
+    position: sticky;
+    top: calc(68px + var(--safe-t));
+  }
+  .meter-controls .field:first-child {
+    padding-top: 0;
+  }
+  .meter-controls .pills button {
+    min-width: 46px;
+  }
+  .page.analog > .log-active,
+  .page.analog > .card {
+    margin-bottom: 12px;
+  }
+
+  /* ---------- onboarding: the art on one side, the words and buttons on the other ---------- */
+  .onboarding {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    column-gap: 32px;
+    padding: calc(14px + var(--safe-t)) calc(28px + var(--land-safe-r)) 0 calc(28px + var(--land-safe-l));
+  }
+  .onb-scroll {
+    display: contents;
+  }
+  .onb-side {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+    min-width: 0;
+    padding-bottom: calc(14px + var(--safe-b));
+  }
+  .onb-brand {
+    margin-bottom: 0;
+    padding: 0;
+  }
+  .onb-art {
+    height: auto;
+    align-self: stretch;
+    justify-content: center;
+    padding: 16px 8px;
+  }
+  /* Four frames share the strip's width (never clipped), up to a print-like size. */
+  .onb-art span {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 78px;
+    width: auto;
+    height: auto;
+    aspect-ratio: 64 / 88;
+  }
+  .onb-text {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 4px;
+  }
+  .onboarding h1 {
+    margin: 0 0 8px;
+    font-size: min(1.75rem, 28px);
+  }
+  #onb-body {
+    font-size: min(0.9375rem, 17px);
+  }
+  .onb-privacy {
+    margin-top: 10px !important;
+    padding: 8px 10px;
+  }
+  .dots {
+    margin-top: 14px;
+  }
+  .onb-actions {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 16px;
+    margin: 0;
+    padding: 10px 0 calc(12px + var(--safe-b));
+    background: none;
+  }
+  .onb-actions > .btn-row {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+  .onb-actions > .btn-row .btn {
+    flex: 0 1 auto;
+    min-width: 128px;
+  }
+  .onb-restore {
+    margin-top: 0;
+  }
+
+  /* ---------- splash: centred on the screen area beside where the rail will be ---------- */
+  .splash {
+    padding-inline-start: var(--land-rail-space);
+  }
+}
+@keyframes land-drawer {
+  from {
+    transform: translateX(calc(32px * var(--land-dir)));
+    opacity: 0;
+  }
+}
+@keyframes land-toast {
+  from {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+@media (orientation: landscape) and (max-height: 600px) and (forced-colors: active) {
+  html .tabbar {
+    border-top: 0;
+    border-inline-end: 1px solid CanvasText;
+  }
+  html .tabbar button.on::before {
+    top: 18%;
+    bottom: 18%;
+    left: auto;
+    right: auto;
+    inset-inline-end: 0;
+    width: 4px;
+    height: auto;
+  }
+}
+@media (orientation: landscape) and (max-height: 600px) and (prefers-reduced-motion: reduce) {
+  .sheet,
+  .toast {
+    animation: none;
+  }
+}
+
+/* Screen-reader-only nodes take no room at the page bottom (a 1px page scroll in landscape). */
+.app > .sr-only {
+  top: 0;
+  margin: -1px;
 }
