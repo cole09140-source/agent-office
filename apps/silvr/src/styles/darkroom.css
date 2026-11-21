@@ -779,3 +779,13 @@ input[type='range']::-moz-range-thumb {
     filter: none;
   }
 }
+
+/* ---------- landscape contract (2026-11-21: the app is landscape-locked like a digicam) ----------
+   Phone landscape = exactly `@media (orientation: landscape) and (max-height: 600px)` in every file.
+   The tab bar becomes a vertical rail on the inline-start edge, --land-rail-w wide (plus the left safe
+   area); every screen leaves that space. Notches sit left/right in landscape: use --land-safe-l/-r. */
+:root {
+  --land-rail-w: 72px;
+  --land-safe-l: env(safe-area-inset-left, 0px);
+  --land-safe-r: env(safe-area-inset-right, 0px);
+}
