@@ -496,6 +496,9 @@ export const messages: LocaleMessages = {
   'my.redeemHint': 'Escribe tu código y canjéalo en Google Play. Pro se activa al volver a la app.',
   'my.redeemCode': 'Código',
   'my.redeemGo': 'Canjear en Google Play',
+  'my.redeemApply': 'Canjear', // ko: 사용하기 · en: Redeem
+  'my.friend.ok': 'Pro de por vida activado. ¡Dispara sin límite!', // ko: 평생 Pro가 켜졌어요. 무제한으로 찍으세요! · en: Lifetime Pro is on. Shoot as much as you like!
+  'my.friend.bad': 'Ese código no coincide. Revísalo', // ko: 맞지 않는 코드예요. 다시 확인해 주세요 · en: That code doesn’t match. Please check it
   'my.manage': 'Gestionar suscripción',
   'my.pro.on': 'Tienes Pro',
   'my.pro.lifetimeOn': 'De por vida · fotos ilimitadas, sin anuncios',

@@ -497,6 +497,9 @@ export const messages: LocaleMessages = {
   'my.redeemHint': '输入收到的兑换码并在 Google Play 中使用。回到应用后即可开启 Pro。',
   'my.redeemCode': '兑换码',
   'my.redeemGo': '在 Google Play 中使用',
+  'my.redeemApply': '兑换', // ko: 사용하기 · en: Redeem
+  'my.friend.ok': '终身 Pro 已开通，尽情拍吧！', // ko: 평생 Pro가 켜졌어요. 무제한으로 찍으세요! · en: Lifetime Pro is on. Shoot as much as you like!
+  'my.friend.bad': '代码不正确，请再检查一下', // ko: 맞지 않는 코드예요. 다시 확인해 주세요 · en: That code doesn’t match. Please check it
   'my.manage': '管理订阅',
   'my.pro.on': '你正在使用 Pro',
   'my.pro.lifetimeOn': '永久版 · 无限拍摄，无广告',

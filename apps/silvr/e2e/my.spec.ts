@@ -106,3 +106,19 @@ test('MY on a fresh day: 10/10 with ten lit frame marks', async ({ page }) => {
   await expect(page.getByTestId('my-shots')).toHaveAttribute('data-state', 'some');
   expect(errors).toEqual([]);
 });
+
+test("friends' code: one shared code turns lifetime Pro on (and survives a reload)", async ({ page }) => {
+  const errors = await start(page, './', { unlimited: false });
+  await openTab(page, 'settings');
+  await page.getByTestId('btn-redeem').click();
+  await page.getByTestId('redeem-input').fill('wrong-code');
+  await page.getByTestId('redeem-go').click();
+  await expect(page.getByTestId('btn-redeem')).toBeVisible(); // a wrong code changes nothing
+  await page.getByTestId('redeem-input').fill('camela-friend');
+  await page.getByTestId('redeem-go').click();
+  await expect(page.getByTestId('btn-redeem')).toHaveCount(0); // Pro now: no redeem link
+  await page.reload();
+  await openTab(page, 'settings');
+  await expect(page.getByTestId('btn-redeem')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

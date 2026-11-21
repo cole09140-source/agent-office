@@ -61,4 +61,8 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <!-- The activity is sensorLandscape, which implies screen.landscape as REQUIRED and hides the app from a few
+         portrait-only devices (Play dropped 11 in 1.1.6). Optional: such devices still get it (shown in landscape). -->
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
 </manifest>

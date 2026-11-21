@@ -20,6 +20,7 @@ import {
   type Entitlement,
   type PurchaseLike,
 } from './entitlement';
+import { friendPass } from './friend';
 import { nativePlatform, type NativePlatform } from './platform';
 
 export interface StoreProduct {
@@ -48,8 +49,8 @@ export const productsError = signal<string | null>(null);
 export const productsLoading = signal(false);
 /** The current entitlement (cached or freshly verified). */
 export const entitlement = signal<Entitlement>({ ...NO_ENTITLEMENT });
-/** Unlimited shots and no ads. */
-export const isPro = computed(() => entitlement.value.pro);
+/** Unlimited shots and no ads: a store entitlement, or the friends' pass (src/monetize/friend.ts). */
+export const isPro = computed(() => entitlement.value.pro || friendPass.value);
 /** A purchase / restore sheet is in progress (disable the buy buttons). */
 export const billingBusy = signal(false);
 /** A purchase is waiting for payment (Android pending / iOS Ask to Buy). */

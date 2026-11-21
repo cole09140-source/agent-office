@@ -493,6 +493,9 @@ export const messages: LocaleMessages = {
   'my.redeemHint': 'أدخل رمزك واستخدمه في Google Play. يتفعّل Pro عند عودتك إلى التطبيق.',
   'my.redeemCode': 'الرمز',
   'my.redeemGo': 'الاسترداد في Google Play',
+  'my.redeemApply': 'استرداد', // ko: 사용하기 · en: Redeem
+  'my.friend.ok': 'تم تفعيل Pro مدى الحياة. صوّر بلا حدود!', // ko: 평생 Pro가 켜졌어요. 무제한으로 찍으세요! · en: Lifetime Pro is on. Shoot as much as you like!
+  'my.friend.bad': 'هذا الرمز غير صحيح. يُرجى التحقق منه', // ko: 맞지 않는 코드예요. 다시 확인해 주세요 · en: That code doesn’t match. Please check it
   'my.manage': 'إدارة الاشتراك',
   'my.pro.on': 'Pro مفعّل لديك',
   'my.pro.lifetimeOn': 'مدى الحياة · تصوير بلا حدود، بلا إعلانات',

@@ -42,6 +42,7 @@ import {
   showRewarded,
   type ProductKind,
   type RewardedResult,
+  redeemFriendCode,
 } from '../monetize';
 import { isNative } from '../platform/share';
 import { toast } from '../state/app';
@@ -248,14 +249,33 @@ async function doRestore(): Promise<void> {
 }
 
 /**
- * A Google Play promo code (friends' lifetime Pro): typed here, redeemed on Play's own page.
- * Coming back to the app re-checks purchases on resume, so Pro turns on by itself.
+ * A promo code: the friends' code turns lifetime Pro on right here (src/monetize/friend.ts); any other code is
+ * a Google Play promo code, redeemed on Play's own page (coming back re-checks purchases, so Pro turns on).
  */
 function RedeemCode() {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
   const id = useId();
   const clean = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const ready = clean.length >= 6;
+  const apply = async () => {
+    if (!ready || busy) return;
+    setBusy(true);
+    try {
+      if (await redeemFriendCode(clean)) {
+        toast(t('my.friend.ok'));
+        setOpen(false);
+        setCode('');
+      } else if (nativePlatform() === 'android' && clean.length >= 8) {
+        window.open(`https://play.google.com/redeem?code=${encodeURIComponent(clean)}`, '_blank', 'noopener');
+      } else {
+        toast(t('my.friend.bad'));
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div class="my-redeem">
       <button class="link-btn" aria-expanded={open} aria-controls={`${id}-form`} onClick={() => setOpen(!open)} data-testid="btn-redeem">
@@ -275,19 +295,13 @@ function RedeemCode() {
               placeholder={t('my.redeemCode')}
               value={code}
               onInput={(e) => setCode((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => e.key === 'Enter' && void apply()}
               data-testid="redeem-input"
             />
           </label>
-          <a
-            class={`btn primary wide ${clean.length < 8 ? 'disabled' : ''}`}
-            aria-disabled={clean.length < 8 || undefined}
-            href={clean.length >= 8 ? `https://play.google.com/redeem?code=${encodeURIComponent(clean)}` : undefined}
-            target="_blank"
-            rel="noopener"
-            data-testid="redeem-go"
-          >
-            {t('my.redeemGo')}
-          </a>
+          <button type="button" class="btn primary wide" disabled={!ready || busy} onClick={() => void apply()} data-testid="redeem-go">
+            {t('my.redeemApply')}
+          </button>
         </div>
       )}
     </div>
@@ -398,7 +412,7 @@ function ProCard() {
       <button class="link-btn my-restore" disabled={busy} onClick={() => void doRestore()} data-testid="btn-restore-purchases">
         {t('my.restore')}
       </button>
-      {!pro && nativePlatform() === 'android' && <RedeemCode />}
+      {!pro && <RedeemCode />}
       {!pro && (
         <p class="muted small my-legal" data-testid="sub-disclosure">
           {t('my.pro.legal', { store: storeName() })}{' '}
@@ -442,7 +456,15 @@ export function MySection() {
           )}
         </>
       ) : (
-        !quota.value.unlimited && <GetAppCard />
+        !quota.value.unlimited && (
+          <>
+            <GetAppCard />
+            {/* The friends' code also works on the web (no store there: other codes are refused). */}
+            <section class="card my-redeem-card">
+              <RedeemCode />
+            </section>
+          </>
+        )
       )}
     </div>
   );

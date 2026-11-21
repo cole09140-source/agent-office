@@ -491,6 +491,9 @@ export const messages: LocaleMessages = {
   'my.redeemHint': 'अपना कोड डालें और Google Play पर इस्तेमाल करें। ऐप में लौटते ही Pro चालू हो जाएगा।',
   'my.redeemCode': 'कोड',
   'my.redeemGo': 'Google Play पर इस्तेमाल करें',
+  'my.redeemApply': 'रिडीम करें', // ko: 사용하기 · en: Redeem
+  'my.friend.ok': 'लाइफ़टाइम Pro चालू हो गया। जितनी चाहें फ़ोटो लें!', // ko: 평생 Pro가 켜졌어요. 무제한으로 찍으세요! · en: Lifetime Pro is on. Shoot as much as you like!
+  'my.friend.bad': 'यह कोड मेल नहीं खाता। कृपया जाँचें', // ko: 맞지 않는 코드예요. 다시 확인해 주세요 · en: That code doesn’t match. Please check it
   'my.manage': 'सब्सक्रिप्शन मैनेज करें',
   'my.pro.on': 'Pro चालू है',
   'my.pro.lifetimeOn': 'लाइफ़टाइम · अनलिमिटेड फ़ोटो, कोई विज्ञापन नहीं',

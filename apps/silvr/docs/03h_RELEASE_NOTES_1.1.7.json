@@ -1,0 +1,17 @@
+{
+  "_comment": [
+    "Release notes for 1.1.7 (versionCode 10, 2026-11-22). Same locale keys as 03e-03g. Landscape no longer a required hardware feature (devices dropped in 1.1.6 come back)."
+  ],
+  "notes": {
+    "en": "Film Camela 1.1.7\n• Available on more phones and tablets\n• Small fixes for the new landscape camera",
+    "ko": "Film Camela 1.1.7\n• 더 많은 휴대폰과 태블릿에서 설치할 수 있어요\n• 새 가로 카메라 화면의 자잘한 문제를 고쳤어요",
+    "ja": "Film Camela 1.1.7\n• より多くのスマートフォンとタブレットに対応しました\n• 新しい横向きカメラ画面の細かな不具合を修正しました",
+    "zh": "Film Camela 1.1.7\n• 支持更多手机和平板\n• 修复了全新横屏相机界面的若干小问题",
+    "es": "Film Camela 1.1.7\n• Disponible en más teléfonos y tabletas\n• Pequeñas correcciones en la nueva cámara horizontal",
+    "fr": "Film Camela 1.1.7\n• Disponible sur plus de téléphones et tablettes\n• Petites corrections du nouvel appareil à l’horizontale",
+    "pt": "Film Camela 1.1.7\n• Disponível em mais celulares e tablets\n• Pequenas correções na nova câmera na horizontal",
+    "ru": "Film Camela 1.1.7\n• Доступно на большем числе телефонов и планшетов\n• Мелкие исправления новой горизонтальной камеры",
+    "hi": "Film Camela 1.1.7\n• अब और ज़्यादा फ़ोन और टैबलेट पर उपलब्ध\n• नए आड़े कैमरा स्क्रीन के छोटे सुधार",
+    "ar": "Film Camela 1.1.7\n• متاح على عدد أكبر من الهواتف والأجهزة اللوحية\n• إصلاحات صغيرة لشاشة الكاميرا الأفقية الجديدة"
+  }
+}

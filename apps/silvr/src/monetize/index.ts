@@ -13,11 +13,13 @@
  */
 import { initAds } from './ads';
 import { initBilling } from './billing';
+import { loadFriendPass } from './friend';
 import { initQuota } from './quota';
 
 export * from './ads';
 export * from './billing';
 export * from './quota';
+export { friendPass, isFriendCode, redeemFriendCode } from './friend';
 export { FREE_SHOTS_PER_DAY, AD_REWARD_SHOTS, MAX_ADS_PER_DAY, PRODUCT_IDS, PRODUCTS, type ProductId, type ProductKind } from './config';
 export { nativePlatform } from './platform';
 
@@ -29,6 +31,7 @@ let started: Promise<void> | null = null;
 export function initMonetization(): Promise<void> {
   started ??= (async () => {
     const billing = initBilling(); // reads the cached entitlement first (quota waits for it)
+    await loadFriendPass(); // a friends' pass counts as Pro before the first shot is charged
     await initQuota();
     await billing;
     await initAds(); // silent: no prompt at launch, skipped for Pro
