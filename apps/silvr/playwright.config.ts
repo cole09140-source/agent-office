@@ -29,7 +29,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'engine', testMatch: /engine\.spec/, use: { browserName: 'chromium', baseURL: 'http://localhost:5174/', launchOptions: { args: ['--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] } } },
-    { name: 'mobile', testIgnore: /portrait|engine\.spec/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
+    { name: 'mobile', testIgnore: /portrait|landscape|engine\.spec/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
+    // The app is landscape-locked on phones (Android/iOS): the digicam layout.
+    { name: 'landscape-phone', testMatch: /landscape\.spec/, use: { ...devices['Pixel 7 landscape'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
     { name: 'portrait-phone', testMatch: /portrait/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(portraitScene) } } },
   ],
   webServer: [
