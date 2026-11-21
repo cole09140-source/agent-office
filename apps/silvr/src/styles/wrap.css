@@ -524,6 +524,19 @@
     gap: 10px;
   }
 }
+/* 360-370px tall phones (e.g. Pixel 7 landscape): the column must fit under the top plate. */
+@media (orientation: landscape) and (max-height: 372px) {
+  .camera.cam-wrap .deck.deck-land {
+    --deck-btn: 44px;
+    --deck-shutter: 66px;
+  }
+  .cam-wrap .deck-land .land-top {
+    gap: 6px;
+  }
+  .cam-wrap .deck-land .land-bottom {
+    gap: 8px;
+  }
+}
 /* Very short landscape windows: a little smaller again. */
 @media (orientation: landscape) and (max-height: 340px) {
   .camera.cam-wrap .deck.deck-land {

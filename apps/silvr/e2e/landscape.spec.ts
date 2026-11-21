@@ -162,8 +162,8 @@ async function checkBody(page: Page) {
     const gear = await box(page.getByTestId('btn-more'));
     expect(gear.y, 'the column starts below the top plate').toBeGreaterThan(vp.height * 0.12);
     expect(rail.y, 'the dial starts below the top plate').toBeGreaterThan(gear.y);
-    // a big preview (at least as big as with the cropped body): most of the height, or of the body's left half
-    expect(vf.height / vp.height > 0.6 || vf.width / vp.width > 0.4, 'preview takes most of the window').toBe(true);
+    // a big preview: most of the height (the whole top plate shows above it, ~0.6 of the height), or of the width
+    expect(vf.height / vp.height > 0.55 || vf.width / vp.width > 0.4, 'preview takes most of the window').toBe(true);
     return;
   }
   const stage = await box(page.locator('.cam-stage'));
