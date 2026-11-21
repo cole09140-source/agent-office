@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, openMore, rewindAndDevelop, shoot, start } from './helpers';
+import { loadCamera, openMore, rewindAndDevelop, shoot, start, openTab } from './helpers';
 
 /** Expected print shape per camera (fake camera is landscape 16:9). */
 const CASES: { id: string; presses: number; ratio: number; tol?: number; check?: 'fisheye' | 'pixel' | 'quad' | 'half' | 'slide' | 'gate' | 'sprocket' | 'lowres' }[] = [
@@ -180,7 +180,7 @@ test('half-frame: a pending half survives a reload and pairs up', async ({ page 
   await expect(page.locator('.vf-half-tag')).toHaveText('B');
   // Changing cameras keeps a lone first half (with a blank B side) as a frame of its own.
   await loadCamera(page, 'pro35');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('roll-card').filter({ hasText: 'Half' }).locator('.roll-meta').click();
   await expect(page.getByTestId('thumb')).toHaveCount(2);
 });
@@ -211,12 +211,12 @@ test('instant camera: print ejects, develops, and is viewable in the camera', as
   // The print slides out over the viewfinder (saved first), then lands in the thumbnail.
   await expect(page.locator('.eject-print')).toBeVisible();
   await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toContainText('Shooting');
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'instasq');
   await expect(page.getByTestId('counter')).toContainText('01');
 });
@@ -240,6 +240,9 @@ test('exposure dial and pixel darkroom palette', async ({ page }) => {
   await page.getByTestId('btn-ev').click();
   await page.getByTestId('sl-ev').fill('1');
   await expect(page.getByTestId('btn-ev')).toContainText('+1.0');
+  // The gear panel opens leftwards over the dial: close it before turning the dial.
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('cam-more')).toBeHidden();
 
   await loadCamera(page, 'pixel');
   await shoot(page, 1);

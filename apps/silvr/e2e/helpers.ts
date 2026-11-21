@@ -85,14 +85,14 @@ export async function loadCamera(page: Page, cameraId: string, opts: { stock?: s
 
 /** Opens the photos of the camera in use: the newest group in the album. */
 export async function openCurrentRoll(page: Page) {
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('roll-card').first().locator('.roll-meta').click();
   await expect(page.getByTestId('roll-screen')).toBeVisible();
 }
 
 /** Opens one settings group (MY tab) as its sheet. */
 export async function openSetting(page: Page, key: 'lang' | 'shoot' | 'date' | 'backup' | 'storage' | 'about') {
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   await page.getByTestId(`set-row-${key}`).click();
   await expect(page.getByTestId(`sheet-${key}`)).toBeVisible();
 }
@@ -106,4 +106,36 @@ export async function closeSheet(page: Page) {
 export async function rewindAndDevelop(page: Page) {
   await openCurrentRoll(page);
   await expect(page.locator('[data-testid=thumb] img').first()).toBeVisible({ timeout: 45_000 });
+}
+
+/**
+ * Goes to a top-level screen the way a landscape user does (the app is landscape-only, there is no tab bar):
+ * from the camera through the gear menu, back to the camera with the header's camera button, otherwise by
+ * the route (pushed screens such as a photo have their own back buttons). Uses the tab bar if it is shown.
+ */
+export async function openTab(page: Page, name: 'camera' | 'models' | 'gallery' | 'analog' | 'settings') {
+  const tab = page.getByTestId(`tab-${name}`);
+  if (await tab.isVisible().catch(() => false)) {
+    await tab.click();
+    return;
+  }
+  const onCamera = await page.getByTestId('camera-screen').isVisible().catch(() => false);
+  if (name === 'camera') {
+    if (onCamera) return;
+    const home = page.getByTestId('btn-to-camera');
+    if (await home.isVisible().catch(() => false)) {
+      await home.click();
+      return;
+    }
+  } else if (onCamera) {
+    const more = page.getByTestId('btn-more');
+    if (await more.isEnabled().catch(() => false)) {
+      if ((await more.getAttribute('aria-expanded')) !== 'true') await more.click();
+      await page.getByTestId(`more-nav-${name}`).click();
+      return;
+    }
+  }
+  await page.evaluate((n) => {
+    location.hash = `#/${n}`;
+  }, name);
 }

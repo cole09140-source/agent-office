@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { start } from './helpers';
+import { openTab, start } from './helpers';
 
 test.describe('no camera permission', () => {
   test.use({ permissions: [] });
@@ -57,17 +57,25 @@ test('works offline after first load (service worker)', async ({ page, context }
 });
 
 test('tablet / desktop layout has no horizontal overflow on every tab', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await start(page);
-  for (const tab of ['camera', 'models', 'gallery', 'analog', 'settings']) {
-    await page.getByTestId(`tab-${tab}`).click();
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow, tab).toBeLessThanOrEqual(0);
+  // The app is landscape-only: every landscape size, phone to desktop, must fit without sideways scroll.
+  for (const [w, h] of [
+    [1280, 800],
+    [1180, 820],
+    [740, 360],
+  ]) {
+    await page.setViewportSize({ width: w, height: h });
+    if (w === 1280) await start(page);
+    for (const tab of ['camera', 'models', 'gallery', 'analog', 'settings'] as const) {
+      await openTab(page, tab);
+      await expect(page.getByTestId(`${tab}-screen`)).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow, `${tab}@${w}x${h}`).toBeLessThanOrEqual(0);
+    }
   }
+  // Held upright, nothing but the "turn your phone" screen is shown, and it does not scroll sideways either.
   await page.setViewportSize({ width: 320, height: 640 });
-  for (const tab of ['camera', 'models', 'gallery', 'analog', 'settings']) {
-    await page.getByTestId(`tab-${tab}`).click();
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow, `${tab}@320`).toBeLessThanOrEqual(0);
-  }
+  await expect(page.getByTestId('rotate-hint')).toBeVisible();
+  await expect(page.locator('main.screen')).toBeHidden();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow, 'rotate hint @320').toBeLessThanOrEqual(0);
 });

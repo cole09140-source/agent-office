@@ -51,7 +51,7 @@ const TAB_OF: Record<Route['name'], Route['name']> = {
  * Phone landscape (the landscape contract in styles/darkroom.css): no tab bar at all. The camera's own
  * menu leads to the other screens, and each of them has a camera button in its header (<Header home>).
  */
-const LANDSCAPE_PHONE = '(orientation: landscape) and (max-height: 600px)';
+const LANDSCAPE_PHONE = '(orientation: landscape)';
 
 function TabBar() {
   const current = TAB_OF[route.value.name];
@@ -506,6 +506,12 @@ export function App() {
 
   return (
     <div class={`app route-${r.name}${updateReady.value ? ' has-update' : ''}`}>
+      {/* The app is landscape-only (like a digicam): held upright, it asks to be turned (CSS shows it in portrait). */}
+      <div class="rotate-hint" data-testid="rotate-hint">
+        <div class="rotate-phone" aria-hidden="true" />
+        <p class="rotate-title">{t('app.rotate')}</p>
+        <p class="rotate-sub">{t('app.rotateSub')}</p>
+      </div>
       <main class="screen">
         {/* The camera screen has no visible title: name it for screen readers and focus moves.
             position: fixed keeps it out of layout measurements (offsetParent null). */}

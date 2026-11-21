@@ -33,6 +33,8 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 
 export const messages: LocaleMessages = {
   'app.tagline': 'كاميرا فيلم تحفظ صورك الأصلية كما هي', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
+  'app.rotate': 'أدِر هاتفك أفقيًا', // ko: 가로로 돌려 주세요 · en: Turn your phone sideways
+  'app.rotateSub': 'يُمسَك Film Camela مثل كاميرا حقيقية، بشكل أفقي.', // ko: Film Camela는 진짜 카메라처럼 가로로 들고 찍어요. · en: Film Camela is held like a real camera, in landscape.
   'tab.camera': 'الكاميرا', // from guide §8.3 · en: Camera
   'tab.models': 'الطرازات',
   'models.sub': '{n} كاميرا · اضغط على واحدة لتلتقط بها',

@@ -9,6 +9,8 @@
 
 export const messages = {
   'app.tagline': '원본이 그대로 남는 필름 카메라',
+  'app.rotate': '가로로 돌려 주세요',
+  'app.rotateSub': 'Film Camela는 진짜 카메라처럼 가로로 들고 찍어요.',
   'tab.camera': '카메라',
   'tab.models': 'Models',
   'models.sub': '카메라 {n}대 · 누르면 바로 찍을 수 있어요',

@@ -29,10 +29,10 @@ export default defineConfig({
   },
   projects: [
     { name: 'engine', testMatch: /engine\.spec/, use: { browserName: 'chromium', baseURL: 'http://localhost:5174/', launchOptions: { args: ['--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] } } },
-    { name: 'mobile', testIgnore: /portrait|landscape|engine\.spec/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
-    // The app is landscape-locked on phones (Android/iOS): the digicam layout.
-    { name: 'landscape-phone', testMatch: /landscape\.spec/, use: { ...devices['Pixel 7 landscape'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
-    { name: 'portrait-phone', testMatch: /portrait/, use: { ...devices['Pixel 7'], browserName: 'chromium', launchOptions: { args: fakeCam(portraitScene) } } },
+    // The app is landscape-only (like a digicam): every spec runs on a phone held sideways.
+    { name: 'mobile', testIgnore: /portrait|engine\.spec/, use: { ...devices['Pixel 7 landscape'], browserName: 'chromium', launchOptions: { args: fakeCam(scene) } } },
+    // Same sideways phone, but the camera delivers upright (portrait) frames: the phone held vertically to shoot.
+    { name: 'portrait-scene', testMatch: /portrait/, use: { ...devices['Pixel 7 landscape'], browserName: 'chromium', launchOptions: { args: fakeCam(portraitScene) } } },
   ],
   webServer: [
     {

@@ -12,7 +12,7 @@
 /* ==========================================================================
    Full-body wrap (phone landscape)
    ========================================================================== */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   .camera.cam-land.cam-wrap {
     --wrap-gap: 8px; /* = WRAP_MIN_GAP (BodyWrap.tsx) */
     --wrap-dial-gap: 10px; /* dial → column: the dial sits right beside the buttons, the spare body goes left of it */
@@ -742,14 +742,14 @@
 }
 
 /* While a capture is saved the column stays solid (the disabled buttons say it themselves). */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   .cam-wrap .deck-land.locked:not(.counting) :is(.land-top, .land-pair) {
     opacity: 1;
   }
 }
 
 /* Toasts keep clear of the wider dial + column of the wrap layout (deck.css sets the plain layout's room). */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   .app.route-camera:has(.camera.cam-wrap) {
     --land-toast-end: calc(92px + 120px + 16px + 8px);
   }

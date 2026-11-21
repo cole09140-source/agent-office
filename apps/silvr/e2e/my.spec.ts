@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, shoot, start, openSetting, closeSheet } from './helpers';
+import { loadRoll, shoot, start, openSetting, closeSheet, openTab } from './helpers';
 
 const PLAY = 'https://play.google.com/store/apps/details?id=com.filmcamela.app';
 
@@ -56,7 +56,7 @@ test('free tier: shoot 10 → paywall → close → MY shows 0/10 and, on the we
 
   // MY: 0 of 10 free shots, nothing earned, when they refill, and "get the app" (no ad / buy buttons on the web).
   await expect(page.getByTestId('tab-settings')).toHaveText('MY');
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   await expect(page.getByRole('heading', { level: 1, name: 'MY' })).toBeVisible();
   const shots = page.getByTestId('my-shots');
   await expect(shots).toHaveAttribute('data-state', 'empty');
@@ -91,7 +91,7 @@ test('free tier: shoot 10 → paywall → close → MY shows 0/10 and, on the we
 
 test('MY with the QA hatch (unlimited): no counter, no get-the-app card', async ({ page }) => {
   const errors = await start(page);
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   await expect(page.getByTestId('my-shots')).toHaveAttribute('data-state', 'unlimited');
   await expect(page.getByTestId('my-shots')).toContainText('Unlimited');
   await expect(page.getByTestId('get-app')).toHaveCount(0);
@@ -100,7 +100,7 @@ test('MY with the QA hatch (unlimited): no counter, no get-the-app card', async 
 
 test('MY on a fresh day: 10/10 with ten lit frame marks', async ({ page }) => {
   const errors = await start(page, './', { unlimited: false });
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   await expect(page.getByTestId('my-free-left')).toHaveText('10/10');
   await expect(page.locator('.my-marks i.on')).toHaveCount(10);
   await expect(page.getByTestId('my-shots')).toHaveAttribute('data-state', 'some');

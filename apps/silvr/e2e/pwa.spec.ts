@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
+import { loadRoll, shoot, start, openCurrentRoll, openTab } from './helpers';
 
 test('no CSP violations during a full session', async ({ page }) => {
   await page.addInitScript(() => {
@@ -25,7 +25,7 @@ test('user text is never interpreted as HTML', async ({ page }) => {
     void d.dismiss();
   });
   await start(page);
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await page.getByTestId('btn-new-log').click();
   const evil = '<img src=x onerror=alert(1)><script>alert(2)</script>';
   await page.getByTestId('log-camera').fill(evil);

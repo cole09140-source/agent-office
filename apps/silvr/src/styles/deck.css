@@ -598,7 +598,7 @@
    duplicates. The column stays on the physical right in RTL too (the hand does not change with the
    language); the text inside still reads right to left.
    ========================================================================== */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   /* Toasts (shell) stay clear of the mode dial + column: their widths, the gaps and the edge pad. */
   .app.route-camera {
     --land-toast-end: calc(80px + 108px + 8px + 8px + 8px);

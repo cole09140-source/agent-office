@@ -2,7 +2,7 @@
  * QA block A (rounds 1-10): functional deep tests.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet, openTab } from './helpers';
 
 const printSrc = (page: Page) => page.getByTestId('print').getAttribute('src');
 async function openFirstPrint(page: Page) {
@@ -35,7 +35,7 @@ test('R1 settings: date format re-develops prints, sound off creates no audio, m
   await openSetting(page, 'shoot');
   await page.getByRole('switch', { name: /Shutter sound/ }).uncheck({ force: true });
   await closeSheet(page);
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await loadCamera(page, 'snap27'); // date imprint on by default
   await shoot(page, 1);
   expect(await page.evaluate(() => (window as unknown as { __ac: number }).__ac)).toBe(0);
@@ -45,7 +45,7 @@ test('R1 settings: date format re-develops prints, sound off creates no audio, m
   await openSetting(page, 'date');
   await page.getByRole('radio', { name: "10 24 '26" }).click();
   await closeSheet(page);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await openFirstPrint(page);
   await expect.poll(() => printSrc(page), { timeout: 30_000 }).not.toBe(a);
@@ -81,14 +81,14 @@ test('R2 a roll still in the old lab is developed as soon as the app opens', asy
   );
   await page.reload();
   await expect(page.getByText(/Sunny\s200 roll is developed/)).toBeVisible({ timeout: 10_000 });
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await expect(page.getByTestId('roll-card')).toContainText('NEW');
 });
 
 test('R3 import edge cases: alpha PNG, tiny, ultra-wide, empty, fake and SVG files', async ({ page }) => {
   await start(page);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('btn-import').click();
   const files = await page.evaluate(async () => {
     const make = async (w: number, h: number, type: string, alpha = false) => {
@@ -135,7 +135,7 @@ test('R4 contact sheets work for half-frame, quad and pixel rolls', async ({ pag
     ['quad4', 1],
     ['pixel', 1],
   ] as const) {
-    await page.getByTestId('tab-camera').click();
+    await openTab(page, 'camera');
     await loadCamera(page, cam);
     await shoot(page, presses);
     await rewindAndDevelop(page);
@@ -207,7 +207,7 @@ test('R7 analog: exposure limit, frame delete, geolocation in CSV, CSV injection
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 37.5665, longitude: 126.978 });
   await start(page);
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await page.getByTestId('btn-new-log').click();
   await page.getByTestId('log-film').fill('=HYPERLINK("http://x")');
   await page.getByTestId('new-log').locator('select').nth(1).selectOption('12');

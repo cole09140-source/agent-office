@@ -32,8 +32,11 @@ test('portrait camera → portrait viewfinder and portrait prints for every form
   expect(errors).toEqual([]);
 });
 
-/** A tall print must stay inside its stage on small phones; it used to cover the action buttons. */
-for (const [w, h] of [[360, 640], [375, 667]]) {
+/**
+ * A tall (portrait) print must stay inside its stage on small sideways phones, where the height is tightest;
+ * it used to cover the action buttons. (The app is landscape-only: these are phones held sideways.)
+ */
+for (const [w, h] of [[740, 360], [844, 390]]) {
   test(`small phone ${w}×${h}: a portrait print never covers the viewer or darkroom buttons`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await start(page);
@@ -49,6 +52,10 @@ for (const [w, h] of [[360, 640], [375, 667]]) {
         const b = document.querySelector(`[data-testid=${id}]`)!.getBoundingClientRect();
         return !document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)?.closest(`[data-testid=${id}]`);
       }), ids);
+    // The print really is portrait (taller than wide) and fits the viewport.
+    const print = await page.getByTestId('print').boundingBox();
+    expect(print!.height).toBeGreaterThan(print!.width);
+    expect(print!.y + print!.height).toBeLessThanOrEqual(h + 0.5);
     expect(await covered(['btn-share', 'btn-save', 'btn-darkroom', 'btn-delete'])).toEqual([]);
     await page.getByTestId('btn-darkroom').click();
     await expect(page.getByTestId('dr-canvas')).toBeVisible();

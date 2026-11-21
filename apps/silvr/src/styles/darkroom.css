@@ -788,7 +788,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ---------- landscape contract (2026-11-21: the app is landscape-locked like a digicam) ----------
-   Phone landscape = exactly `@media (orientation: landscape) and (max-height: 600px)` in every file.
+   Phone landscape = exactly `@media (orientation: landscape)` in every file.
    No tab bar there (2026-11-21, "simple, like Apple"): every screen gets the full width. The camera's
    menu leads to the other screens; each of them starts its header with a camera button (.hdr-home).
    Notches sit left/right in landscape: pages pad by --land-pad-s / --land-pad-e, which include them. */
@@ -828,7 +828,7 @@ input[type='range']::-moz-range-thumb {
   display: contents;
 }
 
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   :root {
     /* No bottom bar: everything that sat above it (camera height, toasts, floating bars) drops to the edge. */
     --tab-h: 0px;
@@ -1218,7 +1218,7 @@ input[type='range']::-moz-range-thumb {
     opacity: 0;
   }
 }
-@media (orientation: landscape) and (max-height: 600px) and (prefers-reduced-motion: reduce) {
+@media (orientation: landscape) and (prefers-reduced-motion: reduce) {
   .sheet,
   .toast {
     animation: none;
@@ -1229,4 +1229,74 @@ input[type='range']::-moz-range-thumb {
 .app > .sr-only {
   top: 0;
   margin: -1px;
+}
+
+/* ---------- landscape-only: held upright, the app asks to be turned ---------- */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: portrait) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 24px;
+    background: radial-gradient(80% 50% at 50% 30%, rgba(211, 50, 43, 0.2), transparent 70%), var(--dr-bg);
+    color: var(--dr-fg);
+    text-align: center;
+  }
+  .app > :not(.rotate-hint) {
+    display: none !important;
+  }
+  .rotate-phone {
+    width: 46px;
+    height: 80px;
+    border: 3px solid var(--dr-fg-2);
+    border-radius: 10px;
+    animation: rotate-hint 2.4s ease-in-out infinite;
+  }
+  .rotate-title {
+    margin: 6px 0 0;
+    font-family: var(--dr-cond);
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: var(--dr-track);
+  }
+  .rotate-sub {
+    margin: 0;
+    max-width: 28ch;
+    color: var(--dr-fg-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+}
+@keyframes rotate-hint {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  55%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rotate-phone {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
+/* The camera dial (landscape): a long model name ("Motorola RAZR V3", "BlackBerry Curve") is wider than the
+   74px card. It breaks onto a second, balanced line instead of being cut to "Motorola RA…". */
+@media (orientation: landscape) {
+  .cam-rail.vertical .cam-rail-name {
+    white-space: normal;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
 }

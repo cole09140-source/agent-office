@@ -1,5 +1,20 @@
-import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start, openCurrentRoll } from './helpers';
+import { expect, test, type Page } from '@playwright/test';
+import { loadRoll, shoot, start, openCurrentRoll, openTab } from './helpers';
+
+/**
+ * From the darkroom back to the camera. Landscape has no tab bar, and a pushed screen has no camera button,
+ * so the darkroom is left by route; with an unsaved edit it asks first (no dialog if the value didn't change)
+ * and a discard steps back to the photo, from where the camera is one more route away.
+ */
+async function leaveDarkroomToCamera(page: Page) {
+  await openTab(page, 'camera');
+  const discard = page.getByTestId('confirm-ok');
+  if (await discard.waitFor({ state: 'visible', timeout: 1500 }).then(() => true, () => false)) await discard.click();
+  const camera = page.getByTestId('camera-screen');
+  await expect(camera.or(page.getByTestId('print'))).toBeVisible();
+  if (!(await camera.isVisible())) await openTab(page, 'camera');
+  await expect(camera).toBeVisible();
+}
 
 test('no WebGL context or object-URL leaks while navigating', async ({ page }) => {
   await page.addInitScript(() => {
@@ -44,10 +59,7 @@ test('no WebGL context or object-URL leaks while navigating', async ({ page }) =
     await page.getByTestId('btn-darkroom').click();
     await expect(page.getByTestId('dr-canvas')).toBeVisible();
     await page.getByTestId('sl-grain').fill(String(Math.round((0.5 + i * 0.1) * 10) / 10));
-    await page.getByTestId('tab-camera').click();
-    // Leaving the darkroom with an unsaved edit asks first (no dialog if the value didn't change).
-    const discard = page.getByTestId('confirm-ok');
-    if (await discard.waitFor({ state: 'visible', timeout: 1500 }).then(() => true, () => false)) await discard.click();
+    await leaveDarkroomToCamera(page);
     await expect(page.getByTestId('preview')).toBeVisible();
     await page.goto(rollUrl);
     await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3);
@@ -85,23 +97,23 @@ test('in-app navigation (no reloads) keeps contexts and URLs bounded', async ({ 
   await shoot(page, 2);
   await openCurrentRoll(page);
   for (let i = 0; i < 20; i++) {
-    await page.getByTestId('tab-camera').click();
+    await openTab(page, 'camera');
     await expect(page.getByTestId('preview')).toBeVisible();
-    await page.getByTestId('tab-gallery').click();
+    await openTab(page, 'gallery');
     await page.getByTestId('roll-card').first().locator('.roll-meta').click();
     await page.getByTestId('thumb').first().click();
     await page.getByTestId('btn-darkroom').click();
     await expect(page.getByTestId('dr-canvas')).toBeVisible();
   }
   expect(warnings).toEqual([]);
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   const urls = await page.evaluate(() => (window as unknown as { __urls: Set<string> }).__urls.size);
   expect(urls).toBe(0);
 });
 
 test('develops a 12MP import in reasonable time', async ({ page }) => {
   await start(page);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('btn-import').click();
   const png = await page.evaluate(async () => {
     const c = document.createElement('canvas');

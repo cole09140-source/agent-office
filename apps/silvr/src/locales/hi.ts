@@ -31,6 +31,8 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 
 export const messages: LocaleMessages = {
   'app.tagline': 'हर ओरिजिनल सँभालकर रखने वाला फ़िल्म कैमरा', // ko: 원본이 그대로 남는 필름 카메라 · en: The film camera that keeps every original
+  'app.rotate': 'फ़ोन को आड़ा करें', // ko: 가로로 돌려 주세요 · en: Turn your phone sideways
+  'app.rotateSub': 'Film Camela को असली कैमरे की तरह आड़ा पकड़कर फ़ोटो लें।', // ko: Film Camela는 진짜 카메라처럼 가로로 들고 찍어요. · en: Film Camela is held like a real camera, in landscape.
   'tab.camera': 'कैमरा', // from guide §8.3 · en: Camera
   'tab.models': 'मॉडल',
   'models.sub': '{n} कैमरे · किसी पर टैप करें और तुरंत तस्वीर लें',

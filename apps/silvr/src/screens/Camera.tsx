@@ -54,7 +54,7 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
  * Phone landscape: the app is landscape-locked like a digicam, and the camera screen becomes the back of
  * one (LCD + mode dial + control column). EXACTLY the shared landscape contract query (darkroom.css).
  */
-export const LANDSCAPE_QUERY = '(orientation: landscape) and (max-height: 600px)';
+export const LANDSCAPE_QUERY = '(orientation: landscape)';
 function useLandscape(): boolean {
   const mq = () => (typeof matchMedia === 'function' ? matchMedia(LANDSCAPE_QUERY) : null);
   const [land, setLand] = useState(() => !!mq()?.matches);

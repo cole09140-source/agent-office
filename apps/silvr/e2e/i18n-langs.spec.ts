@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet } from './helpers';
+import { loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet, openTab, openMore } from './helpers';
 
 /** The 10 UI languages: picker value, <html lang>, endonym in the picker. */
 const LANGS: [code: string, htmlLang: string, endonym: string][] = [
@@ -14,7 +14,9 @@ const LANGS: [code: string, htmlLang: string, endonym: string][] = [
   ['hi', 'hi', 'हिन्दी'],
   ['ar', 'ar', 'العربية'],
 ];
-const TABS = ['camera', 'models', 'gallery', 'analog', 'settings'];
+const TABS = ['camera', 'models', 'gallery', 'analog', 'settings'] as const;
+/** The gear menu's screen rows in English (en.ts tab.models / tab.gallery / tab.analog / tab.settings). */
+const EN_NAV = ['Models', 'Album', 'Analog', 'MY'];
 const PREFIXES = 'app|tab|common|cam|lab|gal|onb|speed|dr|view|roll|set|an|a11y|palette|share|hint|err|update|toast|dur|wait|stock|era|quota|my|pw|shots';
 
 /** Raw keys, unfilled placeholders and plural syntax left in the visible text or labels. */
@@ -50,7 +52,7 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
   await shoot(page, 2);
   await rewindAndDevelop(page);
   // A second roll still in the camera, so camera / lab / album show their "in camera" texts.
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await loadRoll(page, 'mono400', '24');
   await shoot(page, 1);
 
@@ -71,16 +73,29 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
 
   for (const [code, htmlLang] of LANGS) {
     await pickLang(page, code, htmlLang);
-    // The tab bar is translated for every language (tab labels ship with each locale file).
-    if (code !== 'en') await expect(page.getByTestId('tab-camera')).not.toHaveText('Camera');
+    // The way between screens is translated for every language (tab labels ship with each locale file):
+    // the header's camera button here, the gear menu's screen rows on the camera.
+    if (code !== 'en') await expect(page.getByTestId('btn-to-camera')).not.toHaveAttribute('aria-label', 'Camera');
     for (const tab of TABS) {
-      await page.getByTestId(`tab-${tab}`).click();
+      await openTab(page, tab);
       await page.waitForTimeout(150);
+      if (tab === 'camera') {
+        await openMore(page);
+        // Some rows may share a word with English (fr "Album", ko "Models"), never the whole menu.
+        const rows = page.getByTestId('more-navs').locator('.more-nav');
+        await expect(rows).toHaveCount(4);
+        if (code !== 'en') expect((await rows.allInnerTexts()).map((s) => s.trim()), code).not.toEqual(EN_NAV);
+        else expect((await rows.allInnerTexts()).map((s) => s.trim())).toEqual(EN_NAV);
+        problems.push(...(await leaks(page, `${code}/camera-menu`)));
+        await shot(code, 'camera-menu');
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('cam-more')).toBeHidden();
+      }
       problems.push(...(await leaks(page, `${code}/${tab}`)));
       await shot(code, tab);
     }
     // Album → roll → photo → darkroom.
-    await page.getByTestId('tab-gallery').click();
+    await openTab(page, 'gallery');
     await page.getByTestId('roll-card').filter({ hasNot: page.locator('.badge:not(.new)') }).first().locator('.roll-meta').click();
     await expect(page.getByTestId('roll-screen')).toBeVisible();
     problems.push(...(await leaks(page, `${code}/roll`)));
@@ -93,7 +108,7 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
     problems.push(...(await leaks(page, `${code}/darkroom`)));
     await shot(code, 'darkroom');
     // Roll sheet on the camera, then the intro.
-    await page.getByTestId('tab-camera').click();
+    await openTab(page, 'camera');
     await page.getByTestId('roll-btn').click();
     await expect(page.getByTestId('roll-sheet')).toBeVisible();
     problems.push(...(await leaks(page, `${code}/roll-sheet`)));
@@ -113,7 +128,7 @@ test('all 10 languages: picker, lang/dir, every screen without raw keys or conso
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
-  await expect(page.getByTestId('tab-camera')).toHaveText('Камера');
+  await expect(page.getByTestId('btn-to-camera')).toHaveAttribute('aria-label', 'Камера');
   await openSetting(page, 'lang');
   await page.getByTestId('lang-picker').locator('[data-value="auto"]').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -129,33 +144,46 @@ test('Arabic: right-to-left layout, mirrored arrows and swipes, unmirrored viewf
   await shoot(page, 3);
   await rewindAndDevelop(page);
   await pickLang(page, 'ar', 'ar');
-  await page.setViewportSize({ width: 360, height: 740 });
+  // A small phone held sideways (the app is landscape-only).
+  await page.setViewportSize({ width: 640, height: 360 });
+  await expect(page.getByTestId('rotate-hint')).toBeHidden();
 
-  // No horizontal page overflow at 360 px on any tab.
+  // No horizontal page overflow on the small landscape phone on any screen.
   for (const tab of TABS) {
-    await page.getByTestId(`tab-${tab}`).click();
+    await openTab(page, tab);
     await page.waitForTimeout(150);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, tab).toBeLessThanOrEqual(1);
   }
 
-  // Tab bar runs right to left: Camera is the rightmost tab.
-  const cam = await page.getByTestId('tab-camera').boundingBox();
-  const set = await page.getByTestId('tab-settings').boundingBox();
-  expect(cam!.x).toBeGreaterThan(set!.x);
+  // The header's way back to the camera sits at the inline start: right of the title, chevron mirrored.
+  const home = await page.getByTestId('btn-to-camera').boundingBox();
+  const title = await page.locator('.page.settings .hdr h1').boundingBox();
+  expect(home!.x).toBeGreaterThan(title!.x);
+  expect(await page.locator('[data-testid=btn-to-camera] .icon-back').evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix\(-1/);
+
+  // The gear menu's screen rows run right to left: icon on the right, chevron on the left pointing left.
+  await openTab(page, 'camera');
+  await openMore(page);
+  const row = page.getByTestId('more-nav-settings');
+  const glyph = (await row.locator('.more-glyph').boundingBox())!;
+  const chev = (await row.locator('.more-chev').boundingBox())!;
+  expect(glyph.x).toBeGreaterThan(chev.x);
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('cam-more')).toBeHidden();
 
   // The viewfinder keeps left-to-right.
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await loadRoll(page, 'mono400', '24');
   expect(await page.locator('.viewfinder').evaluate((el) => getComputedStyle(el).direction)).toBe('ltr');
 
   // Settings chevrons point the reading direction (mirrored).
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   const chevron = page.locator('.page.settings .icon-chevron').first();
   expect(await chevron.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix\(-1/);
 
   // Photo viewer: "next" sits on the left; ArrowLeft and a left-to-right swipe go to the next photo.
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('roll-card').first().locator('.roll-meta').click();
   await page.getByTestId('thumb').first().click();
   await expect(page.getByTestId('print')).toBeVisible();
@@ -196,8 +224,8 @@ test('a language picked offline still loads (locale chunks are precached)', asyn
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
   await context.setOffline(true);
   await pickLang(page, 'hi', 'hi');
-  await expect(page.getByTestId('tab-camera')).toHaveText('कैमरा');
+  await expect(page.getByTestId('btn-to-camera')).toHaveAttribute('aria-label', 'कैमरा');
   await pickLang(page, 'zh', 'zh-CN');
-  await expect(page.getByTestId('tab-camera')).toHaveText('相机');
+  await expect(page.getByTestId('btn-to-camera')).toHaveAttribute('aria-label', '相机');
   await context.setOffline(false);
 });

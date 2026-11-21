@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { loadRoll, shoot, start } from './helpers';
+import { loadRoll, shoot, start, openTab } from './helpers';
 
 async function audit(page: import('@playwright/test').Page, name: string) {
   // Let sheet/screen entrance animations finish; axe reads blended colors mid-fade.
@@ -31,7 +31,7 @@ test('every screen passes axe WCAG 2.1 AA', async ({ page }) => {
   issues.push(...(await audit(page, 'roll-sheet')));
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('roll-sheet')).toBeHidden();
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   issues.push(...(await audit(page, 'gallery')));
   await page.getByTestId('roll-card').locator('.roll-meta').click();
@@ -43,7 +43,7 @@ test('every screen passes axe WCAG 2.1 AA', async ({ page }) => {
   await page.getByTestId('btn-darkroom').click();
   await expect(page.getByTestId('dr-canvas')).toBeVisible();
   issues.push(...(await audit(page, 'darkroom')));
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   issues.push(...(await audit(page, 'analog')));
   await page.getByTestId('btn-new-log').click();
   issues.push(...(await audit(page, 'new-log')));
@@ -51,7 +51,7 @@ test('every screen passes axe WCAG 2.1 AA', async ({ page }) => {
   await page.getByTestId('btn-add-frame').click();
   issues.push(...(await audit(page, 'add-frame')));
   await page.keyboard.press('Escape');
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   issues.push(...(await audit(page, 'settings')));
   console.log(issues.join('\n'));
   expect(issues).toEqual([]);
@@ -71,7 +71,7 @@ test('keyboard: shutter with Space, sheets close with Escape, focus visible', as
 
 test('keyboard: Tab and Shift+Tab stay inside an open sheet', async ({ page }) => {
   await start(page);
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await page.getByTestId('btn-new-log').click();
   const sheet = page.locator('.sheet[role=dialog]');
   await expect(sheet).toBeVisible();

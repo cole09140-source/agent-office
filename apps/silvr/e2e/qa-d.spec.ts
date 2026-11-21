@@ -7,9 +7,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openSetting, closeSheet, openTab } from './helpers';
 
-const TABS = ['camera', 'models', 'gallery', 'analog', 'settings'];
+const TABS = ['camera', 'models', 'gallery', 'analog', 'settings'] as const;
 const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket', 'floppy98', 'slim06', 'bridge09', 'zoom90', 'mf645', 'pinhole', 'flip03', 'touch07', 'curve07', 'filter10'];
 
 async function overflowX(page: Page) {
@@ -20,6 +20,24 @@ async function inViewport(page: Page, testId: string) {
   const box = await page.getByTestId(testId).boundingBox();
   const vp = page.viewportSize()!;
   return !!box && box.x >= 0 && box.y >= 0 && box.x + box.width <= vp.width + 0.5 && box.y + box.height <= vp.height + 0.5;
+}
+
+/**
+ * Landscape navigation the way a user does it (there is no tab bar): back to the camera with the header's
+ * camera button, to any other screen through the camera's gear menu. Fails if a control is missing.
+ */
+async function navTo(page: Page, tab: (typeof TABS)[number]) {
+  const onCamera = await page.getByTestId('camera-screen').isVisible();
+  if (!onCamera) {
+    await page.getByTestId('btn-to-camera').click();
+    await expect(page.getByTestId('camera-screen')).toBeVisible();
+  }
+  if (tab !== 'camera') {
+    const more = page.getByTestId('btn-more');
+    if ((await more.getAttribute('aria-expanded')) !== 'true') await more.click();
+    await page.getByTestId(`more-nav-${tab}`).click();
+  }
+  await expect(page.getByTestId(`${tab}-screen`)).toBeVisible();
 }
 
 async function wipe(page: Page) {
@@ -36,26 +54,38 @@ async function wipe(page: Page) {
 }
 
 test('R31 six viewports: no sideways scroll, shutter and tab bar on screen', async ({ page }) => {
+  // Landscape-only app: phones held sideways, a tablet and a desktop. There is no tab bar; the gear menu and
+  // the header camera button are the navigation and must be on screen at every size.
   const errors = await start(page);
   await loadRoll(page, 'sunny200', '12');
   for (const [w, h] of [
-    [320, 568],
-    [375, 667],
-    [390, 844],
-    [430, 932],
-    [768, 1024],
+    [740, 360],
+    [844, 390],
+    [863, 360],
+    [915, 412],
+    [1180, 820],
     [1280, 800],
   ]) {
     await page.setViewportSize({ width: w, height: h });
-    await page.getByTestId('tab-camera').click();
-    expect(await inViewport(page, 'shutter'), `shutter @${w}`).toBe(true);
-    expect(await inViewport(page, 'counter'), `counter @${w}`).toBe(true);
+    await navTo(page, 'camera');
+    expect(await inViewport(page, 'shutter'), `shutter @${w}x${h}`).toBe(true);
+    expect(await inViewport(page, 'counter'), `counter @${w}x${h}`).toBe(true);
+    expect(await inViewport(page, 'btn-more'), `gear menu @${w}x${h}`).toBe(true);
     for (const tab of TABS) {
-      await page.getByTestId(`tab-${tab}`).click();
+      await navTo(page, tab);
       expect(await overflowX(page), `${tab}@${w}x${h}`).toBeLessThanOrEqual(0);
-      expect(await inViewport(page, `tab-${tab}`), `tab bar @${w}`).toBe(true);
+      if (tab !== 'camera') expect(await inViewport(page, 'btn-to-camera'), `camera button on ${tab} @${w}x${h}`).toBe(true);
     }
   }
+  // Held upright the app only asks to be turned: the camera and every other screen are hidden.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId('rotate-hint')).toBeVisible();
+  await expect(page.getByTestId('rotate-hint')).not.toBeEmpty();
+  await expect(page.locator('main.screen')).toBeHidden();
+  expect(await overflowX(page), 'rotate hint @390x844').toBeLessThanOrEqual(0);
+  await page.setViewportSize({ width: 863, height: 360 });
+  await expect(page.getByTestId('rotate-hint')).toBeHidden();
+  await expect(page.locator('main.screen')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -106,9 +136,13 @@ test('R34 keyboard only: onboarding → load → shoot → develop → photo', a
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('counter')).toContainText(`0${i}`);
   }
-  // The photos are in the album already: Tab to the album tab, then to the newest group.
-  await tabTo('tab-gallery');
+  // The photos are in the album already: Tab to the gear menu, its album entry, then to the newest group.
+  await tabTo('btn-more');
   await page.keyboard.press('Enter');
+  await expect(page.getByTestId('more-nav-gallery')).toBeVisible();
+  await tabTo('more-nav-gallery');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('gallery-screen')).toBeVisible();
   await tabTo('roll-open');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('roll-screen')).toBeVisible();
@@ -152,10 +186,15 @@ test('R36 both languages: no raw keys or unfilled placeholders on any screen', a
     await page.getByRole('radio', { name: lang }).click();
     await closeSheet(page);
     for (const tab of TABS) {
-      await page.getByTestId(`tab-${tab}`).click();
+      await navTo(page, tab);
       await scan(`${lang}/${tab}`);
     }
-    await page.getByTestId('tab-camera').click();
+    await navTo(page, 'camera');
+    // The gear menu (with its screen links) is a screen of its own in landscape.
+    await page.getByTestId('btn-more').click();
+    await expect(page.getByTestId('cam-more')).toBeVisible();
+    await scan(`${lang}/gear-menu`);
+    await page.keyboard.press('Escape');
     await page.getByTestId('roll-btn').click();
     await expect(page.getByTestId('roll-sheet')).toBeVisible();
     await scan(`${lang}/roll-sheet`);
@@ -291,8 +330,8 @@ test('R40 hostile backups and names: rendered as text, no prototype pollution', 
   await page.getByTestId('restore-input').setInputFiles({ name: 'evil.zip', mimeType: 'application/zip', buffer: Buffer.from(buf) });
   await expect(page.getByTestId('backup-status')).not.toHaveText(/…|^$/);
   await closeSheet(page);
-  await page.getByTestId('tab-gallery').click();
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'gallery');
+  await openTab(page, 'analog');
   await expect(page.getByText(evil).first()).toBeVisible();
   expect(await page.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined();
   expect(await page.evaluate(() => ({} as Record<string, unknown>).polluted)).toBeUndefined();
@@ -304,7 +343,7 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await loadRoll(page, 'mono400', '12');
   await shoot(page, 3);
   await rewindAndDevelop(page);
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await page.getByTestId('btn-new-log').click();
   await page.getByTestId('log-camera').fill('Nikon FM2');
   await page.getByTestId('log-film').fill('HP5+');
@@ -323,17 +362,17 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   // Reset wipes settings too, so onboarding comes back.
   await expect(page.getByTestId('onboarding')).toBeVisible();
   await page.getByTestId('onb-skip').click();
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(0);
   await openSetting(page, 'backup');
   await page.getByTestId('restore-input').setInputFiles({ name: 'backup.zip', mimeType: 'application/zip', buffer: bytes });
   await expect(page.getByTestId('backup-status')).toContainText(/3/);
   await closeSheet(page);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(3, { timeout: 45_000 });
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await expect(page.getByText('Nikon FM2').first()).toBeVisible();
   // Restoring the same file again adds nothing.
   await openSetting(page, 'backup');

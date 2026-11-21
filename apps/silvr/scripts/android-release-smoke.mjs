@@ -145,8 +145,14 @@ await step('shoot 3 frames', async () => {
   shot('r2-shooting');
   return (await find(SHOTS)).label;
 });
-await step('photos are in the album already (Album tab → the camera folder)', async () => {
-  await tap(/^Album$/);
+// The app is landscape-only: no tab bar — the camera's gear ("More") menu has the rows to Album / MY.
+async function openFromMenu(row) {
+  await tap(/^More$/);
+  await sleep(800);
+  await tap(row);
+}
+await step('photos are in the album already (More → Album → the camera folder)', async () => {
+  await openFromMenu(/^Album$/);
   await sleep(2500);
   // The camera's folder ("Pro 35 3 frames"); uiautomator's WebView snapshot can lag on the group list below it.
   await tap(FOLDER);
@@ -172,12 +178,12 @@ await step('hardware back returns to the roll', async () => {
   shot('r5-back');
 });
 
-await step('MY tab opens, store billing without a Play account is handled', async () => {
+await step('MY opens (More → MY), store billing without a Play account is handled', async () => {
   if (!(sh('dumpsys window displays').match(/mCurrentFocus=.*$/m)?.[0] ?? '').includes(PKG)) {
     sh(`am start -n ${ACTIVITY}`); // an earlier step may have left the app
     await sleep(4000);
   }
-  await tap(/^MY$/);
+  await openFromMenu(/^MY$/);
   await sleep(2500);
   const here = nodes();
   const restore = here.find((n) => /Restore purchases/.test(n.label));

@@ -6,6 +6,8 @@ import type { CameraText, Messages, StockText } from './types';
 
 export const messages: Messages = {
   'app.tagline': 'The film camera that keeps every original',
+  'app.rotate': 'Turn your phone sideways',
+  'app.rotateSub': 'Film Camela is held like a real camera, in landscape.',
   'tab.camera': 'Camera',
   'tab.models': 'Models',
   'models.sub': '{n} cameras · tap one to shoot with it',

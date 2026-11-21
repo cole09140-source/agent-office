@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadRoll, shoot } from './helpers';
+import { loadRoll, shoot, openTab } from './helpers';
 
 test.use({ locale: 'ko-KR' });
 
@@ -49,7 +49,7 @@ test('Korean locale: auto-detected, no clipped labels on any screen', async ({ p
   await page.getByTestId('roll-btn').click();
   await snap('camera-sheet');
   await page.keyboard.press('Escape');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await snap('gallery');
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await expect(page.locator('[data-testid=thumb] img')).toHaveCount(2, { timeout: 30_000 });
@@ -60,9 +60,9 @@ test('Korean locale: auto-detected, no clipped labels on any screen', async ({ p
   await snap('photo');
   await page.getByTestId('btn-darkroom').click();
   await snap('darkroom');
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await snap('analog');
-  await page.getByTestId('tab-settings').click();
+  await openTab(page, 'settings');
   await snap('settings');
   console.log(problems.join('\n'));
   expect(problems).toEqual([]);

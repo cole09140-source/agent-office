@@ -36,6 +36,8 @@ import type { LocaleCameraText, LocaleMessages, LocaleStockText } from './types'
 
 export const messages: LocaleMessages = {
   'app.tagline': 'La cámara de película que conserva tus originales',
+  'app.rotate': 'Gira el teléfono', // ko: 가로로 돌려 주세요 · en: Turn your phone sideways
+  'app.rotateSub': 'Film Camela se sostiene como una cámara de verdad, en horizontal.', // ko: Film Camela는 진짜 카메라처럼 가로로 들고 찍어요. · en: Film Camela is held like a real camera, in landscape.
   'tab.camera': 'Cámara',
   'tab.models': 'Modelos',
   'models.sub': '{n} cámaras · toca una para disparar con ella',

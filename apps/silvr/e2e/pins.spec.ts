@@ -1,14 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { loadCamera, start } from './helpers';
 
-/** Camera ids on the strip under the viewfinder, in on-screen order. */
+/** Camera ids on the vertical mode dial, top to bottom. */
 async function order(page: Page): Promise<string[]> {
   return page
     .locator('.cam-rail-strip [data-testid^="camera-"]')
     .evaluateAll((els) => els.map((el) => (el.getAttribute('data-testid') ?? '').replace(/^camera-/, '')));
 }
 
-/** Pins or unpins a camera with a long press on its strip card. */
+/** Pins or unpins a camera with a long press on its dial card. */
 async function togglePin(page: Page, id: string, on: boolean) {
   const before = await order(page);
   await page.getByTestId(`camera-${id}`).click({ delay: 800 });
@@ -45,9 +45,10 @@ test('pinned cameras move to the front of the strip, persist across reloads and 
   await expect(page.locator('.cam-rail-card[aria-pressed="true"]')).toHaveAttribute('data-testid', `camera-${third}`);
   await expect(page.locator('.cam-rail-card[aria-pressed="true"]')).toBeInViewport();
 
-  // No horizontal page scroll on a narrow phone.
-  await page.setViewportSize({ width: 360, height: 760 });
+  // No horizontal page scroll on a narrower phone held sideways (the app is landscape-only).
+  await page.setViewportSize({ width: 740, height: 360 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await expect(page.locator('.cam-rail-card[aria-pressed="true"]')).toBeInViewport();
 
   // Unpin both: back to the normal order, no divider.
   await togglePin(page, third, false);

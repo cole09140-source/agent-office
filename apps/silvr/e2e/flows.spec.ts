@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet } from './helpers';
+import { loadCamera, loadRoll, rewindAndDevelop, shoot, start, openCurrentRoll, openSetting, closeSheet, openTab } from './helpers';
 
 test('shoot 12 → straight to the album → view → darkroom → contact sheet → delete', async ({ page }) => {
   const errors = await start(page);
@@ -81,16 +81,16 @@ test('camera strip: photos are in the album at once, a new camera starts a new g
   await loadRoll(page, 'mono400');
   await shoot(page, 3);
   // Already in the album, while the camera keeps shooting.
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await expect(page.getByTestId('roll-card')).toContainText(/Mono\s400/);
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await expect(page.getByTestId('counter')).toContainText('03');
   // Another camera on the strip: shots go to a new group, the first one stays as it was.
   await loadCamera(page, 'snap27');
   await expect(page.getByTestId('counter')).toContainText('00');
   await shoot(page, 2);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(2);
   await expect(page.getByTestId('roll-card').first()).toContainText('Snap');
   await page.getByTestId('roll-card').last().locator('.roll-meta').click();
@@ -116,18 +116,18 @@ test('data persists across reloads and an unused camera leaves no empty album en
   await page.waitForTimeout(1300);
   await page.screenshot({ path: 'e2e/.shots/10-instant.png' });
   // passing through cameras without shooting adds nothing to the album
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await loadCamera(page, 'snap27');
   await loadCamera(page, 'instasq');
   await loadCamera(page, 'pro35');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   expect(errors).toEqual([]);
 });
 
 test('import photos from the gallery and develop them', async ({ page }) => {
   const errors = await start(page);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('btn-import').click();
   await page.getByTestId('import-sheet').getByTestId('stock-velvet50').click();
   // a tiny generated PNG plus a non-image that must be rejected gracefully
@@ -160,7 +160,7 @@ test('import photos from the gallery and develop them', async ({ page }) => {
 
 test('analog companion: Sunny 16 and film log CSV', async ({ page }) => {
   const errors = await start(page);
-  await page.getByTestId('tab-analog').click();
+  await openTab(page, 'analog');
   await page.getByTestId('iso-100').click();
   await page.getByTestId('ap-16').click();
   await page.getByTestId('meter-light').selectOption('sunny');
@@ -201,7 +201,7 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
   await page.screenshot({ path: 'e2e/.shots/12-settings-ko.png', fullPage: true });
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await expect(page.getByRole('group', { name: '카메라를 고르세요' })).toBeVisible();
   await page.reload();
   await expect(page.getByTestId('tab-camera')).toContainText('카메라');
@@ -212,16 +212,18 @@ test('settings: Korean UI, date stamp toggle, delete all data', async ({ page })
   expect(errors).toEqual([]);
 });
 
-test('Models tab: every camera at a glance, a tap shoots with it at once; the tab bar is centred', async ({ page }) => {
+test('Models tab: every camera at a glance, a tap shoots with it at once; reached from the gear panel (no tab bar)', async ({ page }) => {
   const errors = await start(page);
-  // Five tabs, Models right next to Camera, spread evenly across the bar.
-  const tabs = page.locator('.tabbar button');
-  await expect(tabs).toHaveCount(5);
-  await expect(tabs.nth(1)).toHaveAttribute('data-testid', 'tab-models');
-  const xs = await tabs.evaluateAll((els) => els.map((el) => el.getBoundingClientRect()).map((r) => [r.left, r.right]));
-  const vw = page.viewportSize()!.width;
-  expect(Math.abs(xs[0][0] - (vw - xs[4][1]))).toBeLessThanOrEqual(2);
-  await page.getByTestId('tab-models').click();
+  // Landscape-only: no tab bar; Models is the first of the other screens in the gear panel.
+  await expect(page.locator('.tabbar button:visible')).toHaveCount(0);
+  await page.getByTestId('btn-more').click();
+  const menu = page.getByTestId('cam-more');
+  await expect(menu).toBeVisible();
+  const navs = menu.locator('[data-testid^="more-nav-"]');
+  await expect(navs).toHaveCount(4);
+  await expect(navs.first()).toHaveAttribute('data-testid', 'more-nav-models');
+  await menu.evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await menu.getByTestId('more-nav-models').click();
   await expect(page.getByTestId('models-screen')).toBeVisible();
   await expect(page.locator('[data-testid^="model-"]')).toHaveCount(38);
   await page.getByTestId('model-instasq').click();
@@ -229,7 +231,7 @@ test('Models tab: every camera at a glance, a tap shoots with it at once; the ta
   await expect(page.getByTestId('camera-instasq')).toHaveAttribute('aria-pressed', 'true');
   await shoot(page, 1);
   // Back in Models, the camera in use is marked.
-  await page.getByTestId('tab-models').click();
+  await openTab(page, 'models');
   await expect(page.getByTestId('model-instasq')).toHaveAttribute('aria-current', 'true');
   expect(errors).toEqual([]);
 });
@@ -237,7 +239,7 @@ test('Models tab: every camera at a glance, a tap shoots with it at once; the ta
 test('GPT QA fixes: same camera from Models keeps its film; a sheet open blocks the Space shutter; pins keep the ring on the camera in use', async ({ page }) => {
   const errors = await start(page);
   await loadRoll(page, 'mono400');
-  await page.getByTestId('tab-models').click();
+  await openTab(page, 'models');
   await page.getByTestId('model-pro35').click();
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'pro35');
   await page.getByTestId('roll-btn').click();
@@ -271,7 +273,7 @@ test('a new day starts a new album group for the same camera', async ({ page }) 
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await expect(page.getByTestId('counter')).toContainText('00', { timeout: 10_000 });
   await shoot(page, 1);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(2);
   // Each group is dated by the day its photos were taken (not the day it was closed).
   await expect(page.getByTestId('roll-card').last()).toContainText('Nov 12');
@@ -311,18 +313,18 @@ test('QA: the digicam readout counts shots (never 999); deleting a photo updates
   await expect(page.locator('.lcd-tr')).toContainText('00');
   await shoot(page, 2);
   await expect(page.locator('.lcd-tr')).toContainText('02');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toContainText('2 frames');
   await page.getByTestId('roll-card').locator('.roll-meta').click();
   await expect(page.locator('[data-testid=thumb] img').first()).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('thumb').first().click();
   await page.getByTestId('btn-delete').click();
   await page.getByTestId('confirm-ok').click();
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toContainText('1 frame');
   await expect(page.getByTestId('roll-card')).not.toContainText('2 frames');
   // The empty thumbnail slot of a camera with no shots leads to the album.
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   await loadCamera(page, 'pro35');
   await page.getByTestId('btn-last-album').click();
   await expect(page.getByTestId('gallery-screen')).toBeVisible();
@@ -334,7 +336,7 @@ test('album folders: all photos and one folder per camera, newest first, grouped
   await shoot(page, 2);
   await loadCamera(page, 'ccd03');
   await shoot(page, 1);
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('folder-all')).toContainText('3 frames');
   await expect(page.getByTestId('folder-pro35')).toContainText('2 frames');
   await expect(page.getByTestId('folder-ccd03')).toContainText('1 frame');

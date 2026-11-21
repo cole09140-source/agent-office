@@ -540,7 +540,7 @@
    .page pads by --land-pad-s / --land-pad-e, headers are one compact row). Here: the light table fills
    the rest edge to edge with more, smaller mounts; the viewer is a playback screen (slide left/centre, keys
    in a column on the inline-end side); the darkroom puts the print beside a scrolling column of controls. */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) {
   .app:is(.route-gallery, .route-folder, .route-roll, .route-photo, .route-darkroom) > .screen {
     max-width: none;
   }

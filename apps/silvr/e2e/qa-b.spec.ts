@@ -2,7 +2,7 @@
  * QA block B (rounds 11-20): camera deep tests.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { loadCamera, rewindAndDevelop, shoot, start, openCurrentRoll } from './helpers';
+import { loadCamera, rewindAndDevelop, shoot, start, openCurrentRoll, openTab } from './helpers';
 
 const CAMS = ['pro35', 'snap27', 'instasq', 'half72', 'zonelc', 'toy120', 'quad4', 'doublex', 'panox', 'fish180', 'cine', 'ccd03', 'pixel', 'range', 'aqua27', 'instaw', 'twin66', 'super8', 'slide35', 'party', 'kidcam', 'sprocket', 'floppy98', 'slim06', 'bridge09', 'zoom90', 'mf645', 'pinhole', 'flip03', 'touch07', 'curve07', 'filter10'];
 const presses = (id: string) => (id === 'half72' || id === 'doublex' ? 2 : 1);
@@ -18,7 +18,7 @@ async function shootFrame(page: Page, id: string) {
 test('R11 front camera on every body develops a print', async ({ page }) => {
   test.setTimeout(1_200_000);
   const errors = await start(page);
-  await page.getByTestId('tab-camera').click();
+  await openTab(page, 'camera');
   for (const id of CAMS) {
     const t0 = Date.now();
     await loadCamera(page, id);
@@ -29,7 +29,7 @@ test('R11 front camera on every body develops a print', async ({ page }) => {
     await rewindAndDevelop(page);
     await page.getByTestId('thumb').first().click();
     await expect(page.getByTestId('print')).toBeVisible({ timeout: 45_000 });
-    await page.getByTestId('tab-camera').click();
+    await openTab(page, 'camera');
     await page.getByTestId('btn-flip').click({ timeout: 2000 }).catch(() => undefined);
     console.log(`R11 ${id}: ${Math.round((Date.now() - t0) / 1000)}s`);
   }
@@ -40,7 +40,7 @@ test('R12 self-timer works with every capture mechanism', async ({ page }) => {
   test.setTimeout(300_000);
   await start(page);
   for (const id of ['pro35', 'half72', 'quad4', 'doublex', 'instasq', 'ccd03']) {
-    await page.getByTestId('tab-camera').click();
+    await openTab(page, 'camera');
     await loadCamera(page, id);
     await page.getByTestId('btn-timer').click();
     const t0 = Date.now();
@@ -121,7 +121,7 @@ test('R18 double exposure: ghost survives reload; changing cameras keeps the lon
   await page.reload();
   await expect(page.locator('.vf-ghost')).toBeVisible();
   await loadCamera(page, 'pro35');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await page.getByTestId('roll-card').first().locator('.roll-meta').click();
   await expect(page.getByTestId('thumb')).toHaveCount(1);
 });
@@ -132,7 +132,7 @@ test('R19 instant camera keeps shooting past a pack; its photos are in the album
   await loadCamera(page, 'instasq');
   await shoot(page, 11);
   await expect(page.getByTestId('counter')).toContainText('11');
-  await page.getByTestId('tab-gallery').click();
+  await openTab(page, 'gallery');
   await expect(page.getByTestId('roll-card')).toHaveCount(1);
   await expect(page.getByTestId('roll-card')).toContainText('Shooting');
   await expect(page.getByTestId('roll-card')).not.toContainText('NEW');
