@@ -18,8 +18,10 @@ function serviceWorker(): Plugin {
       }
       const assets = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
       const publicFiles = ['manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/og.png', 'privacy.html', 'terms.html', 'support.html', 'licenses.html', 'legal.css',
-        // Camera body art (public/bodies): the camera screen must look the same offline.
-        ...readdirSync(new URL('./public/bodies/', import.meta.url)).filter((f) => f.endsWith('.webp')).map((f) => `bodies/${f}`)];
+        // Camera body art (public/bodies) and the full-body landscape art (public/bodies/wrap): the camera screen
+        // must look the same offline.
+        ...readdirSync(new URL('./public/bodies/', import.meta.url)).filter((f) => f.endsWith('.webp')).map((f) => `bodies/${f}`),
+        ...readdirSync(new URL('./public/bodies/wrap/', import.meta.url)).filter((f) => f.endsWith('.webp')).map((f) => `bodies/wrap/${f}`)];
       const urls = ['./', ...new Set([...assets, ...publicFiles])].map((f) => (f === './' ? f : `./${f}`));
       const template = readFileSync(new URL('./src/sw-template.js', import.meta.url), 'utf8');
       const version = `${pkg.version}-${Date.now().toString(36)}`;

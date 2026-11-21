@@ -16,6 +16,7 @@ import './styles/darkroom.css';
 import './styles/deck.css';
 import './styles/slides.css';
 import './styles/bodies.css';
+import './styles/wrap.css';
 
 async function boot() {
   initPwa();

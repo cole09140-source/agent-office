@@ -1,4 +1,5 @@
 import { bodyArtFor, type BodyArtEntry } from './bodyArtData';
+import { BodyGlint } from './BodyWrap';
 
 // The data lives in bodyArtData.ts, not bodyArt.ts: on a case-insensitive disk (Windows, default macOS) an
 // import of './BodyArt' would resolve to bodyArt.ts first (.ts before .tsx). Everything is re-exported here.
@@ -121,6 +122,8 @@ export function BodyArt({ cameraId, stageW, stageH }: { cameraId: string; stageW
           height: `${art.h * scale}px`,
         }}
       />
+      {/* A soft light glint across the body that follows the phone's tilt (BodyWrap.tsx). */}
+      <BodyGlint />
     </div>
   );
 }

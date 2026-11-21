@@ -3,7 +3,10 @@ import { loadCamera, shoot, start } from './helpers';
 
 /*
  * Landscape phone (project 'landscape-phone': Pixel 7 landscape, 863×360, isMobile): no tab bar, the camera
- * screen is home. Body art (half of its frame) + live preview | vertical mode dial | one quiet column:
+ * screen is home. A camera with full-body wrap art (public/bodies/wrap, data-wrap on the screen) becomes the
+ * whole camera back: the art covers the screen edge to edge, the preview sits in its window, and the vertical
+ * mode dial (a track set into the body) and the column are mounted on the body to the right. A camera without
+ * it keeps body art (half of its frame) + live preview | vertical mode dial | one quiet column:
  * settings (gear) · flash · timer · frame counter · last shot · flip · SHUTTER in the bottom-right corner.
  * Format, zoom, EV, palette, date, grid and the way to the other screens live in the gear panel.
  * The viewport comes from the project; nothing here sets it.
@@ -101,6 +104,57 @@ async function checkColumn(page: Page) {
   return boxes;
 }
 
+/** Whether the camera in use has full-body wrap art (the screen is the camera back). */
+const isWrap = async (page: Page) => (await page.getByTestId('camera-screen').getAttribute('data-wrap')) === 'true';
+
+/**
+ * The body around the preview. Wrap: the art covers the screen and the window holds a big preview, clear of the
+ * dial and the column (in that order, left to right, also in RTL). Cropped art: body | dial | column cells.
+ */
+async function checkBody(page: Page) {
+  const vp = page.viewportSize()!;
+  const rail = await box(page.getByTestId('camera-rail'));
+  const deck = await box(page.getByTestId('deck'));
+  const vf = await box(page.locator('.viewfinder'));
+  expect(overlaps(rail, deck)).toBe(false);
+  expect(deck.x).toBeGreaterThan(rail.x);
+  if (await isWrap(page)) {
+    await expect(page.getByTestId('body-art')).toHaveCount(0);
+    const art = await box(page.getByTestId('wrap-art'));
+    // edge to edge
+    expect(art.x).toBeLessThanOrEqual(0.5);
+    expect(art.y).toBeLessThanOrEqual(0.5);
+    expect(art.width).toBeGreaterThanOrEqual(vp.width - 1);
+    expect(art.height).toBeGreaterThanOrEqual(vp.height - 1);
+    // the window (preview) on the left, clear of the dial and the column, fully on screen
+    await onScreen(page, vf, 'preview');
+    expect(overlaps(vf, rail), 'preview clear of the dial').toBe(false);
+    expect(overlaps(vf, deck), 'preview clear of the column').toBe(false);
+    expect(vf.x + vf.width).toBeLessThanOrEqual(rail.x);
+    // the dial track is set into the body beside the window (level with it, about as tall as it)
+    expect(Math.abs(cy(rail) - cy(vf)), 'dial level with the window').toBeLessThan(vp.height * 0.12);
+    expect(rail.height).toBeGreaterThan(vp.height * 0.5);
+    expect(rail.height).toBeLessThan(vp.height * 0.9);
+    // a big preview (at least as big as with the cropped body): most of the height, or of the body's left half
+    expect(vf.height / vp.height > 0.6 || vf.width / vp.width > 0.4, 'preview takes most of the window').toBe(true);
+    return;
+  }
+  const stage = await box(page.locator('.cam-stage'));
+  expect(overlaps(stage, rail)).toBe(false);
+  expect(overlaps(stage, deck)).toBe(false);
+  expect(rail.x).toBeGreaterThan(stage.x);
+  expect(stage.x, 'the stage starts at the left edge (no rail)').toBeLessThan(24);
+  // The visible half of the body fills the stage (contain) and frames a big preview.
+  const art = await box(page.getByTestId('body-art'));
+  expect(art.height >= stage.height - 2 || art.width >= stage.width - 2).toBe(true);
+  expect(vf.x).toBeGreaterThanOrEqual(art.x - 1);
+  expect(vf.x + vf.width).toBeLessThanOrEqual(art.x + art.width + 1);
+  expect(vf.y).toBeGreaterThanOrEqual(art.y - 1);
+  expect(vf.y + vf.height).toBeLessThanOrEqual(art.y + art.height + 1);
+  expect(vf.width / art.width, 'preview takes most of the body').toBeGreaterThan(0.6);
+  expect(vf.height / stage.height, 'preview takes most of the height').toBeGreaterThan(0.6);
+}
+
 test.beforeEach(async ({ page }) => {
   await start(page);
   await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-layout', 'landscape');
@@ -123,37 +177,64 @@ test('one column on the right, no tab bar, the preview big and clear of every co
   await expect(page.locator('.dpad, .zoom-rocker, [data-testid=btn-film]')).toHaveCount(0);
   await expect(page.getByTestId('roll-btn')).toBeVisible();
 
-  // Body | dial | column, left to right; nothing overlaps.
-  const stage = await box(page.locator('.cam-stage'));
-  const rail = await box(page.getByTestId('camera-rail'));
-  const deck = await box(page.getByTestId('deck'));
-  expect(overlaps(stage, rail)).toBe(false);
-  expect(overlaps(stage, deck)).toBe(false);
-  expect(overlaps(rail, deck)).toBe(false);
-  expect(rail.x).toBeGreaterThan(stage.x);
-  expect(deck.x).toBeGreaterThan(rail.x);
-  expect(stage.x, 'the stage starts at the left edge (no rail)').toBeLessThan(24);
-
-  // The visible half of the body fills the stage (contain) and frames a big preview.
-  const art = await box(page.getByTestId('body-art'));
-  expect(art.height >= stage.height - 2 || art.width >= stage.width - 2).toBe(true);
-  const vf = await box(page.locator('.viewfinder'));
-  expect(vf.x).toBeGreaterThanOrEqual(art.x - 1);
-  expect(vf.x + vf.width).toBeLessThanOrEqual(art.x + art.width + 1);
-  expect(vf.y).toBeGreaterThanOrEqual(art.y - 1);
-  expect(vf.y + vf.height).toBeLessThanOrEqual(art.y + art.height + 1);
-  expect(vf.width / art.width, 'preview takes most of the body').toBeGreaterThan(0.6);
-  expect(vf.height / stage.height, 'preview takes most of the height').toBeGreaterThan(0.6);
+  // Body | dial | column, left to right; nothing overlaps; a big preview.
+  await checkBody(page);
   // No page scroll sideways.
   const scrollW = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollW).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
 
 test('every body keeps the column layout (no flash slot, single format, instant, phone)', async ({ page }) => {
-  for (const id of ['pro35', 'snap27', 'booth4', 'cine', 'flip03', 'aps97']) {
+  for (const id of ['pro35', 'snap27', 'booth4', 'cine', 'flip03', 'aps97', 'instasq', 'view45', 'webcam02']) {
     await loadCamera(page, id);
     await checkColumn(page);
+    await checkBody(page);
   }
+});
+
+test('full-body wrap: the camera back covers the screen, the controls wear the body, the camera feels alive', async ({ page }) => {
+  await loadCamera(page, 'pro35');
+  test.skip(!(await isWrap(page)), 'pro35 has no wrap art in this build');
+  const screen = page.getByTestId('camera-screen');
+  // The controls are skinned from the body's back spec (chrome buttons, knurled release with a red centre).
+  await expect(screen).toHaveAttribute('data-btn', 'chrome');
+  await expect(screen).toHaveAttribute('data-shutter', 'knurl');
+  const look = await page.getByTestId('shutter').evaluate((el) => {
+    const cs = getComputedStyle(el);
+    const cap = getComputedStyle(el.querySelector('span')!);
+    return { ring: cs.backgroundImage, cap: cap.backgroundImage + cap.backgroundColor };
+  });
+  expect(look.ring).toContain('conic-gradient');
+  expect(look.cap).toMatch(/210, 58, 44|d23a2c/i);
+  // The art decodes.
+  await expect.poll(() => page.locator('.wrap-art-img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+
+  // Shutter: goes down while held, springs back on release (and the release takes the shot).
+  const sh = page.getByTestId('shutter');
+  const b = await box(sh);
+  await page.mouse.move(cx(b), cy(b));
+  await page.mouse.down();
+  await expect(sh).toHaveAttribute('data-pressed', '');
+  await page.mouse.up();
+  await expect(sh).not.toHaveAttribute('data-pressed', '');
+  // The frame counter rolls: the new figure comes in with the old one leaving (data-prev drives the roll).
+  await expect(page.getByTestId('counter')).toContainText('01');
+  await expect(page.locator('[data-testid=counter] .counter-tick')).toHaveAttribute('data-prev', '00');
+  // The glint layer is there (decorative).
+  await expect(page.locator('.wrap-art .body-glint')).toHaveCount(1);
+});
+
+test.describe('reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+  test('no glint, no counter roll, no flash pop', async ({ page }) => {
+    await loadCamera(page, 'pro35');
+    test.skip(!(await isWrap(page)), 'pro35 has no wrap art in this build');
+    await expect(page.locator('.body-glint-clip')).toBeHidden();
+    await shoot(page, 1);
+    const anim = await page.locator('[data-testid=counter] .counter-tick').evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim).not.toBe('counter-roll');
+    await expect(page.locator('.flash-pop')).toHaveCount(0);
+  });
 });
 
 test('shooting: a frame lands, the counter counts it, the last shot shows it', async ({ page }) => {
@@ -307,12 +388,13 @@ test.describe('right-to-left', () => {
   test('text mirrors, the column stays under the right thumb', async ({ page }) => {
     await loadCamera(page, 'bridge09');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    const stage = await box(page.locator('.cam-stage'));
     const rail = await box(page.getByTestId('camera-rail'));
     const deck = await box(page.getByTestId('deck'));
-    // Same physical order as LTR: body | dial | column.
-    expect(rail.x).toBeGreaterThanOrEqual(stage.x + stage.width - 1);
+    // Same physical order as LTR: body (the preview in its window) | dial | column. The art is never mirrored.
+    const body = (await isWrap(page)) ? await box(page.locator('.viewfinder')) : await box(page.locator('.cam-stage'));
+    expect(rail.x).toBeGreaterThanOrEqual(body.x + body.width - 1);
     expect(deck.x).toBeGreaterThanOrEqual(rail.x + rail.width - 1);
+    await checkBody(page);
     await checkColumn(page);
     await page.getByTestId('btn-more').click();
     const m = await box(page.getByTestId('cam-more'));

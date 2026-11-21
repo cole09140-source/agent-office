@@ -10,6 +10,7 @@ import { playAdvance, playBeep, playFlashCharge, playShutter, unlockAudio } from
 import { ViewfinderOverlay } from '../cameras/Viewfinder';
 import { BackDecor, BackWindow } from '../cameras/backs/Back';
 import { artFrameSize, artWindowBox, artWindowRadius, BodyArt, hasBodyArt } from '../cameras/BodyArt';
+import { hasWrapArt, WRAP_COL_W, WRAP_DIAL_W, WrapArt, wrapLayout, type WrapPad } from '../cameras/BodyWrap';
 import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
@@ -146,8 +147,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const moreRef = useRef<HTMLDivElement>(null);
   /** A camera change is closing the current roll: no second change (or auto-load) meanwhile. */
   const switchingRef = useRef(false);
-  /** The stage: content box (w, h: room for the preview inside the bezel) and padding box (sw, sh: what body art lays out in). */
-  const [box, setBox] = useState({ w: 0, h: 0, sw: 0, sh: 0 });
+  /**
+   * The stage: content box (w, h: room for the preview inside the bezel) and padding box (sw, sh: what body art
+   * lays out in), plus the camera screen's own padding (pad: the safe areas; the wrap art keeps its window clear).
+   */
+  const [box, setBox] = useState<{ w: number; h: number; sw: number; sh: number; pad: WrapPad }>({ w: 0, h: 0, sw: 0, sh: 0, pad: { l: 0, t: 0, r: 0, b: 0 } });
   const [facing, setFacing] = useState(cam().facing);
   const [videoSize, setVideoSize] = useState({ w: 0, h: 0 });
   const [gpu, setGpu] = useState(true);
@@ -174,6 +178,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const quickRef = useRef<string>();
   /** The instant print sliding out over the viewfinder. */
   const [eject, setEject] = useState<{ url: string; key: number } | null>(null);
+  /** Set for a moment when the flash fires: a warm pop of light over the screen and a glow on the flash button. */
+  const [flashPop, setFlashPop] = useState(0);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -330,11 +336,29 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const el = stageRef.current;
     if (!el) return;
     // Content box: the stage's padding is the room the body's window bezel takes around the preview.
-    const ro = new ResizeObserver(([e]) =>
-      setBox({ w: Math.floor(e.contentRect.width), h: Math.floor(e.contentRect.height), sw: el.clientWidth, sh: el.clientHeight }),
-    );
+    const measure = () => {
+      const root = el.closest<HTMLElement>('.camera');
+      const cs = root ? getComputedStyle(root) : null;
+      const px = (v: string | undefined) => Math.max(0, parseFloat(v ?? '') || 0);
+      const pad = { l: px(cs?.paddingLeft), t: px(cs?.paddingTop), r: px(cs?.paddingRight), b: px(cs?.paddingBottom) };
+      const r = el.getBoundingClientRect();
+      const st = getComputedStyle(el);
+      const w = Math.floor(el.clientWidth - px(st.paddingLeft) - px(st.paddingRight));
+      const h = Math.floor(el.clientHeight - px(st.paddingTop) - px(st.paddingBottom));
+      setBox((b) =>
+        b.w === w && b.h === h && b.sw === el.clientWidth && b.sh === el.clientHeight && b.pad.l === pad.l && b.pad.t === pad.t && b.pad.r === pad.r && b.pad.b === pad.b
+          ? b
+          : { w: r.width ? w : 0, h: r.height ? h : 0, sw: el.clientWidth, sh: el.clientHeight, pad },
+      );
+    };
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    return () => ro.disconnect();
+    // The safe-area padding can change without the stage changing size (the phone turned to its other side).
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, []);
 
   const portraitFrame = spec.orient === 'auto' ? videoSize.h > videoSize.w : spec.orient === 'portrait';
@@ -344,7 +368,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   /** The visible (cropped) body's shape: the portrait stage takes it, so no empty plate shows around it. */
   const artFrame = artOn ? artFrameSize(camera.id) : null;
   const artShape = artFrame ? `${Math.round(artFrame.w)} / ${Math.round(artFrame.h)}` : undefined;
-  const artBox = box.sw && box.sh ? artWindowBox(camera.id, box.sw, box.sh) : null;
+  /**
+   * Landscape with full-body wrap art: the camera back covers the whole screen (the stage spans it), the preview
+   * sits in the art's window and the dial + column are mounted on the body to its right (see BodyWrap.tsx).
+   */
+  const wrapOn = land && hasWrapArt(camera.id);
+  const wrap = wrapOn && box.sw && box.sh ? wrapLayout(camera.id, box.sw, box.sh, box.pad) : null;
+  const artBox = wrap ? wrap.win : !wrapOn && box.sw && box.sh ? artWindowBox(camera.id, box.sw, box.sh) : null;
   const frame = artBox && artBox.width > 0 && artBox.height > 0
     ? fitContain(artBox.width, artBox.height, frameRatio)
     : box.w && box.h
@@ -360,7 +390,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         width: `${frame.width}px`,
         height: `${frame.height}px`,
         // The preview's corners follow the art window's rounded corners.
-        borderRadius: `${Math.round(artWindowRadius(camera.id, box.sw, box.sh))}px`,
+        borderRadius: `${Math.round(wrap ? wrap.radius : artWindowRadius(camera.id, box.sw, box.sh))}px`,
       }
     : { width: `${frame.width}px`, height: `${frame.height}px` };
 
@@ -545,7 +575,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     const el = shutterRef.current;
     if (!el || typeof el.animate !== 'function') return;
     if (kind === 'press') {
-      el.querySelector('span')?.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.78)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' });
+      // The release goes down and springs back (a press made with a key or a quick tap still shows it).
+      if (reduceMotion()) return;
+      el.querySelector('span')?.animate(
+        [{ transform: 'none' }, { transform: 'translateY(2px) scale(0.86)', offset: 0.3 }, { transform: 'translateY(-0.5px) scale(1.02)', offset: 0.7 }, { transform: 'none' }],
+        { duration: 260, easing: 'ease-out' },
+      );
     } else if (reduceMotion()) {
       el.animate([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 300 });
     } else {
@@ -554,6 +589,24 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         { duration: 300, easing: 'ease-out' },
       );
     }
+  };
+
+  /**
+   * The body gives a tiny jolt when the shutter fires (the camera back and, in landscape, the controls mounted on
+   * it). Transforms only; none with reduced motion.
+   */
+  const jolt = () => {
+    const stage = stageRef.current;
+    if (!stage || reduceMotion() || typeof stage.animate !== 'function') return;
+    const root = stage.closest('.camera');
+    const els = land ? [stage, root?.querySelector<HTMLElement>('.cam-rail'), root?.querySelector<HTMLElement>('.deck')] : [stage];
+    const frames = [
+      { transform: 'translate3d(0, 0, 0)' },
+      { transform: 'translate3d(0, 2px, 0) rotate(-0.12deg)', offset: 0.22 },
+      { transform: 'translate3d(0, -0.6px, 0) rotate(0.04deg)', offset: 0.6 },
+      { transform: 'translate3d(0, 0, 0)' },
+    ];
+    for (const el of els) el?.animate(frames, { duration: 200, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' });
   };
 
   const setQueue = (n: number) => {
@@ -753,6 +806,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       }
       if (s.sound) playShutter(camera.sound);
       if (s.haptics) haptic(camera.capture === 'quad' ? [12, 190, 12, 190, 12, 190, 12] : 18);
+      jolt();
+      if (fire && !reduceMotion()) {
+        const k = Date.now();
+        setFlashPop(k);
+        setTimeout(() => mountedRef.current && setFlashPop((p) => (p === k ? 0 : p)), 480);
+      }
 
       const mirror = c.facing === 'user' && s.mirrorFront;
       const expose = () => {
@@ -771,6 +830,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
           if (booth && i > 0) {
             if (s.sound) playShutter(camera.sound);
             if (s.haptics) haptic(18);
+            jolt();
           }
           exposures.push(expose());
           if (i < 3) await sleep(booth ? BOOTH_GAP_MS : QUAD_GAP_MS);
@@ -1167,6 +1227,9 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const flashLabel =
     camera.flash === 'charge' ? (charge === 'ready' ? t('cam.flashReady') : charge === 'charging' ? t('cam.flashCharging') : t('cam.flashCharge')) : t('cam.flash');
   const counterText = roll ? String(roll.shots).padStart(2, '0') : '';
+  /** The number the counter showed before (it rolls out of the window as the new one rolls in). */
+  const counterRef = useRef({ now: counterText, prev: counterText });
+  if (counterRef.current.now !== counterText) counterRef.current = { now: counterText, prev: counterRef.current.now };
   const counting = countdown > 0;
   const starting = state === 'starting';
   /** While the self-timer counts, only the timer button (cancel) and the shutter stay usable on the deck. */
@@ -1232,6 +1295,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       ref={shutterRef}
       class={`shutter ${busy && !counting ? 'busy' : ''} ${counting ? 'cancel' : ''} ${starting ? 'starting' : ''}`}
       onClick={onShutter}
+      // The release visibly goes down while it is held (CSS [data-pressed]); the click itself takes the shot.
+      onPointerDown={(e) => (e.currentTarget as HTMLElement).setAttribute('data-pressed', '')}
+      onPointerUp={(e) => (e.currentTarget as HTMLElement).removeAttribute('data-pressed')}
+      onPointerCancel={(e) => (e.currentTarget as HTMLElement).removeAttribute('data-pressed')}
+      onPointerLeave={(e) => (e.currentTarget as HTMLElement).removeAttribute('data-pressed')}
       disabled={state === 'error'}
       aria-disabled={starting || undefined}
       aria-label={counting ? t('cam.cancelTimer') : starting ? `${t('cam.shutter')} · ${t('cam.starting')}` : t('cam.shutter')}
@@ -1250,8 +1318,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const counterEl = roll ? (
     <div class="deck-counter mono" data-testid="counter" role="img" aria-label={shotsSaid}>
       {/* Re-keyed per frame: a short tick shows the film advanced. */}
-      <span key={counterText} class="counter-tick">
-        {counterText}
+      {/* The reel clips the figures: the old one rolls out at the top as the new one rolls in (wrap.css). */}
+      <span class="counter-reel">
+        <span key={counterText} class="counter-tick" data-prev={counterRef.current.prev !== counterText ? counterRef.current.prev : undefined}>
+          {counterText}
+        </span>
       </span>
     </div>
   ) : (
@@ -1438,7 +1509,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </div>
         {counterEl}
       </div>
-      <div class="land-mid">{hintsEl}</div>
+      <div class="land-mid" />
       <div class="land-bottom">
         <div class="land-pair">
           {lastShotEl}
@@ -1480,7 +1551,35 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     </div>
   );
   return (
-    <div class={`camera cam-${camera.id}${land ? ' cam-land' : ''}`} data-testid="camera-screen" data-camera={camera.id} data-layout={land ? 'landscape' : 'portrait'}>
+    <div
+      class={`camera cam-${camera.id}${land ? ' cam-land' : ''}${wrapOn ? ' cam-wrap' : ''}${flashPop ? ' flash-firing' : ''}`}
+      data-testid="camera-screen"
+      data-camera={camera.id}
+      data-layout={land ? 'landscape' : 'portrait'}
+      data-wrap={wrapOn || undefined}
+      // Wrap mode: the controls are skinned in the body's own materials (wrap.css reads the --bp-* colours and these).
+      data-mat={wrapOn ? back.material : undefined}
+      data-btn={wrapOn ? back.buttons : undefined}
+      data-shutter={wrapOn ? back.shutterStyle : undefined}
+      style={
+        wrapOn
+          ? {
+              ...backVars(back),
+              '--bp-release': back.shutterStyle === 'knurl' ? '#d23a2c' : back.shutter,
+              '--land-dial-w': `${WRAP_DIAL_W}px`,
+              '--land-col-w': `${WRAP_COL_W}px`,
+              // The window's right edge and its height band, from the camera screen's padding edge.
+              ...(wrap
+                ? {
+                    '--wrap-win-r': `${Math.max(0, Math.round(wrap.win.left + wrap.win.width - box.pad.l))}px`,
+                    '--wrap-win-t': `${Math.round(wrap.win.top - box.pad.t)}px`,
+                    '--wrap-win-h': `${Math.round(wrap.win.height)}px`,
+                  }
+                : {}),
+            }
+          : undefined
+      }
+    >
       <div
         class={`bp-body${artOn ? " has-art" : ""}`}
         data-family={back.family}
@@ -1498,9 +1597,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       {/* With art the stage takes the art's own shape (never taller), so no empty plate shows above / below it. */}
       <div class="cam-stage" ref={stageRef} style={artShape && !land ? { flex: '0 1 auto', aspectRatio: artShape } : undefined}>
         {/* Photographic body (decorative): drawn first, the preview sits in its window (see artWindowBox). */}
-        <BodyArt cameraId={camera.id} stageW={box.sw} stageH={box.sh} />
+        {wrapOn ? <WrapArt cameraId={camera.id} layout={wrap} /> : <BodyArt cameraId={camera.id} stageW={box.sw} stageH={box.sh} />}
         {!artOn && <BackWindow spec={back} width={frame.width} height={frame.height} />}
         <div class={`viewfinder vfs-${camera.viewfinder}${artBox ? ' vf-on-art' : ''}`} style={vfStyle}>
+          {/* Landscape: capture hints sit on the preview's lower edge (the column has no room for text). */}
+          {land && <div class="vf-hints">{hintsEl}</div>}
           {gpu ? <canvas key={glKey} ref={canvasRef} class="preview" data-testid="preview" /> : <div class="preview" ref={videoHostRef} />}
           <ViewfinderOverlay
             camera={camera}
@@ -1585,6 +1686,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         </div>
       )}
       {screenFlash && <div class="screen-flash" />}
+      {flashPop > 0 && <div class="flash-pop" key={flashPop} aria-hidden="true" />}
       {eject && (
         <div class={`eject-print ${camera.id === 'instaw' ? 'wide' : ''}`} key={eject.key} aria-hidden="true" style={{ width: `${Math.round(Math.min(frame.width * 0.46, 220))}px` }}>
           <img src={eject.url} alt="" class="instant-dev" />
