@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  /* One 1920×1080 frame of the landscape promo; compose.mjs calls draw(state) per frame.
+     Darkroom look of the app and the store screenshots: near-black, red safelight glow, amber LED. */
+  :root { --bg: #0b0a09; --fg: #ece4d6; --muted: #a99f92; --red: #d3322b; --amber: #ffb547; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font); }
+  .layer { position: absolute; inset: 0; overflow: hidden; }
+  .glow { position: absolute; inset: 0; background: radial-gradient(70% 90% at 85% -10%, rgba(211, 50, 43, .32), transparent 60%), radial-gradient(60% 70% at 0% 110%, rgba(255, 140, 40, .10), transparent 60%); }
+  .cap { position: absolute; left: 0; right: 0; top: 0; height: 168px; display: flex; align-items: center; justify-content: center; padding: 0 140px; text-align: center; font-weight: 800; font-size: 60px; line-height: 1.12; letter-spacing: -0.01em; white-space: pre-line; }
+  .edge { position: absolute; left: 0; right: 0; top: 168px; height: 14px; background: repeating-linear-gradient(90deg, #070605 0 14px, #211b16 14px 28px); opacity: .9; }
+  .shot { position: absolute; left: 50%; top: 196px; width: 1568px; height: 882px; margin-left: -784px; border-radius: 30px; overflow: hidden; box-shadow: 0 0 0 10px #15120f, 0 0 0 12px #3a332c, 0 30px 60px rgba(0, 0, 0, .6); background: #000; }
+  .shot img { width: 100%; height: 100%; display: block; }
+  /* hook: a wall of camera bodies, an LED counter and the line */
+  .wall { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr); gap: 3px; background: #000; }
+  .wall img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .veil { position: absolute; inset: 0; background: radial-gradient(60% 62% at 50% 52%, rgba(11, 10, 9, .88) 0%, rgba(11, 10, 9, .66) 55%, rgba(11, 10, 9, .25) 100%); }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 34px; }
+  .led { font-family: 'Consolas', 'Courier New', monospace; font-weight: 700; font-size: 150px; line-height: 1; color: var(--amber); letter-spacing: .06em; padding: 18px 40px 14px; border-radius: 22px; background: linear-gradient(#1b1611, #0e0b08); box-shadow: inset 0 0 0 4px #3a3026, inset 0 6px 24px rgba(0, 0, 0, .8), 0 20px 50px rgba(0, 0, 0, .6); text-shadow: 0 0 22px rgba(255, 170, 60, .75), 0 0 4px rgba(255, 200, 120, .9); }
+  .big { font-size: 88px; font-weight: 800; line-height: 1.12; letter-spacing: -0.015em; white-space: pre-line; text-shadow: 0 4px 30px rgba(0, 0, 0, .6); }
+  /* end card */
+  .end .center { gap: 0; }
+  .end img.icon { width: 220px; height: 220px; border-radius: 50px; box-shadow: 0 26px 70px rgba(0, 0, 0, .65), 0 0 0 2px rgba(255, 255, 255, .06); }
+  .end h1 { margin-top: 46px; font: 800 120px/1 'Segoe UI', sans-serif; letter-spacing: -0.03em; }
+  .end p { margin-top: 22px; font-size: 46px; font-weight: 600; color: var(--muted); }
+  .end .cta { margin-top: 56px; display: inline-flex; align-items: center; gap: 22px; padding: 26px 56px; border-radius: 999px; background: var(--fg); color: #14110e; font-size: 44px; font-weight: 800; }
+  .end .cta i { width: 0; height: 0; border-style: solid; border-width: 17px 0 17px 28px; border-color: transparent transparent transparent var(--red); }
+  .end .strip { position: absolute; left: 0; right: 0; height: 16px; background: repeating-linear-gradient(90deg, #070605 0 16px, #241d17 16px 32px); }
+  .flash { position: absolute; inset: 0; background: #fff; pointer-events: none; }
+  .grain { position: absolute; inset: -256px; background-image: var(--grain); mix-blend-mode: overlay; opacity: .09; pointer-events: none; }
+  .vign { position: absolute; inset: 0; background: radial-gradient(120% 120% at 50% 50%, transparent 60%, rgba(0, 0, 0, .45)); pointer-events: none; }
+</style>
+</head>
+<body>
+<script>
+  let C;
+  const cache = new Map();
+  function img(src) {
+    let p = cache.get(src);
+    if (!p) {
+      const el = new Image();
+      el.src = src;
+      p = el.decode().then(() => el);
+      cache.set(src, p);
+      if (cache.size > 120) cache.delete(cache.keys().next().value);
+    }
+    return p;
+  }
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+  const rise = (el, lt, delay = 0.1, dur = 0.42, px = 26) => {
+    const k = ease((lt - delay) / dur);
+    el.style.opacity = k;
+    el.style.transform = `translateY(${(1 - k) * px}px)`;
+  };
+  const div = (cls, text) => Object.assign(document.createElement('div'), { className: cls, ...(text != null ? { textContent: text } : {}) });
+  window.setup = async (c) => {
+    C = c;
+    document.documentElement.lang = c.lang;
+    document.documentElement.dir = c.dir;
+    document.documentElement.style.setProperty('--font', c.font);
+    document.documentElement.style.setProperty('--grain', `url(${c.grain})`);
+    await Promise.all([...c.bodies.map(img), img(c.icon)]);
+    await document.fonts.ready;
+  };
+  window.draw = async (s) => {
+    const nodes = [];
+    for (const l of s.layers) {
+      const d = div(`layer ${l.kind}`);
+      d.style.opacity = l.op;
+      d.append(div('glow'));
+      if (l.kind === 'hook') {
+        const wall = div('wall');
+        C.bodies.forEach((src, i) => {
+          const tile = document.createElement('img');
+          tile.src = src;
+          const k = ease((l.lt - ((i * 17) % 36) * 0.03) / 0.22);
+          tile.style.opacity = k;
+          tile.style.transform = `scale(${0.94 + 0.06 * k})`;
+          wall.append(tile);
+        });
+        const center = div('center');
+        const n = Math.round(38 * ease((l.lt - 0.15) / 1.25));
+        const led = div('led', String(n).padStart(2, '0'));
+        rise(led, l.lt, 0.05, 0.35);
+        const big = div('big', l.cap);
+        rise(big, l.lt, 0.45);
+        center.append(led, big);
+        d.append(wall, div('veil'), center);
+      } else if (l.kind === 'app') {
+        const cap = div('cap', l.cap);
+        rise(cap, l.lt);
+        const shot = div('shot');
+        shot.append((await img(l.src)).cloneNode());
+        d.append(cap, div('edge'), shot);
+      } else if (l.kind === 'end') {
+        const center = div('center');
+        const icon = (await img(C.icon)).cloneNode();
+        icon.className = 'icon';
+        const h = Object.assign(document.createElement('h1'), { textContent: 'Film Camela' });
+        h.dir = 'ltr';
+        const p = Object.assign(document.createElement('p'), { textContent: C.tag });
+        const cta = div('cta');
+        cta.append(document.createElement('i'), document.createTextNode(C.cta));
+        rise(icon, l.lt, 0.05);
+        rise(h, l.lt, 0.18);
+        rise(p, l.lt, 0.3);
+        rise(cta, l.lt, 0.45);
+        center.append(icon, h, p, cta);
+        const top = div('strip');
+        top.style.top = '26px';
+        const bot = div('strip');
+        bot.style.bottom = '26px';
+        d.append(top, bot, center);
+      }
+      nodes.push(d);
+    }
+    if (s.flash > 0) {
+      const f = div('flash');
+      f.style.opacity = s.flash;
+      nodes.push(f);
+    }
+    const g = div('grain');
+    g.style.transform = `translate(${s.gx}px, ${s.gy}px)`;
+    nodes.push(g, div('vign'));
+    document.body.replaceChildren(...nodes);
+    await new Promise((r) => requestAnimationFrame(() => r()));
+  };
+</script>
+</body>
+</html>

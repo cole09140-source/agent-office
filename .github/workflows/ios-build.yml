@@ -1,0 +1,363 @@
+# iOS build for apps/silvr (Capacitor 8, Swift Package Manager — no CocoaPods).
+#
+# Runs ONLY when started by hand (Actions tab -> "iOS build" -> Run workflow)
+# or when a tag like ios-v1.0.0 is pushed. Nothing runs on ordinary pushes.
+#
+# 1) Always: unsigned iOS Simulator build -> artifact "silvr-simulator-app".
+#    Proves the Xcode project compiles. Needs no Apple account.
+# 2) Only when ALL signing secrets exist: signed App Store archive -> .ipa
+#    artifact "silvr-ipa" -> optional upload to App Store Connect (TestFlight).
+#    Required repository secrets (Settings -> Secrets and variables -> Actions):
+#      APPLE_TEAM_ID                  10-character Team ID
+#      IOS_DIST_CERT_P12_BASE64       Apple Distribution certificate (.p12), base64
+#      IOS_DIST_CERT_PASSWORD         password of that .p12
+#      IOS_PROVISIONING_PROFILE_BASE64  App Store provisioning profile (.mobileprovision), base64
+#      APPSTORE_API_KEY_ID            App Store Connect API key ID
+#      APPSTORE_API_ISSUER_ID         App Store Connect API issuer ID
+#      APPSTORE_API_KEY_P8_BASE64     the AuthKey_XXXX.p8 file, base64
+#
+# Guide (Korean): apps/silvr/docs/09_IOS_BUILD.md
+
+name: iOS build
+
+on:
+  workflow_dispatch:
+    inputs:
+      testflight:
+        description: "Upload the signed build to App Store Connect / TestFlight (needs signing secrets)"
+        type: boolean
+        default: true
+      build_number:
+        description: "CFBundleVersion (build number). Empty = GitHub run number. Must be higher than the last upload."
+        type: string
+        required: false
+        default: ""
+  push:
+    tags:
+      - "ios-v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Capacitor 8 requires Xcode 26.0+. Apple also requires the iOS 26 SDK for uploads.
+  XCODE_APP: /Applications/Xcode_26.6.app
+  APP_DIR: apps/silvr
+
+jobs:
+  ios:
+    name: iOS (simulator + optional App Store)
+    # macos-26 is what macos-latest points to today; pinned so the Xcode path below keeps existing.
+    runs-on: macos-26
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/silvr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        working-directory: .
+        run: |
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::$XCODE_APP is not installed on this runner. Installed Xcodes:"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+
+      # Capacitor CLI 8 refuses to run on Node < 22 (engines: node >=22.0.0).
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/silvr/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Capacitor sync (iOS)
+        run: npx cap sync ios
+
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/spm
+          key: spm-${{ runner.os }}-${{ hashFiles('apps/silvr/ios/App/CapApp-SPM/Package.swift', 'apps/silvr/package-lock.json') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -list
+          xcodebuild -resolvePackageDependencies \
+            -project ios/App/App.xcodeproj -scheme App \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/spm"
+
+      # ---------------------------------------------------------------- 1) unsigned simulator build
+      - name: Simulator build (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            -derivedDataPath "$RUNNER_TEMP/dd-sim" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/spm" \
+            CODE_SIGNING_ALLOWED=NO \
+            build | tee "$RUNNER_TEMP/sim-build.log" | grep -E "error:|warning: .*deprecated|BUILD (SUCCEEDED|FAILED)" || true
+          test -d "$RUNNER_TEMP/dd-sim/Build/Products/Debug-iphonesimulator/App.app"
+          mkdir -p "$RUNNER_TEMP/out"
+          ditto -c -k --keepParent \
+            "$RUNNER_TEMP/dd-sim/Build/Products/Debug-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/out/App-simulator.zip"
+
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: silvr-simulator-app
+          path: ${{ runner.temp }}/out/App-simulator.zip
+          retention-days: 14
+
+      - name: Upload simulator build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-build-log
+          path: ${{ runner.temp }}/sim-build.log
+          if-no-files-found: ignore
+
+      # ---------------------------------------------------------------- 2) signed App Store build
+      - name: Check signing secrets
+        id: signing
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          APPSTORE_API_KEY_P8_BASE64: ${{ secrets.APPSTORE_API_KEY_P8_BASE64 }}
+        run: |
+          missing=""
+          for n in APPLE_TEAM_ID IOS_DIST_CERT_P12_BASE64 IOS_DIST_CERT_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 \
+                   APPSTORE_API_KEY_ID APPSTORE_API_ISSUER_ID APPSTORE_API_KEY_P8_BASE64; do
+            if [ -z "${!n}" ]; then missing="$missing $n"; fi
+          done
+          if [ -z "$missing" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "All signing secrets present -> signed App Store build will run."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Signed build skipped. Missing secrets:$missing"
+          fi
+
+      - name: Install certificate and provisioning profile
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          SIGN_DIR="$RUNNER_TEMP/signing"
+          mkdir -p "$SIGN_DIR"
+          KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+          echo "::add-mask::$KEYCHAIN_PASSWORD"
+
+          printf '%s' "$P12_BASE64"     | base64 --decode > "$SIGN_DIR/dist.p12"
+          printf '%s' "$PROFILE_BASE64" | base64 --decode > "$SIGN_DIR/profile.mobileprovision"
+
+          # Temporary keychain, deleted in the cleanup step.
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$SIGN_DIR/dist.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN" > /dev/null
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          echo "Signing identities in temporary keychain:"
+          security find-identity -v -p codesigning "$KEYCHAIN" | sed -E 's/[0-9A-F]{40}/<sha1>/'
+
+          # Read the profile and sanity-check it.
+          security cms -D -i "$SIGN_DIR/profile.mobileprovision" > "$SIGN_DIR/profile.plist"
+          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$SIGN_DIR/profile.plist")"
+          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$SIGN_DIR/profile.plist")"
+          APP_IDENTIFIER="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$SIGN_DIR/profile.plist")"
+          if /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$SIGN_DIR/profile.plist" > /dev/null 2>&1; then
+            echo "::error::The provisioning profile lists devices, so it is a Development/Ad Hoc profile. Create an 'App Store Connect' distribution profile."
+            exit 1
+          fi
+          BUNDLE_ID="$(grep -m1 -E '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' ios/App/App.xcodeproj/project.pbxproj \
+                        | sed -E 's/.*= "?([^";]+)"?;.*/\1/')"
+          if [ -z "$BUNDLE_ID" ]; then echo "::error::PRODUCT_BUNDLE_IDENTIFIER not found"; exit 1; fi
+          if [ "$APP_IDENTIFIER" != "$TEAM_ID.$BUNDLE_ID" ]; then
+            echo "::error::Profile is for '$APP_IDENTIFIER' but the app is '$TEAM_ID.$BUNDLE_ID'. Check APPLE_TEAM_ID and the profile's App ID."
+            exit 1
+          fi
+          echo "Profile '$PROFILE_NAME' ($PROFILE_UUID) matches $BUNDLE_ID"
+
+          # Xcode 16+ reads profiles from UserData; older tools from MobileDevice. Install to both.
+          for d in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles"; do
+            mkdir -p "$d"
+            cp "$SIGN_DIR/profile.mobileprovision" "$d/$PROFILE_UUID.mobileprovision"
+          done
+
+          {
+            echo "KEYCHAIN=$KEYCHAIN"
+            echo "PROFILE_NAME=$PROFILE_NAME"
+            echo "BUNDLE_ID=$BUNDLE_ID"
+          } >> "$GITHUB_ENV"
+
+      # Switch ONLY the App target to manual signing, in the runner's checkout (nothing is committed).
+      # Passing PROVISIONING_PROFILE_SPECIFIER on the xcodebuild command line would also hit the
+      # Swift package targets and fail, so the project file is patched instead.
+      - name: Configure manual signing for the App target
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, pathlib
+          p = pathlib.Path("ios/App/App.xcodeproj/project.pbxproj")
+          s = p.read_text(encoding="utf-8")
+          name = os.environ["PROFILE_NAME"].replace("\\", "\\\\").replace('"', '\\"')
+          repl = ('CODE_SIGN_STYLE = Manual;\n'
+                  '\t\t\t\tDEVELOPMENT_TEAM = %s;\n'
+                  '\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";\n'
+                  '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "%s";') % (os.environ["TEAM_ID"], name)
+          s, n = re.subn(r'CODE_SIGN_STYLE = Automatic;', lambda m: repl, s)
+          if n == 0:
+              raise SystemExit("CODE_SIGN_STYLE = Automatic not found in project.pbxproj")
+          p.write_text(s, encoding="utf-8")
+          print(f"Patched {n} App target build configurations for manual signing")
+          PY
+
+      - name: Archive (Release, signed)
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          BUILD_NUMBER="${BUILD_NUMBER_INPUT:-$GITHUB_RUN_NUMBER}"
+          echo "Build number (CFBundleVersion): $BUILD_NUMBER"
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/dd-release" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/spm" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            archive > "$RUNNER_TEMP/archive.log" 2>&1 || {
+              grep -E "error:|BUILD|ARCHIVE" "$RUNNER_TEMP/archive.log" | tail -50
+              exit 1
+            }
+          tail -3 "$RUNNER_TEMP/archive.log"
+
+      - name: Export .ipa
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          OPTS="$RUNNER_TEMP/ExportOptions.plist"
+          OPTS_UPLOAD="$RUNNER_TEMP/ExportOptions-upload.plist"
+          python3 - "$OPTS" "$OPTS_UPLOAD" <<'PY'
+          import os, sys, plistlib
+          base = {
+              "method": "app-store-connect",
+              "destination": "export",
+              "teamID": os.environ["TEAM_ID"],
+              "signingStyle": "manual",
+              "signingCertificate": "Apple Distribution",
+              "provisioningProfiles": {os.environ["BUNDLE_ID"]: os.environ["PROFILE_NAME"]},
+              "uploadSymbols": True,
+              "manageAppVersionAndBuildNumber": False,
+          }
+          with open(sys.argv[1], "wb") as f:
+              plistlib.dump(base, f)
+          with open(sys.argv[2], "wb") as f:
+              plistlib.dump({**base, "destination": "upload"}, f)
+          PY
+          echo "OPTS_UPLOAD=$OPTS_UPLOAD" >> "$GITHUB_ENV"
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$OPTS" \
+            -exportPath "$RUNNER_TEMP/ipa"
+          ls -la "$RUNNER_TEMP/ipa"
+          IPA="$(ls "$RUNNER_TEMP"/ipa/*.ipa | head -1)"
+          echo "IPA=$IPA" >> "$GITHUB_ENV"
+
+      - name: Upload .ipa artifact
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: silvr-ipa
+          path: ${{ runner.temp }}/ipa/*.ipa
+          retention-days: 30
+
+      - name: Upload archive log (on failure)
+        if: failure() && steps.signing.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-log
+          path: ${{ runner.temp }}/archive.log
+          if-no-files-found: ignore
+
+      # Upload with the App Store Connect API key. Primary: xcodebuild -exportArchive with
+      # destination=upload (what Xcode's Organizer does). Fallback: xcrun altool --upload-app.
+      - name: Upload to App Store Connect (TestFlight)
+        if: steps.signing.outputs.enabled == 'true' && (github.event_name == 'push' || inputs.testflight)
+        env:
+          API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          API_KEY_P8_BASE64: ${{ secrets.APPSTORE_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          KEY_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEY_DIR"
+          KEY_PATH="$KEY_DIR/AuthKey_${API_KEY_ID}.p8"
+          printf '%s' "$API_KEY_P8_BASE64" | base64 --decode > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+
+          if xcodebuild -exportArchive \
+               -archivePath "$RUNNER_TEMP/App.xcarchive" \
+               -exportOptionsPlist "$OPTS_UPLOAD" \
+               -exportPath "$RUNNER_TEMP/upload" \
+               -authenticationKeyPath "$KEY_PATH" \
+               -authenticationKeyID "$API_KEY_ID" \
+               -authenticationKeyIssuerID "$API_ISSUER_ID"; then
+            echo "Uploaded with xcodebuild."
+          else
+            echo "::warning::xcodebuild upload failed; trying xcrun altool --upload-app"
+            xcrun altool --upload-app -f "$IPA" -t ios \
+              --apiKey "$API_KEY_ID" --apiIssuer "$API_ISSUER_ID"
+          fi
+          echo "::notice::Build sent to App Store Connect. It appears in TestFlight after Apple finishes processing (usually 5-30 min)."
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          if [ -n "${KEYCHAIN:-}" ] && [ -f "$KEYCHAIN" ]; then security delete-keychain "$KEYCHAIN" || true; fi
+          rm -rf "$RUNNER_TEMP/signing" "$HOME/.appstoreconnect/private_keys" \
+                 "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" \
+                 "$HOME/Library/MobileDevice/Provisioning Profiles"

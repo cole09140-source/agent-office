@@ -1,0 +1,272 @@
+import { expect, test, type Page } from '@playwright/test';
+import { loadCamera, openMore, rewindAndDevelop, shoot, start, openTab } from './helpers';
+
+/** Expected print shape per camera (fake camera is landscape 16:9). */
+const CASES: { id: string; presses: number; ratio: number; tol?: number; check?: 'fisheye' | 'pixel' | 'quad' | 'half' | 'slide' | 'gate' | 'sprocket' | 'lowres' }[] = [
+  { id: 'pro35', presses: 1, ratio: 1.5 },
+  { id: 'snap27', presses: 1, ratio: 1.5 },
+  { id: 'instasq', presses: 1, ratio: 0.87, tol: 0.05 }, // square image inside an instant frame
+  { id: 'half72', presses: 2, ratio: 1.53, tol: 0.03, check: 'half' },
+  { id: 'zonelc', presses: 1, ratio: 1.5 },
+  { id: 'toy120', presses: 1, ratio: 1 },
+  { id: 'quad4', presses: 1, ratio: 1.5, tol: 0.04, check: 'quad' },
+  { id: 'doublex', presses: 2, ratio: 1.5 },
+  { id: 'panox', presses: 1, ratio: 2.58, tol: 0.05 }, // 65:24 + Velvet 50's white print border
+  { id: 'fish180', presses: 1, ratio: 1, check: 'fisheye' },
+  { id: 'cine', presses: 1, ratio: 2.39, tol: 0.06 },
+  { id: 'ccd03', presses: 1, ratio: 4 / 3 },
+  { id: 'pixel', presses: 1, ratio: 8 / 7, tol: 0.03, check: 'pixel' },
+  { id: 'range', presses: 1, ratio: 1.2, tol: 0.25 }, // mono film → 35mm strip border
+  { id: 'aqua27', presses: 1, ratio: 1.5 },
+  { id: 'instaw', presses: 1, ratio: 1.23, tol: 0.03 }, // landscape 3:2 inside a wide instant frame
+  { id: 'twin66', presses: 1, ratio: 1 },
+  { id: 'super8', presses: 1, ratio: 1.303, tol: 0.03, check: 'gate' }, // 4:3 in a rounded black gate
+  { id: 'slide35', presses: 1, ratio: 1, check: 'slide' }, // square slide mount
+  { id: 'party', presses: 1, ratio: 1.5 },
+  { id: 'kidcam', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'sprocket', presses: 1, ratio: 2.604, tol: 0.05, check: 'sprocket' }, // 65:24 + thin film edges
+  { id: 'floppy98', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'slim06', presses: 1, ratio: 4 / 3 },
+  { id: 'bridge09', presses: 1, ratio: 4 / 3 },
+  { id: 'zoom90', presses: 1, ratio: 1.5 },
+  { id: 'mf645', presses: 1, ratio: 4 / 3 },
+  { id: 'pinhole', presses: 1, ratio: 1 },
+  { id: 'flip03', presses: 1, ratio: 4 / 3, check: 'lowres' },
+  { id: 'touch07', presses: 1, ratio: 4 / 3 },
+  { id: 'curve07', presses: 1, ratio: 4 / 3 },
+  { id: 'filter10', presses: 1, ratio: 1, tol: 0.05 }, // square inside an even white print border
+  { id: 'booth4', presses: 1, ratio: 0.203, tol: 0.02 }, // four 3:4 poses stacked on a paper strip
+  { id: 'aps97', presses: 1, ratio: 1.5 }, // C (3:2) by default
+  { id: 'pocket110', presses: 1, ratio: 4 / 3 },
+  { id: 'spy8', presses: 1, ratio: 4 / 3 },
+  { id: 'view45', presses: 1, ratio: 1.25 },
+  { id: 'webcam02', presses: 1, ratio: 4 / 3, check: 'lowres' },
+];
+
+async function pixels(page: Page, w: number, h: number) {
+  return page.getByTestId('print').evaluate(
+    (img: HTMLImageElement, [W, H]) => {
+      const c = document.createElement('canvas');
+      c.width = W;
+      c.height = H;
+      const g = c.getContext('2d')!;
+      g.imageSmoothingEnabled = false;
+      g.drawImage(img, 0, 0, W, H);
+      return Array.from(g.getImageData(0, 0, W, H).data);
+    },
+    [w, h],
+  );
+}
+
+for (const cse of CASES) {
+  test(`camera ${cse.id}: shoots, develops and prints in its own format`, async ({ page }) => {
+    const errors = await start(page);
+    await loadCamera(page, cse.id);
+    await page.waitForTimeout(600);
+    // Nothing sits above the camera body, and the control deck stays one row on a 360px phone.
+    const vp = page.viewportSize()!;
+    await page.setViewportSize({ width: 360, height: vp.height });
+    await expect(page.locator('.cam-top')).toHaveCount(0);
+    const row = await page.locator('.deck-row').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const kids = [...el.querySelectorAll('.deck-side > *, :scope > .shutter')].map((k) => k.getBoundingClientRect());
+      const mids = kids.map((k) => k.top + k.height / 2);
+      return { h: r.height, w: el.scrollWidth - el.clientWidth, spread: Math.max(...mids) - Math.min(...mids), right: Math.max(...kids.map((k) => k.right)), vw: innerWidth };
+    });
+    expect(row.h, 'deck on one row at 360px').toBeLessThan(96);
+    expect(row.spread, 'deck controls share one line at 360px').toBeLessThan(4);
+    expect(row.w, 'deck never scrolls sideways at 360px').toBeLessThanOrEqual(0);
+    expect(row.right, 'deck fits the 360px screen').toBeLessThanOrEqual(row.vw);
+    await page.setViewportSize(vp);
+    await page.screenshot({ path: `e2e/.shots/cam-${cse.id}-vf.png` });
+    for (let i = 0; i < cse.presses; i++) {
+      if (cse.id === 'doublex' && i === 0) {
+        await page.getByTestId('shutter').click();
+        await expect(page.locator('.vf-ghost')).toBeVisible();
+      } else {
+        await shoot(page, 1);
+      }
+    }
+    if (cse.id === 'doublex') await expect(page.locator('.vf-ghost')).toHaveCount(0);
+    await rewindAndDevelop(page);
+    await page.getByTestId('thumb').first().click();
+    await expect(page.getByTestId('print')).toBeVisible({ timeout: 45_000 });
+    const [w, h] = await page.getByTestId('print').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
+    expect(w / h).toBeCloseTo(cse.ratio, 0);
+    expect(Math.abs(w / h - cse.ratio)).toBeLessThan(cse.tol ?? 0.03);
+    await page.waitForTimeout(1300);
+    await page.screenshot({ path: `e2e/.shots/cam-${cse.id}-print.png` });
+
+    if (cse.check === 'fisheye') {
+      const d = await pixels(page, 40, 40);
+      const corner = d[0] + d[1] + d[2];
+      const centre = d[(20 * 40 + 20) * 4] + d[(20 * 40 + 20) * 4 + 1] + d[(20 * 40 + 20) * 4 + 2];
+      expect(corner).toBeLessThan(40); // black outside the circle
+      expect(centre).toBeGreaterThan(150);
+    }
+    if (cse.check === 'pixel') {
+      // Only the 4 palette tones (moss) may appear.
+      const pal = [
+        [15, 56, 15],
+        [48, 98, 48],
+        [139, 172, 15],
+        [155, 188, 15],
+      ];
+      const d = await pixels(page, 64, 56);
+      for (let i = 0; i < d.length; i += 4 * 7) {
+        const near = pal.some((p) => Math.abs(p[0] - d[i]) + Math.abs(p[1] - d[i + 1]) + Math.abs(p[2] - d[i + 2]) < 24);
+        expect(near, `pixel ${i / 4}: ${d[i]},${d[i + 1]},${d[i + 2]}`).toBe(true);
+      }
+    }
+    if (cse.check === 'slide' || cse.check === 'gate') {
+      // Mount corners are light plastic; gate corners are black.
+      const d = await pixels(page, 40, 40);
+      const corner = d[0] + d[1] + d[2];
+      const centre = d[(20 * 40 + 20) * 4] + d[(20 * 40 + 20) * 4 + 1] + d[(20 * 40 + 20) * 4 + 2];
+      if (cse.check === 'slide') expect(corner).toBeGreaterThan(600);
+      else expect(corner).toBeLessThan(40);
+      expect(Math.abs(centre - corner)).toBeGreaterThan(30);
+    }
+    if (cse.check === 'lowres') {
+      // 0.3 MP sensor: the print is never larger than VGA.
+      expect(Math.max(w, h)).toBeLessThanOrEqual(640);
+    }
+    if (cse.check === 'sprocket') {
+      // A row of dark perforations runs through the top of the picture.
+      const W = 260;
+      const H = 100;
+      const d = await pixels(page, W, H);
+      const row = Array.from({ length: W }, (_, x) => d[(11 * W + x) * 4] + d[(11 * W + x) * 4 + 1] + d[(11 * W + x) * 4 + 2]);
+      const dark = row.filter((v) => v < 60).length;
+      expect(dark).toBeGreaterThan(W * 0.2);
+      expect(dark).toBeLessThan(W * 0.7);
+    }
+    if (cse.check === 'quad' || cse.check === 'half') {
+      // The frame line between sub-frames is dark.
+      const d = await pixels(page, 201, 100);
+      const at = (x: number, y: number) => d[(y * 201 + x) * 4] + d[(y * 201 + x) * 4 + 1] + d[(y * 201 + x) * 4 + 2];
+      expect(at(100, 30)).toBeLessThan(at(60, 30));
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
+test('disposable: the flash must be charged before every flash shot', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'snap27');
+  const flash = page.getByTestId('btn-flash');
+  await expect(flash).toHaveAttribute('data-charge', 'empty');
+  await flash.click();
+  await expect(flash).toHaveAttribute('data-charge', 'charging');
+  await expect(flash).toHaveAttribute('data-charge', 'ready', { timeout: 6000 });
+  await shoot(page, 1);
+  await expect(flash).toHaveAttribute('data-charge', 'empty');
+  await expect(page.getByTestId('counter')).toContainText('01');
+});
+
+test('half-frame: a pending half survives a reload and pairs up', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'half72');
+  await page.getByTestId('shutter').click();
+  await expect(page.getByTestId('counter')).toContainText('01');
+  await expect(page.locator('.cam-hint')).toHaveText('Next shot fills the right half');
+  await page.reload();
+  await expect(page.getByTestId('counter')).toContainText('01');
+  await expect(page.locator('.vf-half-tag')).toHaveText('B');
+  await page.getByTestId('shutter').click();
+  await expect(page.getByTestId('counter')).toContainText('02');
+  await page.getByTestId('shutter').click();
+  await expect(page.getByTestId('counter')).toContainText('03');
+  await expect(page.locator('.vf-half-tag')).toHaveText('B');
+  // Changing cameras keeps a lone first half (with a blank B side) as a frame of its own.
+  await loadCamera(page, 'pro35');
+  await openTab(page, 'gallery');
+  await page.getByTestId('roll-card').filter({ hasText: 'Half' }).locator('.roll-meta').click();
+  await expect(page.getByTestId('thumb')).toHaveCount(2);
+});
+
+test('party compact: the big flash is on and the date imprint too', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'party');
+  await expect(page.getByTestId('btn-flash')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('btn-date')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('wide instant: the print ejects wide and keeps developing in the photo view', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'instaw');
+  await shoot(page, 1);
+  // The print slides out over the viewfinder (saved first), then lands in the thumbnail.
+  await expect(page.locator('.eject-print')).toBeVisible();
+  await expect(page.getByTestId('last-shot')).toHaveClass(/instant/);
+  await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('last-shot').getByTestId('thumb').click();
+  await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);
+});
+
+test('instant camera: print ejects, develops, and is viewable in the camera', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'instasq');
+  await shoot(page, 1);
+  // The print slides out over the viewfinder (saved first), then lands in the thumbnail.
+  await expect(page.locator('.eject-print')).toBeVisible();
+  await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
+  await openTab(page, 'gallery');
+  await expect(page.getByTestId('roll-card')).toContainText('Shooting');
+  await page.getByTestId('roll-card').locator('.roll-meta').click();
+  await page.getByTestId('thumb').first().click();
+  await expect(page.getByTestId('print')).toHaveClass(/instant-dev/);
+  await openTab(page, 'camera');
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'instasq');
+  await expect(page.getByTestId('counter')).toContainText('01');
+});
+
+test('digital camera: the shot is in the album right away, nothing to finish', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'pixel');
+  await openMore(page);
+  await page.getByTestId('btn-palette').click();
+  await expect(page.getByTestId('btn-palette')).toHaveAttribute('data-palette', 'mono');
+  await shoot(page, 1);
+  await expect(page.getByTestId('last-shot').locator('img')).toBeVisible({ timeout: 30_000 });
+  await rewindAndDevelop(page);
+  await expect(page.getByTestId('thumb')).toHaveCount(1);
+});
+
+test('exposure dial and pixel darkroom palette', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'pro35');
+  await openMore(page);
+  await page.getByTestId('btn-ev').click();
+  await page.getByTestId('sl-ev').fill('1');
+  await expect(page.getByTestId('btn-ev')).toContainText('+1.0');
+  // The gear panel opens leftwards over the dial: close it before turning the dial.
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('cam-more')).toBeHidden();
+
+  await loadCamera(page, 'pixel');
+  await shoot(page, 1);
+  await page.getByTestId('last-shot').getByTestId('thumb').click();
+  await expect(page.getByTestId('print')).toBeVisible({ timeout: 30_000 });
+  const before = await page.getByTestId('print').getAttribute('src');
+  await page.getByTestId('btn-darkroom').click();
+  await expect(page.locator('.dr-controls .stock-strip')).toHaveCount(0); // pixel sensor is fixed
+  await page.getByRole('radio', { name: 'Sepia' }).click();
+  await page.getByTestId('btn-dr-save').click();
+  await expect.poll(async () => page.getByTestId('print').getAttribute('src'), { timeout: 30_000 }).not.toBe(before);
+});
+
+test('camera choice is remembered and film choices follow the body', async ({ page }) => {
+  await start(page);
+  await loadCamera(page, 'cine');
+  await page.getByTestId('roll-btn').click();
+  await expect(page.getByTestId('roll-sheet').getByTestId('stock-neon800t')).toBeVisible();
+  await expect(page.getByTestId('roll-sheet').getByTestId('stock-sunny200')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await loadCamera(page, 'ccd03');
+  await page.getByTestId('roll-btn').click();
+  await expect(page.getByTestId('roll-sheet').getByText('Built-in film')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(page.getByTestId('camera-screen')).toHaveAttribute('data-camera', 'ccd03');
+});

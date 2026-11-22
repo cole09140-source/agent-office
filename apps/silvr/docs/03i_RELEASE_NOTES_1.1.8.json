@@ -1,0 +1,17 @@
+{
+  "_comment": [
+    "Release notes for 1.1.8 (versionCode 11, 2026-11-22). No trademarks. Play limit 500 chars per language."
+  ],
+  "notes": {
+    "en": "Film Camela 1.1.8\n• Every shot is saved to your gallery (Film Camela album)\n• Volume buttons take the photo\n• Pinch to zoom the camera and your photos\n• Optional level and tap to focus\n• Prices load more reliably; clearer message when ads can’t load",
+    "ko": "Film Camela 1.1.8\n• 찍으면 갤러리 Film Camela 앨범에 자동 저장\n• 볼륨 버튼으로 촬영\n• 촬영 화면·사진 두 손가락 확대\n• 수평계·탭 초점(설정에서 선택)\n• 가격표가 더 잘 떠요, 광고가 안 뜰 때 안내",
+    "ja": "Film Camela 1.1.8\n• 撮った写真をギャラリーの Film Camela アルバムに自動保存\n• 音量ボタンで撮影\n• カメラと写真をピンチで拡大\n• 水平器とタップでピント（設定で選択）\n• 価格が表示されやすくなり、広告が読み込めないときに案内",
+    "zh": "Film Camela 1.1.8\n• 每张照片自动保存到相册的 Film Camela 相簿\n• 音量键拍照\n• 双指缩放相机和照片\n• 可选水平仪和轻点对焦\n• 价格更稳定显示，广告无法载入时给出提示",
+    "es": "Film Camela 1.1.8\n• Cada foto se guarda en tu galería (álbum Film Camela)\n• Dispara con los botones de volumen\n• Pellizca para hacer zoom en la cámara y en tus fotos\n• Nivel y toque para enfocar opcionales\n• Los precios cargan mejor; aviso claro si los anuncios no cargan",
+    "fr": "Film Camela 1.1.8\n• Chaque photo est enregistrée dans votre galerie (album Film Camela)\n• Les boutons de volume déclenchent\n• Pincez pour zoomer l’appareil et vos photos\n• Niveau et mise au point au toucher en option\n• Les prix s’affichent mieux ; message clair si les pubs ne chargent pas",
+    "pt": "Film Camela 1.1.8\n• Cada foto é salva na galeria (álbum Film Camela)\n• Fotografe com os botões de volume\n• Pinça para dar zoom na câmera e nas fotos\n• Nível e toque para focar opcionais\n• Preços carregam melhor; aviso claro quando os anúncios não carregam",
+    "ru": "Film Camela 1.1.8\n• Каждый снимок сохраняется в галерею (альбом Film Camela)\n• Съёмка кнопками громкости\n• Масштаб щипком в камере и на фото\n• Уровень и фокус касанием по желанию\n• Цены загружаются надёжнее; понятное сообщение, если реклама не грузится",
+    "hi": "Film Camela 1.1.8\n• हर फ़ोटो गैलरी के Film Camela एल्बम में अपने-आप सेव\n• वॉल्यूम बटन से फ़ोटो\n• कैमरा और फ़ोटो में पिंच से ज़ूम\n• लेवल और टैप से फ़ोकस (वैकल्पिक)\n• कीमतें बेहतर लोड होती हैं; विज्ञापन न लोड होने पर साफ़ संदेश",
+    "ar": "Film Camela 1.1.8\n• تُحفظ كل صورة في المعرض (ألبوم Film Camela)\n• التصوير بأزرار الصوت\n• التكبير بإصبعين في الكاميرا والصور\n• ميزان الاستواء والتركيز باللمس اختياريًا\n• تحميل أفضل للأسعار ورسالة واضحة عند تعذّر تحميل الإعلانات"
+  }
+}

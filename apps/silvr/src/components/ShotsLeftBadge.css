@@ -1,0 +1,31 @@
+/* ShotsLeftBadge: a film-counter stamp in amber mono (see ShotsLeftBadge.tsx). Placement comes from the caller. */
+.shots-left {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  border-radius: var(--dr-r-sm, 2px);
+  background: rgba(7, 6, 5, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(224, 160, 58, 0.35);
+  color: var(--dr-amber, #e0a03a);
+  font-family: var(--dr-mono-ui, var(--mono));
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: calc(var(--dr-track, 0.08em) * 0.75);
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+button.shots-left {
+  min-height: 32px; /* tappable when it is a button (opens MY); still a small stamp */
+  padding: 4px 10px;
+}
+/* Running low: still amber, a brighter edge. Empty: the safelight (it is the one thing to act on). */
+.shots-left.low {
+  box-shadow: inset 0 0 0 1px var(--dr-amber, #e0a03a);
+}
+.shots-left.empty {
+  color: var(--dr-red-text, #f2473d);
+  box-shadow: inset 0 0 0 1px var(--dr-red, #d3322b), 0 0 10px var(--dr-red-glow, rgba(211, 50, 43, 0.45));
+}

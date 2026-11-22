@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  /* One 1080×1920 frame of the promo video; compose.mjs calls draw(layers) per frame. */
+  :root { --bg: #0e0d0c; --fg: #f6f1ea; --muted: #b9b0a5; --accent: #ff8a2b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+  body { font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif; color: var(--fg); -webkit-font-smoothing: antialiased; }
+  .layer { position: absolute; inset: 0; overflow: hidden; }
+  .still img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .still .shade { position: absolute; inset: auto 0 0 0; height: 62%; background: linear-gradient(to top, rgba(8, 7, 6, .82), rgba(8, 7, 6, .45) 45%, rgba(8, 7, 6, 0)); }
+  .still .cap { position: absolute; left: 84px; right: 84px; bottom: 260px; font-size: 92px; line-height: 1.16; font-weight: 800; letter-spacing: -0.02em; white-space: pre-line; text-shadow: 0 2px 24px rgba(0, 0, 0, .35); }
+  .app { background: radial-gradient(120% 70% at 50% 100%, #2a1d12 0%, var(--bg) 62%); }
+  .app .cap { position: absolute; left: 70px; right: 70px; top: 78px; height: 190px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 70px; line-height: 1.18; font-weight: 800; letter-spacing: -0.02em; white-space: pre-line; }
+  .app .phone { position: absolute; left: 50%; bottom: 64px; width: 780px; height: 1520px; transform: translateX(-50%); border-radius: 64px; padding: 12px; background: #1d1a17; box-shadow: 0 0 0 2px #34302b, 0 40px 120px rgba(0, 0, 0, .6); }
+  .app .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 52px; display: block; }
+  .end { background: radial-gradient(90% 60% at 50% 42%, #2b1d11 0%, var(--bg) 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-bottom: 80px; }
+  .end img { width: 300px; height: 300px; border-radius: 68px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+  .end h1 { margin-top: 64px; font-size: 112px; font-weight: 800; letter-spacing: -0.03em; }
+  .end p { margin-top: 18px; font-size: 52px; font-weight: 600; color: var(--muted); }
+  .end .cta { margin-top: 84px; display: inline-flex; align-items: center; gap: 22px; padding: 34px 64px; border-radius: 999px; background: var(--fg); color: #14110e; font-size: 50px; font-weight: 800; }
+  .end .cta i { width: 0; height: 0; border-style: solid; border-width: 20px 0 20px 32px; border-color: transparent transparent transparent var(--accent); }
+</style>
+</head>
+<body>
+<script>
+  let copy, broll, icon;
+  const cache = new Map();
+  function img(src) {
+    let p = cache.get(src);
+    if (!p) {
+      const el = new Image();
+      el.src = src;
+      p = el.decode().then(() => el);
+      cache.set(src, p);
+      if (cache.size > 40) cache.delete(cache.keys().next().value);
+    }
+    return p;
+  }
+  window.setup = async (c, b, i) => {
+    copy = c;
+    broll = b;
+    icon = i;
+    await document.fonts.ready;
+  };
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+  /** Caption: fades and rises 28px into place, starting `delay` s into its segment. */
+  const rise = (el, lt, delay = 0.12, dur = 0.38) => {
+    const k = ease((lt - delay) / dur);
+    el.style.opacity = k;
+    el.style.transform = `translateY(${(1 - k) * 28}px)`;
+  };
+  window.draw = async (layers) => {
+    const nodes = [];
+    for (const l of layers) {
+      const d = document.createElement('div');
+      d.className = `layer ${l.kind}`;
+      d.style.opacity = l.op;
+      if (l.kind === 'still') {
+        const im = (await img(l.src.startsWith('file:') ? l.src : broll + l.src)).cloneNode();
+        const cap = Object.assign(document.createElement('div'), { className: 'cap', textContent: copy.caps[l.cap] });
+        rise(cap, l.lt);
+        d.append(im, Object.assign(document.createElement('div'), { className: 'shade' }), cap);
+      } else if (l.kind === 'app') {
+        const cap = Object.assign(document.createElement('div'), { className: 'cap', textContent: copy.caps[l.cap] });
+        rise(cap, l.lt);
+        const phone = Object.assign(document.createElement('div'), { className: 'phone' });
+        phone.append((await img(l.src)).cloneNode());
+        d.append(cap, phone);
+      } else {
+        const ic = (await img(icon)).cloneNode();
+        const h = Object.assign(document.createElement('h1'), { textContent: 'Film Camela' });
+        const p = Object.assign(document.createElement('p'), { textContent: copy.tag });
+        const cta = Object.assign(document.createElement('div'), { className: 'cta' });
+        cta.append(document.createElement('i'), document.createTextNode(copy.cta));
+        rise(ic, l.lt, 0.1);
+        rise(h, l.lt, 0.22);
+        rise(p, l.lt, 0.34);
+        rise(cta, l.lt, 0.5);
+        d.append(ic, h, p, cta);
+      }
+      nodes.push(d);
+    }
+    document.body.replaceChildren(...nodes);
+    await new Promise((r) => requestAnimationFrame(() => r()));
+  };
+</script>
+</body>
+</html>

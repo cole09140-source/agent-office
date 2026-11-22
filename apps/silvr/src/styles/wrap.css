@@ -1,0 +1,784 @@
+/* wrap — the full-body camera back in phone landscape + the "living camera" micro-interactions.
+   Owner: camera-screen agent A (src/cameras/BodyWrap.tsx, src/screens/Camera.tsx). Loaded after bodies.css.
+
+   Camera.tsx marks the screen `.camera.cam-land.cam-wrap` (data-mat / data-btn / data-shutter and the --bp-*
+   colours of the body's back spec, src/cameras/backs/spec.ts) when the camera has wrap art. The art covers the
+   whole screen (.cam-stage spans it), the preview sits in the art's black window, and the mode dial and the
+   control column are real-looking controls mounted on the body to the right of the window:
+     window | body | DIAL (a track recessed into the body) | body | COLUMN (buttons in the body's material).
+   Same elements as the plain landscape layout (deck.css), never duplicates. Transforms / opacity only for
+   anything that moves; nothing moves with reduced motion. */
+
+/* ==========================================================================
+   Full-body wrap (phone landscape)
+   ========================================================================== */
+@media (orientation: landscape) {
+  .camera.cam-land.cam-wrap {
+    --wrap-gap: 8px; /* = WRAP_MIN_GAP (BodyWrap.tsx) */
+    --wrap-dial-gap: 10px; /* dial → column: the dial sits right beside the buttons, the spare body goes left of it */
+    --wrap-counter-h: 30px;
+    /* where the controls start (below the top plate) and where the window ends; set inline by Camera.tsx */
+    --wrap-ctl: var(--wrap-ctl-t, 0px);
+    --wrap-win-b: calc(var(--wrap-win-t, 0px) + var(--wrap-win-h, 100%));
+    /* The machined parts: a metal (chrome, or brass on a brass body: the button colour of a chrome-button body),
+       its dark and light, the cap the lettering is engraved into, and the lettering. Skinned per body below. */
+    --wrap-metal: #c3c7cc;
+    --wrap-metal-dk: color-mix(in srgb, var(--wrap-metal) 42%, #000);
+    --wrap-metal-lt: color-mix(in srgb, var(--wrap-metal) 45%, #fff);
+    --wrap-cap: color-mix(in srgb, var(--bp-shade, #111) 45%, #151515);
+    --wrap-ink: var(--wrap-metal);
+    --wrap-ink-on: #ffb44d;
+    --wrap-ring: 3.5px;
+    /* the seat every part sits in, and the lit lip under it */
+    --wrap-seat: rgba(0, 0, 0, 0.5);
+    --wrap-lip: rgba(255, 255, 255, 0.1);
+    /* a turned metal ring (conic: two bright and two dark facets) */
+    --wrap-turned: conic-gradient(
+      from 200deg,
+      var(--wrap-metal-lt) 0deg,
+      var(--wrap-metal) 40deg,
+      var(--wrap-metal-dk) 95deg,
+      var(--wrap-metal) 140deg,
+      var(--wrap-metal-lt) 180deg,
+      var(--wrap-metal) 220deg,
+      var(--wrap-metal-dk) 275deg,
+      var(--wrap-metal) 320deg,
+      var(--wrap-metal-lt) 360deg
+    );
+    /* a slotted screw head (one layer, placed with background-position) */
+    --wrap-screw: radial-gradient(
+      circle closest-side,
+      rgba(0, 0, 0, 0.55) 0 22%,
+      var(--wrap-metal-lt) 24% 40%,
+      var(--wrap-metal) 55%,
+      var(--wrap-metal-dk) 82%,
+      rgba(0, 0, 0, 0.6) 90%,
+      transparent 100%
+    );
+    position: relative;
+    /* the window's width (from the padding edge) | spare body | DIAL | gap | COLUMN */
+    grid-template-columns: var(--wrap-win-r, minmax(0, 1fr)) minmax(var(--wrap-gap), 1fr) var(--land-dial-w) var(--wrap-dial-gap) var(--land-col-w);
+    grid-template-areas: 'stage . dial . col';
+    column-gap: 0;
+    /* under the art (a left notch can push it right; a very wide window letterboxes it) */
+    background: var(--bp-shade, #0d0d0e);
+  }
+  /* RTL grids run right to left: the tracks listed the other way round keep the window on the physical left. */
+  [dir='rtl'] .camera.cam-land.cam-wrap {
+    grid-template-columns: var(--land-col-w) var(--wrap-dial-gap) var(--land-dial-w) minmax(var(--wrap-gap), 1fr) var(--wrap-win-r, minmax(0, 1fr));
+    grid-template-areas: 'col . dial . stage';
+  }
+
+  /* ---- skins: the body's own button finish (data-btn) ---- */
+  /* Chrome (or brass) bezels, dark caps, the lettering engraved and filled with the metal. */
+  .camera.cam-wrap[data-btn='chrome'] {
+    --wrap-metal: var(--bp-btn);
+  }
+  /* Rubber buttons: gunmetal bezels, the caps in the body's rubber, light lettering. */
+  .camera.cam-wrap[data-btn='rubber'] {
+    --wrap-metal: #9da1a7;
+    --wrap-cap: var(--bp-btn);
+    --wrap-ink: var(--bp-btn-ink);
+  }
+  /* Moulded plastic (gloss / candy jelly): a ring moulded in the body's shade, caps in the button colour. */
+  .camera.cam-wrap:is([data-btn='gloss'], [data-btn='jelly']) {
+    --wrap-metal: color-mix(in srgb, var(--bp-shade) 80%, #fff);
+    --wrap-cap: var(--bp-btn);
+    --wrap-ink: var(--bp-btn-ink);
+    --wrap-ink-on: var(--bp-btn-on);
+  }
+  /* Wood / brass bodies: warm metal even where the spec says rubber. */
+  .camera.cam-wrap[data-mat='wood'] {
+    --wrap-metal: #cdb27a;
+  }
+
+  /* The camera back: the stage spans the whole screen (padding included); WrapArt + the preview inside it are
+     placed in px by wrapLayout. */
+  .camera.cam-wrap .cam-stage,
+  .camera.cam-wrap > .bp-body > .cam-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    grid-area: auto;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .cam-wrap .cam-stage > .viewfinder {
+    z-index: 1;
+    background: #000;
+    box-shadow: none;
+  }
+  /* "No camera": inside the body, clear of the controls. */
+  .cam-wrap .cam-stage > .cam-error {
+    z-index: 2;
+    right: calc(var(--land-col-w) + var(--land-dial-w) + 3 * var(--wrap-gap));
+  }
+
+  /* ---- MODE DIAL: the camera strip in a recessed track with a chrome frame, a screw top and bottom; below
+     the frame counter, level with the bottom of the window ---- */
+  .camera.cam-wrap .cam-rail.vertical {
+    z-index: 2;
+    align-self: start;
+    margin-top: calc(var(--wrap-ctl) + var(--wrap-counter-h) + 10px);
+    height: max(150px, calc(var(--wrap-win-b) - var(--wrap-ctl) - var(--wrap-counter-h) - 10px));
+    border: solid transparent;
+    border-width: 13px 5px;
+    border-radius: 16px;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.55)) padding-box,
+      linear-gradient(180deg, #1b1b1c, #0b0b0c) padding-box,
+      linear-gradient(90deg, var(--wrap-metal-dk), var(--wrap-metal-lt) 18%, var(--wrap-metal) 40%, var(--wrap-metal-dk) 62%, var(--wrap-metal-lt) 84%, var(--wrap-metal-dk)) border-box;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 1px 0 1.5px var(--wrap-lip),
+      0 4px 8px rgba(0, 0, 0, 0.45),
+      inset 0 5px 8px rgba(0, 0, 0, 0.9),
+      inset 0 -2px 5px rgba(0, 0, 0, 0.6);
+  }
+  /* the two screws, in the thick top and bottom of the frame */
+  .camera.cam-wrap .cam-rail.vertical::before,
+  .camera.cam-wrap .cam-rail.vertical::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    margin-left: -4.5px;
+    border-radius: 50%;
+    background: var(--wrap-screw);
+    pointer-events: none;
+  }
+  .camera.cam-wrap .cam-rail.vertical::before {
+    top: -11px;
+  }
+  .camera.cam-wrap .cam-rail.vertical::after {
+    bottom: -11px;
+    transform: rotate(60deg);
+  }
+  .cam-wrap .cam-rail.vertical .cam-rail-card {
+    color: #e9e4da;
+  }
+  .cam-wrap .cam-rail.vertical .cam-rail-cell.on .cam-rail-card {
+    color: #fff;
+  }
+
+  /* ---- THE COLUMN: starts below the top plate; physical buttons set into the body ---- */
+  .camera.cam-wrap .deck.deck-land {
+    --deck-btn: 48px;
+    --deck-shutter: 80px;
+    padding: var(--wrap-ctl) 0 2px;
+  }
+  .cam-wrap .deck-land .land-top {
+    gap: 12px;
+  }
+  .cam-wrap .deck-land .land-bottom {
+    gap: 12px;
+    padding-bottom: 2px;
+  }
+
+  /* Buttons: a turned metal bezel (the border) around a cap (the padding box), the icon engraved into it. */
+  .cam-wrap .deck-land .deck-btn,
+  .cam-wrap .deck-land .last-shot-empty {
+    border: var(--wrap-ring) solid transparent;
+    color: var(--wrap-ink);
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 55%) padding-box,
+      radial-gradient(100% 100% at 50% 100%, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0) 60%) padding-box,
+      linear-gradient(var(--wrap-cap), var(--wrap-cap)) padding-box,
+      var(--wrap-turned) border-box;
+    box-shadow:
+      0 0 0 1.5px var(--wrap-seat),
+      0 1px 0 2px var(--wrap-lip),
+      0 3px 5px 1px rgba(0, 0, 0, 0.45),
+      inset 0 2px 3px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.12);
+    transition:
+      transform 80ms ease-out,
+      box-shadow 80ms ease-out,
+      filter 80ms ease-out;
+  }
+  /* Engraved lettering: a dark cut above, a lit edge below. */
+  .cam-wrap .deck-land :is(.deck-btn, .last-shot-empty) > svg {
+    filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.75)) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.22));
+  }
+  .cam-wrap .deck-land .last-shot-empty {
+    border-radius: 12px;
+  }
+  /* Glossy plastic caps: a hard mirror highlight on the top half. */
+  .cam-wrap[data-btn='gloss'] .deck-land :is(.deck-btn, .last-shot-empty) {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0, rgba(255, 255, 255, 0.12) 46%, rgba(255, 255, 255, 0) 50%) padding-box,
+      linear-gradient(var(--wrap-cap), var(--wrap-cap)) padding-box,
+      var(--wrap-turned) border-box;
+  }
+  /* Candy jelly caps: a dot of light on top and a glow pooled at the bottom. */
+  .cam-wrap[data-btn='jelly'] .deck-land :is(.deck-btn, .last-shot-empty) {
+    background:
+      radial-gradient(60% 38% at 50% 18%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 75%) padding-box,
+      radial-gradient(80% 50% at 50% 100%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 70%) padding-box,
+      linear-gradient(var(--wrap-cap), var(--wrap-cap)) padding-box,
+      var(--wrap-turned) border-box;
+  }
+  /* Pressed: the cap goes down into its bezel. */
+  .cam-wrap .deck-land .deck-btn:active:not(:disabled),
+  .cam-wrap .deck-land .last-shot-empty:active {
+    transform: translateY(1px);
+    filter: brightness(0.9);
+    box-shadow:
+      0 0 0 1.5px var(--wrap-seat),
+      0 1px 0 2px var(--wrap-lip),
+      0 1px 1px 1px rgba(0, 0, 0, 0.5),
+      inset 0 3px 5px rgba(0, 0, 0, 0.6);
+  }
+  /* Latched (flash on, timer set…): the lettering lights and a small lamp glows beside it. */
+  .cam-wrap .deck-land .deck-btn.on,
+  .cam-wrap .deck-land .flash-charge.charge-ready {
+    color: var(--wrap-ink-on);
+  }
+  .cam-wrap .deck-land .deck-btn.on::before,
+  .cam-wrap .deck-land .flash-charge.charge-ready::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--bp-led);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 0 7px 1px var(--bp-led);
+  }
+  .cam-wrap .deck-land .flash-charge.flash-charge.off {
+    color: var(--wrap-ink);
+    opacity: 0.75;
+  }
+  .cam-wrap .deck-land .chip.cancel {
+    color: #fff;
+    background:
+      radial-gradient(120% 90% at 50% 12%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 56%) padding-box,
+      linear-gradient(#b3261e, #b3261e) padding-box,
+      var(--wrap-turned) border-box;
+  }
+  .cam-wrap .deck-land .deck-btn:disabled {
+    opacity: 0.6;
+    filter: saturate(0.6);
+  }
+  .cam-wrap .deck-land .deck-btn:focus-visible,
+  .cam-wrap .deck-land .shutter:focus-visible,
+  .cam-wrap .deck-land .last-shot-empty:focus-visible,
+  .cam-wrap .deck-land .last-shot .thumb:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 5px;
+  }
+
+  /* Frame counter: a small brushed metal plate with a screw each side, the figures behind a dark window.
+     It sits on the body above the mode dial (beside the gear), not in the column. */
+  .cam-wrap .deck-land .deck-counter {
+    position: absolute;
+    top: var(--wrap-ctl);
+    right: calc(100% + var(--wrap-dial-gap));
+    width: var(--land-dial-w);
+    height: var(--wrap-counter-h);
+    min-width: 0;
+    padding: 0 18px;
+    border-radius: 6px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, rgba(0, 0, 0, 0.05) 1px 3px),
+      linear-gradient(180deg, var(--wrap-metal-lt), var(--wrap-metal) 45%, var(--wrap-metal-dk));
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.55),
+      0 1px 0 1.5px var(--wrap-lip),
+      0 3px 5px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    color: #ffb13b;
+    font-size: 16px;
+    text-shadow: 0 0 6px rgba(255, 160, 40, 0.65);
+  }
+  .cam-wrap .deck-land .deck-counter > span {
+    display: block;
+    width: 100%;
+    padding: 2px 4px 1px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #020202, #16120d 55%, #020202);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.95),
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 1px 0 1px rgba(255, 255, 255, 0.25);
+    text-align: center;
+  }
+  .cam-wrap .deck-land .deck-counter .counter-tick {
+    color: #ffb13b;
+  }
+  /* the two screws */
+  .cam-wrap .deck-land .deck-counter::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border: 0;
+    border-radius: inherit;
+    background:
+      var(--wrap-screw) 5px 50% / 8px 8px no-repeat,
+      var(--wrap-screw) calc(100% - 5px) 50% / 8px 8px no-repeat;
+    opacity: 1;
+    pointer-events: none;
+  }
+  .cam-wrap .deck-land .deck-counter.empty {
+    color: #8d877c;
+    text-shadow: none;
+  }
+
+  /* Last shot: a print in a metal mount. */
+  .cam-wrap .deck-land .last-shot .thumb {
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 2.5px var(--wrap-metal),
+      0 0 0 4px var(--wrap-seat),
+      0 1px 0 4.5px var(--wrap-lip),
+      0 3px 5px 3px rgba(0, 0, 0, 0.35);
+  }
+  .cam-wrap .deck-land .last-shot-quick {
+    border-radius: 6px;
+  }
+
+  /* Capture hints: a small printed plate, readable on any body colour. */
+  .cam-wrap .deck-land .cam-hint {
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.62);
+    color: #ece7dd;
+  }
+
+  /* The settings panel opens over the body, left of the column. */
+  .camera.cam-wrap .deck-land .cam-more {
+    background: rgba(20, 18, 16, 0.97);
+  }
+
+  /* ---- THE SHUTTER: the body's release, the biggest control, bottom-right: a turned chrome collar with a
+     dome in the body's release colour ---- */
+  .camera.cam-wrap .deck .shutter {
+    border: 0;
+    animation: none;
+    background:
+      radial-gradient(closest-side, transparent 80%, rgba(0, 0, 0, 0.55) 83%, rgba(0, 0, 0, 0) 90%),
+      var(--wrap-turned);
+    box-shadow:
+      0 0 0 1.5px rgba(0, 0, 0, 0.6),
+      0 0 0 4px var(--wrap-seat),
+      0 1px 0 5px var(--wrap-lip),
+      0 6px 10px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    transition: transform 80ms ease-out;
+  }
+  .camera.cam-wrap .deck .shutter span {
+    width: 70%;
+    height: 70%;
+    background:
+      radial-gradient(55% 38% at 50% 22%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 72%),
+      radial-gradient(circle at 50% 42%, var(--bp-release) 52%, color-mix(in srgb, var(--bp-release) 55%, #000));
+    box-shadow:
+      0 0 0 2px rgba(0, 0, 0, 0.55),
+      0 3px 4px 2px rgba(0, 0, 0, 0.35),
+      inset 0 -3px 5px rgba(0, 0, 0, 0.35);
+    transition:
+      transform 70ms ease-out,
+      filter 70ms ease-out;
+  }
+  /* Knurled collar (a classic body: knurled chrome, red soft-release). */
+  .camera.cam-wrap[data-shutter='knurl'] .deck .shutter {
+    background:
+      radial-gradient(closest-side, transparent 72%, rgba(0, 0, 0, 0.5) 75%, transparent 80%),
+      radial-gradient(closest-side, transparent 80%, rgba(255, 255, 255, 0.25) 84%, rgba(0, 0, 0, 0) 92%),
+      repeating-conic-gradient(var(--wrap-metal-dk) 0 4deg, var(--wrap-metal-lt) 4deg 8deg),
+      var(--wrap-metal);
+  }
+  .camera.cam-wrap[data-shutter='knurl'] .deck .shutter span {
+    width: 60%;
+    height: 60%;
+    box-shadow:
+      0 0 0 3.5px var(--wrap-metal),
+      0 0 0 5px rgba(0, 0, 0, 0.5),
+      0 3px 4px 5px rgba(0, 0, 0, 0.3),
+      inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+  }
+  /* Glossy dome on a collar moulded in the body's shade, a thin chrome ring round it. */
+  .camera.cam-wrap[data-shutter='dome'] .deck .shutter {
+    background:
+      radial-gradient(closest-side, transparent 86%, var(--wrap-metal-lt) 88%, var(--wrap-metal-dk) 96%, transparent 100%),
+      radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 62%),
+      var(--bp-shade);
+  }
+  .camera.cam-wrap[data-shutter='dome'] .deck .shutter span {
+    width: 74%;
+    height: 74%;
+    background:
+      radial-gradient(70% 50% at 50% 20%, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0) 72%),
+      radial-gradient(circle at 50% 62%, var(--bp-shutter) 55%, var(--bp-shutter-rim));
+  }
+  /* Big candy button in a moulded ring. */
+  .camera.cam-wrap[data-shutter='jelly'] .deck .shutter {
+    background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 65%), var(--bp-shutter-rim);
+  }
+  .camera.cam-wrap[data-shutter='jelly'] .deck .shutter span {
+    width: 78%;
+    height: 78%;
+    background:
+      radial-gradient(60% 38% at 50% 18%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 75%),
+      radial-gradient(80% 50% at 50% 100%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 70%),
+      var(--bp-shutter);
+    box-shadow:
+      inset 0 -4px 6px rgba(0, 0, 0, 0.18),
+      0 3px 0 rgba(0, 0, 0, 0.22);
+  }
+  /* Movie-camera run button: a rounded square in a turned frame. */
+  .camera.cam-wrap[data-shutter='trigger'] .deck .shutter {
+    border-radius: 26px;
+    background:
+      linear-gradient(180deg, var(--wrap-metal-lt), var(--wrap-metal) 40%, var(--wrap-metal-dk));
+  }
+  .camera.cam-wrap[data-shutter='trigger'] .deck .shutter span {
+    border-radius: 17px;
+    background: radial-gradient(70% 45% at 50% 18%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 72%), linear-gradient(180deg, var(--bp-shutter), var(--bp-shutter-rim));
+  }
+  /* Phone camera: a ring around a disc. */
+  .camera.cam-wrap[data-shutter='touch'] .deck .shutter {
+    background: rgba(0, 0, 0, 0.25);
+    box-shadow:
+      inset 0 0 0 4px var(--bp-shutter),
+      0 0 0 1px var(--bp-shutter-rim),
+      0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+  .camera.cam-wrap[data-shutter='touch'] .deck .shutter span {
+    width: 74%;
+    height: 74%;
+    background: var(--bp-shutter);
+    box-shadow: 0 0 0 1px var(--bp-shutter-rim);
+  }
+  /* Handheld A-button in a moulded well. */
+  .camera.cam-wrap[data-shutter='console'] .deck .shutter {
+    background: radial-gradient(circle at 50% 65%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 70%), var(--bp-shade);
+    box-shadow:
+      inset 0 3px 6px rgba(0, 0, 0, 0.45),
+      0 1px 0 1px var(--wrap-lip);
+  }
+  .camera.cam-wrap[data-shutter='console'] .deck .shutter span {
+    width: 72%;
+    height: 72%;
+    background: radial-gradient(60% 40% at 50% 22%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 72%), radial-gradient(circle at 50% 60%, var(--bp-shutter) 60%, var(--bp-shutter-rim));
+    box-shadow:
+      0 3px 0 var(--bp-shutter-rim),
+      0 4px 5px rgba(0, 0, 0, 0.35);
+  }
+  /* Held down (pointer) / a capture being saved: the release sits low in its collar. */
+  .camera.cam-wrap .deck .shutter[data-pressed]:not(:disabled),
+  .camera.cam-wrap .deck .shutter:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .camera.cam-wrap .deck .shutter[data-pressed]:not(:disabled) span,
+  .camera.cam-wrap .deck .shutter:active:not(:disabled) span,
+  .camera.cam-wrap .deck .shutter.busy span {
+    transform: translateY(2px) scale(0.93);
+    filter: brightness(0.86);
+  }
+  .camera.cam-wrap .deck .shutter.starting {
+    outline: 1.5px dashed rgba(255, 255, 255, 0.55);
+    outline-offset: 4px;
+  }
+  .camera.cam-wrap .deck .shutter.starting span {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  .camera.cam-wrap .deck .shutter.cancel span {
+    transform: scale(0.86);
+    background: #3a1d1a;
+    color: #ff8a7f;
+    box-shadow: inset 0 0 0 2px #ff6b5e;
+  }
+  .camera.cam-wrap .deck .shutter:disabled {
+    opacity: 0.5;
+  }
+  .camera.cam-wrap .deck .shutter-queue {
+    top: -6px;
+    right: -6px;
+  }
+}
+
+/* Short landscape screens (most phones): the column fits under the top plate. */
+@media (orientation: landscape) and (max-height: 400px) {
+  .camera.cam-wrap .deck.deck-land {
+    --deck-btn: 44px;
+    --deck-shutter: 72px;
+  }
+  .cam-wrap .deck-land .land-top {
+    gap: 8px;
+  }
+  .cam-wrap .deck-land .land-bottom {
+    gap: 10px;
+  }
+}
+/* 360-370px tall phones (e.g. Pixel 7 landscape): the column must fit under the top plate. */
+@media (orientation: landscape) and (max-height: 372px) {
+  .camera.cam-wrap .deck.deck-land {
+    --deck-btn: 44px;
+    --deck-shutter: 66px;
+  }
+  .cam-wrap .deck-land .land-top {
+    gap: 6px;
+  }
+  .cam-wrap .deck-land .land-bottom {
+    gap: 8px;
+  }
+}
+/* Very short landscape windows: a little smaller again. */
+@media (orientation: landscape) and (max-height: 340px) {
+  .camera.cam-wrap .deck.deck-land {
+    --deck-shutter: 64px;
+  }
+  .cam-wrap .deck-land .land-top {
+    gap: 6px;
+  }
+  .cam-wrap .deck-land .land-bottom {
+    gap: 8px;
+  }
+}
+
+/* The art's three slices (WrapArt): LEFT and RIGHT clip the image, MIDDLE tiles its plain strip. */
+.cam-stage > .wrap-art > .wrap-part {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+.wrap-art .wrap-tile {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-repeat: no-repeat;
+}
+.wrap-art .wrap-tile.flip {
+  transform: scaleX(-1);
+}
+/* RIGHT over LEFT on a screen narrower than both: a soft edge, no cut. */
+.wrap-art .wrap-right.feather {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px);
+  mask-image: linear-gradient(90deg, transparent, #000 10px);
+}
+.wrap-art .wrap-part > .wrap-art-part {
+  position: absolute;
+  display: block;
+  max-width: none;
+  margin: 0;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* ==========================================================================
+   The full-body art and the glint (WrapArt / BodyGlint in BodyWrap.tsx)
+   ========================================================================== */
+.cam-stage > .wrap-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.cam-stage > .wrap-art .wrap-art-img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  margin: 0;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* A soft band of light across the body: follows the tilt (.tilt, transform set by useTiltGlint) or sweeps by
+   slowly every few seconds. Opacity / transform only, one layer. Hidden with reduced motion. */
+.body-glint-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.body-glint {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 20%;
+  width: 60%;
+  background: linear-gradient(
+    104deg,
+    rgba(255, 255, 255, 0) 32%,
+    rgba(255, 255, 255, 0.07) 44%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.07) 56%,
+    rgba(255, 255, 255, 0) 68%
+  );
+  transform: translate3d(-140%, 0, 0);
+  will-change: transform;
+}
+.body-glint.tilt {
+  transition: transform 220ms ease-out;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .body-glint:not(.tilt) {
+    animation: body-glint-sweep 12s cubic-bezier(0.45, 0, 0.3, 1) 1.5s infinite;
+  }
+}
+@keyframes body-glint-sweep {
+  0% {
+    transform: translate3d(-140%, 0, 0);
+  }
+  28%,
+  100% {
+    transform: translate3d(140%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .body-glint-clip {
+    display: none;
+  }
+}
+@media (forced-colors: active) {
+  .body-glint-clip {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Living camera: frame counter roll · flash pop (both layouts)
+   ========================================================================== */
+/* The counter rolls like a mechanical dial: the new figure comes up from below, the old one leaves at the top. */
+.deck .deck-counter .counter-reel {
+  display: block;
+  overflow: hidden;
+  /* (clip-path too: an animated child escaped the overflow clip in Chrome's software compositor) */
+  clip-path: inset(0);
+  line-height: 1.15;
+}
+.deck .deck-counter .counter-tick {
+  position: relative;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .deck .deck-counter .counter-tick[data-prev] {
+    animation: counter-roll 420ms cubic-bezier(0.3, 1.45, 0.5, 1) both;
+  }
+  .deck .deck-counter .counter-tick[data-prev]::before {
+    content: attr(data-prev);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    padding-bottom: 0.35em;
+    text-align: center;
+  }
+}
+@keyframes counter-roll {
+  from {
+    transform: translateY(calc(100% + 0.35em));
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Flash pop: a warm burst of light from the flash side, and a glow on the flash button. */
+.flash-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background: radial-gradient(70% 90% at 50% 40%, rgba(255, 250, 236, 0.75), rgba(255, 244, 214, 0.3) 45%, rgba(255, 240, 200, 0) 75%);
+  opacity: 0;
+  animation: flash-pop 440ms ease-out both;
+}
+
+.cam-land .flash-pop {
+  background: radial-gradient(60% 90% at 88% 26%, rgba(255, 250, 236, 0.8), rgba(255, 244, 214, 0.3) 40%, rgba(255, 240, 200, 0) 72%);
+}
+@keyframes flash-pop {
+  0% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.camera.flash-firing .deck [data-testid='btn-flash']::after {
+  inset: -18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 252, 238, 0.95) 0, rgba(255, 238, 186, 0.55) 34%, rgba(255, 230, 160, 0) 70%);
+  pointer-events: none;
+  animation: flash-glow 440ms ease-out both;
+}
+@keyframes flash-glow {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash-pop,
+  .camera.flash-firing .deck [data-testid='btn-flash']::after {
+    display: none;
+  }
+}
+
+/* While a capture is saved the column stays solid (the disabled buttons say it themselves). */
+@media (orientation: landscape) {
+  .cam-wrap .deck-land.locked:not(.counting) :is(.land-top, .land-pair) {
+    opacity: 1;
+  }
+}
+
+/* Toasts keep clear of the wider dial + column of the wrap layout (deck.css sets the plain layout's room). */
+@media (orientation: landscape) {
+  .app.route-camera:has(.camera.cam-wrap) {
+    --land-toast-end: calc(92px + 120px + 16px + 8px);
+  }
+}
+
+/* Capture hints over the preview's lower edge in landscape (booth / double / half / quad). */
+.vf-hints {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  z-index: 3;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 92%;
+  pointer-events: none;
+}
+.vf-hints .cam-hint {
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #ece7dd;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Finders with a status bar on top (LCD / phone / pixel): the hint goes under it. */
+:is(.vfs-lcd, .vfs-phone, .vfs-pixel) > .vf-hints {
+  top: 30px;
+}

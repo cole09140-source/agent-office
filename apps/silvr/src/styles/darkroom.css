@@ -1,0 +1,1302 @@
+/*
+ * Darkroom shell (2026-11 retro redesign, direction "02 darkroom red"): shared tokens for every agent.
+ * Tokens below are the contract — extend, never rename. Owner of the rest of this file: the shell agent.
+ */
+:root {
+  --dr-bg: #0b0a09;
+  --dr-panel: #15120f;
+  --dr-panel-2: #1c1814;
+  --dr-line: #3a332c;
+  --dr-line-soft: #2a2520;
+  --dr-fg: #ece4d6;
+  --dr-fg-2: #a99f90;
+  --dr-fg-3: #7d756a;
+  /* Safelight red: shutter, selection, the live dot. Never for errors or long text. */
+  --dr-red: #d3322b;
+  --dr-red-glow: rgba(211, 50, 43, 0.45);
+  /* Film-edge amber: frame numbers, edge codes, small labels. */
+  --dr-amber: #e0a03a;
+  --dr-cond: 'Archivo Narrow', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  --dr-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Sprocket holes along a film edge: use as a background on a 10–14px tall strip. */
+  --dr-holes: repeating-linear-gradient(90deg, var(--dr-bg) 0 9px, transparent 9px 18px);
+}
+
+/* ---------- added tokens (shell agent) ---------- */
+:root {
+  /* Red that is legible as text / small marks on the dark panels (>= 4.5:1 on --dr-panel-2). */
+  --dr-red-text: #f2473d;
+  /* Red for filled controls with light text on them (primary buttons): 6:1 with --dr-fg. */
+  --dr-red-deep: #b3261e;
+  --dr-red-tint: rgba(211, 50, 43, 0.14);
+  /* Film base: the brown-black of a negative's edge, behind sprocket holes. */
+  --dr-film: #211b16;
+  /* Darker than the panels: the "negative well" a camera or readout sits in. */
+  --dr-well: #070605;
+  /* Mono for runs that may hold translated words: Latin and digits in Plex Mono, Hangul / Kana / Han /
+     Arabic fall back to the UI sans (never to a system CJK monospace, which spaces every glyph wide). */
+  --dr-mono-ui: 'IBM Plex Mono', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  /* Small, technical corners. */
+  --dr-r: 4px;
+  --dr-r-sm: 2px;
+  /* Rounded sprocket holes (18px pitch) for a 12px strip: background: var(--dr-holes-r) repeat-x left center / 18px 12px, var(--dr-film). */
+  --dr-holes-r: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12'%3E%3Crect x='4.5' y='3' width='9' height='6' rx='1.5' fill='%23070605'/%3E%3C/svg%3E");
+  /* Condensed caps tracking: wide for Latin titles, none where letter-spacing breaks the script. */
+  --dr-track: 0.08em;
+  --dr-track-wide: 0.14em;
+  --dr-case: uppercase;
+}
+:root:is(:lang(ko), :lang(ja), :lang(zh)) {
+  --dr-track: 0.02em;
+  --dr-track-wide: 0.04em;
+}
+/* Arabic letters join and Devanagari forms conjuncts: letter-spacing breaks both. */
+:root:is(:lang(ar), :lang(hi)) {
+  --dr-track: 0;
+  --dr-track-wide: 0;
+}
+/* Cyrillic falls back to a wide system face (the condensed face is Latin-only): keep it tight. */
+:root:lang(ru) {
+  --dr-track: 0.02em;
+  --dr-track-wide: 0.05em;
+}
+
+/* ---------- legacy variables mapped onto the darkroom ---------- */
+/* Everything in styles.css that reads --bg / --fg / --accent… now speaks darkroom. */
+:root {
+  --bg: var(--dr-bg);
+  --bg-2: var(--dr-panel);
+  --bg-3: var(--dr-panel-2);
+  --line: var(--dr-line-soft);
+  --fg: var(--dr-fg);
+  --fg-2: var(--dr-fg-2);
+  /* a touch lighter than --dr-fg-3 so small grey text keeps 4.5:1 on the panels */
+  --fg-3: #938a7d;
+  --accent: var(--dr-red-text);
+  --accent-2: var(--dr-amber);
+  --radius: 6px;
+  --mono: var(--dr-mono-ui);
+}
+
+html,
+body {
+  background: var(--dr-bg);
+  color: var(--dr-fg);
+}
+::selection {
+  background: rgba(211, 50, 43, 0.4);
+}
+:focus-visible {
+  outline-color: var(--dr-amber);
+}
+input,
+textarea {
+  caret-color: var(--dr-amber);
+}
+/* Film grain over everything (very faint, never on top of controls' hit areas: pointer-events none). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(120% 60% at 88% -12%, rgba(211, 50, 43, 0.16), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .8 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.mono,
+.tnum {
+  font-family: var(--dr-mono-ui);
+}
+.logo {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  color: var(--dr-amber);
+  letter-spacing: 0.32em;
+}
+h1,
+h2 {
+  font-family: var(--dr-cond);
+}
+.link-btn {
+  color: var(--dr-amber);
+  text-underline-offset: 3px;
+}
+.warn {
+  color: var(--dr-amber);
+}
+
+/* ---------- header: condensed caps title + amber edge-code sub line ---------- */
+.page > .hdr {
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+.hdr {
+  background: linear-gradient(var(--dr-bg) 72%, rgba(11, 10, 9, 0));
+}
+.hdr h1 {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track);
+}
+.hdr p {
+  font-family: var(--dr-mono-ui);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--dr-amber);
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.75);
+  font-variant-numeric: tabular-nums;
+}
+/* Top-level tab screens: a big condensed title under a safelight, a film edge under it. */
+.page > .hdr:has(> .hdr-spacer) {
+  padding-top: calc(16px + var(--safe-t));
+  padding-bottom: 0;
+  background: radial-gradient(70% 120% at 100% 0, rgba(211, 50, 43, 0.26), transparent 70%),
+    linear-gradient(var(--dr-bg) 78%, rgba(11, 10, 9, 0));
+}
+.hdr-spacer + .hdr-title h1 {
+  font-size: min(2.125rem, 40px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: var(--dr-track);
+}
+.hdr-spacer + .hdr-title p {
+  margin-top: 4px;
+}
+.hdr:has(> .hdr-spacer)::after {
+  content: '';
+  grid-column: 1 / -1;
+  height: 12px;
+  margin: 8px -16px 4px;
+  background: var(--dr-holes-r) repeat-x 4px center / 18px 12px, var(--dr-film);
+  border-block: 1px solid #2c241d;
+}
+.hdr .icon-btn {
+  border-radius: var(--dr-r);
+}
+
+/* ---------- tab bar: a film-edge strip ---------- */
+.tabbar {
+  padding-top: 12px;
+  background: linear-gradient(#15110e, #0b0a09 70%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 0;
+}
+.tabbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: var(--dr-holes-r) repeat-x 4px center / 18px 12px, var(--dr-film);
+  border-block: 1px solid #2c241d;
+  pointer-events: none;
+}
+.tabbar button {
+  padding: 7px 1px 9px;
+  gap: 4px;
+  color: var(--fg-3);
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  font-size: min(0.71875rem, 12.5px);
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.75);
+}
+.tabbar button.on {
+  color: var(--dr-fg);
+}
+.tabbar button.on svg {
+  color: var(--dr-red-text);
+  filter: drop-shadow(0 0 6px var(--dr-red-glow));
+}
+/* The safelight: a soft red glow behind the tab you are on and a lit bar under its label. */
+.tabbar button.on::before {
+  content: '';
+  position: absolute;
+  inset: 0 12% auto;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(211, 50, 43, 0.22), transparent);
+  pointer-events: none;
+}
+.tabbar button.on::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  margin-left: -9px;
+  border-radius: 1px;
+  background: var(--dr-red);
+  box-shadow: 0 0 8px 1px var(--dr-red-glow);
+}
+/* Something waiting in a tab: an amber edge mark (red is only for "you are here"). */
+.tabbar .dot {
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--dr-amber);
+  box-shadow: 0 0 0 2px var(--dr-bg);
+}
+@media (forced-colors: active) {
+  .tabbar::before,
+  .tabbar button.on::after {
+    display: none;
+  }
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  border-radius: var(--dr-r);
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  letter-spacing: calc(var(--dr-track) * 0.6);
+  text-transform: var(--dr-case);
+  background: var(--dr-panel-2);
+  border: 1px solid var(--dr-line);
+  color: var(--dr-fg);
+}
+.btn.primary {
+  background: var(--dr-red-deep);
+  border-color: #e0453b;
+  color: #fff3e6;
+  box-shadow: 0 0 18px rgba(211, 50, 43, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--dr-line);
+}
+.btn.danger {
+  background: rgba(255, 90, 78, 0.08);
+  border-color: rgba(255, 90, 78, 0.45);
+}
+.icon-btn {
+  border-radius: var(--dr-r);
+}
+.icon-btn:active {
+  background: var(--dr-panel-2);
+}
+
+/* Badges: a mono edge stamp, not a candy pill. */
+.badge,
+.badge.new {
+  padding: 1px 5px;
+  border-radius: var(--dr-r-sm);
+  font-family: var(--dr-mono-ui);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: var(--dr-track);
+  text-transform: uppercase;
+  background: var(--dr-panel-2);
+  box-shadow: inset 0 0 0 1px var(--dr-line);
+  color: var(--dr-fg-2);
+}
+.badge.new {
+  color: var(--dr-amber);
+  box-shadow: inset 0 0 0 1px rgba(224, 160, 58, 0.55);
+}
+
+/* ---------- cards, rows, fields ---------- */
+.card {
+  background: var(--dr-panel);
+  border: 1px solid var(--dr-line-soft);
+  border-radius: var(--dr-r);
+}
+.card h2,
+.card-head h2 {
+  font-family: var(--dr-cond);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.75);
+}
+.row {
+  border-bottom-color: var(--dr-line-soft);
+}
+.set-list .row + .row {
+  border-top-color: var(--dr-line-soft);
+}
+.row-val {
+  font-family: var(--dr-mono-ui);
+  font-size: 0.8125rem;
+}
+.field > span,
+.field > label {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--dr-amber);
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.75);
+}
+.field input,
+.field select,
+.my-redeem-row input {
+  border-radius: var(--dr-r);
+  border-color: var(--dr-line);
+  background: var(--dr-well);
+}
+.list-row {
+  border-bottom-color: var(--dr-line-soft);
+}
+
+/* ---------- segmented, pills, stops ---------- */
+.seg {
+  padding: 3px;
+  border-radius: var(--dr-r);
+  background: var(--dr-well);
+  box-shadow: inset 0 0 0 1px var(--dr-line-soft);
+}
+.seg button,
+.seg.grid button,
+.seg.list button {
+  border-radius: var(--dr-r-sm);
+}
+.seg.grid,
+.seg.list {
+  border-radius: var(--dr-r);
+}
+.seg button.on {
+  background: var(--dr-red-tint);
+  color: var(--dr-fg);
+  box-shadow: inset 0 0 0 1px var(--dr-red), 0 0 10px rgba(211, 50, 43, 0.25);
+}
+.seg.list button.on svg {
+  color: var(--dr-red-text);
+}
+.pills button,
+.stop-picker button {
+  border-radius: var(--dr-r-sm);
+  background: var(--dr-panel-2);
+  box-shadow: inset 0 0 0 1px var(--dr-line-soft);
+  font-family: var(--dr-mono);
+  font-weight: 500;
+}
+.pills button.on,
+.stop-picker button.on {
+  background: var(--dr-red-tint);
+  color: var(--dr-fg);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--dr-red), 0 0 10px rgba(211, 50, 43, 0.3);
+}
+
+/* ---------- switch: a small slide switch on a panel ---------- */
+.switch {
+  width: 44px;
+  height: 26px;
+  border-radius: var(--dr-r);
+  background: var(--dr-well);
+  box-shadow: inset 0 0 0 1px var(--dr-line);
+}
+.switch::after {
+  top: 4px;
+  inset-inline-start: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--dr-r-sm);
+  background: var(--dr-fg-3);
+}
+.toggle input:checked + .switch {
+  background: var(--dr-red-tint);
+  box-shadow: inset 0 0 0 1px var(--dr-red);
+}
+.toggle input:checked + .switch::after {
+  background: var(--dr-red-text);
+  box-shadow: 0 0 8px var(--dr-red-glow);
+}
+
+/* ---------- slider: a thin scale with a square knob ---------- */
+.slider-head label {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.6);
+}
+.slider output {
+  font-family: var(--dr-mono);
+  color: var(--dr-amber);
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 0;
+  background: linear-gradient(to var(--range-fill, right), var(--dr-red) var(--p, 50%), var(--dr-line) var(--p, 50%));
+}
+input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 0;
+  background: linear-gradient(to var(--range-fill, right), var(--dr-red) var(--p, 50%), var(--dr-line) var(--p, 50%));
+}
+input[type='range']::-webkit-slider-thumb {
+  width: 14px;
+  height: 22px;
+  margin-top: -9.5px;
+  border-radius: var(--dr-r-sm);
+  background: linear-gradient(#f4ede1, #b9b0a2);
+  box-shadow: 0 0 0 1px #000, 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 22px;
+  border-radius: var(--dr-r-sm);
+  background: linear-gradient(#f4ede1, #b9b0a2);
+  box-shadow: 0 0 0 1px #000;
+}
+
+/* ---------- sheet: a darkroom drawer ---------- */
+.sheet-backdrop {
+  background: rgba(4, 2, 2, 0.72);
+}
+.sheet {
+  position: relative;
+  background: linear-gradient(var(--dr-panel-2), var(--dr-panel) 120px);
+  border-radius: var(--dr-r) var(--dr-r) 0 0;
+  border-top: 1px solid var(--dr-line);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6), 0 -1px 24px rgba(211, 50, 43, 0.12);
+  padding-top: 18px;
+}
+/* The drawer's handle edge: a strip of sprocket holes along the top. */
+.sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: var(--dr-holes-r) repeat-x 4px center / 18px 12px, var(--dr-film);
+  border-bottom: 1px solid #2c241d;
+  border-radius: var(--dr-r) var(--dr-r) 0 0;
+  pointer-events: none;
+}
+.sheet-grip {
+  width: 28px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--dr-line);
+  margin: 0 auto 8px;
+}
+.sheet-title {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track);
+}
+.sheet-close {
+  border-radius: var(--dr-r);
+}
+.sheet-close:active {
+  background: var(--dr-well);
+}
+@media (hover: hover) {
+  .sheet-close:hover {
+    background: var(--dr-well);
+  }
+}
+@media (forced-colors: active) {
+  .sheet::before {
+    display: none;
+  }
+}
+/* Films in a strip: canisters on the drawer floor; the chosen one lit by the safelight. */
+.stock-card {
+  border-radius: var(--dr-r);
+  background: var(--dr-well);
+  border: 1px solid var(--dr-line-soft);
+}
+.stock-card.on {
+  border-color: var(--dr-red);
+  background: var(--dr-red-tint);
+  box-shadow: 0 0 12px rgba(211, 50, 43, 0.3);
+}
+.stock-name {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: calc(var(--dr-track) * 0.25);
+}
+
+/* ---------- toasts: a slip of paper under the safelight ---------- */
+.toast {
+  background: var(--dr-panel-2);
+  border: 1px solid var(--dr-line);
+  border-inline-start: 3px solid var(--dr-amber);
+  border-radius: var(--dr-r);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+.toast button {
+  color: var(--dr-amber);
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.6);
+  border-radius: var(--dr-r-sm);
+}
+.toast .toast-close {
+  border-radius: var(--dr-r-sm);
+}
+
+/* ---------- empty states ---------- */
+.empty-title {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track);
+}
+
+/* ---------- Models: a contact sheet ---------- */
+.models-group h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 20px 0 10px;
+  font-family: var(--dr-cond);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track-wide);
+  color: var(--dr-fg);
+}
+.models-group h2 .muted {
+  font-family: var(--dr-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--dr-amber);
+}
+.models-group h2::after {
+  content: '';
+  flex: 1;
+  align-self: center;
+  height: 1px;
+  background: var(--dr-line-soft);
+}
+.models-grid {
+  gap: 8px;
+}
+.model-card {
+  padding: 6px 6px 10px;
+  border-radius: var(--dr-r);
+  background: var(--dr-panel);
+  border: 1px solid var(--dr-line-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.model-card.on {
+  border-color: var(--dr-red);
+  background: linear-gradient(rgba(211, 50, 43, 0.1), rgba(211, 50, 43, 0.03)), var(--dr-panel);
+  box-shadow: 0 0 0 1px var(--dr-red), 0 0 18px rgba(211, 50, 43, 0.28);
+}
+/* The negative well. Its top band stays clear for the badges ("In use", "Pinned"): they never sit on the camera. */
+.model-art {
+  position: relative;
+  height: 114px;
+  padding-top: 26px;
+  margin-bottom: 8px;
+  border-radius: var(--dr-r-sm);
+  background: radial-gradient(ellipse at 50% 58%, rgba(236, 228, 214, 0.08), transparent 68%), var(--dr-well);
+  box-shadow: inset 0 0 0 1px #000, inset 0 0 18px rgba(0, 0, 0, 0.9);
+}
+.model-card.on .model-art {
+  background: radial-gradient(ellipse at 50% 58%, rgba(211, 50, 43, 0.2), transparent 70%), var(--dr-well);
+}
+.model-card > :not(.model-art):not(.model-badges):not(.model-frame) {
+  padding-inline: 6px;
+}
+.model-frame {
+  position: absolute;
+  top: 12px;
+  inset-inline-start: 12px;
+  font-family: var(--dr-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dr-amber);
+  letter-spacing: 0.04em;
+  direction: ltr;
+  pointer-events: none;
+}
+/* direction: ltr above also flips its own inline-start to the left: pin it to the right in RTL,
+   where the badges take the left corner. */
+[dir='rtl'] .model-frame {
+  inset-inline-start: auto;
+  left: auto;
+  right: 12px;
+}
+.model-name {
+  font-family: var(--dr-cond);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track);
+}
+.model-era {
+  font-family: var(--dr-mono-ui);
+  font-size: 0.6875rem;
+  color: var(--dr-fg-2);
+}
+.model-desc {
+  color: var(--dr-fg-2);
+}
+.model-film {
+  font-family: var(--dr-mono-ui);
+  font-size: 0.6875rem;
+  color: var(--dr-amber);
+  text-transform: uppercase;
+  letter-spacing: calc(var(--dr-track) * 0.5);
+}
+.model-badges {
+  top: 12px;
+  inset-inline-end: 12px;
+}
+.model-badges .badge {
+  background: rgba(7, 6, 5, 0.85);
+}
+.model-card.on .model-badges .badge:first-child {
+  color: #ff6b61;
+  box-shadow: inset 0 0 0 1px var(--dr-red);
+  background: rgba(40, 8, 6, 0.9);
+}
+
+/* ---------- Settings / MY ---------- */
+.my-settings-h,
+.my-label {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  color: var(--dr-amber);
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track-wide);
+}
+.set-list {
+  padding: 0;
+}
+.set-list .row {
+  font-family: var(--dr-cond);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: calc(var(--dr-track) * 0.125);
+}
+.set-list .row .icon {
+  color: var(--dr-fg-3);
+}
+
+/* ---------- Analog: a light meter readout ---------- */
+.meter-result {
+  border-radius: var(--dr-r);
+  background: var(--dr-well);
+  box-shadow: inset 0 0 0 1px #000, inset 0 0 22px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--dr-line-soft);
+}
+.meter-result small {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  text-transform: var(--dr-case);
+  letter-spacing: calc(var(--dr-track) * 0.75);
+  font-size: 0.75rem;
+}
+.meter-result strong {
+  color: var(--dr-amber);
+  text-shadow: 0 0 12px rgba(224, 160, 58, 0.35);
+}
+.log-active-side strong,
+.log-active-go {
+  color: var(--dr-amber);
+}
+.log-active-bar {
+  border-radius: 0;
+  background: var(--dr-well);
+}
+.log-active-bar span {
+  background: var(--dr-amber);
+}
+.frame-num {
+  color: var(--dr-amber);
+}
+
+/* ---------- onboarding: the first roll under the safelight ---------- */
+.onboarding {
+  background: radial-gradient(90% 50% at 80% 0, rgba(211, 50, 43, 0.32), transparent 70%),
+    radial-gradient(60% 40% at 10% 100%, rgba(211, 50, 43, 0.1), transparent 70%), var(--dr-bg);
+}
+.onb-brand .logo {
+  font-size: 1.25rem;
+}
+.onb-edge {
+  margin-top: 10px;
+  font-family: var(--dr-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--dr-amber);
+  letter-spacing: 0.12em;
+  direction: ltr;
+  align-self: flex-start;
+}
+.onboarding h1 {
+  font-family: var(--dr-cond);
+  font-weight: 700;
+  font-size: min(2.25rem, 36px);
+  line-height: 1.05;
+  text-transform: var(--dr-case);
+  letter-spacing: var(--dr-track);
+}
+/* The art: four frames on a strip of film, sprocket holes above and below. */
+.onb-art {
+  gap: 4px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 14px 6px;
+  border-radius: var(--dr-r-sm);
+  background: var(--dr-holes-r) repeat-x 4px 1px / 18px 12px, var(--dr-holes-r) repeat-x 4px calc(100% - 1px) / 18px 12px, var(--dr-film);
+}
+.onb-art span {
+  height: min(80px, calc(100% - 4px));
+  border-radius: 1px;
+  box-shadow: none;
+}
+.onb-privacy {
+  border-radius: var(--dr-r);
+  background: rgba(111, 208, 140, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(111, 208, 140, 0.3);
+}
+.dots i {
+  border-radius: 1px;
+  background: var(--dr-line);
+}
+.dots i.on {
+  background: var(--dr-red);
+  box-shadow: 0 0 8px var(--dr-red-glow);
+}
+.onb-restore {
+  color: var(--dr-amber);
+}
+.onb-actions {
+  background: linear-gradient(rgba(11, 10, 9, 0), var(--dr-bg) 30%);
+}
+
+/* ---------- splash ---------- */
+.splash {
+  background: radial-gradient(60% 40% at 50% 0, rgba(211, 50, 43, 0.28), transparent 70%), var(--dr-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabbar button.on svg {
+    filter: none;
+  }
+}
+
+/* ---------- landscape contract (2026-11-21: the app is landscape-locked like a digicam) ----------
+   Phone landscape = exactly `@media (orientation: landscape)` in every file.
+   No tab bar there (2026-11-21, "simple, like Apple"): every screen gets the full width. The camera's
+   menu leads to the other screens; each of them starts its header with a camera button (.hdr-home).
+   Notches sit left/right in landscape: pages pad by --land-pad-s / --land-pad-e, which include them. */
+:root {
+  --land-safe-l: env(safe-area-inset-left, 0px);
+  --land-safe-r: env(safe-area-inset-right, 0px);
+}
+:root {
+  /* The inline-start safe area (left in LTR, right in RTL) and the one on the far side. */
+  --land-safe-start: var(--land-safe-l);
+  --land-safe-end: var(--land-safe-r);
+  /* Was the side rail's width; the rail is gone, so it is 0 everywhere (kept for anything still reading it). */
+  --land-rail-space: 0px;
+  /* 1 in LTR, -1 in RTL: slide-in direction of the side drawer. */
+  --land-dir: 1;
+  /* Vertical sprocket holes (18px pitch) for a 12px wide strip:
+     background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film). */
+  --dr-holes-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='18'%3E%3Crect x='3' y='4.5' width='6' height='9' rx='1.5' fill='%23070605'/%3E%3C/svg%3E");
+}
+:root[dir='rtl'] {
+  --land-safe-start: var(--land-safe-r);
+  --land-safe-end: var(--land-safe-l);
+  --land-dir: -1;
+}
+
+/* The header's way back to the camera: phone landscape only (portrait has the tab bar). */
+.hdr-home {
+  display: none;
+}
+
+/* Wrappers that only group things in phone landscape: invisible to layout everywhere else. */
+.onb-side,
+.onb-text,
+.meter-body,
+.meter-read,
+.meter-controls {
+  display: contents;
+}
+
+@media (orientation: landscape) {
+  :root {
+    /* No bottom bar: everything that sat above it (camera height, toasts, floating bars) drops to the edge. */
+    --tab-h: 0px;
+    /* Page side padding in landscape, plus the notch on that side. */
+    --land-pad: 20px;
+    --land-pad-s: calc(var(--land-pad) + var(--land-safe-start));
+    --land-pad-e: calc(var(--land-pad) + var(--land-safe-end));
+  }
+
+  /* ---------- the shell: no tab bar, every screen edge to edge ---------- */
+  .app {
+    padding-bottom: 0;
+  }
+  .tabbar {
+    display: none;
+  }
+  .screen {
+    max-width: 1040px;
+  }
+  .page {
+    padding-block: 0 24px;
+    padding-inline: var(--land-pad-s) var(--land-pad-e);
+  }
+  .page > .hdr {
+    margin-inline: calc(-1 * var(--land-pad-s)) calc(-1 * var(--land-pad-e));
+    padding-inline: var(--land-pad-s) var(--land-pad-e);
+  }
+
+  /* ---------- headers: one compact row ---------- */
+  .hdr {
+    padding: calc(4px + var(--safe-t)) 0 4px;
+  }
+  /* "‹ camera" at the inline start of a top-level screen's header, like an iOS back button. */
+  .hdr-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: auto;
+    padding-inline: 10px 6px;
+    color: var(--dr-amber);
+  }
+  /* The chevron sits exactly where a pushed screen's back chevron does. */
+  .hdr-home .icon-back {
+    margin-inline-end: -6px;
+  }
+  .hdr h1 {
+    font-size: 1.125rem;
+  }
+  .page > .hdr:has(> .hdr-spacer) {
+    padding-top: calc(10px + var(--safe-t));
+  }
+  .hdr-spacer + .hdr-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+  }
+  .hdr-spacer + .hdr-title h1 {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: min(1.5rem, 26px);
+  }
+  .hdr-spacer + .hdr-title p {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-top: 0;
+  }
+  /* Under the title a plain hairline, not the sprocket strip: 360px of height is precious and the
+     screen reads calmer (the strip stays on the drawers and in portrait). */
+  .hdr:has(> .hdr-spacer)::after {
+    height: 1px;
+    margin-block: 8px 0;
+    margin-inline: calc(-1 * var(--land-pad-s)) calc(-1 * var(--land-pad-e));
+    background: var(--dr-line-soft);
+    border: 0;
+  }
+
+  /* ---------- sheets: a drawer from the inline-end edge; confirms: a centred dialog ---------- */
+  .sheet-backdrop {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+  .sheet {
+    width: min(440px, 62vw);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    border-start-start-radius: var(--dr-r);
+    border-end-start-radius: var(--dr-r);
+    border-top: 0;
+    border-inline-start: 1px solid var(--dr-line);
+    padding-block: calc(10px + var(--safe-t)) calc(14px + var(--safe-b));
+    padding-inline: 30px calc(16px + var(--land-safe-end));
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(211, 50, 43, 0.12);
+    animation: land-drawer 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    overscroll-behavior: contain;
+  }
+  /* The drawer's handle edge: the sprocket strip runs down its inline-start side. */
+  .sheet::before {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: auto;
+    inset-inline-start: 0;
+    width: 12px;
+    height: auto;
+    background: var(--dr-holes-v) repeat-y center 4px / 12px 18px, var(--dr-film);
+    border-bottom: 0;
+    border-inline-end: 1px solid #2c241d;
+    border-radius: 0;
+  }
+  .sheet-grip {
+    display: none;
+  }
+  .sheet-head .sheet-title {
+    margin-top: 8px;
+  }
+  /* A confirm is a centred card that fits a 360px-tall screen. */
+  .sheet-backdrop:has(> .sheet[data-testid='confirm']) {
+    align-items: center;
+    justify-content: center;
+    padding: calc(12px + var(--safe-t)) 16px calc(12px + var(--safe-b));
+  }
+  .sheet[data-testid='confirm'] {
+    width: min(460px, 100%);
+    height: auto;
+    max-height: 100%;
+    border-radius: var(--dr-r);
+    border: 1px solid var(--dr-line);
+    padding: 18px 18px 16px;
+    animation: fade 0.15s ease;
+  }
+  .sheet[data-testid='confirm']::before {
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 8px;
+    background: var(--dr-holes-r) repeat-x 4px center / 13.5px 9px, var(--dr-film);
+    border-inline-end: 0;
+    border-bottom: 1px solid #2c241d;
+    border-radius: var(--dr-r) var(--dr-r) 0 0;
+  }
+  .sheet[data-testid='confirm'] .btn-row {
+    margin-top: 12px;
+  }
+  /* Films in a drawer: rows of canisters instead of one long sideways strip (← → still walk them in order). */
+  .sheet .stock-strip {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin: 0;
+    padding: 4px 0 8px;
+    scroll-snap-type: none;
+  }
+  .sheet .stock-strip .stock-card {
+    width: 88px;
+  }
+
+  /* ---------- toasts and the update bar: top centre of the screen area, clear of the camera's controls ---------- */
+  .app .toasts,
+  .app.route-camera .toasts {
+    top: calc(8px + var(--safe-t));
+    bottom: auto;
+    left: auto;
+    right: auto;
+    inset-inline-start: var(--land-safe-start);
+    inset-inline-end: var(--land-safe-end);
+  }
+  /* Camera: stay left of its dial + control column (about 236px; the camera can set --land-toast-end). */
+  .app.route-camera .toasts {
+    inset-inline-end: calc(var(--land-safe-end) + var(--land-toast-end, 236px));
+  }
+  .app.has-update .toasts,
+  .app.route-camera.has-update .toasts {
+    top: calc(60px + var(--safe-t));
+  }
+  .toast {
+    max-width: min(480px, 100%);
+    min-height: 44px;
+    animation-name: land-toast;
+  }
+  .toast > span {
+    padding: 6px 0;
+  }
+  .update-bar,
+  .app.route-camera .update-bar {
+    top: calc(8px + var(--safe-t));
+    left: auto;
+    right: auto;
+    inset-inline-start: calc(var(--land-safe-start) + 16px);
+    inset-inline-end: calc(var(--land-safe-end) + 16px);
+  }
+
+  /* ---------- Models: a wide contact sheet ---------- */
+  .models-group h2 {
+    margin: 12px 0 8px;
+  }
+  .models-grid {
+    /* 4 columns at 740, 5 at 844–915, 6 on wider short screens */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+    gap: 8px;
+  }
+  .model-art {
+    height: 100px;
+    padding-top: 24px;
+  }
+  .model-desc {
+    -webkit-line-clamp: 2;
+  }
+  .model-badges {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 48px);
+  }
+  /* Two badges ("In use" + "Pinned") wrap to a second line in a narrow column: every picture in that
+     group gets the taller clear band, so the badges stay off the cameras and names still line up. */
+  .models-grid:has(.model-badges > :nth-child(2)) .model-art {
+    height: 120px;
+    padding-top: 44px;
+  }
+
+  /* ---------- MY tab: shots beside the plans (or the app card), the settings list in two columns ---------- */
+  .page.settings > .hdr {
+    margin-bottom: 8px;
+  }
+  .my {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 14px;
+    align-items: start;
+  }
+  .my > * {
+    grid-column: 1;
+  }
+  .my > .my-pro,
+  .my > .my-app {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+  .my:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .my-settings-h {
+    margin-top: 10px;
+  }
+  .set-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .set-list .row:nth-child(2) {
+    border-top: 0;
+  }
+  .set-list .row:nth-child(even) {
+    border-inline-start: 1px solid var(--dr-line-soft);
+  }
+  .set-list .row {
+    min-height: 50px;
+  }
+
+  /* ---------- Analog: readout beside its controls ---------- */
+  .meter-body {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 0 20px;
+    align-items: start;
+  }
+  .meter-read,
+  .meter-controls {
+    display: block;
+    min-width: 0;
+  }
+  /* The reading stays in view while the controls beside it scroll under the title (71px tall + a gap). */
+  .meter-read {
+    position: sticky;
+    top: calc(80px + var(--safe-t));
+  }
+  .meter-controls .field:first-child {
+    padding-top: 0;
+  }
+  .meter-controls .pills button {
+    min-width: 46px;
+  }
+  .page.analog > .log-active,
+  .page.analog > .card {
+    margin-bottom: 12px;
+  }
+
+  /* ---------- onboarding: the art on one side, the words and buttons on the other ---------- */
+  .onboarding {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    column-gap: 32px;
+    padding: calc(14px + var(--safe-t)) calc(28px + var(--land-safe-r)) 0 calc(28px + var(--land-safe-l));
+  }
+  .onb-scroll {
+    display: contents;
+  }
+  .onb-side {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+    min-width: 0;
+    padding-bottom: calc(14px + var(--safe-b));
+  }
+  .onb-brand {
+    margin-bottom: 0;
+    padding: 0;
+  }
+  .onb-art {
+    height: auto;
+    align-self: stretch;
+    justify-content: center;
+    padding: 16px 8px;
+  }
+  /* Four frames share the strip's width (never clipped), up to a print-like size. */
+  .onb-art span {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 78px;
+    width: auto;
+    height: auto;
+    aspect-ratio: 64 / 88;
+  }
+  .onb-text {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 4px;
+  }
+  .onboarding h1 {
+    margin: 0 0 8px;
+    font-size: min(1.75rem, 28px);
+  }
+  #onb-body {
+    font-size: min(0.9375rem, 17px);
+  }
+  .onb-privacy {
+    margin-top: 10px !important;
+    padding: 8px 10px;
+  }
+  .dots {
+    margin-top: 14px;
+  }
+  .onb-actions {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 16px;
+    margin: 0;
+    padding: 10px 0 calc(12px + var(--safe-b));
+    background: none;
+  }
+  .onb-actions > .btn-row {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+  .onb-actions > .btn-row .btn {
+    flex: 0 1 auto;
+    min-width: 128px;
+  }
+  .onb-restore {
+    margin-top: 0;
+  }
+
+}
+@keyframes land-drawer {
+  from {
+    transform: translateX(calc(32px * var(--land-dir)));
+    opacity: 0;
+  }
+}
+@keyframes land-toast {
+  from {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+@media (orientation: landscape) and (prefers-reduced-motion: reduce) {
+  .sheet,
+  .toast {
+    animation: none;
+  }
+}
+
+/* Screen-reader-only nodes take no room at the page bottom (a 1px page scroll in landscape). */
+.app > .sr-only {
+  top: 0;
+  margin: -1px;
+}
+
+/* ---------- landscape-only: held upright, the app asks to be turned ---------- */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: portrait) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 24px;
+    background: radial-gradient(80% 50% at 50% 30%, rgba(211, 50, 43, 0.2), transparent 70%), var(--dr-bg);
+    color: var(--dr-fg);
+    text-align: center;
+  }
+  .app > :not(.rotate-hint) {
+    display: none !important;
+  }
+  .rotate-phone {
+    width: 46px;
+    height: 80px;
+    border: 3px solid var(--dr-fg-2);
+    border-radius: 10px;
+    animation: rotate-hint 2.4s ease-in-out infinite;
+  }
+  .rotate-title {
+    margin: 6px 0 0;
+    font-family: var(--dr-cond);
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: var(--dr-track);
+  }
+  .rotate-sub {
+    margin: 0;
+    max-width: 28ch;
+    color: var(--dr-fg-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+}
+@keyframes rotate-hint {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  55%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rotate-phone {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
+/* The camera dial (landscape): a long model name ("Motorola RAZR V3", "BlackBerry Curve") is wider than the
+   74px card. It breaks onto a second, balanced line instead of being cut to "Motorola RA…". */
+@media (orientation: landscape) {
+  .cam-rail.vertical .cam-rail-name {
+    white-space: normal;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same as the web app background (styles.css bg), so system bar areas never show white. -->
+    <color name="silvr_background">#0E0D0C</color>
+</resources>
