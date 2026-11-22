@@ -494,6 +494,7 @@ export const messages: Messages = {
   'my.pro.on': 'You’re on Pro',
   'my.pro.lifetimeOn': 'Lifetime · unlimited shots, no ads',
   'my.pro.subOn': 'Subscribed · unlimited shots, no ads',
+  'my.pro.friendOn': 'Friends’ lifetime pass · unlimited shots, no ads',
   'my.pro.renews': 'Renews {date}',
   'my.pro.pending': 'Waiting for payment. Pro opens as soon as it’s approved.',
   'my.pro.noStore': 'Can’t reach the store right now. Try again in a moment.',

@@ -510,6 +510,7 @@ export const messages: LocaleMessages = {
   'my.pro.on': '你正在使用 Pro',
   'my.pro.lifetimeOn': '永久版 · 无限拍摄，无广告',
   'my.pro.subOn': '订阅中 · 无限拍摄，无广告',
+  'my.pro.friendOn': '好友终身通行证 · 无限拍摄，无广告',
   'my.pro.renews': '下次续订：{date}',
   'my.pro.pending': '正在等待付款，确认后会立即开通 Pro。',
   'my.pro.noStore': '暂时无法连接商店，请稍后再试。',

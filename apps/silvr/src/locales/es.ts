@@ -509,6 +509,7 @@ export const messages: LocaleMessages = {
   'my.pro.on': 'Tienes Pro',
   'my.pro.lifetimeOn': 'De por vida · fotos ilimitadas, sin anuncios',
   'my.pro.subOn': 'Suscripción activa · fotos ilimitadas, sin anuncios',
+  'my.pro.friendOn': 'Pase vitalicio de amigos · fotos ilimitadas, sin anuncios',
   'my.pro.renews': 'Se renueva el {date}',
   'my.pro.pending': 'Esperando el pago. Pro se activará en cuanto se apruebe.',
   'my.pro.noStore': 'Ahora no se puede conectar con la tienda. Vuelve a intentarlo en un momento.',

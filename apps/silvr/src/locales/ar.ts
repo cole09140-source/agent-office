@@ -506,6 +506,7 @@ export const messages: LocaleMessages = {
   'my.pro.on': 'Pro مفعّل لديك',
   'my.pro.lifetimeOn': 'مدى الحياة · تصوير بلا حدود، بلا إعلانات',
   'my.pro.subOn': 'اشتراك فعّال · تصوير بلا حدود، بلا إعلانات',
+  'my.pro.friendOn': 'تذكرة الأصدقاء مدى الحياة · تصوير بلا حدود، بلا إعلانات',
   'my.pro.renews': 'التجديد في {date}',
   'my.pro.pending': 'بانتظار الدفع. سيُفعّل Pro فور الموافقة.',
   'my.pro.noStore': 'تعذّر الاتصال بالمتجر الآن. حاول مرة أخرى بعد قليل.',

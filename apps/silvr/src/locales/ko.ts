@@ -498,6 +498,7 @@ export const messages = {
   'my.pro.on': 'Pro를 쓰고 있어요',
   'my.pro.lifetimeOn': '평생 이용권 · 무제한 촬영, 광고 없음',
   'my.pro.subOn': '구독 중 · 무제한 촬영, 광고 없음',
+  'my.pro.friendOn': '친구 평생권 · 무제한 촬영, 광고 없음',
   'my.pro.renews': '다음 갱신일 {date}',
   'my.pro.pending': '결제를 기다리고 있어요. 승인되면 바로 Pro가 열려요.',
   'my.pro.noStore': '지금은 스토어에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.',

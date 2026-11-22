@@ -114,7 +114,8 @@ test("friends' code: one shared code turns lifetime Pro on (and survives a reloa
   await page.getByTestId('redeem-input').fill('wrong-code');
   await page.getByTestId('redeem-go').click();
   await expect(page.getByTestId('btn-redeem')).toBeVisible(); // a wrong code changes nothing
-  await page.getByTestId('redeem-input').fill('camela-friend');
+  // typed on a Korean keyboard: the same keys come out as Hangul, and still count
+  await page.getByTestId('redeem-input').fill('ㅊ므딤ㄹ갸둥');
   await page.getByTestId('redeem-go').click();
   await expect(page.getByTestId('btn-redeem')).toHaveCount(0); // Pro now: no redeem link
   await page.reload();

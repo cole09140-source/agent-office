@@ -503,6 +503,7 @@ export const messages: LocaleMessages = {
   'my.pro.on': 'Proをご利用中です',
   'my.pro.lifetimeOn': '買い切り・無制限の撮影、広告なし',
   'my.pro.subOn': 'サブスクリプション利用中・無制限の撮影、広告なし',
+  'my.pro.friendOn': '友だち生涯パス・無制限の撮影、広告なし',
   'my.pro.renews': '次回更新日：{date}',
   'my.pro.pending': 'お支払いの承認を待っています。承認されると、すぐにProが使えます。',
   'my.pro.noStore': '今はストアに接続できません。少し待ってからもう一度お試しください。',

@@ -9,6 +9,7 @@
  *
  * Never shows an ad by itself: only a tap on the ad button calls showRewarded().
  */
+import { friendPass, normalizeCode } from '../monetize/friend';
 import { signal } from '@preact/signals';
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
@@ -257,7 +258,7 @@ function RedeemCode() {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const id = useId();
-  const clean = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const clean = normalizeCode(code); // also reads a code typed on a Korean keyboard
   const ready = clean.length >= 6;
   const apply = async () => {
     if (!ready || busy) return;
@@ -346,7 +347,7 @@ function ProCard() {
       {pro ? (
         <>
           <p class="my-pro-on">{t('my.pro.on')}</p>
-          <p class="muted small">{ent.source === 'lifetime' ? t('my.pro.lifetimeOn') : t('my.pro.subOn')}</p>
+          <p class="muted small">{!ent.pro && friendPass.value ? t('my.pro.friendOn') : ent.source === 'lifetime' ? t('my.pro.lifetimeOn') : t('my.pro.subOn')}</p>
           {ent.source === 'subscription' && ent.expiresAt && <p class="muted small">{t('my.pro.renews', { date: formatDate(ent.expiresAt) })}</p>}
           {ent.source === 'subscription' && (
             <button class="btn ghost wide" onClick={() => void manageSubscriptions().catch(() => toast(t('my.pro.noStore')))} data-testid="btn-manage-sub">

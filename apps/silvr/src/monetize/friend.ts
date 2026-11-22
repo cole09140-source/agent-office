@@ -15,9 +15,35 @@ const KEY = 'friend-pass';
 /** Pro granted by a friends' code on this device. */
 export const friendPass = signal(false);
 
-/** Letters and digits only, upper case: "camela-friend " and "CAMELAFRIEND" are the same code. */
+// A Korean (2-beolsik) keyboard turns "CAMELAFRIEND" into Hangul: read those keys back as the Latin letters.
+const KEYS: Record<string, string> = {
+  ㅂ: 'Q', ㅈ: 'W', ㄷ: 'E', ㄱ: 'R', ㅅ: 'T', ㅛ: 'Y', ㅕ: 'U', ㅑ: 'I', ㅐ: 'O', ㅔ: 'P',
+  ㅁ: 'A', ㄴ: 'S', ㅇ: 'D', ㄹ: 'F', ㅎ: 'G', ㅗ: 'H', ㅓ: 'J', ㅏ: 'K', ㅣ: 'L',
+  ㅋ: 'Z', ㅌ: 'X', ㅊ: 'C', ㅍ: 'V', ㅠ: 'B', ㅜ: 'N', ㅡ: 'M',
+  ㅃ: 'Q', ㅉ: 'W', ㄸ: 'E', ㄲ: 'R', ㅆ: 'T', ㅒ: 'O', ㅖ: 'P',
+  ㅘ: 'HK', ㅙ: 'HO', ㅚ: 'HL', ㅝ: 'NJ', ㅞ: 'NP', ㅟ: 'NL', ㅢ: 'ML',
+  ㄳ: 'RT', ㄵ: 'SW', ㄶ: 'SG', ㄺ: 'FR', ㄻ: 'FA', ㄼ: 'FQ', ㄽ: 'FT', ㄾ: 'FX', ㄿ: 'FV', ㅀ: 'FG', ㅄ: 'QT',
+};
+const LEAD = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+const VOWEL = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+const TAIL = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+/** Hangul typed on a 2-beolsik keyboard → the Latin keys that were pressed ("츠믇ㅣ" → "CMEL"). */
+export function hangulToKeys(s: string): string {
+  let out = '';
+  for (const ch of s) {
+    const c = ch.charCodeAt(0);
+    if (c >= 0xac00 && c <= 0xd7a3) {
+      const i = c - 0xac00;
+      const jamo = LEAD[Math.floor(i / 588)] + VOWEL[Math.floor((i % 588) / 28)] + TAIL[i % 28];
+      for (const j of jamo) out += KEYS[j] ?? '';
+    } else out += KEYS[ch] ?? ch;
+  }
+  return out;
+}
+
+/** Letters and digits only, upper case: "camela-friend ", "CAMELAFRIEND" and the same keys on a Korean keyboard are one code. */
 export function normalizeCode(code: string): string {
-  return code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  return hangulToKeys(code).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 }
 
 async function sha256Hex(text: string): Promise<string> {
