@@ -362,6 +362,7 @@ export const messages: LocaleMessages = {
   'set.lang.auto': '跟随系统', // ko: 시스템 · en: System
   'set.sound': '快门声', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': '触感反馈', // ko: 진동 · en: Haptics
+  'set.autoSave': '拍摄后自动保存到相册',
   'set.dateStamp': '在照片上加日期', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': '日期格式', // ko: 날짜 형식 · en: Date format
   'set.grid': '显示网格', // ko: 격자 표시 · en: Show grid
@@ -416,6 +417,7 @@ export const messages: LocaleMessages = {
   'common.notFound': '找不到内容，可能已被删除。', // ko: 찾을 수 없어요. 삭제되었을 수 있어요. · en: Couldn't find this. It may have been deleted.
   'an.log.noLocation': '未能获取位置，已保存（不含位置）', // ko: 위치를 확인하지 못해 위치 없이 저장했어요 · en: Couldn’t get your location, so it was saved without one
   'err.storagePermission': '储存权限已关闭。请在“设置 > 应用 > Film Camela > 权限”中允许访问储存空间。', // ko: 저장 권한이 꺼져 있어요. 설정 > 앱 > Film Camela > 권한에서 저장공간을 허용해 주세요. · en: Storage permission is off. Allow it in Settings > Apps > Film Camela > Permissions.
+  'err.autoSave': '未能自动保存到相册，照片仍在应用相册中。',
   'err.noStorage': '当前的浏览器设置不允许保存照片。请关闭无痕浏览，或允许网站储存数据，然后重新打开 App。', // ko: 이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요. · en: This browser won't let Film Camela save photos. Turn off private browsing or allow site data, then reopen the app.
   'err.import': '无法导入这个文件。', // ko: 이 파일은 불러올 수 없어요. · en: This file could not be imported.
   'update.ready': '新版本已就绪', // ko: 새 버전이 준비됐어요 · en: A new version is ready
@@ -444,6 +446,7 @@ export const messages: LocaleMessages = {
   'view.deleteTitle': '删除这张照片？', // ko: 사진을 삭제할까요? · en: Delete this photo?
   'view.savedWeb': '已保存到“下载”文件夹', // ko: 다운로드 폴더에 저장했어요 · en: Saved to your Downloads folder
   'view.savedAndroid': '已保存到图库的“Film Camela”相册', // ko: 갤러리 › Film Camela 앨범에 저장했어요 · en: Saved to Gallery › Film Camela album
+  'view.alreadySaved': '已在相册的 Film Camela 相簿中',
   'gal.deleteRollTitle': '删除这卷胶卷？', // ko: 이 롤을 삭제할까요? · en: Delete this roll?
   'gal.rollDeleted': '胶卷已删除', // ko: 롤을 삭제했어요 · en: Roll deleted
   'gal.rollRestored': '胶卷已恢复', // ko: 롤을 되돌렸어요 · en: Roll restored

@@ -163,6 +163,13 @@ async function openFromMenu(row) {
     if (!nodes().some((n) => /^Take photo$/i.test(n.label))) return; // left the camera screen
   }
 }
+// 1.1.8: every shot is also saved to the phone's gallery (Pictures/Film Camela) on its own.
+await step('every shot is auto-saved to the gallery (Pictures/Film Camela)', async () => {
+  let n = 0;
+  for (let w = 0; w < 20 && (n = galleryCount()) < 3; w++) await sleep(1000);
+  if (n < 3) throw new Error(`gallery has ${n} of 3 shots`);
+  return `${n} in Pictures/Film Camela`;
+});
 await step('photos are in the album already (More → Album → the camera folder)', async () => {
   await openFromMenu(/^Album$/i);
   await sleep(2500);
@@ -171,7 +178,7 @@ await step('photos are in the album already (More → Album → the camera folde
   await sleep(4000);
   shot('r3-roll');
 });
-await step('open photo and Save to the gallery', async () => {
+await step('open photo: Save on an auto-saved print makes no second copy', async () => {
   await tap(/^Photo 1$/i, { fallback: [203, 475] });
   await sleep(2000);
   const before = galleryCount();
@@ -179,7 +186,7 @@ await step('open photo and Save to the gallery', async () => {
   await sleep(2500);
   const after = galleryCount();
   shot('r4-saved');
-  if (after !== before + 1) throw new Error(`gallery ${before} → ${after}`);
+  if (after !== before) throw new Error(`gallery ${before} → ${after} (a duplicate)`);
   return `gallery ${before} → ${after}`;
 });
 await step('hardware back returns to the roll', async () => {

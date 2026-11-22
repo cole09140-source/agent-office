@@ -355,6 +355,7 @@ export const messages: LocaleMessages = {
   'set.lang.auto': 'システム', // ko: 시스템 · en: System
   'set.sound': 'シャッター音', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': '振動', // ko: 진동 · en: Haptics
+  'set.autoSave': '撮影したらギャラリーに自動保存',
   'set.dateStamp': '写真に日付を写し込む', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': '日付の形式', // ko: 날짜 형식 · en: Date format
   'set.grid': 'グリッドを表示', // ko: 격자 표시 · en: Show grid
@@ -409,6 +410,7 @@ export const messages: LocaleMessages = {
   'common.notFound': '見つかりませんでした。削除された可能性があります。', // ko: 찾을 수 없어요. 삭제되었을 수 있어요. · en: Couldn't find this. It may have been deleted.
   'an.log.noLocation': '位置情報を取得できなかったため、位置なしで保存しました', // ko: 위치를 확인하지 못해 위치 없이 저장했어요 · en: Couldn’t get your location, so it was saved without one
   'err.storagePermission': 'ストレージへのアクセスがオフになっています。設定 > アプリ > Film Camela > 権限で、ストレージを許可してください。', // ko: 저장 권한이 꺼져 있어요. 설정 > 앱 > Film Camela > 권한에서 저장공간을 허용해 주세요. · en: Storage permission is off. Allow it in Settings > Apps > Film Camela > Permissions.
+  'err.autoSave': 'ギャラリーに自動保存できませんでした。写真はアプリのアルバムに残っています。',
   'err.noStorage': 'このブラウザの設定では、写真を保存できません。プライベートブラウズをオフにするか、サイトデータの保存を許可してから、アプリを開き直してください。', // ko: 이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요. · en: This browser won't let Film Camela save photos. Turn off private browsing or allow site data, then reopen the app.
   'err.import': 'このファイルは読み込めません。', // ko: 이 파일은 불러올 수 없어요. · en: This file could not be imported.
   'update.ready': '新しいバージョンの準備ができました', // ko: 새 버전이 준비됐어요 · en: A new version is ready
@@ -437,6 +439,7 @@ export const messages: LocaleMessages = {
   'view.deleteTitle': 'この写真を削除しますか？', // ko: 사진을 삭제할까요? · en: Delete this photo?
   'view.savedWeb': 'ダウンロードフォルダに保存しました', // ko: 다운로드 폴더에 저장했어요 · en: Saved to your Downloads folder
   'view.savedAndroid': 'ギャラリーの「Film Camela」アルバムに保存しました', // ko: 갤러리 › Film Camela 앨범에 저장했어요 · en: Saved to Gallery › Film Camela album
+  'view.alreadySaved': 'すでにギャラリーの Film Camela アルバムにあります',
   'gal.deleteRollTitle': 'このフィルムを削除しますか？', // ko: 이 롤을 삭제할까요? · en: Delete this roll?
   'gal.rollDeleted': 'フィルムを削除しました', // ko: 롤을 삭제했어요 · en: Roll deleted
   'gal.rollRestored': 'フィルムを元に戻しました', // ko: 롤을 되돌렸어요 · en: Roll restored

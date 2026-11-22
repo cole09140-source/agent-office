@@ -20,6 +20,8 @@ export interface Settings {
   onboarded: boolean;
   /** Camera ids pinned to the front of the picker, in pin order (newest last). */
   pinnedCameras: string[];
+  /** Android: every shot is also saved to the phone's gallery (Pictures/Film Camela). */
+  autoSave: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultSpeed: 'instant',
   onboarded: false,
   pinnedCameras: [],
+  autoSave: true,
 };
 
 const KEY = 'settings';

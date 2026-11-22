@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
+import { usePinchView } from '../components/zoom';
 import { cleanNumber, Empty, formatDate, formatSigned, Header, Ltr, savedToastText, Sheet, sheetOpen, useObjectUrl, usePrint } from '../components/ui';
 import { getStock } from '../film/stocks';
 import { isolate, isRtl, ltr, rollName, t } from '../i18n';
-import { fileName, shareImages } from '../platform/share';
+import { fileName, isNativeAndroid, shareImages } from '../platform/share';
+import { isInGallery, markInGallery } from '../platform/autosave';
 import { announce, confirm, rolls, toast } from '../state/app';
 import { signalLang } from '../state/lang';
 import { back, go, goTab, isCurrent, route } from '../state/router';
@@ -35,6 +37,8 @@ export function PhotoScreen({ id }: { id: string }) {
     return () => document.documentElement.classList.remove('viewer-bare');
   }, [bare]);
   const touch = useRef<{ x: number; y: number } | null>(null);
+  /** Pinch / double-tap / ctrl+wheel zoom of the print (back to fit on the next photo). */
+  const zoomRef = useRef<HTMLDivElement>(null);
   // One share/save at a time: a double tap saved the print twice, or the second share
   // was refused and its cleanup deleted the file the first share sheet was still reading.
   // (Declared before the early returns below: hooks must run in the same order every render.)
@@ -59,6 +63,8 @@ export function PhotoScreen({ id }: { id: string }) {
 
   const { blob, error } = usePrint(photo ?? undefined, 'print');
   const url = useObjectUrl(blob);
+  // keyed on the print too: the zoom box only exists once the print has developed
+  const { view: zv, busy: zoomBusy } = usePinchView(zoomRef, 4, `${photo?.id}|${url ? 1 : 0}`);
   const roll = photo ? rolls.value.find((r) => r.id === photo.rollId) : undefined;
   const idx = photo ? siblings.findIndex((p) => p.id === photo.id) : -1;
   const goSibling = (d: number) => {
@@ -102,11 +108,19 @@ export function PhotoScreen({ id }: { id: string }) {
 
   const share = async (download: boolean) => {
     if (!blob || !photo || sharingRef.current) return;
+    // Android: this print is in the gallery already (auto-save or an earlier Save) — no "(1)" copy.
+    if (download && isNativeAndroid() && isInGallery(photo)) {
+      toast(t('view.alreadySaved'));
+      return;
+    }
     sharingRef.current = true;
     setSharing(true);
     try {
       const res = await shareImages([{ blob, name: fileName('FilmCamela', photo.takenAt, blob.type === 'image/png' ? 'png' : 'jpg', photo.frame) }], download);
-      if (res === 'downloaded') toast(savedToastText());
+      if (res === 'downloaded') {
+        if (isNativeAndroid()) markInGallery(photo);
+        toast(savedToastText());
+      }
     } catch (err) {
       console.error('[silvr] share failed', err);
       toast((err as { code?: string })?.code === 'DENIED' ? t('err.storagePermission') : t('common.error'));
@@ -166,13 +180,15 @@ export function PhotoScreen({ id }: { id: string }) {
         class="viewer-stage"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest('button')) return;
+          if (zoomBusy.current || zv.s > 1) return; // a tap while zoomed is part of looking around, not "hide the controls"
           setBare(!bare);
         }}
-        onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+        onTouchStart={(e) => (touch.current = e.touches.length === 1 && !zoomBusy.current ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null)}
         onTouchEnd={(e) => {
           const s = touch.current;
           touch.current = null;
-          if (!s) return;
+          // a pinch, or a drag around a zoomed print, is not a swipe to the next photo
+          if (!s || zoomBusy.current || e.touches.length > 0) return;
           const dx = e.changedTouches[0].clientX - s.x;
           const dy = e.changedTouches[0].clientY - s.y;
           if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goSibling(dx < 0 !== isRtl() ? 1 : -1); // RTL: next comes from the left
@@ -181,13 +197,19 @@ export function PhotoScreen({ id }: { id: string }) {
         {url ? (
           // The print in its slide mount on the light box; the label is printed on the mount like the album's.
           <figure class="viewer-mount">
+            <div class={`viewer-zoom${zv.s > 1 ? ' zoomed' : ''}`} ref={zoomRef} data-testid="print-zoom" data-scale={zv.s.toFixed(2)}>
             <img
               src={url}
               alt={photo && stock ? `${isolate(stock.name)} · ${t('view.photoN', { n: photo.frame })}${photo.undated ? '' : ` · ${formatDate(photo.takenAt, signalLang.value)}`}` : ''}
               class={`print ${instantDev > 0 ? 'instant-dev' : ''}`}
-              style={instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : undefined}
+              style={{
+                ...(instantDev > 0 ? { animationDelay: `-${INSTANT_DEV_S - instantDev}s` } : {}),
+                ...(zv.s > 1 ? { transform: `translate(${zv.x}px, ${zv.y}px) scale(${zv.s})` } : {}),
+              }}
+              draggable={false}
               data-testid="print"
             />
+            </div>
             {photo && (
               <figcaption class="mount-label" aria-hidden="true">
                 <bdi class="mount-cam">{camera?.name ?? stock?.name}</bdi>

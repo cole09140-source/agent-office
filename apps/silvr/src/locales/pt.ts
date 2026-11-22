@@ -356,6 +356,7 @@ export const messages: LocaleMessages = {
   'set.lang.auto': 'Sistema', // ko: 시스템 · en: System
   'set.sound': 'Som do obturador', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': 'Vibração', // ko: 진동 · en: Haptics
+  'set.autoSave': 'Salvar cada foto na galeria',
   'set.dateStamp': 'Adicionar data às fotos', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': 'Formato da data', // ko: 날짜 형식 · en: Date format
   'set.grid': 'Mostrar grade', // ko: 격자 표시 · en: Show grid
@@ -410,6 +411,7 @@ export const messages: LocaleMessages = {
   'common.notFound': 'Não foi possível encontrar. Talvez tenha sido apagado.', // ko: 찾을 수 없어요. 삭제되었을 수 있어요. · en: Couldn't find this. It may have been deleted.
   'an.log.noLocation': 'Não foi possível obter sua localização, então foi salvo sem ela', // ko: 위치를 확인하지 못해 위치 없이 저장했어요 · en: Couldn’t get your location, so it was saved without one
   'err.storagePermission': 'A permissão de armazenamento está desativada. Permita em Configurações > Apps > Film Camela > Permissões.', // ko: 저장 권한이 꺼져 있어요. 설정 > 앱 > Film Camela > 권한에서 저장공간을 허용해 주세요. · en: Storage permission is off. Allow it in Settings > Apps > Film Camela > Permissions.
+  'err.autoSave': 'Não foi possível salvar na galeria. A foto continua no álbum.',
   'err.noStorage': 'Este navegador não permite que o Film Camela salve fotos. Desative a navegação privada ou permita dados de sites e abra o app de novo.', // ko: 이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요. · en: This browser won't let Film Camela save photos. Turn off private browsing or allow site data, then reopen the app.
   'err.import': 'Não foi possível importar este arquivo.', // ko: 이 파일은 불러올 수 없어요. · en: This file could not be imported.
   'update.ready': 'Uma nova versão está pronta', // ko: 새 버전이 준비됐어요 · en: A new version is ready
@@ -438,6 +440,7 @@ export const messages: LocaleMessages = {
   'view.deleteTitle': 'Apagar esta foto?', // ko: 사진을 삭제할까요? · en: Delete this photo?
   'view.savedWeb': 'Salva na pasta Downloads', // ko: 다운로드 폴더에 저장했어요 · en: Saved to your Downloads folder
   'view.savedAndroid': 'Salva em Galeria › álbum Film Camela', // ko: 갤러리 › Film Camela 앨범에 저장했어요 · en: Saved to Gallery › Film Camela album
+  'view.alreadySaved': 'Já está no álbum Film Camela da sua galeria',
   'gal.deleteRollTitle': 'Apagar este filme?', // ko: 이 롤을 삭제할까요? · en: Delete this roll?
   'gal.rollDeleted': 'Filme apagado', // ko: 롤을 삭제했어요 · en: Roll deleted
   'gal.rollRestored': 'Filme restaurado', // ko: 롤을 되돌렸어요 · en: Roll restored

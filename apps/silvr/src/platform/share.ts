@@ -15,7 +15,7 @@ export function isNative(): boolean {
   return !!capacitor()?.isNativePlatform?.();
 }
 
-function isNativeAndroid(): boolean {
+export function isNativeAndroid(): boolean {
   return isNative() && capacitor()?.getPlatform?.() === 'android';
 }
 
@@ -24,7 +24,7 @@ interface SilvrGalleryPlugin {
 }
 
 /** Android app: Save goes straight to Pictures/Film Camela (app-local plugin, see GalleryPlugin.java). */
-async function saveToGallery(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
+export async function saveToGallery(files: { blob: Blob; name: string }[]): Promise<ShareResult> {
   const { registerPlugin } = await import('@capacitor/core');
   const gallery = registerPlugin<SilvrGalleryPlugin>('SilvrGallery');
   for (const f of files) {

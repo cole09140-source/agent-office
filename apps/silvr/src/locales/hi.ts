@@ -356,6 +356,7 @@ export const messages: LocaleMessages = {
   'set.lang.auto': 'सिस्टम', // ko: 시스템 · en: System
   'set.sound': 'शटर की आवाज़', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': 'वाइब्रेशन', // ko: 진동 · en: Haptics
+  'set.autoSave': 'हर फ़ोटो गैलरी में अपने-आप सेव करें',
   'set.dateStamp': 'फ़ोटो पर तारीख़ लगाएँ', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': 'तारीख़ का फ़ॉर्मैट', // ko: 날짜 형식 · en: Date format
   'set.grid': 'ग्रिड दिखाएँ', // ko: 격자 표시 · en: Show grid
@@ -410,6 +411,7 @@ export const messages: LocaleMessages = {
   'common.notFound': 'यह नहीं मिला। हो सकता है इसे डिलीट कर दिया गया हो।', // ko: 찾을 수 없어요. 삭제되었을 수 있어요. · en: Couldn't find this. It may have been deleted.
   'an.log.noLocation': 'लोकेशन नहीं मिल पाई, इसलिए बिना लोकेशन के सेव किया गया', // ko: 위치를 확인하지 못해 위치 없이 저장했어요 · en: Couldn’t get your location, so it was saved without one
   'err.storagePermission': 'स्टोरेज की अनुमति बंद है। सेटिंग्ज़ > ऐप > Film Camela > अनुमतियाँ में जाकर इसे चालू करें।', // ko: 저장 권한이 꺼져 있어요. 설정 > 앱 > Film Camela > 권한에서 저장공간을 허용해 주세요. · en: Storage permission is off. Allow it in Settings > Apps > Film Camela > Permissions.
+  'err.autoSave': 'गैलरी में सेव नहीं हो सका। फ़ोटो एल्बम में सुरक्षित है।',
   'err.noStorage': 'यह ब्राउज़र Film Camela को तस्वीरें सेव नहीं करने दे रहा। प्राइवेट ब्राउज़िंग बंद करें या साइट डेटा की अनुमति दें, फिर ऐप दोबारा खोलें।', // ko: 이 브라우저 설정에서는 사진을 저장할 수 없어요. 사생활 보호(시크릿) 모드를 끄거나 사이트 데이터 저장을 허용해 주세요. · en: This browser won't let Film Camela save photos. Turn off private browsing or allow site data, then reopen the app.
   'err.import': 'यह फ़ाइल इंपोर्ट नहीं हो सकी।', // ko: 이 파일은 불러올 수 없어요. · en: This file could not be imported.
   'update.ready': 'नया वर्ज़न तैयार है', // ko: 새 버전이 준비됐어요 · en: A new version is ready
@@ -438,6 +440,7 @@ export const messages: LocaleMessages = {
   'view.deleteTitle': 'यह फ़ोटो डिलीट करें?', // ko: 사진을 삭제할까요? · en: Delete this photo?
   'view.savedWeb': 'डाउनलोड फ़ोल्डर में सेव हो गई', // ko: 다운로드 폴더에 저장했어요 · en: Saved to your Downloads folder
   'view.savedAndroid': 'गैलरी › Film Camela एल्बम में सेव हो गई', // ko: 갤러리 › Film Camela 앨범에 저장했어요 · en: Saved to Gallery › Film Camela album
+  'view.alreadySaved': 'यह पहले से गैलरी के Film Camela एल्बम में है',
   'gal.deleteRollTitle': 'यह रोल डिलीट करें?', // ko: 이 롤을 삭제할까요? · en: Delete this roll?
   'gal.rollDeleted': 'रोल डिलीट हो गया', // ko: 롤을 삭제했어요 · en: Roll deleted
   'gal.rollRestored': 'रोल वापस आ गया', // ko: 롤을 되돌렸어요 · en: Roll restored

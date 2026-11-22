@@ -1,3 +1,4 @@
+import { canAutoSave } from '../platform/autosave';
 import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
@@ -247,6 +248,7 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         <div class="set-sheet">
         <Toggle label={t('set.sound')} checked={s.sound} onChange={(sound) => updateSettings({ sound })} />
         <Toggle label={t('set.haptics')} checked={s.haptics} onChange={(haptics) => updateSettings({ haptics })} />
+        {canAutoSave() && <Toggle label={t('set.autoSave')} checked={s.autoSave} onChange={(autoSave) => updateSettings({ autoSave })} testId="set-autosave" />}
         <Toggle label={t('set.grid')} checked={s.grid} onChange={(grid) => updateSettings({ grid })} />
         <Toggle label={t('set.mirror')} checked={s.mirrorFront} onChange={(mirrorFront) => updateSettings({ mirrorFront })} />
         </div>

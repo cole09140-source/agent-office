@@ -5093,3 +5093,31 @@ h2,
   display: grid;
   gap: 10px;
 }
+
+/* Pinch zoom (src/components/zoom.ts): the preview and the print take two-finger gestures themselves. */
+.viewfinder { touch-action: none; }
+.vf-zoom {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffd27a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.vf-zoom.live { opacity: 1; transform: translateX(-50%) scale(1.12); }
+.viewer-zoom { touch-action: none; overflow: hidden; display: block; position: relative; }
+.viewer-zoom > img { transform-origin: center center; will-change: transform; }
+.viewer-zoom.zoomed > img { cursor: grab; }
+.viewer-zoom.zoomed .instant-dev { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .vf-zoom { transition: none; }
+}

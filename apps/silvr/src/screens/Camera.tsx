@@ -15,6 +15,8 @@ import { backFor, backVars } from '../cameras/backs/spec';
 import { Icon } from '../components/Icon';
 import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
 import { formatSigned, Sheet, sheetOpen, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
+import { usePinchZoom, zoomLabel } from '../components/zoom';
+import { autoSave } from '../platform/autosave';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -182,6 +184,10 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const [flashPop, setFlashPop] = useState(0);
 
   const stageRef = useRef<HTMLDivElement>(null);
+  /** The preview window: two fingers zoom (crop) the shot, like a phone camera. */
+  const vfRef = useRef<HTMLDivElement>(null);
+  // Up to 3× on every body (more if the body's own zoom key goes further); not while a shot is being taken.
+  const pinching = usePinchZoom(vfRef, zoom, setZoom, 1, Math.max(3, ...camera.zoom), !busy);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoHostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<GlFilmRenderer | null>(null);
@@ -892,6 +898,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
       kept = true;
       if (s.sound) playAdvance(camera.sound);
       if (result) setAnnounce(t('cam.saved', { n: result.photo.frame }));
+      // Android: every shot also goes to the phone's gallery (Pictures/Film Camela), in the background.
+      if (result) autoSave(result.photo);
       else if (camera.capture === 'half') setAnnounce(t('cam.halfNext'));
       if (result) {
         const blob = quickBlob ? await quickBlob : null;
@@ -1331,7 +1339,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     </div>
   );
   const nextAspect = () => setFormatPick(camera.formats[(camera.formats.indexOf(aspect) + 1) % camera.formats.length]);
-  const nextZoom = () => setZoom(camera.zoom[(camera.zoom.indexOf(zoom) + 1) % camera.zoom.length]);
+  // The zoom key steps through the body's presets: the next one above the current (pinched) zoom, else back to 1×.
+  const nextZoom = () => setZoom(camera.zoom.find((z) => z > zoom + 0.05) ?? camera.zoom[0]);
   const toggleEv = () => {
     const open = !evOpen;
     setEvOpen(open);
@@ -1354,13 +1363,13 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     ) : null;
   const zoomEl =
     camera.zoom.length > 1 ? (
-      <button class={`more-item ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoom}×`} data-testid="btn-zoom">
+      <button class={`more-item ${zoom > 1 ? 'on' : ''}`} disabled={chipLock} onClick={nextZoom} aria-label={`${t('cam.zoom')} ${zoomLabel(zoom)}`} data-testid="btn-zoom">
         <span class="more-glyph mono" aria-hidden="true">
           ×
         </span>
         <span>{t('cam.zoom')}</span>
         <small class="mono" dir="ltr">
-          {zoom}×
+          {zoomLabel(zoom)}
         </small>
       </button>
     ) : null;
@@ -1601,7 +1610,7 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
         {/* Photographic body (decorative): drawn first, the preview sits in its window (see artWindowBox). */}
         {wrapOn ? <WrapArt cameraId={camera.id} layout={wrap} /> : <BodyArt cameraId={camera.id} stageW={box.sw} stageH={box.sh} />}
         {!artOn && <BackWindow spec={back} width={frame.width} height={frame.height} />}
-        <div class={`viewfinder vfs-${camera.viewfinder}${artBox ? ' vf-on-art' : ''}`} style={vfStyle}>
+        <div class={`viewfinder vfs-${camera.viewfinder}${artBox ? ' vf-on-art' : ''}`} style={vfStyle} ref={vfRef}>
           {/* Landscape: capture hints sit on the preview's lower edge (the column has no room for text). */}
           {land && <div class="vf-hints">{hintsEl}</div>}
           {gpu ? <canvas key={glKey} ref={canvasRef} class="preview" data-testid="preview" /> : <div class="preview" ref={videoHostRef} />}
@@ -1628,6 +1637,11 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             </div>
           )}
           {blink && <div class="blink" />}
+          {(pinching || zoom > 1.05) && (
+            <div class={`vf-zoom mono${pinching ? ' live' : ''}`} dir="ltr" aria-hidden="true" data-testid="vf-zoom">
+              {zoomLabel(zoom)}
+            </div>
+          )}
           {/* Today's free shots, in a bottom corner of the preview (hidden for Pro / unlimited and while counting down). */}
           {roll && !counting && <ShotsLeftBadge class="vf-shots" onClick={() => goTab({ name: 'settings' })} />}
           {dateOn && camera.stamp === 'led' && <div class="vf-date mono" aria-hidden="true">DATE</div>}
