@@ -348,6 +348,8 @@ test('U1 backup → wipe → restore brings back rolls, photos and the film log'
   await page.getByTestId('log-camera').fill('Nikon FM2');
   await page.getByTestId('log-film').fill('HP5+');
   await page.getByTestId('log-create').click();
+  // the new log opens once it is saved: wait for it, or that navigation lands on top of the settings
+  await expect(page).toHaveURL(/#\/log\//);
   await openSetting(page, 'backup');
   // One tap builds the backup and saves it right away.
   const dl = page.waitForEvent('download');
