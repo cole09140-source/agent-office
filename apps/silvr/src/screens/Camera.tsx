@@ -17,6 +17,9 @@ import { ShotsLeftBadge } from '../components/ShotsLeftBadge';
 import { formatSigned, Sheet, sheetOpen, Slider, StockStrip, Thumb, useObjectUrl } from '../components/ui';
 import { usePinchZoom, zoomLabel } from '../components/zoom';
 import { autoSave } from '../platform/autosave';
+import { useVolumeShutter } from '../platform/volumeKeys';
+import { levelTilt, startLevel } from '../camera/level';
+import { meterEv } from '../camera/meter';
 import { aspectRatio, cropForAspect, fitContain } from '../film/geometry';
 import { GlFilmRenderer } from '../film/glRenderer';
 import { formatDigitalStamp } from '../film/overlays';
@@ -114,6 +117,40 @@ export function shotCount(r: Roll): number {
   return r.shots + (r.pending?.kind === 'double' ? 1 : 0);
 }
 
+/**
+ * Optional horizon level (settings): a line that stays parallel to the world's horizon over the preview,
+ * gold once the camera is level (within 1°). Hidden while the phone points at the floor or the sky.
+ */
+function HorizonLevel() {
+  const [tilt, setTilt] = useState<number | null>(null);
+  useEffect(() => {
+    const stop = startLevel();
+    let raf = 0;
+    let last = 0;
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      if (now - last < 66) return; // ~15 fps is plenty for a level
+      last = now;
+      const v = levelTilt();
+      setTilt((old) => (v === null ? null : old !== null && Math.abs(old - v) < 0.2 ? old : Math.round(v * 10) / 10));
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      stop();
+    };
+  }, []);
+  if (tilt === null || Math.abs(tilt) > 45) return null;
+  const ok = Math.abs(tilt) < 1;
+  return (
+    <div class={`horizon${ok ? ' ok' : ''}`} aria-hidden="true" data-testid="horizon" data-tilt={tilt.toFixed(1)}>
+      <i class="horizon-mark l" />
+      <i class="horizon-line" style={{ transform: `rotate(${-tilt}deg)` }} />
+      <i class="horizon-mark r" />
+    </div>
+  );
+}
+
 export function CameraScreen({ onImport }: { onImport: () => void }) {
   const roll = activeRoll.value;
   const s = settings.value;
@@ -188,6 +225,8 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
   const vfRef = useRef<HTMLDivElement>(null);
   // Up to 3× on every body (more if the body's own zoom key goes further); not while a shot is being taken.
   const pinching = usePinchZoom(vfRef, zoom, setZoom, 1, Math.max(3, ...camera.zoom), !busy);
+  /** Tap to focus & expose (optional setting): the ring where the finger landed, and the EV it set. */
+  const [focusRing, setFocusRing] = useState<{ x: number; y: number; key: number; ev?: number } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoHostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<GlFilmRenderer | null>(null);
@@ -1043,6 +1082,90 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  // Tap to focus / expose: a quick single-finger tap on the preview (not a pinch, not on a control).
+  useEffect(() => {
+    const el = vfRef.current;
+    if (!el || !settings.value.tapFocus) return;
+    let down: { x: number; y: number; t: number } | null = null;
+    let fingers = 0;
+    let multi = false;
+    const pd = (e: PointerEvent) => {
+      fingers++;
+      if (fingers > 1) multi = true;
+      if (fingers === 1) {
+        multi = false;
+        down = { x: e.clientX, y: e.clientY, t: e.timeStamp };
+      }
+    };
+    const pu = (e: PointerEvent) => {
+      fingers = Math.max(0, fingers - 1);
+      const d = down;
+      if (fingers > 0 || !d || multi) return;
+      down = null;
+      if (e.timeStamp - d.t > 350 || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
+      if ((e.target as HTMLElement).closest('button, a, .countdown-wrap, .vf-shots')) return;
+      if (state !== 'live' || countdown > 0 || busy) return;
+      const r = el.getBoundingClientRect();
+      const fx = (e.clientX - r.left) / r.width;
+      const fy = (e.clientY - r.top) / r.height;
+      const v = cam().video;
+      // where that point is in the camera frame: the preview is a centre crop (format + zoom), front camera mirrored
+      const crop = v.videoWidth ? cropForAspect(v.videoWidth, v.videoHeight, spec.aspect, zoom, spec.orient) : { x: 0, y: 0, w: 1, h: 1 };
+      const px = facing === 'user' ? 1 - fx : fx;
+      const nx = crop.x + px * crop.w;
+      const ny = crop.y + fy * crop.h;
+      void cam().focusAt(nx, ny);
+      let next: number | undefined;
+      if (camera.ev && v.videoWidth) {
+        // meter the spot: bring it to a mid tone with the EV control (1/3 stops, ±2)
+        const c = document.createElement('canvas');
+        c.width = 64;
+        c.height = 36;
+        const g = c.getContext('2d', { willReadFrequently: true });
+        if (g) {
+          g.drawImage(v, 0, 0, 64, 36);
+          const cx = Math.round(nx * 64);
+          const cy = Math.round(ny * 36);
+          const { data } = g.getImageData(Math.max(0, cx - 5), Math.max(0, cy - 4), 10, 8);
+          let sum = 0;
+          for (let i = 0; i < data.length; i += 4) sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+          const mean = Math.max(4, sum / (data.length / 4)) / 255;
+          next = meterEv(mean);
+          setEv(next);
+        }
+      }
+      setFocusRing({ x: fx * 100, y: fy * 100, key: e.timeStamp, ev: next });
+      if (s.haptics) haptic(8);
+    };
+    const cancel = () => {
+      fingers = 0;
+      down = null;
+    };
+    el.addEventListener('pointerdown', pd);
+    el.addEventListener('pointerup', pu);
+    el.addEventListener('pointercancel', cancel);
+    return () => {
+      el.removeEventListener('pointerdown', pd);
+      el.removeEventListener('pointerup', pu);
+      el.removeEventListener('pointercancel', cancel);
+    };
+  });
+  useEffect(() => {
+    if (!focusRing) return;
+    const id = setTimeout(() => setFocusRing(null), 1600);
+    return () => clearTimeout(id);
+  }, [focusRing?.key]);
+
+  // Volume keys = the side shutter button (Android app; setting on). Off while the film sheet or a dialog is
+  // up, so the keys set the volume there as usual. (Other sheets are checked at the press: their list is not
+  // reactive, so it cannot switch the keys on and off.)
+  useVolumeShutter(
+    settings.value.volumeShutter && state !== 'error' && !filmOpen && !confirmReq.value,
+    () => {
+      if (!sheetOpen() && !confirmReq.value) onShutter();
+    },
+  );
+
   const [loadingRoll, setLoadingRoll] = useState(false);
   /** loadingRoll, current even inside an older render's callback. */
   const loadingRef = useRef(false);
@@ -1637,6 +1760,12 @@ export function CameraScreen({ onImport }: { onImport: () => void }) {
             </div>
           )}
           {blink && <div class="blink" />}
+          {s.level && state === 'live' && <HorizonLevel />}
+          {focusRing && (
+            <div class="focus-ring" key={focusRing.key} style={{ left: `${focusRing.x}%`, top: `${focusRing.y}%` }} aria-hidden="true" data-testid="focus-ring">
+              {focusRing.ev !== undefined && <b class="mono" dir="ltr">{`${formatSigned(focusRing.ev)} EV`}</b>}
+            </div>
+          )}
           {(pinching || zoom > 1.05) && (
             <div class={`vf-zoom mono${pinching ? ' live' : ''}`} dir="ltr" aria-hidden="true" data-testid="vf-zoom">
               {zoomLabel(zoom)}

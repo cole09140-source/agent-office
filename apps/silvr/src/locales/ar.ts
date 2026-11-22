@@ -359,6 +359,9 @@ export const messages: LocaleMessages = {
   'set.sound': 'صوت الغالق', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': 'الاهتزاز', // ko: 진동 · en: Haptics
   'set.autoSave': 'حفظ كل صورة في المعرض تلقائيًا',
+  'set.volumeShutter': 'التصوير بأزرار الصوت',
+  'set.level': 'إظهار ميزان الاستواء',
+  'set.tapFocus': 'المس للتركيز وضبط الإضاءة',
   'set.dateStamp': 'إضافة التاريخ إلى الصور', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': 'تنسيق التاريخ', // ko: 날짜 형식 · en: Date format
   'set.grid': 'إظهار الشبكة', // ko: 격자 표시 · en: Show grid

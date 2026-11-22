@@ -1,4 +1,5 @@
 import { canAutoSave } from '../platform/autosave';
+import { hasVolumeShutter } from '../platform/volumeKeys';
 import { signal } from '@preact/signals';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { Icon } from '../components/Icon';
@@ -249,7 +250,10 @@ export function SettingsScreen({ onReplayOnboarding }: { onReplayOnboarding: () 
         <Toggle label={t('set.sound')} checked={s.sound} onChange={(sound) => updateSettings({ sound })} />
         <Toggle label={t('set.haptics')} checked={s.haptics} onChange={(haptics) => updateSettings({ haptics })} />
         {canAutoSave() && <Toggle label={t('set.autoSave')} checked={s.autoSave} onChange={(autoSave) => updateSettings({ autoSave })} testId="set-autosave" />}
+        {hasVolumeShutter() && <Toggle label={t('set.volumeShutter')} checked={s.volumeShutter} onChange={(volumeShutter) => updateSettings({ volumeShutter })} testId="set-volume-shutter" />}
         <Toggle label={t('set.grid')} checked={s.grid} onChange={(grid) => updateSettings({ grid })} />
+        <Toggle label={t('set.level')} checked={s.level} onChange={(level) => updateSettings({ level })} testId="set-level" />
+        <Toggle label={t('set.tapFocus')} checked={s.tapFocus} onChange={(tapFocus) => updateSettings({ tapFocus })} testId="set-tap-focus" />
         <Toggle label={t('set.mirror')} checked={s.mirrorFront} onChange={(mirrorFront) => updateSettings({ mirrorFront })} />
         </div>
       </Sheet>

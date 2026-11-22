@@ -363,6 +363,9 @@ export const messages: LocaleMessages = {
   'set.sound': '快门声', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': '触感反馈', // ko: 진동 · en: Haptics
   'set.autoSave': '拍摄后自动保存到相册',
+  'set.volumeShutter': '音量键拍照',
+  'set.level': '显示水平仪',
+  'set.tapFocus': '轻点对焦和测光',
   'set.dateStamp': '在照片上加日期', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': '日期格式', // ko: 날짜 형식 · en: Date format
   'set.grid': '显示网格', // ko: 격자 표시 · en: Show grid

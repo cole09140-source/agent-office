@@ -356,6 +356,9 @@ export const messages: LocaleMessages = {
   'set.sound': 'シャッター音', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': '振動', // ko: 진동 · en: Haptics
   'set.autoSave': '撮影したらギャラリーに自動保存',
+  'set.volumeShutter': '音量ボタンで撮影',
+  'set.level': '水平器を表示',
+  'set.tapFocus': 'タップでピント・明るさを合わせる',
   'set.dateStamp': '写真に日付を写し込む', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': '日付の形式', // ko: 날짜 형식 · en: Date format
   'set.grid': 'グリッドを表示', // ko: 격자 표시 · en: Show grid

@@ -22,6 +22,12 @@ export interface Settings {
   pinnedCameras: string[];
   /** Android: every shot is also saved to the phone's gallery (Pictures/Film Camela). */
   autoSave: boolean;
+  /** Volume keys take the photo on the camera screen (Android app). */
+  volumeShutter: boolean;
+  /** Optional: a tap on the preview focuses there (where the phone allows) and meters the spot (EV). */
+  tapFocus: boolean;
+  /** Optional: a horizon level over the preview. */
+  level: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -37,6 +43,9 @@ export const DEFAULT_SETTINGS: Settings = {
   onboarded: false,
   pinnedCameras: [],
   autoSave: true,
+  volumeShutter: true,
+  tapFocus: false,
+  level: false,
 };
 
 const KEY = 'settings';

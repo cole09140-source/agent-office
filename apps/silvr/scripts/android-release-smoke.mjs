@@ -163,6 +163,19 @@ async function openFromMenu(row) {
     if (!nodes().some((n) => /^Take photo$/i.test(n.label))) return; // left the camera screen
   }
 }
+// 1.1.8: the volume keys are the shutter on the camera screen (and do not change the volume there).
+await step('volume key takes a photo (volume unchanged)', async () => {
+  const taken = async () => Number((await find(SHOTS)).label.match(/(\d+) shots?$/)?.[1] ?? 0);
+  const vol = () => sh('cmd media_session volume --stream 3 --get').match(/volume is (\d+)/)?.[1] ?? '?';
+  const v0 = vol();
+  const before = await taken();
+  sh('input keyevent KEYCODE_VOLUME_DOWN');
+  for (let w = 0; w < 15 && (await taken()) <= before; w++) await sleep(1000);
+  const after = await taken();
+  if (after !== before + 1) throw new Error(`shots ${before} → ${after}`);
+  if (vol() !== v0) throw new Error(`volume changed ${v0} → ${vol()}`);
+  return `shots ${before} → ${after}, volume ${v0}`;
+});
 // 1.1.8: every shot is also saved to the phone's gallery (Pictures/Film Camela) on its own.
 await step('every shot is auto-saved to the gallery (Pictures/Film Camela)', async () => {
   let n = 0;

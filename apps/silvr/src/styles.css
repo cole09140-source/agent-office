@@ -5121,3 +5121,33 @@ h2,
 @media (prefers-reduced-motion: reduce) {
   .vf-zoom { transition: none; }
 }
+
+/* Optional camera aids: horizon level and tap-to-focus ring (Camera.tsx). */
+.horizon { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.horizon-line {
+  position: absolute; left: 22%; right: 22%; top: 50%; height: 2px; margin-top: -1px;
+  background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 3px rgba(0, 0, 0, 0.6); border-radius: 2px;
+  transition: background 0.15s ease;
+}
+.horizon-mark { position: absolute; top: 50%; width: 9%; height: 2px; margin-top: -1px; background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
+.horizon-mark.l { left: 9%; }
+.horizon-mark.r { right: 9%; }
+.horizon.ok .horizon-line, .horizon.ok .horizon-mark { background: #ffc94a; }
+.focus-ring {
+  position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; z-index: 6; pointer-events: none;
+  border: 2px solid #ffc94a; border-radius: 6px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  animation: focus-ring 1.6s ease forwards;
+}
+.focus-ring b {
+  position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); white-space: nowrap;
+  font-size: 11px; color: #ffc94a; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+@keyframes focus-ring {
+  0% { transform: scale(1.35); opacity: 0; }
+  12% { transform: scale(1); opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .focus-ring { animation: none; }
+}

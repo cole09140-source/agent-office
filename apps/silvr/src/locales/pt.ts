@@ -357,6 +357,9 @@ export const messages: LocaleMessages = {
   'set.sound': 'Som do obturador', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': 'Vibração', // ko: 진동 · en: Haptics
   'set.autoSave': 'Salvar cada foto na galeria',
+  'set.volumeShutter': 'Fotografar com os botões de volume',
+  'set.level': 'Mostrar nível',
+  'set.tapFocus': 'Tocar para focar e expor',
   'set.dateStamp': 'Adicionar data às fotos', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': 'Formato da data', // ko: 날짜 형식 · en: Date format
   'set.grid': 'Mostrar grade', // ko: 격자 표시 · en: Show grid

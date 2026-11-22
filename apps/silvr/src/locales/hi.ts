@@ -357,6 +357,9 @@ export const messages: LocaleMessages = {
   'set.sound': 'शटर की आवाज़', // ko: 셔터 소리 · en: Shutter sound
   'set.haptics': 'वाइब्रेशन', // ko: 진동 · en: Haptics
   'set.autoSave': 'हर फ़ोटो गैलरी में अपने-आप सेव करें',
+  'set.volumeShutter': 'वॉल्यूम बटन से फ़ोटो लें',
+  'set.level': 'लेवल दिखाएँ',
+  'set.tapFocus': 'टैप करके फ़ोकस और रोशनी सेट करें',
   'set.dateStamp': 'फ़ोटो पर तारीख़ लगाएँ', // ko: 사진에 날짜 넣기 · en: Add the date to photos
   'set.dateFormat': 'तारीख़ का फ़ॉर्मैट', // ko: 날짜 형식 · en: Date format
   'set.grid': 'ग्रिड दिखाएँ', // ko: 격자 표시 · en: Show grid

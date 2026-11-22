@@ -144,4 +144,28 @@ export class CameraController {
       console.warn('[silvr] torch failed', err);
     }
   }
+
+  /**
+   * Tap to focus: asks the lens to focus / meter on a point (0..1 of the frame) where the browser exposes
+   * it (pointsOfInterest + focusMode; Chrome on many Android phones). False when the device cannot.
+   */
+  async focusAt(x: number, y: number): Promise<boolean> {
+    const t = this.track;
+    if (!t || typeof t.getCapabilities !== 'function') return false;
+    const caps = t.getCapabilities() as MediaTrackCapabilities & { focusMode?: string[]; exposureMode?: string[]; pointsOfInterest?: unknown };
+    const set: Record<string, unknown> = {};
+    const modes = caps.focusMode ?? [];
+    if ('pointsOfInterest' in caps || modes.length) set.pointsOfInterest = [{ x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)) }];
+    if (modes.includes('single-shot')) set.focusMode = 'single-shot';
+    else if (modes.includes('continuous')) set.focusMode = 'continuous';
+    if ((caps.exposureMode ?? []).includes('continuous')) set.exposureMode = 'continuous';
+    if (!Object.keys(set).length) return false;
+    try {
+      await t.applyConstraints({ advanced: [set as MediaTrackConstraintSet] });
+      return true;
+    } catch (err) {
+      console.warn('[silvr] focus point not applied', err);
+      return false;
+    }
+  }
 }
