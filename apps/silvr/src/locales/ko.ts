@@ -475,7 +475,7 @@ export const messages = {
   'my.ad.pro': 'Pro에서는 광고 없이 마음껏 찍어요.',
   'my.ad.rewarded': '+{n}장을 받았어요. 계속 찍어요.',
   'my.ad.dismissed': '광고를 끝까지 보면 {n}장을 받아요.',
-  'my.ad.failed': '광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
+  'my.ad.failed': '광고를 불러오지 못했어요. 광고 차단 앱이나 비공개 DNS를 쓰고 있다면 잠시 끄고 다시 시도해 주세요.',
   'my.pro.lead': '무제한 촬영 · 광고 없음',
   'my.plans': 'Pro 요금제',
   'my.plan.week': '1주',

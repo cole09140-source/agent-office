@@ -24,6 +24,29 @@ import { nativePlatform } from './platform';
 
 export type RewardedResult = 'rewarded' | 'dismissed' | 'failed' | 'unavailable';
 
+/**
+ * An ad blocker (private DNS / VPN filter) can leave AdMob's network calls hanging instead of failing,
+ * which looked like a dead button. Every step that talks to the ad network gets a deadline.
+ */
+const CONSENT_TIMEOUT_MS = 4_000;
+const START_TIMEOUT_MS = 6_000;
+const LOAD_TIMEOUT_MS = 10_000;
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error(`${what} timed out`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(id);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(id);
+        reject(e);
+      },
+    );
+  });
+}
+
 /** This build can show rewarded ads at all (native app, not Pro). False on web: show "get the app". */
 export const canWatchAds = computed(() => nativePlatform() !== null && !isPro.value);
 /** Consent refused / SDK failed: no ads this session. */
@@ -145,7 +168,7 @@ async function ensureReady(): Promise<boolean> {
     // A failed consent lookup (UMP misconfigured on the AdMob side, flaky network) must not
     // block ads for good: start the SDK anyway — without a stored consent Google serves only
     // limited ads where consent is required.
-    let c = await readConsent().catch((err) => {
+    let c = await withTimeout(readConsent(), CONSENT_TIMEOUT_MS, 'consent lookup').catch((err) => {
       console.warn('[silvr] ad consent lookup failed; continuing without a consent form', err);
       return { canRequestAds: true, formNeeded: false };
     });
@@ -158,7 +181,7 @@ async function ensureReady(): Promise<boolean> {
       return false;
     }
     if (await attUndetermined()) await AdMob.requestTrackingAuthorization().catch(() => undefined);
-    return await startSdk();
+    return await withTimeout(startSdk(), START_TIMEOUT_MS, 'ads SDK start');
   } catch (err) {
     console.warn('[silvr] ads not ready', err);
     return false;
@@ -193,13 +216,14 @@ export async function showRewarded(): Promise<RewardedResult> {
   if (!canWatchAds.value || blocked.value || quota.value.adsLeftToday <= 0 || adShowing.value) return 'unavailable';
   adShowing.value = true;
   try {
-    if (!(await ensureReady())) return 'unavailable';
+    // declined consent → 'unavailable'; the SDK not starting (offline, ad blocker) → 'failed' with the hint
+    if (!(await ensureReady())) return blocked.value ? 'unavailable' : 'failed';
     const { AdMob, RewardAdPluginEvents } = await admob();
-    if (preparing) await preparing.catch(() => undefined); // a warm-up still loading: use it
+    if (preparing) await withTimeout(preparing, LOAD_TIMEOUT_MS, 'rewarded ad warm-up').catch(() => undefined); // a warm-up still loading: use it
     if (!preloadFresh()) {
       preloadedAt = 0;
       try {
-        await prepare();
+        await withTimeout(prepare(), LOAD_TIMEOUT_MS, 'rewarded ad load');
       } catch (err) {
         console.warn('[silvr] rewarded ad did not load', err);
         return 'failed';

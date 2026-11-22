@@ -487,7 +487,7 @@ export const messages: LocaleMessages = {
   'my.ad.pro': 'Pro 无广告，尽情拍吧。',
   'my.ad.rewarded': '已获得 {n}\u00A0张，继续拍吧。',
   'my.ad.dismissed': '看完整段广告，即可获得 {n}\u00A0张。',
-  'my.ad.failed': '广告没能载入，请稍后再试。',
+  'my.ad.failed': '广告没能载入。如果你在使用广告拦截或私人 DNS，请暂时关闭后再试。',
   'my.pro.lead': '无限拍摄 · 无广告',
   'my.plans': 'Pro 方案',
   'my.plan.week': '1 周',

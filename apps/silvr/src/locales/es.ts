@@ -486,7 +486,7 @@ export const messages: LocaleMessages = {
   'my.ad.pro': 'Con Pro, toma todas las fotos que quieras. Sin anuncios.',
   'my.ad.rewarded': '{n, plural, one {Recibiste +# foto. Sigue disparando.} other {Recibiste +# fotos. Sigue disparando.}}',
   'my.ad.dismissed': '{n, plural, one {Mira el anuncio hasta el final para recibir # foto.} other {Mira el anuncio hasta el final para recibir # fotos.}}',
-  'my.ad.failed': 'El anuncio no se cargó. Vuelve a intentarlo en un momento.',
+  'my.ad.failed': 'El anuncio no se cargó. Si usas un bloqueador de anuncios o un DNS privado, desactívalo un momento y vuelve a intentarlo.',
   'my.pro.lead': 'Fotos ilimitadas. Sin anuncios.',
   'my.plans': 'Planes Pro',
   'my.plan.week': '1 semana',

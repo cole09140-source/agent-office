@@ -471,7 +471,7 @@ export const messages: Messages = {
   'my.ad.pro': 'With Pro, shoot all you like. No ads.',
   'my.ad.rewarded': '{n, plural, one {+# shot added. Keep shooting.} other {+# shots added. Keep shooting.}}',
   'my.ad.dismissed': '{n, plural, one {Watch to the end to get # shot.} other {Watch to the end to get # shots.}}',
-  'my.ad.failed': 'The ad didn’t load. Try again in a moment.',
+  'my.ad.failed': 'The ad didn’t load. If you use an ad blocker or private DNS, turn it off for a moment and try again.',
   'my.pro.lead': 'Unlimited shots. No ads.',
   'my.plans': 'Pro plans',
   'my.plan.week': '1 week',

@@ -480,7 +480,7 @@ export const messages: LocaleMessages = {
   'my.ad.pro': 'Proなら広告なしで、好きなだけ撮れます。',
   'my.ad.rewarded': '+{n}枚もらいました。撮影を続けましょう。',
   'my.ad.dismissed': '広告を最後まで見ると{n}枚もらえます。',
-  'my.ad.failed': '広告を読み込めませんでした。少し待ってからもう一度お試しください。',
+  'my.ad.failed': '広告を読み込めませんでした。広告ブロックやプライベートDNSを使っている場合は、一時的にオフにしてもう一度お試しください。',
   'my.pro.lead': '無制限の撮影・広告なし',
   'my.plans': 'Proプラン',
   'my.plan.week': '1週間',
