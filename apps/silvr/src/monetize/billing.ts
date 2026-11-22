@@ -108,8 +108,20 @@ async function adopt(e: Entitlement): Promise<void> {
 export function refreshEntitlement(): Promise<void> {
   if (!platform) return Promise.resolve();
   lastCheck = Date.now();
-  const run = refreshChain.then(checkStore, checkStore);
-  refreshChain = run.catch(() => undefined);
+  return inBillingLane(checkStore);
+}
+
+/**
+ * Every store call waits its turn: the Android plugin closes its one BillingClient when a call finishes,
+ * so two calls in flight (prices + owned purchases at start-up) could cut each other off — the prices then
+ * came back "Product not found".
+ */
+function inBillingLane<T>(task: () => Promise<T>): Promise<T> {
+  const run = refreshChain.then(task, task);
+  refreshChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
   return run;
 }
 
@@ -148,7 +160,7 @@ const errText = (err: unknown): string => {
 async function loadProducts(): Promise<void> {
   productsLoading.value = true;
   try {
-    await queryProducts();
+    await inBillingLane(queryProducts);
   } finally {
     productsLoading.value = false;
   }
@@ -159,18 +171,24 @@ async function queryProducts(): Promise<void> {
   const errs: string[] = [];
   const subIds = PRODUCTS.filter((p) => p.subscription).map((p) => p.id);
   const inappIds = PRODUCTS.filter((p) => !p.subscription).map((p) => p.id);
-  const [subs, inapp] = await Promise.all([
-    NativePurchases.getProducts({ productIdentifiers: subIds, productType: PURCHASE_TYPE.SUBS }).catch((err) => {
-      console.warn('[silvr] subscriptions not available', err);
-      errs.push(`subs: ${errText(err)}`);
-      return { products: [] };
-    }),
-    NativePurchases.getProducts({ productIdentifiers: inappIds, productType: PURCHASE_TYPE.INAPP }).catch((err) => {
-      console.warn('[silvr] lifetime product not available', err);
-      errs.push(`inapp: ${errText(err)}`);
-      return { products: [] };
-    }),
-  ]);
+  // One query at a time: the plugin closes its shared BillingClient when a query finishes, so a second
+  // query running in parallel could come back as "Product not found" (prices never shown). A failed
+  // query is asked again once after a short pause (the Play service may still be connecting).
+  type Q = Awaited<ReturnType<typeof NativePurchases.getProducts>>;
+  const ask = async (ids: string[], type: typeof PURCHASE_TYPE.SUBS | typeof PURCHASE_TYPE.INAPP, label: string): Promise<Q> => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await NativePurchases.getProducts({ productIdentifiers: ids, productType: type });
+      } catch (err) {
+        console.warn(`[silvr] ${label} not available (try ${attempt + 1})`, err);
+        if (attempt === 1) errs.push(`${label}: ${errText(err)}`);
+        else await new Promise((r) => setTimeout(r, 1200));
+      }
+    }
+    return { products: [] } as Q;
+  };
+  const subs = await ask(subIds, PURCHASE_TYPE.SUBS, 'subs');
+  const inapp = await ask(inappIds, PURCHASE_TYPE.INAPP, 'inapp');
   const found = [...subs.products, ...inapp.products];
   products.value = PRODUCTS.flatMap((def) => {
     const p = findStoreProduct(found, def);
